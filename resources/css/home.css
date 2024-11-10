@@ -1,0 +1,247 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Container and Box Styling */
+.container {
+    display: flex;
+    justify-content: space-between; /* Space between boxes */
+    margin-bottom: 20px;
+}
+
+.box {
+    flex: 1; /* Make the boxes of equal width */
+    margin: 10px;
+    padding: 20px;
+    text-align: center;
+    color: white;
+    border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.box-1 {
+    background-color: #0799b0; /* Blue */
+}
+
+.box-2 {
+    background-color: #6955de; /* Green */
+}
+
+.box-3 {
+    background-color: #ffc107; /* Yellow */
+}
+
+.box h3 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.box p {
+    margin: 10px 0 0;
+    font-size: 1.2rem;
+}
+
+/* Button Styling */
+.btn {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-warning {
+    background-color: #ffca28;
+    color: #fff;
+}
+
+/* Clock In Box Styling */
+.clock-in-box {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* No padding for the button */
+    margin-bottom: 60px;
+    margin-top: 60px;
+    margin-right: 44px;
+    margin-left: 9px;
+}
+
+.clock-in-btn {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Task Card Styling */
+.task-card {
+    background-color: white; /* Card background color */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 1260px;
+    margin-top: 20px; /* Space between boxes and card */
+}
+
+.task-card-header {
+    display: flex;
+    justify-content: space-between; /* Space between title and button */
+    align-items: center;
+}
+
+.task-card-header h4 {
+    margin: 0; /* Remove margin for the title */
+    font-size: 18px;
+}
+
+.task-table {
+    width: 100%; /* Full width of the card */
+    margin-top: 8px; /* Space between header and table */
+    border-collapse: collapse; /* Remove space between cells */
+}
+
+.task-table th,
+.task-table td {
+    border: 1px solid #ddd; /* Border for table cells */
+    padding: 10px; /* Padding inside cells */
+    text-align: left; /* Align text to the left */
+}
+
+.task-table th {
+    background-color: #f2f2f2; /* Header background color */
+}
+
+/* CSS Styling of two Cards (Missing team members and team member on leave) */
+.task-card-container {
+    gap: 20px; /* Spacing between cards */
+}
+
+/* Task Card Styles */
+.task-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Task card header styles */
+.task-card-header h4 {
+    color: #3498db;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.task-card-header span {
+    color: #2980b9;
+    font-size: 14px;
+}
+
+/* Calendar icon styling */
+.calendar-icon {
+    color: #2980b9;
+    font-size: 16px;
+}
+
+/* Task card body and layout for items */
+.task-card-body {
+    display: flex;
+    flex-wrap: wrap; /* Ensures the items wrap when exceeding 4 per row */
+    padding-top: 10px;
+    justify-content: flex-start;
+}
+
+/* Individual task card items */
+.task-card-item {
+    width: 25%; /* Ensures 4 items per row */
+    text-align: center; /* Center the content */
+    padding: 10px; /* Add some padding between items */
+}
+
+.task-card-item img {
+    margin-bottom: 5px; /* Space between image and name */
+}
+
+.task-card-description {
+    font-size: 16px;
+    color: #34495e;
+}
+
+/* Custom button styles */
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Card shadow effects */
+.shadow-sm {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.task-card-body {
+    display: flex;
+    flex-direction: column; /* Ensures the image and text stack vertically */
+    align-items: start; /* Aligns the image and text to the left */
+}
+
+.task-card-description {
+    text-align: left; /* Aligns the text to the left */
+    margin-top: 10px; /* Adds some space between image and text */
+}
+
+/* CSS Styling of Card (BREAK ENTRIES CARD) */
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 400px;
+    border-top: 4px solid green;
+}
+
+h3 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.profile span {
+    font-weight: bold;
+}
+
+th {
+    font-weight: bold;
+    color: #333;
+}
