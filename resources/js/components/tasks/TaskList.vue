@@ -1,52 +1,62 @@
 <template>
-    <div class="task-card">
-      <div class="task-card-header">
-        <h4>Tasks List</h4>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addtaskmodal">Tasks</button>
-        <a href="{{ route('test')}}" class="action-btn">
-          <button class="btn btn-success">Show Customers</button>
-        </a>
-        <a href="{{ route('task.list') }}" class="action-btn">
-          <button class="btn btn-success">Task List</button>
-        </a>
-        <a href="{{ route('leaves.list') }}" class="action-btn">
-          <button class="btn btn-success">Leaves List</button>
-        </a>
-      </div>
-      <table class="task-table">
-        <thead>
-          <tr>
-            <th>Project Name</th>
-            <th>Hours</th>
-            <th>Task Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Project A</td>
-            <td>2</td>
-            <td>Task description for Project A</td>
-          </tr>
-          <tr>
-            <td>Project B</td>
-            <td>3</td>
-            <td>Task description for Project B</td>
-          </tr>
-          <tr>
-            <td>Project C</td>
-            <td>1.5</td>
-            <td>Task description for Project C</td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="task-card">
+    <div class="task-card-header">
+      <h4>Tasks List</h4>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addtaskmodal">Tasks</button>
+      <a href="{{ route('test') }}" class="action-btn">
+        <button class="btn btn-success">Show Customers</button>
+      </a>
+      <a href="{{ route('task.list') }}" class="action-btn">
+        <button class="btn btn-success">Task List</button>
+      </a>
+      <a href="{{ route('leaves.list') }}" class="action-btn">
+        <button class="btn btn-success">Leaves List</button>
+      </a>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "TaskList",
-  };
-  </script>
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Hours</th>
+          <th>Task Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="task in tasks" :key="task.id">
+          <td>{{ task.project_name }}</td>
+          <td>{{ task.hours }}</td>
+          <td>{{ task.task_description }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+<script>
+import axios from 'axios';
+
+export default {
+  name: "TaskList",
+  data() {
+    return {
+      tasks: [] // Array to store fetched tasks
+    };
+  },
+  mounted() {
+    this.fetchTasks();
+  },
+  methods: {
+    async fetchTasks() {
+      try {
+        const response = await axios.get('/api/tasks');
+        this.tasks = response.data; // Store the tasks in the component's data
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    }
+  }
+};
+</script>
+
   
   <style scoped>
   .task-card {

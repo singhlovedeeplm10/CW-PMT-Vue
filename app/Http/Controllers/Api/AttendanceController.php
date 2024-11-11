@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
@@ -40,27 +41,33 @@ class AttendanceController extends Controller
     }
 
     public function clockIn(Request $request)
-    {
-        $user = Auth::user();
-        
-        // Check if the user already has an open clock-in
-        $attendance = Attendance::where('user_id', $user->id)
-                                ->whereNull('clockout_time')
-                                ->first();
+{
+    $user = Auth::user();
 
-        if (!$attendance) {
-            // Clock in and save the current time
-            $attendance = Attendance::create([
-                'user_id' => $user->id,
-                'clockin_time' => Carbon::now(),
-            ]);
+    // Check if the user already has an open clock-in
+    $attendance = Attendance::where('user_id', $user->id)
+                            ->whereNull('clockout_time')
+                            ->first();
 
-            return response()->json(['status' => 'Clocked in successfully', 'attendance' => $attendance]);
-        }
+    if (!$attendance) {
+        // Clock in and save the current time
+        $attendance = Attendance::create([
+            'user_id' => $user->id,
+            'clockin_time' => Carbon::now(),
+        ]);
 
-        return response()->json(['status' => 'Already clocked in'], 400);
+        // Generate a token for the user
+        $token = $user->createToken('ClockInToken')->plainTextToken;
+
+        return response()->json([
+            'status' => 'Clocked in successfully',
+            'attendance' => $attendance,
+            'token' => $token // Send the token back to frontend
+        ]);
     }
 
-    
-    
+    return response()->json(['status' => 'Already clocked in'], 400);
+}
+
+       
 }

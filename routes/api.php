@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\API\LeaveController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TechnologyController;
@@ -14,6 +13,7 @@ use App\Http\Controllers\API\AttendanceController;
 use App\Http\Controllers\API\BreakController;
 use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\TaskController;
 
 
 
@@ -30,7 +30,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 // TASKS API ROUTE
-Route::get('/tasks', [TaskController::class, 'getTasks']);
+// Route::get('/tasks', [TaskController::class, 'getTasks']);
+
+Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
+Route::get('/tasks', [TaskController::class, 'showTasks']);
+
+
 
 // LEAVES API ROUTE
 Route::middleware('auth:sanctum')->post('/leaves', [LeaveController::class, 'addLeave']);
@@ -54,6 +59,7 @@ Route::middleware('auth:sanctum')->post('/user-permissions', [PermissionControll
 
 // ATTENDANCE API ROUTE 
 Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::class, 'storeAttendance']);
+
 Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::class, 'clockIn']);
 
 

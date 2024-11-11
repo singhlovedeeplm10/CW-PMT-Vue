@@ -11,3 +11,5 @@ app.component('master-component', MasterComponent);
 
 app.use(router);
 app.mount('#app');
+
+window.axios = axios;

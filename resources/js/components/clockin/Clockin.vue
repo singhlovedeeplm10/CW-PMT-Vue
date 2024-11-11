@@ -31,6 +31,7 @@ import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 
 export default {
+    name: "Clockin",
     props: {
         openModal: Function,
     },
@@ -51,24 +52,28 @@ export default {
         });
 
         const handleClockInOut = async () => {
-            if (!isClockedIn.value) {
-                // Clock In
-                try {
-                    const response = await axios.post('/api/clock-in', {}, {
-                        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-                    });
-                    console.log(response.data);
-                    isClockedIn.value = true;
-                    startTimer();
-                } catch (error) {
-                    console.error("Error clocking in:", error);
-                }
-            } else {
-                // Clock Out logic goes here
-                isClockedIn.value = false;
-                stopTimer();
-            }
-        };
+    if (!isClockedIn.value) {
+        try {
+            const response = await axios.post('/api/clock-in', {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+            });
+            console.log(response.data);
+
+            // Save the token in localStorage
+            localStorage.setItem('authToken', response.data.token);
+
+            isClockedIn.value = true;
+            startTimer();
+        } catch (error) {
+            console.error("Error clocking in:", error);
+        }
+    } else {
+        // Clock Out logic goes here
+        isClockedIn.value = false;
+        stopTimer();
+    }
+};
+
 
         // Timer functions
         const startTimer = () => {

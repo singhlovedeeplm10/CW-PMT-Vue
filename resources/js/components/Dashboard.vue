@@ -1,4 +1,5 @@
 <template>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <master-component>
     <div class="dashboard">
       <h1>Welcome to the Dashboard</h1>
@@ -9,6 +10,10 @@
 
       <!-- Include the TaskList component -->
       <task-list />
+      
+      <!-- Add the required attendanceId prop -->
+      <add-task-modal :attendance-id="attendanceId" />
+
 
       <daily-task />
 
@@ -21,14 +26,14 @@
 </template>
 
 <script>
-
 import MasterComponent from './layouts/Master.vue';
-import Clockin from './Clockin/Clockin.vue';
+import Clockin from './clockin/Clockin.vue';
 import TaskList from './tasks/TaskList.vue';
 import DailyTask from './tasks/DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import MissingMember from './cards/MissingMember.vue';
 import MemberLeave from './cards/MemberLeave.vue';
+import AddTaskModal from './AddTaskModal.vue';
 
 export default {
   name: "Dashboard",
@@ -39,11 +44,13 @@ export default {
     DailyTask,
     BreakEntries,
     MissingMember,
-    MemberLeave
+    MemberLeave,
+    AddTaskModal
   },
   data() {
     return {
       showModal: false,
+      attendanceId: 123, // Replace 123 with the actual attendance ID or retrieve dynamically
     };
   },
   methods: {
@@ -64,6 +71,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .dashboard{
   padding: 30px;
