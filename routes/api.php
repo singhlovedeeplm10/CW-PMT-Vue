@@ -59,7 +59,6 @@ Route::middleware('auth:sanctum')->post('/user-permissions', [PermissionControll
 
 // ATTENDANCE API ROUTE 
 Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::class, 'storeAttendance']);
-
 Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::class, 'clockIn']);
 
 

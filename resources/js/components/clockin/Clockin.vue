@@ -36,13 +36,13 @@ export default {
         openModal: Function,
     },
     setup() {
-        const isClockedIn = ref(false);
-        const clockInOutText = computed(() => (isClockedIn.value ? "Clock Out" : "Clock In"));
-        const clockInOutButtonClass = computed(() => (isClockedIn.value ? "btn-danger" : "btn-success"));
-
-        // Stopwatch state
+        const isClockedIn = ref(localStorage.getItem('isClockedIn') === 'true');
+        const clockInTime = ref(parseInt(localStorage.getItem('clockInTime')) || null);
         const timer = ref(0);
         let interval = null;
+
+        const clockInOutText = computed(() => (isClockedIn.value ? "Clock Out" : "Clock In"));
+        const clockInOutButtonClass = computed(() => (isClockedIn.value ? "btn-danger" : "btn-success"));
 
         const formattedTime = computed(() => {
             const hours = Math.floor(timer.value / 3600);
@@ -51,34 +51,9 @@ export default {
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         });
 
-        const handleClockInOut = async () => {
-    if (!isClockedIn.value) {
-        try {
-            const response = await axios.post('/api/clock-in', {}, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
-            });
-            console.log(response.data);
-
-            // Save the token in localStorage
-            localStorage.setItem('authToken', response.data.token);
-
-            isClockedIn.value = true;
-            startTimer();
-        } catch (error) {
-            console.error("Error clocking in:", error);
-        }
-    } else {
-        // Clock Out logic goes here
-        isClockedIn.value = false;
-        stopTimer();
-    }
-};
-
-
-        // Timer functions
         const startTimer = () => {
             interval = setInterval(() => {
-                timer.value += 1;
+                timer.value = Math.floor((Date.now() - clockInTime.value) / 1000);
             }, 1000);
         };
 
@@ -87,9 +62,39 @@ export default {
             interval = null;
         };
 
+        const handleClockInOut = async () => {
+            if (!isClockedIn.value) {
+                try {
+                    const response = await axios.post('/api/clock-in', {}, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+                    });
+                    
+                    isClockedIn.value = true;
+                    clockInTime.value = Date.now();
+                    
+                    // Save state to localStorage
+                    localStorage.setItem('isClockedIn', 'true');
+                    localStorage.setItem('clockInTime', clockInTime.value);
+
+                    startTimer();
+                } catch (error) {
+                    console.error("Error clocking in:", error);
+                }
+            } else {
+                isClockedIn.value = false;
+                stopTimer();
+
+                // Reset localStorage and timer state
+                localStorage.removeItem('isClockedIn');
+                localStorage.removeItem('clockInTime');
+                timer.value = 0;
+            }
+        };
+
         onMounted(() => {
-            // Reset timer if reloading while clocked in
-            if (isClockedIn.value) startTimer();
+            if (isClockedIn.value && clockInTime.value) {
+                startTimer();
+            }
         });
 
         return {
