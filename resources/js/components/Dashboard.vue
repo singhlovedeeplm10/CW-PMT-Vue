@@ -33,7 +33,9 @@ import DailyTask from './tasks/DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import MissingMember from './cards/MissingMember.vue';
 import MemberLeave from './cards/MemberLeave.vue';
-import AddTaskModal from './AddTaskModal.vue';
+import AddTaskModal from './modals/AddTaskModal.vue';
+import ButtonComponent from './ButtonComponent.vue';
+
 
 export default {
   name: "Dashboard",
@@ -45,12 +47,13 @@ export default {
     BreakEntries,
     MissingMember,
     MemberLeave,
-    AddTaskModal
+    AddTaskModal,
+    ButtonComponent
   },
   data() {
     return {
       showModal: false,
-      attendanceId: 123, // Replace 123 with the actual attendance ID or retrieve dynamically
+      attendanceId: 123, 
     };
   },
   methods: {

@@ -1,32 +1,41 @@
 <template>
     <div class="container">
         <div class="box box-1">
-            <h3 style="color: white;">00:00:00</h3>
+            <h3 class="box-time">00:00:00</h3>
             <p>Weekly Productive Hours</p>
             <i class="fas fa-shopping-bag"></i>
         </div>
 
         <div class="box box-2">
-            <h3 id="productive-hours" style="color: white;">{{ formattedTime }}</h3>
+            <h3 id="productive-hours" class="box-time">{{ formattedTime }}</h3>
             <p>Today's Productive Hours</p>
             <i class="fas fa-chart-bar"></i>
         </div>
 
         <div class="box box-3">
-            <h3 style="color: white;">00:00:00</h3>
+            <h3 class="box-time">00:00:00</h3>
             <p>Today's Total Break</p>
-            <button class="btn btn-warning" @click="openModal">Add Break <i class="fas fa-user-plus"></i></button>
+            <ButtonComponent 
+              label="Add Break" 
+              iconClass="fas fa-user-plus" 
+              buttonClass="btn-warning add-break-button" 
+              :clickEvent="openModal" 
+            />
         </div>
 
         <div class="box clock-in-box">
-            <button :class="clockInOutButtonClass" @click="handleClockInOut">
-                {{ clockInOutText }} <i class="fas fa-clock"></i>
-            </button>
+            <ButtonComponent 
+              :label="clockInOutText" 
+              :iconClass="'fas fa-clock'" 
+              :buttonClass="clockInOutButtonClass" 
+              :clickEvent="handleClockInOut" 
+            />
         </div>
     </div>
 </template>
 
 <script>
+import ButtonComponent from '@/components/ButtonComponent.vue';
 import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 
@@ -34,6 +43,9 @@ export default {
     name: "Clockin",
     props: {
         openModal: Function,
+    },
+    components: {
+        ButtonComponent,
     },
     setup() {
         const isClockedIn = ref(localStorage.getItem('isClockedIn') === 'true');

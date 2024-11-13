@@ -1,13 +1,13 @@
 <template>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="modal fade" id="addtaskmodal" tabindex="-1" aria-labelledby="addtaskmodallabel" aria-hidden="true" ref="addTaskModal">
         <div class="modal-dialog modal-lg custom-modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header" style="background-color: #3498db; color: white;">
+                <div class="modal-header modal-header-custom">
                     <h5 class="modal-title" id="addtaskmodallabel">Tasks</h5>
-                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close" style="background-color: white; opacity: 1;"></button>
+                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
+
                 </div>
-                <div class="modal-body" style="background-color: #f9f9f9;">
+                <div class="modal-body modal-body-custom">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -26,7 +26,7 @@
                                         class="form-control"
                                         :class="{'is-invalid': taskErrors[index]?.project_name}"
                                         :required="true"
-                                    >
+                                    />
                                     <div v-if="taskErrors[index]?.project_name" class="invalid-feedback">
                                         Project Name is required.
                                     </div>
@@ -39,7 +39,7 @@
                                         class="form-control form-control-hours"
                                         :class="{'is-invalid': taskErrors[index]?.hours}"
                                         :required="true"
-                                    >
+                                    />
                                     <div v-if="taskErrors[index]?.hours" class="invalid-feedback">
                                         Please enter a valid number for hours.
                                     </div>
@@ -60,18 +60,19 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="modal-footer" style="background-color: #f2f2f2;">
-                    <button type="button" @click="addTaskRow" class="btn btn-dark" style="border-radius: 8px;">Add More</button>
-                    <button 
-                        type="button" 
-                        @click="saveTask" 
-                        class="btn btn-primary" 
-                        :disabled="!allFieldsFilled"
-                        :title="allFieldsFilled ? '' : 'Please fill in all fields'"
-                        style="border-radius: 8px;"
-                    >
-                        Save Task
-                    </button>
+                <div class="modal-footer modal-footer-custom">
+                    <ButtonComponent 
+                      label="Add More" 
+                      buttonClass="btn-dark" 
+                      :clickEvent="addTaskRow" 
+                    />
+                    <ButtonComponent 
+                      label="Save Task" 
+                      buttonClass="btn-primary" 
+                      :clickEvent="saveTask" 
+                      :isDisabled="!allFieldsFilled" 
+                      :title="allFieldsFilled ? '' : 'Please fill in all fields'" 
+                    />
                 </div>
             </div>
         </div>
@@ -79,8 +80,10 @@
 </template>
 
 <script>
+import ButtonComponent from '@/components/ButtonComponent.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
+import { ref, computed } from 'vue';
 import { toast } from 'vue3-toastify';
 
 axios.defaults.withCredentials = true;
@@ -88,46 +91,48 @@ axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[nam
 
 export default {
     name: "AddTaskModal",
+    components: {
+        ButtonComponent,
+    },
     props: {
         attendanceId: {
             type: Number,
             required: true
         }
     },
-    data() {
-        return {
-            tasks: [{ project_name: '', hours: '', task_description: '' }], // Initialize with one empty task row
-            taskErrors: [{ project_name: false, hours: false, task_description: false }] // Initialize error for the first row
-        };
-    },
-    computed: {
-        allFieldsFilled() {
-            return this.tasks.every(task => 
+    setup() {
+        const tasks = ref([{ project_name: '', hours: '', task_description: '' }]);
+        const taskErrors = ref([{ project_name: false, hours: false, task_description: false }]);
+
+        const allFieldsFilled = computed(() => {
+            return tasks.value.every(task => 
                 task.project_name && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description
             );
-        }
-    },
-    methods: {
-        addTaskRow() {
-            this.tasks.push({ project_name: '', hours: '', task_description: '' });
-            this.taskErrors.push({ project_name: false, hours: false, task_description: false });
-        },
-        removeTaskRow(index) {
-            this.tasks.splice(index, 1);
-            this.taskErrors.splice(index, 1);
-        },
-        validateTask(task, index) {
-            this.taskErrors[index] = {
+        });
+
+        const addTaskRow = () => {
+            tasks.value.push({ project_name: '', hours: '', task_description: '' });
+            taskErrors.value.push({ project_name: false, hours: false, task_description: false });
+        };
+
+        const removeTaskRow = (index) => {
+            tasks.value.splice(index, 1);
+            taskErrors.value.splice(index, 1);
+        };
+
+        const validateTask = (task, index) => {
+            taskErrors.value[index] = {
                 project_name: !task.project_name,
                 hours: !task.hours || isNaN(task.hours) || task.hours <= 0,
                 task_description: !task.task_description
             };
-            return !this.taskErrors[index].project_name && !this.taskErrors[index].hours && !this.taskErrors[index].task_description;
-        },
-        async saveTask() {
+            return !taskErrors.value[index].project_name && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
+        };
+
+        const saveTask = async () => {
             let valid = true;
-            this.tasks.forEach((task, index) => {
-                if (!this.validateTask(task, index)) valid = false;
+            tasks.value.forEach((task, index) => {
+                if (!validateTask(task, index)) valid = false;
             });
 
             if (!valid) {
@@ -137,7 +142,7 @@ export default {
 
             try {
                 await axios.get('/sanctum/csrf-cookie');
-                const response = await axios.post('/api/tasks', { tasks: this.tasks }, {
+                const response = await axios.post('/api/tasks', { tasks: tasks.value }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -145,23 +150,34 @@ export default {
 
                 if (response.status === 200) {
                     toast.success('Tasks saved successfully!');
-                    this.tasks = [{ project_name: '', hours: '', task_description: '' }];
-                    this.taskErrors = [{ project_name: false, hours: false, task_description: false }];
+                    tasks.value = [{ project_name: '', hours: '', task_description: '' }];
+                    taskErrors.value = [{ project_name: false, hours: false, task_description: false }];
+                } else {
+                    toast.error('Unexpected response. Please try again.');
                 }
             } catch (error) {
                 console.error("Error saving tasks:", error);
                 toast.error('Error saving tasks.');
             }
-        },
-        closeModal() {
-            this.tasks = [{ project_name: '', hours: '', task_description: '' }];
-            this.taskErrors = [{ project_name: false, hours: false, task_description: false }];
-        },
-        closeModal() {
-            const modalElement = this.$refs.addTaskModal;
+        };
+
+        const closeModal = () => {
+            tasks.value = [{ project_name: '', hours: '', task_description: '' }];
+            taskErrors.value = [{ project_name: false, hours: false, task_description: false }];
+            const modalElement = document.getElementById('addtaskmodal');
             const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
             modalInstance.hide();
-        },
+        };
+
+        return {
+            tasks,
+            taskErrors,
+            allFieldsFilled,
+            addTaskRow,
+            removeTaskRow,
+            saveTask,
+            closeModal,
+        };
     }
 };
 </script>
@@ -170,6 +186,16 @@ export default {
 .custom-modal-dialog {
     max-width: 1000px;
     min-height: 600px;
+}
+.modal-header-custom {
+    background-color: #3498db;
+    color: white;
+}
+.modal-body-custom {
+    background-color: #f9f9f9;
+}
+.modal-footer-custom {
+    background-color: #f2f2f2;
 }
 .form-control-hours {
     width: 100px;
@@ -187,6 +213,10 @@ export default {
 .form-control:hover, .form-control:focus {
     box-shadow: 0 0 12px rgba(52, 152, 219, 0.5);
 }
+.btn-close {
+    background-color: white;
+    opacity: 1;
+}
 .btn-secondary:hover {
     transform: translateY(-3px);
     background-color: #6c757d;
@@ -195,7 +225,7 @@ export default {
     background-color: #2980b9;
     transform: translateY(-3px);
 }
-.modal-header:hover {
+.modal-header-custom:hover {
     background-color: #2980b9;
 }
 .modal-content {
@@ -217,7 +247,6 @@ export default {
     cursor: not-allowed;
     opacity: 0.7;
 }
-
 .btn[disabled]:hover::after {
     content: " ❌ Please fill in all fields";
     color: red;
