@@ -35,6 +35,8 @@ import MissingMember from './cards/MissingMember.vue';
 import MemberLeave from './cards/MemberLeave.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import ButtonComponent from './ButtonComponent.vue';
+import InputField from './InputField.vue';
+import TextArea from './TextArea.vue';
 
 
 export default {
@@ -48,7 +50,9 @@ export default {
     MissingMember,
     MemberLeave,
     AddTaskModal,
-    ButtonComponent
+    ButtonComponent,
+    InputField,
+    TextArea
   },
   data() {
     return {

@@ -5,7 +5,6 @@
                 <div class="modal-header modal-header-custom">
                     <h5 class="modal-title" id="addtaskmodallabel">Tasks</h5>
                     <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
-
                 </div>
                 <div class="modal-body modal-body-custom">
                     <table class="table table-bordered">
@@ -20,58 +19,54 @@
                         <tbody>
                             <tr v-for="(task, index) in tasks" :key="index">
                                 <td>
-                                    <input
+                                    <InputField
                                         v-model="task.project_name"
-                                        type="text"
-                                        class="form-control"
-                                        :class="{'is-invalid': taskErrors[index]?.project_name}"
-                                        :required="true"
+                                        inputType="text"
+                                        :hasError="taskErrors[index]?.project_name"
+                                        errorMessage="Project Name is required."
+                                        isRequired
                                     />
-                                    <div v-if="taskErrors[index]?.project_name" class="invalid-feedback">
-                                        Project Name is required.
-                                    </div>
                                 </td>
                                 <td>
-                                    <input
+                                    <InputField
                                         v-model="task.hours"
-                                        type="number"
+                                        inputType="number"
+                                        inputClass="form-control-hours"
+                                        :hasError="taskErrors[index]?.hours"
+                                        errorMessage="Please enter a valid number for hours."
+                                        isRequired
                                         step="0.01"
-                                        class="form-control form-control-hours"
-                                        :class="{'is-invalid': taskErrors[index]?.hours}"
-                                        :required="true"
                                     />
-                                    <div v-if="taskErrors[index]?.hours" class="invalid-feedback">
-                                        Please enter a valid number for hours.
-                                    </div>
                                 </td>
                                 <td>
-                                    <textarea
+                                    <TextArea
                                         v-model="task.task_description"
-                                        class="form-control form-control-description"
-                                        :class="{'is-invalid': taskErrors[index]?.task_description}"
-                                        :required="true"
-                                    ></textarea>
-                                    <div v-if="taskErrors[index]?.task_description" class="invalid-feedback">
-                                        Task description is required.
-                                    </div>
+                                        :hasError="taskErrors[index]?.task_description"
+                                        errorMessage="Task description is required."
+                                        placeholder="Enter task description"
+                                        isRequired
+                                        :rows="4"
+                                    />
                                 </td>
-                                <td><button type="button" class="btn btn-danger btn-sm" @click="removeTaskRow(index)">×</button></td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" @click="removeTaskRow(index)">×</button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="modal-footer modal-footer-custom">
                     <ButtonComponent 
-                      label="Add More" 
-                      buttonClass="btn-dark" 
-                      :clickEvent="addTaskRow" 
+                        label="Add More" 
+                        buttonClass="btn-dark" 
+                        :clickEvent="addTaskRow" 
                     />
                     <ButtonComponent 
-                      label="Save Task" 
-                      buttonClass="btn-primary" 
-                      :clickEvent="saveTask" 
-                      :isDisabled="!allFieldsFilled" 
-                      :title="allFieldsFilled ? '' : 'Please fill in all fields'" 
+                        label="Save Task" 
+                        buttonClass="btn-primary" 
+                        :clickEvent="saveTask" 
+                        :isDisabled="!allFieldsFilled" 
+                        :title="allFieldsFilled ? '' : 'Please fill in all fields'" 
                     />
                 </div>
             </div>
@@ -81,18 +76,19 @@
 
 <script>
 import ButtonComponent from '@/components/ButtonComponent.vue';
+import InputField from '@/components/InputField.vue';
+import TextArea from '@/components/TextArea.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
 import { ref, computed } from 'vue';
 import { toast } from 'vue3-toastify';
 
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
 export default {
     name: "AddTaskModal",
     components: {
         ButtonComponent,
+        InputField,
+        TextArea
     },
     props: {
         attendanceId: {

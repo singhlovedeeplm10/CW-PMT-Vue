@@ -38,7 +38,8 @@
                     <div class="task-card-header d-flex justify-content-between align-items-center">
                         <h4>Team Members on Leave - 
                             <!-- <span id="selected-date">{{ \Carbon\Carbon::now()->format('F d, Y') }}</span> -->
-                            <i class="fa fa-calendar ms-2 calendar-icon" id="calendarIcon1" style="cursor: pointer;"></i>
+                            <label for="date" class="form-label">Date:</label>
+                            <input type="date" id="date" class="form-control" value="{{ date('Y-m-d') }}">
                         </h4>
                         <h4>Upcoming Leaves</h4>
                     </div>
