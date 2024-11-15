@@ -23,7 +23,7 @@
 
 <script>
 export default {
-    name: "AutoInputField",
+    name: "AutoComplete",
     props: {
         inputClass: {
             type: String,
