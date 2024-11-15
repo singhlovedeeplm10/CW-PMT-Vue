@@ -37,6 +37,8 @@ import AddTaskModal from './modals/AddTaskModal.vue';
 import ButtonComponent from './ButtonComponent.vue';
 import InputField from './InputField.vue';
 import TextArea from './TextArea.vue';
+import Calendar from "./Calendar.vue";
+import ShowListing from "./ShowListing.vue";
 
 
 export default {
@@ -52,7 +54,9 @@ export default {
     AddTaskModal,
     ButtonComponent,
     InputField,
-    TextArea
+    TextArea,
+    Calendar,
+    ShowListing
   },
   data() {
     return {

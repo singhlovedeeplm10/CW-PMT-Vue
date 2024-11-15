@@ -6,9 +6,9 @@
       <a href="{{ route('test') }}" class="action-btn">
         <button class="btn btn-success">Show Customers</button>
       </a>
-      <a href="{{ route('task.list') }}" class="action-btn">
+      <router-link to="/task">
         <button class="btn btn-success">Task List</button>
-      </a>
+      </router-link>
       <a href="{{ route('leaves.list') }}" class="action-btn">
         <button class="btn btn-success">Leaves List</button>
       </a>
@@ -36,6 +36,8 @@ import axios from 'axios';
 
 export default {
   name: "TaskList",
+  components: {
+  },
   data() {
     return {
       tasks: [] // Array to store fetched tasks

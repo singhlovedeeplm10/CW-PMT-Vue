@@ -37,9 +37,12 @@
                 <div class="task-card flex-fill shadow-sm" id="card2">
                     <div class="task-card-header d-flex justify-content-between align-items-center">
                         <h4>Team Members on Leave - 
-                            <!-- <span id="selected-date">{{ \Carbon\Carbon::now()->format('F d, Y') }}</span> -->
-                            <label for="date" class="form-label">Date:</label>
-                            <input type="date" id="date" class="form-control" value="{{ date('Y-m-d') }}">
+                            <Calendar
+        :selectedDate="date"
+        @dateSelected="onDateSelected"
+        :showHeader="true"
+        :highlightToday="true"
+      />
                         </h4>
                         <h4>Upcoming Leaves</h4>
                     </div>
@@ -60,9 +63,25 @@
             </div>
 </template>
 <script>
-export default {
+import Calendar from "@/components/Calendar.vue";
+import { ref } from "vue";
+
+  export default {
     name: "MissingMember",
-  };
+  components: { Calendar },
+  setup() {
+    const date = ref(new Date());
+
+    const onDateSelected = (selectedDate) => {
+      date.value = selectedDate;
+    };
+
+    return {
+      date,
+      onDateSelected,
+    };
+  },
+};
 </script>
 
   <style src="../resources/css/home.css"></style>
