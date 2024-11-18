@@ -24,18 +24,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // LOGIN API ROUTE
 // Route::post('/login', [LoginController::class, 'login']);
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
 // TASKS API ROUTE
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
-
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
 Route::get('/tasks', [TaskController::class, 'showTasks']);
-
-
+Route::get('/projects', function () {
+    return \App\Models\Project::where('user_id', auth()->id())->get();
+});
 
 // LEAVES API ROUTE
 Route::middleware('auth:sanctum')->post('/leaves', [LeaveController::class, 'addLeave']);
@@ -45,7 +43,6 @@ Route::post('/users', [UserController::class, 'addUser']);
 Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
-
 
 // TECHNOLOGIES API ROUTE
 Route::post('/technologies', [TechnologyController::class, 'addTech']);
@@ -60,13 +57,13 @@ Route::middleware('auth:sanctum')->post('/user-permissions', [PermissionControll
 // ATTENDANCE API ROUTE 
 Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::class, 'storeAttendance']);
 Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::class, 'clockIn']);
-
+Route::middleware('auth:sanctum')->post('/clock-out', [AttendanceController::class, 'clockOut']);
+Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::class, 'getWeeklyHours']);
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-
 
 Route::post('/apply-leave', [LeaveController::class, 'store'])->name('apply.leave');

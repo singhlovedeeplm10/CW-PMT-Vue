@@ -45,7 +45,8 @@
                                         errorMessage="Task description is required."
                                         placeholder="Enter task description"
                                         isRequired
-                                        :rows="4"
+                                        :rows="6"
+                                        textareaClass="custom-textarea"
                                     />
                                 </td>
                                 <td>
@@ -64,9 +65,9 @@
                     <ButtonComponent 
                         label="Save Task" 
                         buttonClass="btn-primary" 
-                        :clickEvent="saveTask" 
-                        :isDisabled="!allFieldsFilled" 
-                        :title="allFieldsFilled ? '' : 'Please fill in all fields'" 
+                        :clickEvent="handleSaveTask" 
+                        :isDisabled="!allFieldsFilled || isSaving" 
+                        :title="!allFieldsFilled ? 'Please fill in all fields' : ''" 
                     />
                 </div>
             </div>
@@ -96,12 +97,14 @@ export default {
             required: true
         }
     },
-    setup() {
+    emits: ['taskAdded'],
+    setup(_, { emit }) {
         const tasks = ref([{ project_name: '', hours: '', task_description: '' }]);
         const taskErrors = ref([{ project_name: false, hours: false, task_description: false }]);
+        const isSaving = ref(false); // Tracks saving state
 
         const allFieldsFilled = computed(() => {
-            return tasks.value.every(task => 
+            return tasks.value.length > 0 && tasks.value.every(task => 
                 task.project_name && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description
             );
         });
@@ -116,13 +119,14 @@ export default {
             taskErrors.value.splice(index, 1);
         };
 
-        const validateTask = (task, index) => {
-            taskErrors.value[index] = {
-                project_name: !task.project_name,
-                hours: !task.hours || isNaN(task.hours) || task.hours <= 0,
-                task_description: !task.task_description
-            };
-            return !taskErrors.value[index].project_name && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
+        const handleSaveTask = async () => {
+            if (!allFieldsFilled.value) {
+                toast.error("Please fill all the fields.");
+                return;
+            }
+            isSaving.value = true; // Disable button while saving
+            await saveTask();
+            isSaving.value = false; // Re-enable after saving
         };
 
         const saveTask = async () => {
@@ -146,8 +150,8 @@ export default {
 
                 if (response.status === 200) {
                     toast.success('Tasks saved successfully!');
-                    tasks.value = [{ project_name: '', hours: '', task_description: '' }];
-                    taskErrors.value = [{ project_name: false, hours: false, task_description: false }];
+                    emit('taskAdded'); // Emit event to notify parent component
+                    closeModal(); // Close modal on success
                 } else {
                     toast.error('Unexpected response. Please try again.');
                 }
@@ -165,18 +169,31 @@ export default {
             modalInstance.hide();
         };
 
+        const validateTask = (task, index) => {
+            taskErrors.value[index] = {
+                project_name: !task.project_name,
+                hours: !task.hours || isNaN(task.hours) || task.hours <= 0,
+                task_description: !task.task_description
+            };
+            return !taskErrors.value[index].project_name && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
+        };
+
         return {
             tasks,
             taskErrors,
             allFieldsFilled,
+            isSaving,
             addTaskRow,
             removeTaskRow,
             saveTask,
+            handleSaveTask,
             closeModal,
         };
     }
 };
 </script>
+
+
 
 <style scoped>
 .custom-modal-dialog {
@@ -239,13 +256,25 @@ export default {
     color: #e3342f;
     font-size: 0.875em;
 }
-.btn[disabled] {
-    cursor: not-allowed;
-    opacity: 0.7;
+.btn:disabled, 
+.btn[disabled], 
+.btn:disabled:hover, 
+.btn[disabled]:hover {
+    cursor: not-allowed; /* Or no-drop for a different effect */
+    opacity: 0.7; /* Ensure visual feedback for disabled state */
 }
+
 .btn[disabled]:hover::after {
-    content: " ❌ Please fill in all fields";
+    content: " ❌ Please fill in all fields"; /* Optional tooltip */
     color: red;
     font-size: 12px;
+    display: block; /* Make it visible */
+    margin-top: 5px;
+    cursor: not-allowed;
 }
+
+.form-control-hours {
+    width: 80px; /* Adjust this value as needed */
+}
+
 </style>

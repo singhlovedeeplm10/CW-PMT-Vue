@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\DailyTask;
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
@@ -41,11 +42,19 @@ class TaskController extends Controller
 
         return response()->json(['message' => 'Tasks saved successfully.'], 200);
     }
+    
+    public function showTasks()
+    {
+        $tasks = DailyTask::all(); // Or add filtering logic if needed
+        return response()->json($tasks);
+    }
 
-
-public function showTasks()
+    public function fetchProjects()
 {
-    $tasks = DailyTask::all(); // Or add filtering logic if needed
-    return response()->json($tasks);
+    $user = Auth::user();
+    $projects = Project::where('user_id', $user->id)->get();
+
+    return response()->json(['projects' => $projects]);
 }
+
 }

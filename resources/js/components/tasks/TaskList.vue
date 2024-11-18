@@ -22,22 +22,27 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="task in tasks" :key="task.id">
+        <tr v-if="tasks.length === 0">
+          <td colspan="3" class="text-center">No Task added</td>
+        </tr>
+        <tr v-else v-for="task in tasks" :key="task.id">
           <td>{{ task.project_name }}</td>
           <td>{{ task.hours }}</td>
           <td>{{ task.task_description }}</td>
         </tr>
       </tbody>
     </table>
+    <AddTaskModal @taskAdded="fetchTasks" />
   </div>
 </template>
+
 <script>
 import axios from 'axios';
+import AddTaskModal from '@/components/modals/AddTaskModal.vue';
 
 export default {
   name: "TaskList",
-  components: {
-  },
+  components: { AddTaskModal },
   data() {
     return {
       tasks: [] // Array to store fetched tasks
@@ -59,7 +64,7 @@ export default {
 };
 </script>
 
-  
+
   <style scoped>
   .task-card {
     padding: 20px;

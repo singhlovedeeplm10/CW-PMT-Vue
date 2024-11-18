@@ -9,7 +9,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+// use Carbon\Carbon;
+use Illuminate\Support\Carbon;
+
 
 class AttendanceController extends Controller
 {
@@ -41,33 +44,65 @@ class AttendanceController extends Controller
     }
 
     public function clockIn(Request $request)
-{
-    $user = Auth::user();
-
-    // Check if the user already has an open clock-in
-    $attendance = Attendance::where('user_id', $user->id)
-                            ->whereNull('clockout_time')
-                            ->first();
-
-    if (!$attendance) {
-        // Clock in and save the current time
+    {
+        $user = Auth::user();
         $attendance = Attendance::create([
             'user_id' => $user->id,
             'clockin_time' => Carbon::now(),
         ]);
-
-        // Generate a token for the user
-        $token = $user->createToken('ClockInToken')->plainTextToken;
-
+    
         return response()->json([
             'status' => 'Clocked in successfully',
             'attendance' => $attendance,
-            'token' => $token // Send the token back to frontend
         ]);
     }
-
-    return response()->json(['status' => 'Already clocked in'], 400);
-}
-
-       
+    
+    public function clockOut(Request $request)
+    {
+        try {
+            $userId = auth()->id();
+            $attendance = Attendance::where('user_id', $userId)->whereNull('clockout_time')->first();
+    
+            if (!$attendance) {
+                return response()->json(['message' => 'No active clock-in record found.'], 400);
+            }
+    
+            $clockOutTime = now();
+            $productiveHours = $clockOutTime->diff($attendance->clockin_time)->format('%H:%I:%S');
+    
+            $attendance->update([
+                'clockout_time' => $clockOutTime,
+                'productive_hours' => $productiveHours,
+            ]);
+    
+            // Optionally calculate weekly hours
+            $weeklyHours = Attendance::where('user_id', $userId)
+                ->whereBetween('clockin_time', [now()->startOfWeek(), now()->endOfWeek()])
+                ->sum(DB::raw("TIME_TO_SEC(productive_hours)"));
+    
+            return response()->json([
+                'message' => 'Clocked out successfully.',
+                'weekly_hours' => gmdate('H:i:s', $weeklyHours),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+        
+    public function getWeeklyHours(Request $request)
+    {
+        $user = Auth::user();
+        $weeklyHoursInSeconds = Attendance::where('user_id', $user->id)
+            ->whereBetween('clockin_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->get()
+            ->sum(function ($attendance) {
+                // Convert time format to seconds
+                $time = explode(':', $attendance->productive_hours);
+                return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
+            });
+    
+        return response()->json([
+            'weekly_hours' => $weeklyHoursInSeconds, // Return total seconds
+        ]);
+    }
 }
