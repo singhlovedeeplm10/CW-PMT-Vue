@@ -13,9 +13,13 @@
       
       <!-- Add the required attendanceId prop -->
       <add-task-modal :attendance-id="attendanceId" />
+      
+      <AddBreakModal />
 
 
       <daily-task />
+
+      <user-break-list />
 
       <missing-member />
       
@@ -31,9 +35,11 @@ import Clockin from './clockin/Clockin.vue';
 import TaskList from './tasks/TaskList.vue';
 import DailyTask from './tasks/DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
+import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
 import MemberLeave from './cards/MemberLeave.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
+import AddBreakModal from './modals/AddBreakModal.vue';
 import ButtonComponent from './ButtonComponent.vue';
 import InputField from './InputField.vue';
 import TextArea from './TextArea.vue';
@@ -56,7 +62,9 @@ export default {
     InputField,
     TextArea,
     Calendar,
-    ShowListing
+    ShowListing,
+    AddBreakModal,
+    UserBreakList
   },
   data() {
     return {

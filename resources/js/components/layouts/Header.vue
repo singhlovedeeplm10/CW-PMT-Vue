@@ -13,7 +13,7 @@
         <div class="logout-container">
           <img src="img/CWlogo.jpeg" alt="Profile Image" class="profile-image" />
           <div class="logout-dropdown">
-            <a href="javascript:void(0)" @click="logout">My Account / </a>
+            <a href="javascript:void(0)" @click="goToAccount">My Account</a>
             <a href="javascript:void(0)" @click="logout">Logout</a>
           </div>
         </div>
@@ -21,7 +21,6 @@
     </nav>
   </header>
 </template>
-
 
 <script>
 import { useRouter } from 'vue-router';
@@ -34,15 +33,31 @@ export default {
 
     const logout = async () => {
       try {
-        await axios.post('/api/logout'); // Calls the logout API
-        router.push('/'); // Redirects to the login page after logout
+        // Call the logout API endpoint
+        await axios.post('/api/logout', {}, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        // Remove token from local storage
+        localStorage.removeItem('authToken');
+
+        // Redirect to login page
+        router.push('/');
       } catch (error) {
         console.error('Logout failed:', error);
+        alert('An error occurred during logout.');
       }
+    };
+
+    const goToAccount = () => {
+      router.push('/account');
     };
 
     return {
       logout,
+      goToAccount,
     };
   },
 };

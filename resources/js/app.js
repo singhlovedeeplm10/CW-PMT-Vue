@@ -4,6 +4,9 @@ import './bootstrap';
 import { createApp } from 'vue';
 import router from './router';
 import 'vue3-toastify/dist/index.css'; // Import the CSS for Toastify
+import 'bootstrap/dist/js/bootstrap.bundle';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "bootstrap/dist/css/bootstrap.css";
 
 import MasterComponent from './components/layouts/Master.vue';
 

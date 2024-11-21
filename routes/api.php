@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // LOGIN API ROUTE
 // Route::post('/login', [LoginController::class, 'login']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
 // TASKS API ROUTE
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
@@ -59,9 +59,15 @@ Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::cl
 Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::class, 'clockIn']);
 Route::middleware('auth:sanctum')->post('/clock-out', [AttendanceController::class, 'clockOut']);
 Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::class, 'getWeeklyHours']);
+Route::middleware('auth:sanctum')->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
+
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/start-break', [BreakController::class, 'startBreak']);
+    Route::get('/ongoing-break', [BreakController::class, 'getOngoingBreak']);
+});
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);

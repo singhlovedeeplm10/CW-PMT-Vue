@@ -41,6 +41,9 @@ export default {
           // Store the token in local storage
           localStorage.setItem('authToken', response.data.token);
 
+          // Store the last login date in local storage
+          localStorage.setItem('lastLoginDate', response.data.lastLoginDate);
+
           // Redirect to the Dashboard
           this.$router.push({ name: 'Dashboard' });
         } else {
@@ -55,11 +58,12 @@ export default {
 </script>
 
 <style scoped>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f9;
 }
+
 .login-container {
   max-width: 400px;
   margin: 100px auto;
@@ -70,11 +74,6 @@ export default {
   border-radius: 12px;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-
-/* .login-container:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-} */
 
 .header {
   display: flex;
@@ -87,7 +86,6 @@ export default {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  /* border: 4px solid #007bff; */
   margin-bottom: 1rem;
 }
 

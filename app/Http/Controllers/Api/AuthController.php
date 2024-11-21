@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -17,25 +16,26 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-
+    
         // Check user credentials
         $user = User::where('email', $request->email)->first();
-
+    
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
         }
-
+    
         // Generate token
         $token = $user->createToken('authToken')->plainTextToken;
-
+    
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'token' => $token,
+            'lastLoginDate' => now()->toDateString(),
         ]);
     }
+    
 
-    // New method to get the authenticated user's data
     public function getUser(Request $request)
     {
         return response()->json([
@@ -43,6 +43,15 @@ class AuthController extends Controller
             'user' => $request->user()
         ]);
     }
-    
-}
 
+    public function logout(Request $request)
+    {
+        // Revoke the current user's token
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully',
+        ]);
+    }
+}

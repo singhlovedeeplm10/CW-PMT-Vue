@@ -10,9 +10,9 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th>Project Name</th>
-                                <th>Hours</th>
-                                <th>Task Description</th>
+                                <th style="width: 30%;">Project Name</th>
+                                <th style="width: 20%;">Hours</th>
+                                <th style="width: 50%;">Task Description</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -24,18 +24,21 @@
                                         inputType="text"
                                         :hasError="taskErrors[index]?.project_name"
                                         errorMessage="Project Name is required."
+                                        placeholder="Project Name"
                                         isRequired
+                                        inputClass="form-control-project-name"
                                     />
                                 </td>
                                 <td>
                                     <InputField
                                         v-model="task.hours"
                                         inputType="number"
-                                        inputClass="form-control-hours"
                                         :hasError="taskErrors[index]?.hours"
                                         errorMessage="Please enter a valid number for hours."
+                                        placeholder="Enter Hours"
                                         isRequired
                                         step="0.01"
+                                        inputClass="form-control-hours"
                                     />
                                 </td>
                                 <td>
@@ -45,7 +48,7 @@
                                         errorMessage="Task description is required."
                                         placeholder="Enter task description"
                                         isRequired
-                                        :rows="6"
+                                        :rows="8" 
                                         textareaClass="custom-textarea"
                                     />
                                 </td>
@@ -193,8 +196,6 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 .custom-modal-dialog {
     max-width: 1000px;
@@ -210,36 +211,31 @@ export default {
 .modal-footer-custom {
     background-color: #f2f2f2;
 }
+.form-control-project-name {
+    width: 100%; /* Width handled by table column */
+    padding: 10px;
+    border-radius: 8px;
+}
 .form-control-hours {
-    width: 100px;
-    font-size: 12px;
-    padding: 10px 12px;
+    width: 100%; /* Width handled by table column */
+    padding: 10px;
     border-radius: 8px;
+    text-align: center;
 }
-.form-control-description {
-    width: 100%;
-    height: 100px;
-    font-size: 12px;
-    padding: 12px 15px;
+.custom-textarea {
+    width: 80%; /* Width handled by table column */
+    height: 120px; /* Increased height */
+    padding: 12px;
     border-radius: 8px;
-}
-.form-control:hover, .form-control:focus {
-    box-shadow: 0 0 12px rgba(52, 152, 219, 0.5);
+    font-size: 14px;
 }
 .btn-close {
     background-color: white;
     opacity: 1;
 }
-.btn-secondary:hover {
-    transform: translateY(-3px);
-    background-color: #6c757d;
-}
 .btn-primary:hover {
     background-color: #2980b9;
     transform: translateY(-3px);
-}
-.modal-header-custom:hover {
-    background-color: #2980b9;
 }
 .modal-content {
     border-radius: 15px;
@@ -256,25 +252,4 @@ export default {
     color: #e3342f;
     font-size: 0.875em;
 }
-.btn:disabled, 
-.btn[disabled], 
-.btn:disabled:hover, 
-.btn[disabled]:hover {
-    cursor: not-allowed; /* Or no-drop for a different effect */
-    opacity: 0.7; /* Ensure visual feedback for disabled state */
-}
-
-.btn[disabled]:hover::after {
-    content: " ❌ Please fill in all fields"; /* Optional tooltip */
-    color: red;
-    font-size: 12px;
-    display: block; /* Make it visible */
-    margin-top: 5px;
-    cursor: not-allowed;
-}
-
-.form-control-hours {
-    width: 80px; /* Adjust this value as needed */
-}
-
 </style>
