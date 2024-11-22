@@ -60,14 +60,11 @@ Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::clas
 Route::middleware('auth:sanctum')->post('/clock-out', [AttendanceController::class, 'clockOut']);
 Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::class, 'getWeeklyHours']);
 Route::middleware('auth:sanctum')->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
-
+Route::middleware('auth:sanctum')->get('/productive-hours-today', [AttendanceController::class, 'getTodayProductiveHours']);
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/start-break', [BreakController::class, 'startBreak']);
-    Route::get('/ongoing-break', [BreakController::class, 'getOngoingBreak']);
-});
+Route::middleware('auth:sanctum')->post('/start-break', [BreakController::class, 'startBreak']);
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);

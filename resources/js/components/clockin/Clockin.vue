@@ -7,22 +7,23 @@
     </div>
 
     <div class="box box-2">
-      <h3 id="productive-hours" class="box-time">{{ formattedTime }}</h3>
+      <h3 id="productive-hours" class="box-time">{{ formattedProductiveHours }}</h3>
       <p>Today's Productive Hours</p>
       <i class="fas fa-chart-bar"></i>
     </div>
 
     <div class="box box-3">
-      <h3 class="box-time">00:00:00</h3>
+      <h3 class="box-time">{{ formattedBreakTime }}</h3>
       <p>Today's Total Break</p>
-      <!-- (Breaks Functionality) Add Break Button Logic -->
       <button
-        class="btn btn-warning"
-        @click="handleAddBreak"
+        class="btn"
+        :class="isOnBreak ? 'btn-danger' : 'btn-warning'"
+        @click="handleBreak"
       >
-        Add Break
+        {{ breakButtonText }}
       </button>
     </div>
+    <AddBreakModal :isOnBreak="isOnBreak" @breakStarted="startBreakTimer" />
 
     <div class="box clock-in-box">
       <ButtonComponent
@@ -44,7 +45,6 @@ import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import * as bootstrap from "bootstrap";
 
-
 export default {
   name: "ClockIn",
   components: {
@@ -58,6 +58,11 @@ export default {
     const pausedTime = ref(0);
     const dailyHours = ref(0);
     const weeklyHours = ref(0);
+    const productiveHoursToday = ref(0);
+    const isOnBreak = ref(false);
+    const breakTimer = ref(0);
+    const breakStartTime = ref(null);
+    let breakInterval = null;
 
     let interval = null;
 
@@ -68,6 +73,13 @@ export default {
       const hours = Math.floor(dailyHours.value / 3600);
       const minutes = Math.floor((dailyHours.value % 3600) / 60);
       const seconds = dailyHours.value % 60;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    });
+
+    const formattedProductiveHours = computed(() => {
+      const hours = Math.floor(productiveHoursToday.value / 3600);
+      const minutes = Math.floor((productiveHoursToday.value % 3600) / 60);
+      const seconds = productiveHoursToday.value % 60;
       return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     });
 
@@ -105,7 +117,6 @@ export default {
         );
 
         if (!isClockedIn.value) {
-          // Clock In
           clockInTime.value = Date.now();
           isClockedIn.value = true;
           localStorage.setItem("isClockedIn", "true");
@@ -114,7 +125,6 @@ export default {
           startTimer();
           toast.success("User Clocked In", { position: "top-right" });
         } else {
-          // Clock Out
           isClockedIn.value = false;
           pausedTime.value = timer.value;
           stopTimer();
@@ -142,24 +152,79 @@ export default {
       }
     };
 
-    // (Breaks Functionality)
+    const fetchTodayProductiveHours = async () => {
+      try {
+        const response = await axios.get("/api/productive-hours-today", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+        });
+        productiveHoursToday.value = response.data.productive_hours;
+      } catch (error) {
+        console.error("Error fetching productive hours:", error);
+        toast.error("Failed to fetch today's productive hours", { position: "top-right" });
+      }
+    };
+
     const handleAddBreak = () => {
       if (isClockedIn.value) {
-        // Open modal to add a break
         const modal = new bootstrap.Modal(document.getElementById("addbreakmodal"));
         modal.show();
       } else {
-        // Show toast if user is not clocked in
         toast.error("Please clock in first to add the break", { position: "top-right" });
       }
     };
 
+    const breakButtonText = computed(() => (isOnBreak.value ? "End Break" : "Add Break"));
+    const formattedBreakTime = computed(() => {
+      const hours = Math.floor(breakTimer.value / 3600);
+      const minutes = Math.floor((breakTimer.value % 3600) / 60);
+      const seconds = breakTimer.value % 60;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    });
+
+    const startBreakTimer = () => {
+      isOnBreak.value = true;
+      breakStartTime.value = Date.now();
+      localStorage.setItem("isOnBreak", "true");
+      localStorage.setItem("breakStartTime", breakStartTime.value);
+
+      breakInterval = setInterval(() => {
+        breakTimer.value = Math.floor((Date.now() - breakStartTime.value) / 1000);
+      }, 1000);
+    };
+
+    const endBreakTimer = () => {
+      clearInterval(breakInterval);
+      breakInterval = null;
+      isOnBreak.value = false;
+      localStorage.removeItem("isOnBreak");
+      localStorage.removeItem("breakStartTime");
+      toast.info("Break ended successfully.", { position: "top-right" });
+    };
+
+    const handleBreak = () => {
+      if (!isClockedIn.value) {
+        toast.error("Please clock in first to add the break", { position: "top-right" });
+        return;
+      }
+
+      if (isOnBreak.value) {
+        endBreakTimer();
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById("addbreakmodal"));
+        modal.show();
+      }
+    };
+
+
     onMounted(() => {
       fetchWeeklyHours();
+      fetchTodayProductiveHours();
 
       const storedClockInTime = localStorage.getItem("clockInTime");
       const storedClockIn = localStorage.getItem("isClockedIn") === "true";
       const storedPausedTime = parseInt(localStorage.getItem("pausedTime"), 10) || 0;
+      const storedIsOnBreak = localStorage.getItem("isOnBreak") === "true";
+      const storedBreakStartTime = parseInt(localStorage.getItem("breakStartTime"), 10);
 
       pausedTime.value = storedPausedTime;
 
@@ -170,6 +235,11 @@ export default {
       } else {
         dailyHours.value = pausedTime.value;
       }
+      if (storedIsOnBreak && storedBreakStartTime) {
+        isOnBreak.value = true;
+        breakStartTime.value = storedBreakStartTime;
+        startBreakTimer();
+      }
     });
 
     return {
@@ -178,11 +248,16 @@ export default {
       handleClockInOut,
       formattedTime,
       formattedWeeklyTime,
-      handleAddBreak, // (Breaks Functionality) Export Add Break logic
+      formattedProductiveHours,
+      handleAddBreak,
+      isOnBreak,
+      breakButtonText,
+      formattedBreakTime,
+      handleBreak,
+      startBreakTimer,
     };
   },
 };
 </script>
-
 
 <style src="../resources/css/home.css"></style>

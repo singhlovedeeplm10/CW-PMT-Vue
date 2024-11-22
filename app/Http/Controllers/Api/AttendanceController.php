@@ -11,39 +11,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken;
-// use Carbon\Carbon;
 use Illuminate\Support\Carbon;
 
 
 class AttendanceController extends Controller
 {
-    public function storeAttendance(Request $request)
-    {
-        // Validate request data
-        $validator = Validator::make($request->all(), [
-            'clockin_time' => 'required|date',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 400);
-        }
-
-        // Store attendance data
-        $attendance = Attendance::create([
-            'user_id' => Auth::id(),  // Assuming the user is authenticated
-            'clockin_time' => Carbon::parse($request->clockin_time),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Attendance clock-in recorded successfully',
-            'data' => $attendance,
-        ], 201);
-    }
-
     public function clockIn(Request $request)
     {
         $user = Auth::user();
@@ -134,6 +106,17 @@ class AttendanceController extends Controller
                                     ->exists();
     
         return response()->json(['clocked_in' => $clockedInToday]);
+    }
+    
+    public function getTodayProductiveHours()
+    {
+        $user = Auth::user();
+        $today = now()->startOfDay();
+        $productiveHours = Attendance::where('user_id', $user->id)
+            ->whereDate('clockin_time', $today)
+            ->sum('productive_hours'); // Assuming productive_hours is stored in seconds
+
+        return response()->json(['productive_hours' => $productiveHours]);
     }
     
 }

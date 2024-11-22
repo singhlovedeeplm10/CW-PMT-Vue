@@ -14,30 +14,32 @@ class BreakController extends Controller
 {
     public function startBreak(Request $request)
     {
-        $request->validate([
+        // Validate the incoming request
+        $validatedData = $request->validate([
             'reason' => 'required|string|max:255',
         ]);
 
-        $user = auth()->user();
+        $user = Auth::user();
 
-        // Check if a break is already in progress for the user
-        $ongoingBreak = Breaks::where('user_id', $user->id)
-            ->whereNull('end_time')
-            ->first();
+        // Check if the user is authenticated
+        if (!$user) {
+            return response()->json(['error' => 'User is not authenticated.'], 401);
+        }
 
-        if ($ongoingBreak) {
-            return response()->json([
-                'message' => 'You already have an ongoing break.',
-                'break' => $ongoingBreak,
-            ], 400);
+        // Retrieve the latest attendance for the user
+        $attendance = $user->attendances()->latest()->first();
+
+        // Ensure the user has an active attendance record
+        if (!$attendance) {
+            return response()->json(['error' => 'No active attendance found.'], 400);
         }
 
         // Create a new break entry
         $break = Breaks::create([
             'user_id' => $user->id,
-            'attendance_id' => $request->attendance_id,
-            'start_time' => Carbon::now(),
-            'reason' => $request->reason,
+            'attendance_id' => $attendance->id,
+            'start_time' => now(),
+            'reason' => $validatedData['reason'],
         ]);
 
         return response()->json([
@@ -46,22 +48,29 @@ class BreakController extends Controller
         ], 201);
     }
 
-    public function getOngoingBreak()
+    public function endBreak(Request $request)
     {
-        $user = auth()->user();
+        $validated = $request->validate([
+            'break_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date',
+        ]);
 
-        // Get ongoing break
-        $ongoingBreak = Breaks::where('user_id', $user->id)
+        $break = Breaks::where('user_id', Auth::id())
             ->whereNull('end_time')
+            ->latest()
             ->first();
 
-        if (!$ongoingBreak) {
-            return response()->json(['message' => 'No ongoing break found.'], 404);
+        if ($break) {
+            $break->update([
+                'end_time' => $validated['end_time'],
+                'break_time' => $validated['break_time'],
+            ]);
         }
 
         return response()->json([
-            'message' => 'Ongoing break retrieved successfully.',
-            'break' => $ongoingBreak,
+            'message' => 'Break ended successfully',
+            'data' => $break
         ]);
     }
+
 }
