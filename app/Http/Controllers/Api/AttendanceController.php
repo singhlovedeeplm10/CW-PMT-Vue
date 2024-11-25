@@ -111,12 +111,31 @@ class AttendanceController extends Controller
     public function getTodayProductiveHours()
     {
         $user = Auth::user();
-        $today = now()->startOfDay();
-        $productiveHours = Attendance::where('user_id', $user->id)
-            ->whereDate('clockin_time', $today)
-            ->sum('productive_hours'); // Assuming productive_hours is stored in seconds
-
-        return response()->json(['productive_hours' => $productiveHours]);
+        $todayStart = now()->startOfDay();
+        $todayEnd = now()->endOfDay();
+    
+        try {
+            $productiveHoursInSeconds = Attendance::where('user_id', $user->id)
+                ->whereBetween('clockin_time', [$todayStart, $todayEnd])
+                ->get()
+                ->sum(function ($attendance) {
+                    // Check if productive_hours is not null
+                    if ($attendance->productive_hours) {
+                        $time = explode(':', $attendance->productive_hours);
+                        return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
+                    }
+                    return 0; // Return 0 if productive_hours is null
+                });
+    
+            return response()->json([
+                'productive_hours' => $productiveHoursInSeconds, // Return total seconds
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch today\'s productive hours. Please try again later.',
+            ], 500);
+        }
     }
+    
     
 }

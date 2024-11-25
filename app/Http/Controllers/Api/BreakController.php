@@ -50,27 +50,34 @@ class BreakController extends Controller
 
     public function endBreak(Request $request)
     {
-        $validated = $request->validate([
-            'break_time' => 'required|date_format:H:i:s',
-            'end_time' => 'required|date',
-        ]);
-
-        $break = Breaks::where('user_id', Auth::id())
-            ->whereNull('end_time')
-            ->latest()
-            ->first();
-
-        if ($break) {
-            $break->update([
-                'end_time' => $validated['end_time'],
-                'break_time' => $validated['break_time'],
-            ]);
+        // Ensure the user is authenticated
+        $user = auth()->user();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized.'], 401);
         }
-
-        return response()->json([
-            'message' => 'Break ended successfully',
-            'data' => $break
+    
+        // Validate the input
+        $request->validate([
+            'break_time' => 'required|integer|min:1', // Ensure break_time is validated
         ]);
+    
+        // Retrieve the latest break for the user
+        $break = $user->breaks()->latest()->first();
+    
+        if (!$break) {
+            return response()->json(['error' => 'No active break found.'], 404);
+        }
+    
+        // Convert break_time from seconds to HH:MM:SS format
+        $breakTime = gmdate('H:i:s', $request->input('break_time'));
+    
+        // Update the break with end time and break_time
+        $break->update([
+            'end_time' => now(),
+            'break_time' => $breakTime, // Save break_time in HH:MM:SS format
+        ]);
+    
+        return response()->json(['message' => 'Break ended successfully.'], 200);
     }
-
 }

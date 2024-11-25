@@ -57,4 +57,8 @@ public function attendances()
 {
     return $this->hasMany(Attendance::class);
 }
+public function breaks()
+    {
+        return $this->hasMany(Breaks::class, 'user_id');
+    }
 }

@@ -65,6 +65,8 @@ Route::middleware('auth:sanctum')->get('/productive-hours-today', [AttendanceCon
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
 Route::middleware('auth:sanctum')->post('/start-break', [BreakController::class, 'startBreak']);
+Route::middleware('auth:sanctum')->post('/end-break', [BreakController::class, 'endBreak']);
+
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
