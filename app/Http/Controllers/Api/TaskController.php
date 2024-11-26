@@ -16,32 +16,31 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         $attendance = Attendance::where('user_id', $user->id)->whereNotNull('clockin_time')->first();
-
+    
         if (!$attendance) {
             return response()->json(['message' => 'User not clocked in.'], 403);
         }
-
-        $tasks = $request->input('tasks');
-
+    
         $request->validate([
-            'tasks.*.project_name' => 'required|string|max:255',
+            'tasks.*.project_id' => 'required|exists:projects,id',
             'tasks.*.hours' => 'required|numeric|min:0',
             'tasks.*.task_description' => 'required|string',
         ]);
-
-        foreach ($tasks as $task) {
+    
+        foreach ($request->input('tasks') as $task) {
             DailyTask::create([
                 'user_id' => $user->id,
                 'attendance_id' => $attendance->id,
-                'project_name' => $task['project_name'],
+                'project_id' => $task['project_id'],
                 'hours' => $task['hours'],
                 'task_description' => $task['task_description'],
                 'task_status' => 'pending',
             ]);
         }
-
+    
         return response()->json(['message' => 'Tasks saved successfully.'], 200);
     }
+    
     
     public function showTasks()
     {
@@ -50,11 +49,9 @@ class TaskController extends Controller
     }
 
     public function fetchProjects()
-{
-    $user = Auth::user();
-    $projects = Project::where('user_id', $user->id)->get();
-
-    return response()->json(['projects' => $projects]);
-}
+    {
+        $projects = Project::all(['id', 'name']); // Adjust fields as needed
+        return response()->json(['projects' => $projects]);
+    }
 
 }

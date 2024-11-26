@@ -168,8 +168,6 @@ export default {
       }
     };
 
-    
-
     // Fetch the total productive hours for today from the API
     const fetchTodayProductiveHours = async () => {
       try {

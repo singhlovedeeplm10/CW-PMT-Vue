@@ -19,15 +19,19 @@
                         <tbody>
                             <tr v-for="(task, index) in tasks" :key="index">
                                 <td>
-                                    <InputField
-                                        v-model="task.project_name"
-                                        inputType="text"
-                                        :hasError="taskErrors[index]?.project_name"
-                                        errorMessage="Project Name is required."
-                                        placeholder="Project Name"
-                                        isRequired
-                                        inputClass="form-control-project-name"
-                                    />
+                                    <select
+                                        v-model="task.project_id"
+                                        class="form-select"
+                                        :class="{'is-invalid': taskErrors[index]?.project_id}"
+                                    >
+                                        <option value="" disabled>Select Project</option>
+                                        <option v-for="project in projects" :key="project.id" :value="project.id">
+                                            {{ project.name }}
+                                        </option>
+                                    </select>
+                                    <div v-if="taskErrors[index]?.project_id" class="invalid-feedback">
+                                        Please select a project.
+                                    </div>
                                 </td>
                                 <td>
                                     <InputField
@@ -48,7 +52,7 @@
                                         errorMessage="Task description is required."
                                         placeholder="Enter task description"
                                         isRequired
-                                        :rows="8" 
+                                        :rows="8"
                                         textareaClass="custom-textarea"
                                     />
                                 </td>
@@ -84,7 +88,7 @@ import InputField from '@/components/InputField.vue';
 import TextArea from '@/components/TextArea.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
 
 export default {
@@ -102,19 +106,30 @@ export default {
     },
     emits: ['taskAdded'],
     setup(_, { emit }) {
-        const tasks = ref([{ project_name: '', hours: '', task_description: '' }]);
-        const taskErrors = ref([{ project_name: false, hours: false, task_description: false }]);
-        const isSaving = ref(false); // Tracks saving state
+        const tasks = ref([{ project_id: '', hours: '', task_description: '' }]);
+        const taskErrors = ref([{ project_id: false, hours: false, task_description: false }]);
+        const projects = ref([]);
+        const isSaving = ref(false);
 
         const allFieldsFilled = computed(() => {
             return tasks.value.length > 0 && tasks.value.every(task => 
-                task.project_name && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description
+                task.project_id && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description
             );
         });
 
+        const fetchProjects = async () => {
+            try {
+                const response = await axios.get('/api/projects');
+                projects.value = response.data.projects;
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+                toast.error('Error loading projects.');
+            }
+        };
+
         const addTaskRow = () => {
-            tasks.value.push({ project_name: '', hours: '', task_description: '' });
-            taskErrors.value.push({ project_name: false, hours: false, task_description: false });
+            tasks.value.push({ project_id: '', hours: '', task_description: '' });
+            taskErrors.value.push({ project_id: false, hours: false, task_description: false });
         };
 
         const removeTaskRow = (index) => {
@@ -127,9 +142,9 @@ export default {
                 toast.error("Please fill all the fields.");
                 return;
             }
-            isSaving.value = true; // Disable button while saving
+            isSaving.value = true;
             await saveTask();
-            isSaving.value = false; // Re-enable after saving
+            isSaving.value = false;
         };
 
         const saveTask = async () => {
@@ -144,17 +159,15 @@ export default {
             }
 
             try {
-                await axios.get('/sanctum/csrf-cookie');
                 const response = await axios.post('/api/tasks', { tasks: tasks.value }, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-
                 if (response.status === 200) {
                     toast.success('Tasks saved successfully!');
-                    emit('taskAdded'); // Emit event to notify parent component
-                    closeModal(); // Close modal on success
+                    emit('taskAdded');
+                    closeModal();
                 } else {
                     toast.error('Unexpected response. Please try again.');
                 }
@@ -165,8 +178,8 @@ export default {
         };
 
         const closeModal = () => {
-            tasks.value = [{ project_name: '', hours: '', task_description: '' }];
-            taskErrors.value = [{ project_name: false, hours: false, task_description: false }];
+            tasks.value = [{ project_id: '', hours: '', task_description: '' }];
+            taskErrors.value = [{ project_id: false, hours: false, task_description: false }];
             const modalElement = document.getElementById('addtaskmodal');
             const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
             modalInstance.hide();
@@ -174,16 +187,19 @@ export default {
 
         const validateTask = (task, index) => {
             taskErrors.value[index] = {
-                project_name: !task.project_name,
+                project_id: !task.project_id,
                 hours: !task.hours || isNaN(task.hours) || task.hours <= 0,
                 task_description: !task.task_description
             };
-            return !taskErrors.value[index].project_name && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
+            return !taskErrors.value[index].project_id && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
         };
+
+        onMounted(fetchProjects);
 
         return {
             tasks,
             taskErrors,
+            projects,
             allFieldsFilled,
             isSaving,
             addTaskRow,
@@ -195,6 +211,7 @@ export default {
     }
 };
 </script>
+
 
 <style scoped>
 .custom-modal-dialog {

@@ -18,7 +18,7 @@
         <router-link to="/projects" class="sidebar-link">Projects</router-link>
       </li>
       <li class="sidebar-item">
-        <router-link to="" class="sidebar-link">Leaves</router-link>
+        <router-link to="/leaves" class="sidebar-link">Leaves</router-link>
       </li>
       <li class="sidebar-item">
         <router-link to="/listing" class="sidebar-link">Listing</router-link>

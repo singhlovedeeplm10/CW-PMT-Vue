@@ -31,12 +31,12 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
 Route::get('/tasks', [TaskController::class, 'showTasks']);
-Route::get('/projects', function () {
-    return \App\Models\Project::where('user_id', auth()->id())->get();
-});
+Route::get('/projects', [TaskController::class, 'fetchProjects']);
+
 
 // LEAVES API ROUTE
-Route::middleware('auth:sanctum')->post('/leaves', [LeaveController::class, 'addLeave']);
+Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
+
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
@@ -70,5 +70,3 @@ Route::middleware('auth:sanctum')->post('/end-break', [BreakController::class, '
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-
-Route::post('/apply-leave', [LeaveController::class, 'store'])->name('apply.leave');

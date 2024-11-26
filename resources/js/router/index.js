@@ -8,6 +8,8 @@ import Users from '../components/Users.vue';
 // import Dashboard from '../components/ui/dashboard/Dashboard.vue'; 
 import Dashboard from '../components/Dashboard.vue'; 
 import Tasks from '../components/Tasks.vue'; 
+import Leaves from '../components/Leaves.vue'; 
+
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -15,7 +17,8 @@ const routes = [
   { path: '/listing', name: 'Listings', component: Listings },
   { path: '/users', name: 'Users', component: Users },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
-  { path: '/task', name: 'Tasks', component: Tasks } 
+  { path: '/task', name: 'Tasks', component: Tasks },
+  { path: '/leaves', name: 'Leaves', component: Leaves } 
 ];
 
 const router = createRouter({

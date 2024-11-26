@@ -25,6 +25,8 @@
       
       <break-entries />
       
+      <apply-leave-modal/>
+      
     </div>
   </master-component>
 </template>
@@ -40,6 +42,7 @@ import MissingMember from './cards/MissingMember.vue';
 import MemberLeave from './cards/MemberLeave.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import AddBreakModal from './modals/AddBreakModal.vue';
+import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
 import ButtonComponent from './ButtonComponent.vue';
 import InputField from './InputField.vue';
 import TextArea from './TextArea.vue';
@@ -64,7 +67,8 @@ export default {
     Calendar,
     ShowListing,
     AddBreakModal,
-    UserBreakList
+    UserBreakList,
+    ApplyLeaveModal
   },
   data() {
     return {

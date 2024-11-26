@@ -14,7 +14,7 @@ class DailyTask extends Model
     protected $fillable = [
         'user_id',
         'attendance_id',
-        'project_name',
+        'project_id',
         'hours',
         'task_description',
         'task_status',
@@ -28,5 +28,10 @@ class DailyTask extends Model
     public function attendance()
     {
         return $this->belongsTo(Attendance::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

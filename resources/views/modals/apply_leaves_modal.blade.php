@@ -51,7 +51,7 @@
             </div>
         </div>
     </div>
-  </div>
+</div>
   
   {{-- <script>
   document.getElementById('leaveForm').addEventListener('submit', function (e) {

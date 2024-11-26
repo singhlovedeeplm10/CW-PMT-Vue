@@ -41,21 +41,38 @@ class AttendanceController extends Controller
     {
         try {
             $userId = auth()->id();
-            $attendance = Attendance::where('user_id', $userId)->whereNull('clockout_time')->first();
+    
+            // Check if the user has an active clock-in record
+            $attendance = Attendance::where('user_id', $userId)
+                ->whereNull('clockout_time')
+                ->first();
     
             if (!$attendance) {
                 return response()->json(['message' => 'No active clock-in record found.'], 400);
             }
     
+            // Calculate total task hours for the day
+            $totalTaskHours = DB::table('daily_tasks')
+                ->where('user_id', $userId)
+                ->whereDate('created_at', today()) // Ensure we only check for today's tasks
+                ->sum('hours');
+    
+            // Check if total task hours are exactly 8
+            if ($totalTaskHours != 8) {
+                return response()->json(['message' => 'You must complete exactly 8 hours of work before clocking out.'], 400);
+            }
+    
+            // Proceed with clocking out if task hours are 8
             $clockOutTime = now();
             $productiveHours = $clockOutTime->diff($attendance->clockin_time)->format('%H:%I:%S');
     
+            // Update the attendance record
             $attendance->update([
                 'clockout_time' => $clockOutTime,
                 'productive_hours' => $productiveHours,
             ]);
     
-            // Optionally calculate weekly hours
+            // Calculate total weekly hours
             $weeklyHours = Attendance::where('user_id', $userId)
                 ->whereBetween('clockin_time', [now()->startOfWeek(), now()->endOfWeek()])
                 ->sum(DB::raw("TIME_TO_SEC(productive_hours)"));
