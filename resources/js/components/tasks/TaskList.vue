@@ -1,3 +1,4 @@
+
 <template>
   <div class="task-card">
     <div class="task-card-header">
@@ -65,16 +66,14 @@ import axios from "axios";
 import AddTaskModal from "@/components/modals/AddTaskModal.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-
-// Explicitly import Bootstrap JS
-import * as bootstrap from "bootstrap";
+import * as bootstrap from "bootstrap"; // Explicitly import Bootstrap JS
 
 export default {
   name: "TaskList",
   components: { AddTaskModal },
   data() {
     return {
-      tasks: [] // Array to store fetched tasks
+      tasks: [], // Array to store fetched tasks
     };
   },
   mounted() {
@@ -91,23 +90,19 @@ export default {
     },
     async checkClockInStatus() {
       try {
-        // Retrieve the ClockinToken from localStorage
-        const clockinToken = localStorage.getItem("ClockinToken");
-
-        if (!clockinToken) {
-          toast.warning("You need to clock in to add tasks!", {
-            position: "top-right",
-          });
-          return;
+        // Send a request to the server to verify clock-in status
+        const response = await axios.get(
+        "/api/check-clock-in-status", 
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         }
+      );
 
-        // Validate the token by making an API call
-        const response = await axios.get("/api/check-clock-in-status", {
-          headers: { Authorization: `Bearer ${clockinToken}` },
-        });
-
+        // Check the server's response
         if (response.data.clocked_in) {
-          // If the user is clocked in, open the modal
+          // If clocked in, show the modal
           const modalElement = document.getElementById("addtaskmodal");
           if (modalElement) {
             const modalInstance = new bootstrap.Modal(modalElement);
@@ -121,17 +116,16 @@ export default {
           });
         }
       } catch (error) {
-        console.error("Error checking clock-in status:", error);
-        toast.error("An error occurred. Please try again later.", {
-          position: "top-right",
-        });
+        // console.error("Error checking clock-in status:", error.response?.data || error.message);
+        toast.warning(
+          error.response?.data?.message || "You need to clock in to add tasks!",
+          { position: "top-right" }
+        );
       }
     },
   },
 };
 </script>
-
-
 
   <style scoped>
   .task-card {

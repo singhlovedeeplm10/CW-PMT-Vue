@@ -24,7 +24,6 @@ class Leave extends Model
         'end_time',
         'reason',
         'status',
-        'last_updated_by',
         'contact_during_leave',
     ];
     

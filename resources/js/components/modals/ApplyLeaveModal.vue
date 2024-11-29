@@ -12,7 +12,7 @@
                             <label for="leaveType" class="form-label">Type</label>
                             <select id="leaveType" class="form-select" v-model="form.type_of_leave" @change="handleLeaveTypeChange" required>
                                 <option value="">Select Leave Type</option>
-                                <option value="Full Day">Full Day Leave</option>
+                                <option value="Full Day Leave">Full Day Leave</option>
                                 <option value="Half Day">Half Day Leave</option>
                                 <option value="Short Leave">Short Leave</option>
                             </select>
@@ -30,11 +30,7 @@
                         <div v-if="form.type_of_leave === 'Half Day'" class="row mb-3">
                             <div class="col">
                                 <label for="startDateHalfDay" class="form-label">Start Date</label>
-                                <input type="date" id="startDateHalfDay" class="form-control" v-model="form.from_date" required />
-                            </div>
-                            <div class="col">
-                                <label for="endDateHalfDay" class="form-label">End Date</label>
-                                <input type="date" id="endDateHalfDay" class="form-control" v-model="form.to_date" required />
+                                <input type="date" id="startDateHalfDay" class="form-control" v-model="form.start_date" required />
                             </div>
                         </div>
                         <div v-if="form.type_of_leave === 'Half Day'" class="row mb-3">
@@ -52,11 +48,7 @@
                         <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
                             <div class="col">
                                 <label for="startDateShort" class="form-label">Start Date</label>
-                                <input type="date" id="startDateShort" class="form-control" v-model="form.from_date" required />
-                            </div>
-                            <div class="col">
-                                <label for="endDateShort" class="form-label">End Date</label>
-                                <input type="date" id="endDateShort" class="form-control" v-model="form.to_date" required />
+                                <input type="date" id="startDateShort" class="form-control" v-model="form.start_date" required />
                             </div>
                         </div>
                         <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
@@ -71,14 +63,14 @@
                         </div>
 
                         <!-- Dynamic Fields for Full Day -->
-                        <div class="row mb-3" v-if="form.type_of_leave === 'Full Day'">
+                        <div class="row mb-3" v-if="form.type_of_leave === 'Full Day Leave'">
                             <div class="col">
                                 <label for="fromDate" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="fromDate" v-model="form.from_date" required />
+                                <input type="date" class="form-control" id="fromDate" v-model="form.start_date" required />
                             </div>
                             <div class="col">
                                 <label for="toDate" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="toDate" v-model="form.to_date" required />
+                                <input type="date" class="form-control" id="toDate" v-model="form.end_date" required />
                             </div>
                         </div>
 
@@ -110,8 +102,8 @@ export default {
         return {
             form: {
                 type_of_leave: "",
-                from_date: "",
-                to_date: "",
+                start_date: "",
+                end_date: "",
                 half_day: "",
                 start_time: "",
                 end_time: "",
@@ -126,37 +118,34 @@ export default {
             this.form.half_day = "";
             this.form.start_time = "";
             this.form.end_time = "";
-            this.form.from_date = "";
-            this.form.to_date = "";
+            this.form.start_date = "";
+            this.form.end_date = "";
         },
         async validateAndSubmit() {
     try {
         console.log("Submitting form data:", this.form);
-        const response = await axios.post(
-            "/api/apply-leave",
-            this.form,
-            {
-                headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-            }
-        );
+        const response = await axios.post('/api/apply-leave', this.form, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            },
+        });
         console.log("Response:", response.data);
         alert(response.data.message);
         this.resetForm();
     } catch (error) {
-        console.error("Error submitting form:", error);
+        console.error("Error submitting form:", error.response?.data || error.message);
         alert(
-            error.response?.data?.message ||
-                "An error occurred while applying for leave."
+            error.response?.data?.error ||
+            "An error occurred while applying for leave."
         );
     }
 },
+
         resetForm() {
             this.form = {
                 type_of_leave: "",
-                from_date: "",
-                to_date: "",
+                start_date: "",
+                end_date: "",
                 half_day: "",
                 start_time: "",
                 end_time: "",

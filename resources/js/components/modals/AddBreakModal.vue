@@ -60,58 +60,52 @@
     },
     emits: ["breakStarted"],
     setup(_, { emit }) {
-      const breakReason = ref("");
-  
-      const startBreak = async () => {
-        if (!breakReason.value.trim()) {
-          toast.error("Break reason is required.", { position: "top-right" });
-          return;
-        }
-  
-        try {
-          const response = await axios.post(
-            "/api/start-break",
-            {
-              reason: breakReason.value,
+    const breakReason = ref("");
+
+    const startBreak = async () => {
+      if (!breakReason.value.trim()) {
+        toast.error("Break reason is required.", { position: "top-right" });
+        return;
+      }
+
+      try {
+        const response = await axios.post(
+          "/api/start-break",
+          {
+            reason: breakReason.value,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            }
+          }
+        );
+
+        if (response.status === 201) {
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("addbreakmodal")
           );
-  
-          if (response.status === 201) {
-            const modal = bootstrap.Modal.getInstance(
-              document.getElementById("addbreakmodal")
-            );
-            modal.hide();
-            toast.success("Break started successfully.", {
-              position: "top-right",
-            });
-            emit("breakStarted");
-          }
-        } catch (error) {
-          if (error.response && error.response.status === 401) {
-            toast.error("Unauthorized: Please log in again.", {
-              position: "top-right",
-            });
-          } else {
-            toast.error("Failed to start break. Please try again.", {
-              position: "top-right",
-            });
-          }
+          modal.hide();
+          toast.success("Break started successfully.", {
+            position: "top-right",
+          });
+
+          emit("breakStarted", { reason: breakReason.value, startTime: Date.now() });
         }
-      };
-  
-      return {
-        breakReason,
-        startBreak,
-      };
-    },
-  };
-  </script>
-  
+      } catch (error) {
+        toast.error("Failed to start break. Please try again.", {
+          position: "top-right",
+        });
+      }
+    };
+
+    return {
+      breakReason,
+      startBreak,
+    };
+  },
+};
+</script>
   
   <style scoped>
   .add-break-modal {
