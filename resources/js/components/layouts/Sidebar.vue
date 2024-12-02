@@ -18,12 +18,22 @@
         <router-link to="/projects" class="sidebar-link">Projects</router-link>
       </li>
       <li class="sidebar-item">
-        <router-link to="/leaves" class="sidebar-link">Leaves</router-link>
-      </li>
-      <li class="sidebar-item">
         <router-link to="/listing" class="sidebar-link">Listing</router-link>
       </li>
-      <li class="sidebar-item" @click="toggleDropdown">
+      <li class="sidebar-item" @click="toggleDropdownLeaves">
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">Leaves</h3>
+        </div>
+        <ul v-show="dropdownOpen" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/leaves" class="sidebar-link">My Leaves</router-link>
+          </li>
+          <li v-if="!isUserRole" class="sidebar-subitem">
+            <router-link to="/teamleaves" class="sidebar-link">My Team Leaves</router-link>
+          </li>
+        </ul>
+      </li>
+      <!-- <li class="sidebar-item" @click="toggleDropdown">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Permissions</h3>
         </div>
@@ -35,7 +45,7 @@
             <router-link to="" class="sidebar-link">Add Permissions</router-link>
           </li>
         </ul>
-      </li>
+      </li> -->
     </ul>
   </aside>
 </template>
@@ -47,22 +57,35 @@ export default {
   name: 'SidebarComponent',
   data() {
     return {
-      dropdownOpen: false, // Tracks dropdown state
-      userName: 'Guest', // Default name
+      dropdownOpen: false,
+      userName: 'Guest',
+      isUserRole: false, // Tracks if the user has "User" role
     };
   },
   methods: {
     toggleDropdown() {
       this.dropdownOpen = !this.dropdownOpen;
     },
+    toggleDropdownLeaves() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
     async fetchUserData() {
       try {
-        const response = await axios.get('/api/username', {
+        // Fetch username
+        const userResponse = await axios.get('/api/username', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
         });
-        this.userName = response.data.user.name;
+        this.userName = userResponse.data.user.name;
+
+        // Fetch user role
+        const roleResponse = await axios.get('/api/user-role', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        this.isUserRole = roleResponse.data.role === 'User';
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -73,6 +96,7 @@ export default {
   },
 };
 </script>
+
 
 
 <style scoped>

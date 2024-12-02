@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
     ];
 
     /**
@@ -60,5 +61,10 @@ public function attendances()
 public function breaks()
     {
         return $this->hasMany(Breaks::class, 'user_id');
+    }
+    
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

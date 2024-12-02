@@ -26,7 +26,7 @@ class LeaveController extends Controller
             'reason' => 'required|string',
             'contact_during_leave' => 'required|string|max:15',
         ]);
-
+    
         try {
             // Save leave data in the database
             $leave = Leave::create([
@@ -40,16 +40,18 @@ class LeaveController extends Controller
                 'reason' => $validatedData['reason'],
                 'contact_during_leave' => $validatedData['contact_during_leave'],
                 'status' => 'pending', // Default status
+                'last_updated_by' => Auth::user()->name, // Storing the name of the user who created the leave
             ]);
-
+    
             // Respond with success
             return response()->json(['message' => 'Leave application submitted successfully!'], 201);
-
+    
         } catch (\Exception $e) {
             // Handle error and return response
             return response()->json(['error' => 'Failed to submit leave application.'], 500);
         }
     }
+    
 
     public function showLeaves(Request $request)
     {
@@ -95,7 +97,7 @@ $reasonIcons = [
 $icon = $reasonIcons[$leave->reason] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
 
 // Format the Type field with the icon
-$typeFormatted = $icon . ' ' . $leave->type_of_leave . ' ' . $leave->reason . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
+$typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
 
 // Format the week of the day (e.g., "Monday to Friday")
 $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l'); // Day of the week for start_date
@@ -156,5 +158,191 @@ if ($leave->start_time && $leave->end_time) {
 
         return '';
     }
+    public function update(Request $request, Leave $leave)
+    {
+        try {
+            // Validate the request data
+            $validatedData = $request->validate([
+                'type_of_leave' => 'required|in:Short Leave,Half Day,Full Day Leave',
+                'half' => 'nullable|required_if:type_of_leave,Half Day|in:First Half,Second Half',
+                'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day,Full Day Leave|date',
+                'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+                'start_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i',
+                'end_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i|after:start_time',
+                'reason' => 'required|string',
+                'contact_during_leave' => 'required|string|max:15',
+            ]);
+    
+            // Update the leave record
+            $leave->update([
+                'type_of_leave' => $validatedData['type_of_leave'],
+                'half' => $validatedData['half'] ?? null,
+                'start_date' => $validatedData['start_date'] ?? null,
+                'end_date' => $validatedData['end_date'] ?? null,
+                'start_time' => $validatedData['start_time'] ?? null,
+                'end_time' => $validatedData['end_time'] ?? null,
+                'reason' => $validatedData['reason'],
+                'contact_during_leave' => $validatedData['contact_during_leave'],
+                'status' => 'pending', // You can leave the status as is or modify it
+                'last_updated_by' => Auth::user()->name, // Update the name of the user who updated the leave
+            ]);
+    
+            // Respond with success
+            return response()->json(['message' => 'Leave application updated successfully!', 'leave' => $leave], 200);
+    
+        } catch (\Exception $e) {
+            // Log the error and return a response
+            \Log::error('Error updating leave: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update leave application.'], 500);
+        }
+    }
+    
 
+public function search(Request $request)
+{
+    $searchTerm = $request->input('query', '');
+    $users = User::where('name', 'LIKE', "$searchTerm%")
+                ->get(['id', 'name']); // Adjust the fields as needed
+
+    return response()->json($users);
+}
+
+public function teamLeave(Request $request)
+    {
+        // Validate the incoming request data
+        $validator = Validator::make($request->all(), [
+            'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
+            'half' => 'nullable|in:First Half,Second Half',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'reason' => 'required|string',
+            'contact_during_leave' => 'required|string|max:15',
+            'selected_user' => 'required|exists:users,id', // Make sure the selected user exists in the 'users' table
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        // Create the leave record
+        $leave = Leave::create([
+            'user_id' => $request->selected_user, // Store the selected user's ID
+            'type_of_leave' => $request->type_of_leave,
+            'half' => $request->half,  // Store the half value if applicable
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'reason' => $request->reason,
+            'contact_during_leave' => $request->contact_during_leave,
+            'last_updated_by' => Auth::user()->name, // Save the name of the authenticated user
+            'status' => 'pending', // Default status for new leave request
+        ]);
+
+        return response()->json(['message' => 'Leave applied successfully!', 'data' => $leave], 201);
+    }
+    
+    public function show($id)
+    {
+        // Fetch leave by ID
+        $leave = Leave::find($id);
+    
+        if (!$leave) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Leave not found.',
+            ], 404);
+        }
+    
+        return response()->json([
+            'success' => true,
+            'data' => $leave,
+        ]);
+    }
+
+    public function showteamLeaves(Request $request)
+    {
+        // Get the authenticated user
+        $user = Auth::user();
+    
+        // Initialize the query
+        $query = Leave::query();
+    
+        // Apply search filters if provided
+        if ($request->filled('type')) {
+            $query->where('type_of_leave', 'like', '%' . $request->type . '%');
+        }
+    
+        if ($request->filled('duration')) {
+            // Implement your logic for filtering by duration
+        }
+    
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+    
+        if ($request->filled('created_date')) {
+            $query->whereDate('created_at', $request->created_date);
+        }
+    
+        // Join with users table to get employee name
+        $query->join('users', 'leaves.user_id', '=', 'users.id')
+            ->select(
+                'leaves.*',
+                'users.name as employee_name' // Assuming 'name' is the column for user's name
+            );
+    
+        // Fetch the leaves
+        $leaves = $query->orderBy('created_at', 'asc')->get();
+    
+        // Transform the data to match the desired format
+        $formattedLeaves = $leaves->map(function ($leave) {
+            // Calculate duration
+            $duration = $this->calculateDuration($leave);
+    
+            // Determine icon based on reason
+            $reasonIcons = [
+                'Birthday' => '<i class="fas fa-gift" style="color: #ff69b4;"></i>',
+                'Festival' => '<i class="fas fa-gift" style="color: #ff4500;"></i>',
+                'Party' => '<i class="fas fa-gift" style="color: #ffa500;"></i>',
+                'Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
+                'Wedding Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
+            ];
+            $icon = $reasonIcons[$leave->reason] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
+    
+            // Format the Type field with the icon
+            $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
+    
+            // Format the week of the day (e.g., "Monday to Friday")
+            $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l'); // Day of the week for start_date
+            $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek; // Day of the week for end_date
+    
+            // Append the week range to the formatted type
+            $typeFormatted .= ' (' . $startDayOfWeek . ' to ' . $endDayOfWeek . ')';
+    
+            // Append the time range in IST if start_time and end_time exist
+            if ($leave->start_time && $leave->end_time) {
+                $startTimeIST = \Carbon\Carbon::parse($leave->start_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
+                $endTimeIST = \Carbon\Carbon::parse($leave->end_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
+                $typeFormatted .= " (from $startTimeIST to $endTimeIST)";
+            }
+    
+            return [
+                'id' => $leave->id,
+                'employee_name' => $leave->employee_name, // Employee name from the joined table
+                'type' => $typeFormatted,
+                'duration' => $duration,
+                'status' => ucfirst($leave->status),
+                'created_at' => $leave->created_at->format('F d, Y'),
+                'updated_by' => $leave->user ? $leave->user->name : 'Unknown',
+            ];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $formattedLeaves,
+        ]);
+    }    
 }

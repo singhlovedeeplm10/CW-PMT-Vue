@@ -23,6 +23,7 @@
             <th>Status</th>
             <th>Created Date</th>
             <th>Updated By</th>
+            <th>Manage</th>
           </tr>
           <tr>
             <th></th>
@@ -53,7 +54,9 @@
                 <option value="">All</option>
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                <option value="disapproved">Disapproved</option>
+                <option value="hold">Hold</option>
+                <option value="canceled">Canceled</option>
               </select>
             </th>
             <th>
@@ -64,59 +67,69 @@
                 @change="fetchLeaves"
               />
             </th>
-            <th>
-              <input
-                type="text"
-                class="form-control"
-                v-model="search.name"
-                @change="fetchLeaves"
-              />
-            </th>
           </tr>
         </thead>
         <tbody>
-  <tr v-for="(leave, index) in leaves" :key="leave.id">
-    <td>{{ leave.id }}</td>
-    <td v-html="leave.type"></td>
-    <td>{{ leave.duration }}</td>
-    <td>
-      <span
-        :class="{
-          'text-warning': leave.status === 'Pending',
-          'text-success': leave.status === 'Approved',
-          'text-danger': leave.status === 'Rejected'
-        }"
-      >
-        {{ leave.status }}
-      </span>
-    </td>
-    <td>{{ leave.created_at }}</td>
-    <td>{{ leave.updated_by }}</td>
-  </tr>
-  <tr v-if="leaves.length === 0">
-    <td colspan="6" class="text-center">No leaves found.</td>
-  </tr>
-</tbody>
-
-
-
+          <tr v-for="(leave, index) in leaves" :key="leave.id">
+            <td>{{ leave.id }}</td>
+            <td v-html="leave.type"></td>
+            <td>{{ leave.duration }}</td>
+            <td>
+              <span
+                :class="{
+                  'text-warning': leave.status === 'Pending',
+                  'text-success': leave.status === 'Approved',
+                  'text-danger': leave.status === 'Disapproved',
+                  'text-secondary': leave.status === 'Hold',
+                  'text-danger': leave.status === 'Canceled'
+                }"
+              >
+                {{ leave.status }}
+              </span>
+            </td>
+            <td>{{ leave.created_at }}</td>
+            <td>{{ leave.updated_by }}</td>
+            <td>
+              <button 
+                class="btn btn-info"
+                @click="viewLeaveDetails(leave)"
+              >
+                <i class="fas fa-eye"></i> <!-- Eye icon -->
+              </button>
+            </td>
+          </tr>
+          <tr v-if="leaves.length === 0">
+            <td colspan="7" class="text-center">No leaves found.</td>
+          </tr>
+        </tbody>
       </table>
     </div>
     <!-- Include the ApplyLeaveModal component -->
     <apply-leave-modal @leaveApplied="fetchLeaves"></apply-leave-modal>
+    
+    <!-- UpdateLeaveModal -->
+    <update-leave-modal 
+      v-if="showModal" 
+      :leave="selectedLeave" 
+      @close="closeModal"
+      ref="updateLeaveModal"
+    ></update-leave-modal>
   </master-component>
 </template>
 
 <script>
 import MasterComponent from './layouts/Master.vue';
 import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
+import UpdateLeaveModal from "@/components/modals/UpdateLeaveModal.vue";
 import axios from "axios";
+import * as bootstrap from "bootstrap";
 
 export default {
   name: "Leaves",
   components: {
     MasterComponent,
-    ApplyLeaveModal
+    ApplyLeaveModal,
+    UpdateLeaveModal
   },
   data() {
     return {
@@ -127,37 +140,20 @@ export default {
         status: "",
         created_date: "",
       },
+      showModal: false,  // Modal visibility
+      selectedLeave: null,  // Selected leave for the modal
     };
   },
   methods: {
     async fetchLeaves() {
       try {
-        // Prepare query parameters based on search inputs
         const params = {
           type: this.search.type || null,
-        duration: this.search.duration || null,
-        status: this.search.status || null,
-        created_date: this.search.created_date || null,
-
+          duration: this.search.duration || null,
+          status: this.search.status || null,
+          created_date: this.search.created_date || null,
         };
 
-        if (this.search.type) {
-          params.type = this.search.type;
-        }
-
-        if (this.search.duration) {
-          params.duration = this.search.duration;
-        }
-
-        if (this.search.status) {
-          params.status = this.search.status;
-        }
-
-        if (this.search.created_date) {
-          params.created_date = this.search.created_date;
-        }
-
-        // Make API request to fetch leaves
         const response = await axios.get("/api/leaves", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -173,13 +169,54 @@ export default {
         }
       } catch (error) {
         console.error("Error fetching leaves:", error.response?.data || error.message);
-        alert(
-          error.response?.data?.error ||
-            "An error occurred while fetching leaves."
-        );
+        alert(error.response?.data?.error || "An error occurred while fetching leaves.");
       }
     },
+    async fetchLeaveDetails(id) {
+    try {
+      const response = await axios.get(`/api/leaves/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      if (response.data.success) {
+        this.selectedLeave = response.data.data;
+        this.showModal = true;
+
+        // Check if the leave status is "pending"
+        this.selectedLeave.isEditable = this.selectedLeave.status === 'pending';
+      } else {
+        alert('Failed to fetch leave details.');
+      }
+    } catch (error) {
+      console.error("Error fetching leave details:", error.response?.data || error.message);
+      alert('An error occurred while fetching leave details.');
+    }
   },
+
+    viewLeaveDetails(leave) {
+      this.fetchLeaveDetails(leave.id);
+    this.selectedLeave = leave;
+    this.showModal = true;
+    this.$nextTick(() => {
+      // Bootstrap 5's modal API to show the modal
+      const modalElement = document.getElementById('updateleavemodal');
+    if (modalElement) {
+      // Initialize Bootstrap modal correctly
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+    });
+  },
+
+  closeModal() {
+    this.showModal = false;
+    const modalElement = document.getElementById('updateleavemodal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.hide();
+  },
+},
   mounted() {
     this.fetchLeaves();
   },
@@ -205,13 +242,20 @@ export default {
 }
 .text-warning {
   color: yellow;
+  font-weight: bold;
 }
 
 .text-success {
   color: green;
+  font-weight: bold;
 }
 
 .text-danger {
   color: red;
+  font-weight: bold;
+}
+.text-secondary{
+  color: rgb(144, 237, 237);
+  font-weight: bold;
 }
 </style>

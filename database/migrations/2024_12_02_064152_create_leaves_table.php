@@ -21,8 +21,9 @@ return new class extends Migration
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->text('reason');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'disapproved','hold', 'canceled'])->default('pending');
             $table->string('contact_during_leave', 15);
+            $table->string('last_updated_by');
             $table->timestamps();
         });
     }

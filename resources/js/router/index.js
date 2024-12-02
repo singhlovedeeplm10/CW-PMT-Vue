@@ -9,6 +9,7 @@ import Users from '../components/Users.vue';
 import Dashboard from '../components/Dashboard.vue'; 
 import Tasks from '../components/Tasks.vue'; 
 import Leaves from '../components/Leaves.vue'; 
+import TeamLeaves from '../components/TeamLeaves.vue'; 
 
 
 const routes = [
@@ -18,7 +19,8 @@ const routes = [
   { path: '/users', name: 'Users', component: Users },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/task', name: 'Tasks', component: Tasks },
-  { path: '/leaves', name: 'Leaves', component: Leaves } 
+  { path: '/leaves', name: 'Leaves', component: Leaves },
+  { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves } 
 ];
 
 const router = createRouter({

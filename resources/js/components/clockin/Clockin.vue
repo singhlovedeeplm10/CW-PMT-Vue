@@ -129,7 +129,7 @@ export default {
     weeklyHours.value = Math.max(weeklyProductiveSeconds - weeklyBreakSeconds, 0);
 
     // Toast notification for successful fetch
-    toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
+    // toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
   } catch (error) {
     console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
     toast.error("Failed to fetch weekly hours or break time", { position: "top-right" });
@@ -160,7 +160,8 @@ export default {
     });
     const weeklyBreakSeconds = response.data.weekly_break_time || 0; // Break time in seconds
     totalBreakTime.value = weeklyBreakSeconds; // Update the state with the fetched break time
-    toast.success("Weekly break time fetched successfully", { position: "top-right" });
+
+    // toast.success("Weekly break time fetched successfully", { position: "top-right" });
   } catch (error) {
     console.error("Error fetching weekly break time:", error.response?.data || error.message);
     toast.error(error.response?.data?.error || "Failed to fetch weekly break time", {
@@ -186,38 +187,51 @@ export default {
       }
     };
 
-    const handleClockInOut = async () => {
-      try {
-        const url = isClockedIn.value ? "/api/clock-out" : "/api/clock-in";
-        const response = await axios.post(
-          url,
-          { productive_hours: dailyHours.value },
-          { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
-        );
+const handleClockInOut = async () => {
+  try {
+    const url = isClockedIn.value ? "/api/clock-out" : "/api/clock-in";
+    const response = await axios.post(
+      url,
+      { productive_hours: dailyHours.value },
+      { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+    );
 
-        if (!isClockedIn.value) {
-          clockInTime.value = Date.now();
-          isClockedIn.value = true;
-          localStorage.setItem("isClockedIn", "true");
-          localStorage.setItem("clockInTime", clockInTime.value);
-          pausedTime.value = dailyHours.value;
-          startTimer();
-          toast.success("User Clocked In", { position: "top-right" });
-        } else {
-          isClockedIn.value = false;
-          stopTimer();
-          localStorage.removeItem("isClockedIn");
-          localStorage.removeItem("clockInTime");
-          toast.info("User Clocked Out", { position: "top-right" });
-          await fetchDailyHours();
-          await fetchWeeklyHours();
-          await fetchTotalBreakTime(); // Fetch updated break time on clock-out
-        }
-      } catch (error) {
-        console.error("Error:", error.response?.data || error.message);
-        toast.error(error.response?.data?.message || "An error occurred", { position: "top-right" });
-      }
-    };
+    if (!isClockedIn.value) {
+      // Clock In logic
+      clockInTime.value = Date.now();
+      isClockedIn.value = true;
+      localStorage.setItem("isClockedIn", "true");
+      localStorage.setItem("clockInTime", clockInTime.value);
+      pausedTime.value = dailyHours.value;
+      startTimer();
+      toast.success("User Clocked In", { position: "top-right" });
+    } else {
+      // Clock Out logic
+      isClockedIn.value = false;
+      stopTimer();
+      localStorage.removeItem("isClockedIn");
+      localStorage.removeItem("clockInTime");
+      toast.info("User Clocked Out", { position: "top-right" });
+
+      // Fetch the updated daily hours from the server
+      await fetchDailyHours();
+      
+      // Subtract break time from productive hours immediately (frontend only)
+      dailyHours.value = Math.max(dailyHours.value - totalBreakTime.value, 0); // Adjust for total break time
+
+      // Update the UI with the adjusted time
+      await fetchWeeklyHours(); // Update weekly hours
+      await fetchTotalBreakTime(); // Fetch the latest break time
+
+      // Optionally, update the daily break time as well
+      await fetchWeeklyBreakHours();
+    }
+  } catch (error) {
+    console.error("Error:", error.response?.data || error.message);
+    toast.error(error.response?.data?.message || "An error occurred", { position: "top-right" });
+  }
+};
+
 
     const onBreakStarted = ({ reason, startTime }) => {
       isOnBreak.value = true;

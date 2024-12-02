@@ -4,10 +4,10 @@ import './bootstrap';
 import { createApp } from 'vue';
 import router from './router';
 import 'vue3-toastify/dist/index.css'; // Import the CSS for Toastify
-import 'bootstrap/dist/js/bootstrap.bundle';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure bootstrap.bundle.min.js is loaded
+import "bootstrap/dist/css/bootstrap.css"; // Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap Minified CSS
+import 'vue-select/dist/vue-select.css';
 
 import MasterComponent from './components/layouts/Master.vue';
 

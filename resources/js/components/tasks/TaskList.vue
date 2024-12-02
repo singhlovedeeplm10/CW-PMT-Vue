@@ -89,40 +89,39 @@ export default {
       }
     },
     async checkClockInStatus() {
-      try {
-        // Send a request to the server to verify clock-in status
-        const response = await axios.get(
-        "/api/check-clock-in-status", 
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
-      );
+  try {
+    // Send a request to the server to verify clock-in status
+    const response = await axios.get("/api/check-clock-in-status", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Fix header syntax
+      },
+    });
 
-        // Check the server's response
-        if (response.data.clocked_in) {
-          // If clocked in, show the modal
-          const modalElement = document.getElementById("addtaskmodal");
-          if (modalElement) {
-            const modalInstance = new bootstrap.Modal(modalElement);
-            modalInstance.show();
-          } else {
-            toast.error("Modal not found!", { position: "top-right" });
-          }
-        } else {
-          toast.warning("You need to clock in to add tasks!", {
-            position: "top-right",
-          });
-        }
-      } catch (error) {
-        // console.error("Error checking clock-in status:", error.response?.data || error.message);
-        toast.warning(
-          error.response?.data?.message || "You need to clock in to add tasks!",
-          { position: "top-right" }
-        );
+    // Check the server's response
+    if (response.data.clocked_in) {
+      // If clocked in, show the modal
+      const modalElement = document.getElementById("addtaskmodal");
+      if (modalElement) {
+        const modalInstance = new bootstrap.Modal(modalElement); // Proper modal instance creation
+        modalInstance.show();
+      } else {
+        toast.error("Modal not found!", { position: "top-right" });
       }
-    },
+    } else {
+      // User is not clocked in
+      toast.warning("You need to clock in to add tasks!", {
+        position: "top-right",
+      });
+    }
+  } catch (error) {
+    console.error("Error checking clock-in status:", error.response?.data || error.message);
+    toast.error(
+      error.response?.data?.message || "Something went wrong. Please try again!",
+      { position: "top-right" }
+    );
+  }
+},
+
   },
 };
 </script>

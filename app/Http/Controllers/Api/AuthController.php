@@ -44,6 +44,17 @@ class AuthController extends Controller
         ]);
     }
 
+    public function getUserRole()
+    {
+        $user = Auth::user(); // Get the authenticated user
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $role = $user->role; // Assuming role is defined as a relationship
+        return response()->json(['role' => $role->title]);
+    }
+
     public function logout(Request $request)
     {
         // Revoke the current user's token

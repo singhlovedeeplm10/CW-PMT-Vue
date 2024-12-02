@@ -36,15 +36,20 @@ Route::get('/projects', [TaskController::class, 'fetchProjects']);
 
 // LEAVES API ROUTE
 Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/leaves', [LeaveController::class, 'showLeaves']);
-});
+Route::middleware('auth:sanctum')->get('/leaves', [LeaveController::class, 'showLeaves']);
+Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'teamLeave']);
+Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
+Route::get('/users/search', [LeaveController::class, 'search']);
+Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
+Route::middleware('auth:sanctum')->put('leaves/{leave}', [LeaveController::class, 'update']);
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
 Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
+Route::middleware('auth:sanctum')->get('/user-role', [AuthController::class, 'getUserRole']);
+
 
 // TECHNOLOGIES API ROUTE
 Route::post('/technologies', [TechnologyController::class, 'addTech']);
@@ -61,7 +66,7 @@ Route::middleware('auth:sanctum')->post('/attendance', [AttendanceController::cl
 Route::middleware('auth:sanctum')->post('/clock-in', [AttendanceController::class, 'clockIn']);
 Route::middleware('auth:sanctum')->post('/clock-out', [AttendanceController::class, 'clockOut']);
 Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::class, 'getWeeklyHours']);
-Route::middleware('auth:sanctum')->post('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
+Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 
 

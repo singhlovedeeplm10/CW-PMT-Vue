@@ -49,6 +49,17 @@ class AttendanceController extends Controller
             if (!$attendance) {
                 return response()->json(['message' => 'No active clock-in record found.'], 400);
             }
+            
+            // Calculate total task hours for the day
+            $totalTaskHours = DB::table('daily_tasks')
+                ->where('user_id', $userId)
+                ->whereDate('created_at', today()) // Ensure we only check for today's tasks
+                ->sum('hours');
+    
+            // Check if total task hours are exactly 8
+            if ($totalTaskHours != 8) {
+                return response()->json(['message' => 'You must complete exactly 8 hours of work before clocking out.'], 400);
+            }
     
             // Proceed with clocking out
             $clockOutTime = now();
@@ -101,16 +112,17 @@ class AttendanceController extends Controller
     
         // Check if the user has a valid ClockinToken
         if (!$clockinToken) {
-            return response()->json(['clocked_in' => false], 403); // No valid token found
+            return response()->json(['clocked_in' => false]); // Respond with clocked_in: false
         }
     
-        // Now, check if there's an active attendance record for today
+        // Check if there's an active attendance record for today
         $clockedInToday = Attendance::where('user_id', $user->id)
             ->whereDate('clockin_time', Carbon::today())
             ->exists();
     
         return response()->json(['clocked_in' => $clockedInToday]);
     }
+    
 
     public function getWeeklyHours(Request $request)
     {
