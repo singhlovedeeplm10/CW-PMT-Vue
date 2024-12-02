@@ -111,16 +111,31 @@ export default {
     };
 
     const fetchWeeklyHours = async () => {
-      try {
-        const response = await axios.get("/api/weekly-hours", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-        });
-        weeklyHours.value = response.data.weekly_hours;
-      } catch (error) {
-        console.error("Error fetching weekly hours:", error);
-        toast.error("Failed to fetch weekly hours", { position: "top-right" });
-      }
-    };
+  try {
+    // Fetch weekly productive hours
+    const weeklyHoursResponse = await axios.get("/api/weekly-hours", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+    });
+
+    // Fetch weekly break time
+    const weeklyBreakResponse = await axios.get("/api/weekly-break-time", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+    });
+
+    const weeklyProductiveSeconds = weeklyHoursResponse.data.weekly_hours || 0; // Weekly productive hours in seconds
+    const weeklyBreakSeconds = weeklyBreakResponse.data.weekly_break_time || 0; // Weekly break time in seconds
+
+    // Subtract break time from productive hours
+    weeklyHours.value = Math.max(weeklyProductiveSeconds - weeklyBreakSeconds, 0);
+
+    // Toast notification for successful fetch
+    toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
+  } catch (error) {
+    console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
+    toast.error("Failed to fetch weekly hours or break time", { position: "top-right" });
+  }
+};
+
 
     const fetchDailyHours = async () => {
       try {

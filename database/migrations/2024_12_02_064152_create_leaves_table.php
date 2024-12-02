@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->enum('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave']);
             $table->enum('half', ['First Half', 'Second Half'])->nullable();
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->text('reason');

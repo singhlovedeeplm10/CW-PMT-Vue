@@ -1,94 +1,217 @@
 <template>
-    <master-component>
-      <div class="leaves-page">
-        <!-- Use Bootstrap d-flex to align the heading and button on the same line -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="page-heading">My Leaves</h1>
-          <button class="btn btn-primary add-leave-btn" data-bs-toggle="modal" data-bs-target="#applyleavemodal">
-    Apply Leave
-</button>
-
-        </div>
-  
-        <!-- Search Input Field -->
-        <table class="table table-bordered table-hover leave-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Type</th>
-              <th>Duration</th>
-              <th>Status</th>
-              <th>Created Date</th>
-            </tr>
-            <!-- Input fields under table headers -->
-            <tr>
-              <th></th>
-              <th><input type="text" class="form-control"></th>
-              <th><input type="text" class="form-control"></th>
-              <th><input type="text" class="form-control"></th>
-              <th><input type="text" class="form-control"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Dummy data -->
-            <tr>
-              <td>1</td>
-              <td><i class="fas fa-gift"></i> Special-Leave (Sep 21, 2024)(5:30 PM to 8:00 PM)(Saturday)</td>
-              <td>2.5 hours</td>
-              <td><span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span></td>
-              <td>Sep 20, 2024</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td><i class="fas fa-undo-alt"></i> Short-Leave (Sep 9, 2024)(11:00 AM to 1:00 PM)(Monday)</td>
-              <td>2 hours</td>
-              <td><span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span></td>
-              <td>Sep 09, 2024</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td><i class="fas fa-gift"></i> Special-Leave (Aug 24, 2024)(5:00 PM to 7:30 PM)(Saturday)</td>
-              <td>2.5 hours</td>
-              <td><span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span></td>
-              <td>Aug 23, 2024</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td><i class="fas fa-undo-alt"></i> Short-Leave (Aug 5, 2024)(11:00 AM to 12:00 PM)(Monday)</td>
-              <td>1 hour</td>
-              <td><span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span></td>
-              <td>Aug 05, 2024</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td><i class="fas fa-gift"></i> Special-Leave (Jul 6, 2024)(5:30 PM to 8:00 PM)(Saturday)</td>
-              <td>2.5 hours</td>
-              <td><span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span></td>
-              <td>Jul 05, 2024</td>
-            </tr>
-          </tbody>
-        </table>
+  <master-component>
+    <div class="leaves-page">
+      <!-- Header with Heading and Apply Leave Button -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-heading">My Leaves</h1>
+        <button
+          class="btn btn-primary add-leave-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#applyleavemodal"
+        >
+          Apply Leave
+        </button>
       </div>
-    </master-component>
-    <apply-leave-modal></apply-leave-modal>
-  </template>
-  
-  <script>
-    import MasterComponent from './layouts/Master.vue';
-    import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
 
-    export default {
-      name: "Leaves",
-      components: {
-        MasterComponent,
-        ApplyLeaveModal        
+      <!-- Search Input Fields -->
+      <table class="table table-bordered table-hover leave-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th>Updated By</th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>
+              <input
+                type="text"
+                class="form-control"
+                v-model="search.type"
+                placeholder="Search Type"
+                @input="fetchLeaves"
+              />
+            </th>
+            <th>
+              <input
+                type="text"
+                class="form-control"
+                v-model="search.duration"
+                placeholder="Search Duration"
+                @input="fetchLeaves"
+              />
+            </th>
+            <th>
+              <select
+                class="form-select"
+                v-model="search.status"
+                @change="fetchLeaves"
+              >
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </th>
+            <th>
+              <input
+                type="date"
+                class="form-control"
+                v-model="search.created_date"
+                @change="fetchLeaves"
+              />
+            </th>
+            <th>
+              <input
+                type="text"
+                class="form-control"
+                v-model="search.name"
+                @change="fetchLeaves"
+              />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+  <tr v-for="(leave, index) in leaves" :key="leave.id">
+    <td>{{ leave.id }}</td>
+    <td v-html="leave.type"></td>
+    <td>{{ leave.duration }}</td>
+    <td>
+      <span
+        :class="{
+          'text-warning': leave.status === 'Pending',
+          'text-success': leave.status === 'Approved',
+          'text-danger': leave.status === 'Rejected'
+        }"
+      >
+        {{ leave.status }}
+      </span>
+    </td>
+    <td>{{ leave.created_at }}</td>
+    <td>{{ leave.updated_by }}</td>
+  </tr>
+  <tr v-if="leaves.length === 0">
+    <td colspan="6" class="text-center">No leaves found.</td>
+  </tr>
+</tbody>
+
+
+
+      </table>
+    </div>
+    <!-- Include the ApplyLeaveModal component -->
+    <apply-leave-modal @leaveApplied="fetchLeaves"></apply-leave-modal>
+  </master-component>
+</template>
+
+<script>
+import MasterComponent from './layouts/Master.vue';
+import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
+import axios from "axios";
+
+export default {
+  name: "Leaves",
+  components: {
+    MasterComponent,
+    ApplyLeaveModal
+  },
+  data() {
+    return {
+      leaves: [],
+      search: {
+        type: "",
+        duration: "",
+        status: "",
+        created_date: "",
       },
     };
-  </script>
-  
-  <style scoped>
-  .leaves-page {
-  padding: 40px 50px;
+  },
+  methods: {
+    async fetchLeaves() {
+      try {
+        // Prepare query parameters based on search inputs
+        const params = {
+          type: this.search.type || null,
+        duration: this.search.duration || null,
+        status: this.search.status || null,
+        created_date: this.search.created_date || null,
+
+        };
+
+        if (this.search.type) {
+          params.type = this.search.type;
+        }
+
+        if (this.search.duration) {
+          params.duration = this.search.duration;
+        }
+
+        if (this.search.status) {
+          params.status = this.search.status;
+        }
+
+        if (this.search.created_date) {
+          params.created_date = this.search.created_date;
+        }
+
+        // Make API request to fetch leaves
+        const response = await axios.get("/api/leaves", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          params,
+        });
+
+        if (response.data.success) {
+          this.leaves = response.data.data;
+        } else {
+          this.leaves = [];
+          alert("Failed to fetch leaves.");
+        }
+      } catch (error) {
+        console.error("Error fetching leaves:", error.response?.data || error.message);
+        alert(
+          error.response?.data?.error ||
+            "An error occurred while fetching leaves."
+        );
+      }
+    },
+  },
+  mounted() {
+    this.fetchLeaves();
+  },
+};
+</script>
+
+<style scoped>
+.leaves-page {
+  padding: 20px;
 }
-  </style>
-  
+
+.page-heading {
+  font-size: 2rem;
+}
+
+.leave-table th,
+.leave-table td {
+  vertical-align: middle;
+}
+
+.invalid-feedback {
+  color: red;
+}
+.text-warning {
+  color: yellow;
+}
+
+.text-success {
+  color: green;
+}
+
+.text-danger {
+  color: red;
+}
+</style>

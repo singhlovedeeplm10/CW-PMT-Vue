@@ -36,6 +36,9 @@ Route::get('/projects', [TaskController::class, 'fetchProjects']);
 
 // LEAVES API ROUTE
 Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/leaves', [LeaveController::class, 'showLeaves']);
+});
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
