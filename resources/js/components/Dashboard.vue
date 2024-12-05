@@ -30,6 +30,7 @@
       <apply-team-leave-modal/>
 
       <update-leave-modal/>
+      <update-team-leave-modal/>
       
     </div>
   </master-component>
@@ -49,6 +50,7 @@ import AddBreakModal from './modals/AddBreakModal.vue';
 import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
 import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
+import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
 import ButtonComponent from './ButtonComponent.vue';
 import InputField from './InputField.vue';
 import TextArea from './TextArea.vue';
@@ -76,7 +78,8 @@ export default {
     UserBreakList,
     ApplyLeaveModal,
     ApplyTeamLeaveModal,
-    UpdateLeaveModal
+    UpdateLeaveModal,
+    UpdateTeamLeaveModal
   },
   data() {
     return {

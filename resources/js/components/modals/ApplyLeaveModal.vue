@@ -26,7 +26,6 @@
                 label="Type"
                 id="leaveType"
                 name="type_of_leave"
-                placeholder="Select Leave Type"
                 :error="leaveTypeError"
                 @change="handleLeaveTypeChange"
               />
@@ -53,6 +52,7 @@
                   name="start_date"
                   :minDate="minDate"
                   :error="startDateError"
+                  @change="validateStartAndEndDate"
                 />
               </div>
             </div>
@@ -67,6 +67,7 @@
                   name="start_date"
                   :minDate="minDate"
                   :error="startDateError"
+                  @change="validateStartAndEndDate"
                 />
               </div>
             </div>
@@ -107,6 +108,7 @@
                   name="start_date"
                   :minDate="minDate"
                   :error="startDateError"
+                  @change="validateStartAndEndDate"
                 />
               </div>
               <div class="col">
@@ -117,6 +119,7 @@
                   name="end_date"
                   :minDate="form.start_date"
                   :error="endDateError"
+                  @change="validateStartAndEndDate"
                 />
               </div>
             </div>
@@ -200,6 +203,7 @@ export default {
         contact_during_leave: "",
       },
       leaveTypeOptions: [
+        { label: "Select Leave Type", value: "" },
         { label: "Full Day Leave", value: "Full Day Leave" },
         { label: "Half Day Leave", value: "Half Day" },
         { label: "Short Leave", value: "Short Leave" },
@@ -241,11 +245,33 @@ export default {
         }
       }
     },
+    validateStartAndEndDate() {
+      const today = new Date().toISOString().split("T")[0];
+
+      if (this.form.start_date && this.form.start_date < today) {
+        this.startDateError = "Start date cannot be in the past.";
+        return;
+      } else {
+        this.startDateError = null;
+      }
+
+      if (
+        this.form.end_date &&
+        this.form.start_date &&
+        this.form.end_date < this.form.start_date
+      ) {
+        this.endDateError = "End date cannot be before the start date.";
+        return;
+      } else {
+        this.endDateError = null;
+      }
+    },
     async validateAndSubmit() {
       this.validateShortLeaveTime();
+      this.validateStartAndEndDate();
 
-      if (this.endTimeError) {
-        return; // Prevent form submission if there's an error
+      if (this.startDateError || this.endDateError || this.endTimeError) {
+        return; // Prevent form submission if there are errors
       }
 
       this.loading = true;
@@ -265,9 +291,8 @@ export default {
 
         this.resetForm();
       } catch (error) {
-        toast.error(
-          error.response?.data?.error || "An error occurred while applying for leave."
-        );
+        console.error(error);
+        toast.error("Failed to apply leave. Please try again.");
       } finally {
         this.loading = false;
       }
@@ -283,6 +308,13 @@ export default {
         reason: "",
         contact_during_leave: "",
       };
+      this.startDateError = null;
+      this.endDateError = null;
+      this.startTimeError = null;
+      this.endTimeError = null;
+      this.leaveTypeError = null;
+      this.halfDayError = null;
+      this.contactError = null;
     },
   },
 };

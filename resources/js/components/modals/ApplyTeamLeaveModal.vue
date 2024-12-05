@@ -69,20 +69,27 @@
                   placeholder="Search users by name"
                 />
                 <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
-                  <li
-                    v-for="user in userSuggestions"
-                    :key="user.id"
-                    @click="selectUser(user)"
-                    class="suggestion-item"
-                  >
-                    {{ user.name }}
-                  </li>
-                </ul>
+  <li
+    v-for="user in userSuggestions"
+    :key="user.id"
+    @click="selectUser(user)"
+    class="suggestion-item d-flex align-items-center"
+  >
+    <img
+      src="img/CWlogo.jpeg"
+      alt="User Avatar"
+      class="rounded-circle me-2"
+      style="width: 40px; height: 40px;"
+    />
+    <span>{{ user.name }}</span>
+  </li>
+</ul>
+
                 <span v-if="userError" class="text-danger">{{ userError }}</span>
               </div>
 
-                            <!-- Dynamic Fields for Short Leave -->
-                            <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
+              <!-- Dynamic Fields for Short Leave -->
+              <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
                 <div class="col">
                   <DateInput
                     v-model="form.start_date"

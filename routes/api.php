@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
 Route::get('/tasks', [TaskController::class, 'showTasks']);
 Route::get('/projects', [TaskController::class, 'fetchProjects']);
+Route::get('/users-without-tasks', [TaskController::class, 'getUsersWithoutTasks']);
 
 
 // LEAVES API ROUTE
@@ -41,7 +42,11 @@ Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::c
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
 Route::get('/users/search', [LeaveController::class, 'search']);
 Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
-Route::middleware('auth:sanctum')->put('leaves/{leave}', [LeaveController::class, 'update']);
+Route::middleware('auth:sanctum')->put('update-leaves/{leave}', [LeaveController::class, 'update']);
+Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
+Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
+Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
+
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);

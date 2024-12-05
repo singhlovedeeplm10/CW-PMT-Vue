@@ -24,24 +24,25 @@
       </a>
     </div>
     <table class="task-table">
-      <thead>
-        <tr>
-          <th>Project Name</th>
-          <th>Hours</th>
-          <th>Task Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="tasks.length === 0">
-          <td colspan="3" class="text-center">No Task added</td>
-        </tr>
-        <tr v-else v-for="task in tasks" :key="task.id">
-          <td>{{ task.project_name }}</td>
-          <td>{{ task.hours }}</td>
-          <td>{{ task.task_description }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>Project Name</th>
+      <th>Hours</th>
+      <th>Task Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-if="tasks.length === 0">
+      <td colspan="3" class="text-center">No Task added</td>
+    </tr>
+    <tr v-else v-for="task in tasks" :key="task.id">
+      <td>{{ task.project?.name || 'N/A' }}</td>
+      <td>{{ task.hours }}</td>
+      <td>{{ task.task_description }}</td>
+    </tr>
+  </tbody>
+</table>
+
     <AddTaskModal @taskAdded="fetchTasks" />
     <!-- Modal for Add Task -->
     <div class="modal fade" id="addtaskmodal" tabindex="-1" aria-hidden="true">
@@ -81,13 +82,15 @@ export default {
   },
   methods: {
     async fetchTasks() {
-      try {
-        const response = await axios.get("/api/tasks");
-        this.tasks = response.data; // Store the tasks in the component's data
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      }
-    },
+  try {
+    const response = await axios.get("/api/tasks");
+    this.tasks = response.data; // Store the tasks, including project data
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    toast.error("Failed to fetch tasks. Please try again.");
+  }
+},
+
     async checkClockInStatus() {
   try {
     // Send a request to the server to verify clock-in status

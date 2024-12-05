@@ -158,20 +158,21 @@ if ($leave->start_time && $leave->end_time) {
 
         return '';
     }
+
     public function update(Request $request, Leave $leave)
     {
-        try {
-            // Validate the request data
-            $validatedData = $request->validate([
-                'type_of_leave' => 'required|in:Short Leave,Half Day,Full Day Leave',
-                'half' => 'nullable|required_if:type_of_leave,Half Day|in:First Half,Second Half',
-                'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day,Full Day Leave|date',
-                'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
-                'start_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i',
-                'end_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i|after:start_time',
-                'reason' => 'required|string',
-                'contact_during_leave' => 'required|string|max:15',
-            ]);
+try {
+    $validatedData = $request->validate([
+        'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
+        'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+        'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date',
+        'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+        'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+        'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+        'reason' => 'required|string',
+        'contact_during_leave' => 'required|string|max:15',
+        'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+    ]);
     
             // Update the leave record
             $leave->update([
@@ -183,19 +184,59 @@ if ($leave->start_time && $leave->end_time) {
                 'end_time' => $validatedData['end_time'] ?? null,
                 'reason' => $validatedData['reason'],
                 'contact_during_leave' => $validatedData['contact_during_leave'],
-                'status' => 'pending', // You can leave the status as is or modify it
-                'last_updated_by' => Auth::user()->name, // Update the name of the user who updated the leave
+                'status' => $validatedData['status'], // Update the status
+                'last_updated_by' => Auth::user()->name,
             ]);
     
             // Respond with success
             return response()->json(['message' => 'Leave application updated successfully!', 'leave' => $leave], 200);
     
-        } catch (\Exception $e) {
-            // Log the error and return a response
-            \Log::error('Error updating leave: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update leave application.'], 500);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed:', $e->errors());
+            return response()->json(['error' => $e->errors()], 422);
         }
     }
+
+
+    public function updateTeamLeave(Request $request, Leave $leave)
+    {
+try {
+    $validatedData = $request->validate([
+        'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
+        'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+        'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date',
+        'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+        'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+        'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+        'reason' => 'required|string',
+        'contact_during_leave' => 'required|string|max:15',
+        'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+    ]);
+    
+            // Update the leave record
+            $leave->update([
+                'type_of_leave' => $validatedData['type_of_leave'],
+                'half' => $validatedData['half'] ?? null,
+                'start_date' => $validatedData['start_date'] ?? null,
+                'end_date' => $validatedData['end_date'] ?? null,
+                'start_time' => $validatedData['start_time'] ?? null,
+                'end_time' => $validatedData['end_time'] ?? null,
+                'reason' => $validatedData['reason'],
+                'contact_during_leave' => $validatedData['contact_during_leave'],
+                'status' => $validatedData['status'], // Update the status
+                'last_updated_by' => Auth::user()->name,
+            ]);
+    
+            // Respond with success
+            return response()->json(['message' => 'Leave application updated successfully!', 'leave' => $leave], 200);
+    
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed:', $e->errors());
+            return response()->json(['error' => $e->errors()], 422);
+        }
+    }
+    
+    
     
 
 public function search(Request $request)
@@ -345,4 +386,41 @@ public function teamLeave(Request $request)
             'data' => $formattedLeaves,
         ]);
     }    
+
+    public function getUsersLeave()
+{
+    $statuses = ['pending', 'approved', 'disapproved', 'hold', 'canceled']; // Define all statuses
+
+    $usersOnLeave = Leave::whereIn('status', $statuses) // Include all statuses
+        ->with('user:id,name') // Load user details (name and ID)
+        ->get()
+        ->map(function ($leave) {
+            return [
+                'id' => $leave->user->id,
+                'name' => $leave->user->name,
+                'status' => $leave->status, // Include the leave status in the response
+            ];
+        });
+
+    return response()->json($usersOnLeave);
+}
+
+public function getUsersOnLeave(Request $request)
+{
+    $selectedDate = $request->query('date'); // Get the selected date from the request
+
+    // Query users on leave where the selected date falls within the start_date and end_date range
+    $usersOnLeave = Leave::whereDate('start_date', '<=', $selectedDate)
+        ->whereDate('end_date', '>=', $selectedDate)
+        ->with('user:id,name') // Load user details
+        ->get()
+        ->map(function ($leave) {
+            return [
+                'id' => $leave->user->id,
+                'name' => $leave->user->name,
+            ];
+        });
+
+    return response()->json($usersOnLeave);
+}
 }

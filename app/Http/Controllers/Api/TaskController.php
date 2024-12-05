@@ -9,6 +9,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -43,15 +44,28 @@ class TaskController extends Controller
     
     
     public function showTasks()
-    {
-        $tasks = DailyTask::all(); // Or add filtering logic if needed
-        return response()->json($tasks);
-    }
+{
+    $tasks = DailyTask::with('project') // Eager load the related project
+        ->get();
+
+    return response()->json($tasks);
+}
 
     public function fetchProjects()
     {
         $projects = Project::all(['id', 'name']); // Adjust fields as needed
         return response()->json(['projects' => $projects]);
+    }
+
+    public function getUsersWithoutTasks()
+    {
+        $usersWithoutTasks = DB::table('users')
+            ->leftJoin('daily_tasks', 'users.id', '=', 'daily_tasks.user_id')
+            ->whereNull('daily_tasks.user_id')
+            ->select('users.id', 'users.name', 'users.email')
+            ->get();
+    
+        return response()->json($usersWithoutTasks);
     }
 
 }

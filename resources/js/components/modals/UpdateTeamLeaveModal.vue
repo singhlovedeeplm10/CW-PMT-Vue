@@ -1,16 +1,16 @@
 <template>
     <div
       class="modal fade"
-      id="updateleavemodal"
+      id="updateTeamLeaveModal"
       tabindex="-1"
-      aria-labelledby="updateleavemodalLabel"
+      aria-labelledby="updateTeamLeaveModalLabel"
       aria-hidden="true"
       v-if="leave"
     >
       <div class="modal-dialog">
         <div class="modal-content custom-modal">
           <div class="modal-header custom-header">
-            <h5 class="modal-title" id="updateleavemodalLabel">Update Leave</h5>
+            <h5 class="modal-title" id="updateTeamLeaveModalLabel">Update Leave</h5>
   
             <!-- Status Box (Top Right) -->
             <div
@@ -150,6 +150,9 @@
                 required
               >
                 <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="disapproved">Disapproved</option>
+                <option value="hold">Hold</option>
                 <option value="canceled">Canceled</option>
               </select>
             </div>
@@ -178,7 +181,7 @@
   import { toast } from "vue3-toastify";
   
   export default {
-    name: "UpdateLeaveModal",
+    name: "UpdateTeamLeaveModal",
     props: {
       leave: {
         type: Object,
@@ -219,7 +222,7 @@ if (this.leave.type_of_leave === "Short Leave") {
   
           // Send the request to update the leave
           const response = await axios.put(
-            `/api/update-leaves/${this.leave.id}`,
+            `/api/update-team-leaves/${this.leave.id}`,
             leaveData,
             {
               headers: {

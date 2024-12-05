@@ -108,6 +108,12 @@
       </div>
       <!-- Include the ApplyLeaveModal component -->
       <apply-team-leave-modal @leaveApplied="fetchLeaves"></apply-team-leave-modal>
+      <update-team-leave-modal 
+      v-if="showModal" 
+      :leave="selectedLeave" 
+      @close="closeModal"
+      ref="updateTeamLeaveModal"
+    ></update-team-leave-modal>
     </master-component>
   </template>
   
@@ -115,13 +121,17 @@
   <script>
   import MasterComponent from './layouts/Master.vue';
   import ApplyTeamLeaveModal from "@/components/modals/ApplyTeamLeaveModal.vue";
+  import UpdateTeamLeaveModal from "@/components/modals/UpdateTeamLeaveModal.vue";
   import axios from "axios";
+  import * as bootstrap from "bootstrap";
+
   
   export default {
     name: "TeamLeaves",
     components: {
       MasterComponent,
-      ApplyTeamLeaveModal
+      ApplyTeamLeaveModal,
+      UpdateTeamLeaveModal
     },
     data() {
       return {
@@ -132,6 +142,8 @@
           status: "",
           created_date: "",
         },
+        showModal: false,  // Modal visibility
+      selectedLeave: null,
       };
     },
     methods: {
@@ -155,6 +167,9 @@
   
           if (response.data.success) {
             this.leaves = response.data.data;
+            this.selectedLeave = response.data.data;
+            this.showModal = true;
+
           } else {
             this.leaves = [];
             alert("Failed to fetch leaves.");
@@ -169,11 +184,25 @@
       },
   
       viewLeaveDetails(leave) {
-        // This method will be triggered when the eye icon is clicked
-        // You can show a modal or log the details for now
-        console.log(leave); // This will log the leave details in the console
-        // You could also display these details in a modal or a detailed page
-      },
+      this.fetchLeaves(leave.id);
+    this.selectedLeave = leave;
+    this.showModal = true;
+    this.$nextTick(() => {
+      // Bootstrap 5's modal API to show the modal
+      const modalElement = document.getElementById('updateteamleavemodal');
+    if (modalElement) {
+      // Initialize Bootstrap modal correctly
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+    }
+    });
+  },
+  closeModal() {
+    this.showModal = false;
+    const modalElement = document.getElementById('updateteamleavemodal');
+    const modal = new bootstrap.Modal(modalElement);
+    modal.hide();
+  },
     },
     mounted() {
       this.fetchLeaves();
