@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +24,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id',
     ];
 
     /**
@@ -66,5 +66,16 @@ public function breaks()
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function dailyTasks()
+    {
+        return $this->hasMany(DailyTask::class);
+    }
+
+    // Assuming "team_lead_name" is a field in your users table
+    public function getTeamLeadNameAttribute()
+    {
+        return $this->team_lead_name; // Replace with your logic for fetching team lead name
     }
 }

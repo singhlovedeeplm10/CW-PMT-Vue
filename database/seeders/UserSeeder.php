@@ -6,8 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use App\Models\User;
-use App\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -16,18 +14,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $superadminRole = Role::where('title', 'Super Admin')->first();
-        $adminRole = Role::where('title', 'Admin')->first();
-        $hrRole = Role::where('title', 'HR')->first();
-        $userRole = Role::where('title', 'User')->first();
-
-        $users = [
+        DB::table('users')->insert([
             [
                 'name' => 'Bharat Chauhan',
                 'email' => 'adbbharat@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345678'),
-                'role_id' => $adminRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -37,7 +29,6 @@ class UserSeeder extends Seeder
                 'email' => 'jane.smith@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('janesmith'), // password hashing
-                'role_id' => $hrRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -47,7 +38,6 @@ class UserSeeder extends Seeder
                 'email' => 'steve@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('steverogers'), // password hashing
-                'role_id' => $superadminRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -57,7 +47,6 @@ class UserSeeder extends Seeder
                 'email' => 'rohan@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('rohansharma'), // password hashing
-                'role_id' => $adminRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -67,7 +56,6 @@ class UserSeeder extends Seeder
                 'email' => 'bruce@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('brucewayne'), // password hashing
-                'role_id' => $hrRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -77,7 +65,6 @@ class UserSeeder extends Seeder
                 'email' => 'clark@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('clarkkent'), // password hashing
-                'role_id' => $adminRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -87,7 +74,6 @@ class UserSeeder extends Seeder
                 'email' => 'peter@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('peterparker'), // password hashing
-                'role_id' => $superadminRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -97,7 +83,6 @@ class UserSeeder extends Seeder
                 'email' => 'gaurav@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('gauravsingh'), // password hashing
-                'role_id' => $userRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -107,7 +92,6 @@ class UserSeeder extends Seeder
                 'email' => 'jitu@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('jitusingh'), // password hashing
-                'role_id' => $userRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -117,15 +101,10 @@ class UserSeeder extends Seeder
                 'email' => 'vineet@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('vineetsharma'), // password hashing
-                'role_id' => $userRole->id,
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
-        ];
-        
-        foreach ($users as $user) {
-            User::create($user);
-        }
+        ]);
     }
 }

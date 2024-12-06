@@ -34,16 +34,21 @@ Route::get('/tasks', [TaskController::class, 'showTasks']);
 Route::get('/projects', [TaskController::class, 'fetchProjects']);
 Route::get('/users-without-tasks', [TaskController::class, 'getUsersWithoutTasks']);
 
+Route::get('/daily-tasks', [TaskController::class, 'getDailyTasks']);
+Route::put('/update-tasks/{id}', [TaskController::class, 'updateTask']);
+Route::delete('/delete-tasks/{id}', [TaskController::class, 'deleteTask']);
 
 // LEAVES API ROUTE
 Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/leaves', [LeaveController::class, 'showLeaves']);
+Route::middleware('auth:sanctum')->put('update-leaves/{leave}', [LeaveController::class, 'update']);
+
 Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'teamLeave']);
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
+Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
+
 Route::get('/users/search', [LeaveController::class, 'search']);
 Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
-Route::middleware('auth:sanctum')->put('update-leaves/{leave}', [LeaveController::class, 'update']);
-Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
 
@@ -74,13 +79,15 @@ Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::c
 Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 
-
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
 Route::middleware('auth:sanctum')->post('/start-break', [BreakController::class, 'startBreak']);
 Route::middleware('auth:sanctum')->post('/end-break', [BreakController::class, 'endBreak']);
 Route::middleware('auth:sanctum')->get('/daily-breaks', [BreakController::class, 'getDailyBreaks']);
 Route::middleware('auth:sanctum')->get('/weekly-break-time', [BreakController::class, 'getWeeklyBreakTime']);
+Route::get('/break-entries', [BreakController::class, 'getBreakEntries']);
+
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
+

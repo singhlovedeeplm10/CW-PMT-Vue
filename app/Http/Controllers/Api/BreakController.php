@@ -150,4 +150,14 @@ class BreakController extends Controller
     }
 }
 
+public function getBreakEntries(Request $request)
+{
+    $date = $request->query('date');
+    $breakEntries = Breaks::with('user')
+        ->whereDate('break_time', $date)
+        ->get();
+    return response()->json($breakEntries);
+}
+
+
 }

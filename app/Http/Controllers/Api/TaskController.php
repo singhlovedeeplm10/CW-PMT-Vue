@@ -68,4 +68,33 @@ class TaskController extends Controller
         return response()->json($usersWithoutTasks);
     }
 
+    public function getDailyTasks()
+{
+    $dailyTasks = DailyTask::with(['user', 'project'])
+        ->whereDate('created_at', now()->toDateString()) // Filter by today's date
+        ->get();
+
+    return response()->json($dailyTasks);
+}
+
+public function updateTask(Request $request, $id)
+{
+    $task = DailyTask::findOrFail($id);
+    $task->update([
+        'hours' => $request->hours,
+        'task_description' => $request->task_description,
+        'task_status' => $request->task_status,
+    ]);
+
+    return response()->json($task);
+}
+
+public function deleteTask($id)
+{
+    $task = DailyTask::findOrFail($id);
+    $task->delete();
+
+    return response()->json(['message' => 'Task deleted successfully']);
+}
+
 }

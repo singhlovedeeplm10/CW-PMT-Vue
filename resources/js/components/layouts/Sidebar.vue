@@ -28,7 +28,7 @@
           <li class="sidebar-subitem">
             <router-link to="/leaves" class="sidebar-link">My Leaves</router-link>
           </li>
-          <li v-if="!isUserRole" class="sidebar-subitem">
+          <li  class="sidebar-subitem">
             <router-link to="/teamleaves" class="sidebar-link">My Team Leaves</router-link>
           </li>
         </ul>
@@ -59,7 +59,6 @@ export default {
     return {
       dropdownOpen: false,
       userName: 'Guest',
-      isUserRole: false, // Tracks if the user has "User" role
     };
   },
   methods: {
@@ -78,14 +77,6 @@ export default {
           },
         });
         this.userName = userResponse.data.user.name;
-
-        // Fetch user role
-        const roleResponse = await axios.get('/api/user-role', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-        });
-        this.isUserRole = roleResponse.data.role === 'User';
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
