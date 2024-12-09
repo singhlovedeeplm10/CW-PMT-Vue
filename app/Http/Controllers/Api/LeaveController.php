@@ -21,8 +21,8 @@ class LeaveController extends Controller
             'half_day' => 'nullable|required_if:type_of_leave,Half Day|in:First Half,Second Half',
             'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day,Full Day Leave|date',
             'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
-            'start_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i',
-            'end_time' => 'nullable|required_if:type_of_leave,Short Leave,Half Day|date_format:H:i|after:start_time',
+            'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+            'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
             'reason' => 'required|string',
             'contact_during_leave' => 'required|string|max:15',
         ]);
@@ -161,42 +161,64 @@ if ($leave->start_time && $leave->end_time) {
 
     public function update(Request $request, Leave $leave)
     {
-try {
-    $validatedData = $request->validate([
-        'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
-        'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
-        'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date',
-        'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
-        'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
-        'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
-        'reason' => 'required|string',
-        'contact_during_leave' => 'required|string|max:15',
-        'status' => 'required|in:pending,approved,disapproved,hold,canceled',
-    ]);
+        try {
+            // Log the incoming request data for debugging
+            \Log::info('Incoming Request Data:', $request->all());
+    
+            // Ensure time fields are in the correct format
+            if ($request->has('start_time')) {
+                $request->merge([
+                    'start_time' => date('H:i', strtotime($request->start_time)),
+                ]);
+            }
+    
+            if ($request->has('end_time')) {
+                $request->merge([
+                    'end_time' => date('H:i', strtotime($request->end_time)),
+                ]);
+            }
+    
+            // Validate the input
+            $validatedData = $request->validate([
+                'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
+                'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:first_half,second_half',
+                'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date',
+                'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+                'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+                'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+                'reason' => 'required|string|max:255',
+                'contact_during_leave' => 'required|string|max:15',
+                'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+            ]);
     
             // Update the leave record
             $leave->update([
                 'type_of_leave' => $validatedData['type_of_leave'],
-                'half' => $validatedData['half'] ?? null,
+                'half_day' => $validatedData['half_day'] ?? null,
                 'start_date' => $validatedData['start_date'] ?? null,
                 'end_date' => $validatedData['end_date'] ?? null,
                 'start_time' => $validatedData['start_time'] ?? null,
                 'end_time' => $validatedData['end_time'] ?? null,
                 'reason' => $validatedData['reason'],
                 'contact_during_leave' => $validatedData['contact_during_leave'],
-                'status' => $validatedData['status'], // Update the status
-                'last_updated_by' => Auth::user()->name,
+                'status' => $validatedData['status'],
+                'last_updated_by' => $request->user()->name,
             ]);
     
-            // Respond with success
-            return response()->json(['message' => 'Leave application updated successfully!', 'leave' => $leave], 200);
+            return response()->json([
+                'message' => 'Leave application updated successfully!',
+                'leave' => $leave,
+            ], 200);
     
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Validation failed:', $e->errors());
             return response()->json(['error' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating leave:', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'An error occurred while updating leave.'], 500);
         }
     }
-
+      
 
     public function updateTeamLeave(Request $request, Leave $leave)
     {

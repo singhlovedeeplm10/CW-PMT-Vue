@@ -69,13 +69,14 @@
                         buttonClass="btn-dark" 
                         :clickEvent="addTaskRow" 
                     />
-                    <ButtonComponent 
-                        label="Save Task" 
-                        buttonClass="btn-primary" 
-                        :clickEvent="handleSaveTask" 
-                        :isDisabled="!allFieldsFilled || isSaving" 
-                        :title="!allFieldsFilled ? 'Please fill in all fields' : ''" 
-                    />
+                    <button 
+                        class="btn btn-primary" 
+                        :disabled="!allFieldsFilled || isSaving" 
+                        @click="handleSaveTask"
+                    >
+                        <span v-if="isSaving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span v-if="!isSaving">Save Task</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -211,7 +212,6 @@ export default {
     }
 };
 </script>
-
 
 <style scoped>
 .custom-modal-dialog {

@@ -5,33 +5,22 @@
       <h1>Welcome to the Dashboard</h1>
       <p>This is a protected page accessible only after login.</p>
 
-      <!-- Include the Clockin component -->
       <clockin :openModal="openModal" />
-
-      <!-- Include the TaskList component -->
       <task-list />
-      
-      <!-- Add the required attendanceId prop -->
       <add-task-modal :attendance-id="attendanceId" />
-      
       <AddBreakModal />
-
-
-      <daily-task />
-
+      <daily-task v-if="userRole === 'Admin'" />
       <user-break-list />
+      <missing-member v-if="userRole === 'Admin'" />
 
-      <missing-member />
-      
-      <break-entries />
-      
-      <apply-leave-modal/>
+      <!-- Conditionally render break-entries -->
+      <break-entries v-if="userRole === 'Admin'" />
 
-      <apply-team-leave-modal/>
-
-      <update-leave-modal/>
-      <update-team-leave-modal/>
-      
+      <apply-leave-modal />
+      <apply-team-leave-modal />
+      <update-leave-modal />
+      <update-team-leave-modal />
+      <add-employee-modal />
     </div>
   </master-component>
 </template>
@@ -44,19 +33,13 @@ import DailyTask from './tasks/DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
-import MemberLeave from './cards/MemberLeave.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import AddBreakModal from './modals/AddBreakModal.vue';
 import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
 import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
 import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
-import ButtonComponent from './ButtonComponent.vue';
-import InputField from './InputField.vue';
-import TextArea from './TextArea.vue';
-import Calendar from "./Calendar.vue";
-import ShowListing from "./ShowListing.vue";
-
+import AddEmployeeModal from './modals/AddEmployeeModal.vue';
 
 export default {
   name: "Dashboard",
@@ -67,24 +50,20 @@ export default {
     DailyTask,
     BreakEntries,
     MissingMember,
-    MemberLeave,
     AddTaskModal,
-    ButtonComponent,
-    InputField,
-    TextArea,
-    Calendar,
-    ShowListing,
     AddBreakModal,
     UserBreakList,
     ApplyLeaveModal,
     ApplyTeamLeaveModal,
     UpdateLeaveModal,
-    UpdateTeamLeaveModal
+    UpdateTeamLeaveModal,
+    AddEmployeeModal
   },
   data() {
     return {
       showModal: false,
-      attendanceId: 123, 
+      attendanceId: 123,
+      userRole: null,
     };
   },
   methods: {
@@ -94,20 +73,30 @@ export default {
     closeModal() {
       this.showModal = false;
     },
-    handleTakeBreak(reason) {
-      console.log("Break reason submitted:", reason);
+    fetchUserRole() {
+      axios.get('/api/user-role', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`
+        }
+      }).then(response => {
+        this.userRole = response.data.role;
+      }).catch(error => {
+        console.error('Error fetching user role:', error);
+      });
     },
   },
   beforeMount() {
     if (!localStorage.getItem('authToken')) {
       this.$router.push({ name: 'Login' });
+    } else {
+      this.fetchUserRole();
     }
   },
 };
 </script>
 
 <style scoped>
-.dashboard{
+.dashboard {
   padding: 30px;
 }
 </style>

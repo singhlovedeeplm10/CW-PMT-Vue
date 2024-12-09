@@ -1,152 +1,144 @@
 <template>
-    <div
-      class="modal fade"
-      id="updateTeamLeaveModal"
-      tabindex="-1"
-      aria-labelledby="updateTeamLeaveModalLabel"
-      aria-hidden="true"
-      v-if="leave"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content custom-modal">
-          <div class="modal-header custom-header">
-            <h5 class="modal-title" id="updateTeamLeaveModalLabel">Update Leave</h5>
-  
-            <!-- Status Box (Top Right) -->
-            <div
-              class="status-box"
-              :class="{
-                'bg-danger': leave.status === 'pending',
-                'bg-success': leave.status === 'approved',
-                'bg-warning': leave.status === 'disapproved',
-                'bg-secondary': leave.status === 'hold',
-                'bg-info': leave.status === 'canceled',
-              }"
-            >
-              {{ leave.status }}
-            </div>
-  
-            <button
-              type="button"
-              class="btn-close"
-              @click="closeModal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="submitLeaveUpdate">
-              <div class="mb-3">
-                <label for="leaveType" class="form-label">Leave Type</label>
-                <select
-                  v-model="leave.type_of_leave"
-                  id="leaveType"
-                  class="form-select"
-                  :disabled="!leave.isEditable"
-                  required
-                >
-                  <option value="Short Leave">Short Leave</option>
-                  <option value="Half Day Leave">Half Day Leave</option>
-                  <option value="Full Day Leave">Full Day Leave</option>
-                </select>
-              </div>
-  
-              <!-- Conditionally show start date and end date based on leave type -->
-              <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-                <label for="startDate" class="form-label">Start Date</label>
-                <input
-                  type="date"
-                  v-model="leave.start_date"
-                  id="startDate"
-                  class="form-control"
-                  :disabled="!leave.isEditable"
-                  required
-                />
-              </div>
-  
-              <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-                <label for="endDate" class="form-label">End Date</label>
-                <input
-                  type="date"
-                  v-model="leave.end_date"
-                  id="endDate"
-                  class="form-control"
-                  :disabled="!leave.isEditable"
-                  required
-                />
-              </div>
-  
-              <!-- Reason and Contact fields -->
-              <div class="mb-3">
-                <label for="reason" class="form-label">Reason</label>
-                <textarea
-                  v-model="leave.reason"
-                  id="reason"
-                  class="form-control"
-                  rows="3"
-                  :disabled="!leave.isEditable"
-                  required
-                ></textarea>
-              </div>
-  
-              <div class="mb-3">
-                <label for="contact" class="form-label">Contact During Leave</label>
-                <input
-                  type="text"
-                  v-model="leave.contact_during_leave"
-                  id="contact"
-                  class="form-control"
-                  :disabled="!leave.isEditable"
-                  required
-                />
-              </div>
-  
-              <!-- Conditionally show "Half Day" specific field -->
-              <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-                <label for="halfDay" class="form-label">Half Day</label>
-                <select
-                  v-model="leave.half_day"
-                  id="halfDay"
-                  class="form-select"
-                  :disabled="!leave.isEditable"
-                  required
-                >
-                  <option value="first_half">First Half</option>
-                  <option value="second_half">Second Half</option>
-                </select>
-              </div>
-  
-              <!-- Conditionally show "Short Leave" specific fields -->
-              <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-                <label for="startTime" class="form-label">Start Time</label>
-                <input
-                  type="time"
-                  v-model="leave.start_time"
-                  id="startTime"
-                  class="form-control"
-                  :disabled="!leave.isEditable"
-                  required
-                />
-              </div>
-  
-              <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-                <label for="endTime" class="form-label">End Time</label>
-                <input
-                  type="time"
-                  v-model="leave.end_time"
-                  id="endTime"
-                  class="form-control"
-                  :disabled="!leave.isEditable"
-                  required
-                />
-              </div>
+  <div
+    class="modal fade"
+    id="updateTeamLeavemodal"
+    tabindex="-1"
+    aria-labelledby="updateTeamLeavemodalLabel"
+    aria-hidden="true"
+    v-if="leave"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content custom-modal">
+        <div class="modal-header custom-header">
+          <h5 class="modal-title" id="updateTeamLeavemodalLabel">Update Leave</h5>
 
-              <div class="mb-3">
+          <!-- Status Box (Top Right) -->
+          <div
+            class="status-box"
+            :class="{
+              'bg-danger': leave.status === 'pending',
+              'bg-success': leave.status === 'approved',
+              'bg-warning': leave.status === 'disapproved',
+              'bg-secondary': leave.status === 'hold',
+              'bg-info': leave.status === 'canceled',
+            }"
+          >
+            {{ leave.status }}
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            @click="closeModal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="submitLeaveUpdate">
+            <div class="mb-3">
+              <label for="leaveType" class="form-label">Leave Type</label>
+              <select
+                v-model="leave.type_of_leave"
+                id="leaveType"
+                class="form-select"
+                required
+              >
+                <option value="Short Leave">Short Leave</option>
+                <option value="Half Day Leave">Half Day Leave</option>
+                <option value="Full Day Leave">Full Day Leave</option>
+              </select>
+            </div>
+
+            <!-- Conditionally show start date and end date based on leave type -->
+            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
+              <label for="startDate" class="form-label">Start Date</label>
+              <input
+                type="date"
+                v-model="leave.start_date"
+                id="startDate"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
+              <label for="endDate" class="form-label">End Date</label>
+              <input
+                type="date"
+                v-model="leave.end_date"
+                id="endDate"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <!-- Reason and Contact fields -->
+            <div class="mb-3">
+              <label for="reason" class="form-label">Reason</label>
+              <textarea
+                v-model="leave.reason"
+                id="reason"
+                class="form-control"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="contact" class="form-label">Contact During Leave</label>
+              <input
+                type="text"
+                v-model="leave.contact_during_leave"
+                id="contact"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <!-- Conditionally show "Half Day" specific field -->
+            <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
+              <label for="halfDay" class="form-label">Half Day</label>
+              <select
+                v-model="leave.half_day"
+                id="halfDay"
+                class="form-select"
+                required
+              >
+                <option value="first_half">First Half</option>
+                <option value="second_half">Second Half</option>
+              </select>
+            </div>
+
+            <!-- Conditionally show "Short Leave" specific fields -->
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+              <label for="startTime" class="form-label">Start Time</label>
+              <input
+                type="time"
+                v-model="leave.start_time"
+                id="startTime"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+              <label for="endTime" class="form-label">End Time</label>
+              <input
+                type="time"
+                v-model="leave.end_time"
+                id="endTime"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
               <label for="status" class="form-label">Leave Status</label>
               <select
                 v-model="leave.status"
                 id="status"
                 class="form-select"
-                :disabled="!leave.isEditable"
                 required
               >
                 <option value="pending">Pending</option>
@@ -156,93 +148,104 @@
                 <option value="canceled">Canceled</option>
               </select>
             </div>
-  
-              <div class="modal-footer">
-                <button
-                  type="submit"
-                  class="btn btn-success"
-                  :disabled="!leave.isEditable"
-                >
-                  Update
-                </button>
-                <button type="button" class="btn btn-secondary" @click="closeModal">
-                  Close
-                </button>
-              </div>
-            </form>
-          </div>
+
+            <div class="modal-footer">
+              <button
+                type="submit"
+                class="btn btn-success"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span v-if="!isLoading">Update</span>
+              </button>
+              <button type="button" class="btn btn-secondary" @click="closeModal">
+                Close
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import axios from "axios";
-  import { toast } from "vue3-toastify";
-  
-  export default {
-    name: "UpdateTeamLeaveModal",
-    props: {
-      leave: {
-        type: Object,
-        required: true,
-      },
-    },
-    methods: {
-      closeModal() {
-        this.$emit("close");
-      },
-  
-      // Submit the updated leave data
-      async submitLeaveUpdate() {
-        try {
-          const token = localStorage.getItem("authToken");
-          if (!token) {
-            alert("User is not authenticated.");
-            return;
-          }
-  
-          // Prepare the data to be sent based on leave type
-          const leaveData = {
-            type_of_leave: this.leave.type_of_leave,
-    start_date: this.leave.start_date,
-    end_date: this.leave.end_date,
-    reason: this.leave.reason,
-    contact_during_leave: this.leave.contact_during_leave,
-    status: this.leave.status,
-          };
-          if (this.leave.type_of_leave === "Half Day Leave") {
-    leaveData.half_day = this.leave.half_day;
-}
+  </div>
+</template>
 
-if (this.leave.type_of_leave === "Short Leave") {
-    leaveData.start_time = this.leave.start_time;
-    leaveData.end_time = this.leave.end_time;
-}
-  
-          // Send the request to update the leave
-          const response = await axios.put(
-            `/api/update-team-leaves/${this.leave.id}`,
-            leaveData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-  
-          console.log(response.data.message);
-          toast.success("Leave updated successfully!"); // Show success toast
-          this.$emit("leave-updated", response.data.leave); // Emit event to update the parent component
-          this.closeModal();
-        } catch (error) {
-          console.error("Error updating leave:", error);
-          toast.error("Failed to update leave. Please try again."); // Show error toast
-        }
-      },
+<script>
+import axios from "axios";
+import { toast } from "vue3-toastify";
+
+export default {
+  name: "UpdateTeamLeaveModal",
+  props: {
+    leave: {
+      type: Object,
+      required: true,
     },
-  };
-  </script>
+  },
+  data() {
+    return {
+      isLoading: false, // Loader state
+    };
+  },
+  methods: {
+    closeModal() {
+      this.$emit("close");
+    },
+
+    // Submit the updated leave data
+    async submitLeaveUpdate() {
+      try {
+        this.isLoading = true; // Show loader
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("User is not authenticated.");
+          return;
+        }
+
+        // Prepare the data to be sent based on leave type
+        const leaveData = {
+          type_of_leave: this.leave.type_of_leave,
+          start_date: this.leave.start_date,
+          end_date: this.leave.end_date,
+          reason: this.leave.reason,
+          contact_during_leave: this.leave.contact_during_leave,
+          status: this.leave.status,
+        };
+
+        if (this.leave.type_of_leave === "Half Day Leave") {
+          leaveData.half_day = this.leave.half_day;
+        }
+
+        if (this.leave.type_of_leave === "Short Leave") {
+          leaveData.start_time = this.leave.start_time;
+          leaveData.end_time = this.leave.end_time;
+        }
+
+        // Send the request to update the leave
+        const response = await axios.put(
+          `/api/update-team-leaves/${this.leave.id}`,
+          leaveData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log(response.data.message);
+        toast.success("Leave updated successfully!"); // Show success toast
+        this.$emit("leave-updated", response.data.leave); // Emit event to update the parent component
+        this.closeModal();
+      } catch (error) {
+        console.error("Error updating leave:", error);
+        toast.error("Failed to update leave. Please try again."); // Show error toast
+      } finally {
+        this.isLoading = false; // Hide loader
+      }
+    },
+  },
+};
+</script>
+
   <style scoped>
   /* Modal Content Styling */
   .custom-modal {

@@ -44,15 +44,11 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getUserRole()
+    public function getUserRole(Request $request)
     {
-        $user = Auth::user(); // Get the authenticated user
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $role = $user->role; // Assuming role is defined as a relationship
-        return response()->json(['role' => $role->title]);
+        return response()->json([
+            'role' => Auth::user()->roles->pluck('name')->first(),
+        ]);
     }
 
     public function logout(Request $request)

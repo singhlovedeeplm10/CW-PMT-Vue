@@ -28,7 +28,7 @@
           <li class="sidebar-subitem">
             <router-link to="/leaves" class="sidebar-link">My Leaves</router-link>
           </li>
-          <li  class="sidebar-subitem">
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
             <router-link to="/teamleaves" class="sidebar-link">My Team Leaves</router-link>
           </li>
         </ul>
@@ -59,6 +59,7 @@ export default {
     return {
       dropdownOpen: false,
       userName: 'Guest',
+      userRole: null,
     };
   },
   methods: {
@@ -81,9 +82,21 @@ export default {
         console.error('Error fetching user data:', error);
       }
     },
+    async fetchUserRole() {
+      axios.get('/api/user-role', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`
+        }
+      }).then(response => {
+        this.userRole = response.data.role;
+      }).catch(error => {
+        console.error('Error fetching user role:', error);
+      });
+    },
   },
   mounted() {
     this.fetchUserData();
+    this.fetchUserRole();
   },
 };
 </script>

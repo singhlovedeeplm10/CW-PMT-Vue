@@ -59,14 +59,20 @@ class TaskController extends Controller
 
     public function getUsersWithoutTasks()
     {
+        $today = now()->toDateString(); // Get today's date in 'Y-m-d' format
+    
         $usersWithoutTasks = DB::table('users')
-            ->leftJoin('daily_tasks', 'users.id', '=', 'daily_tasks.user_id')
+            ->leftJoin('daily_tasks', function ($join) use ($today) {
+                $join->on('users.id', '=', 'daily_tasks.user_id')
+                    ->whereDate('daily_tasks.created_at', $today);
+            })
             ->whereNull('daily_tasks.user_id')
             ->select('users.id', 'users.name', 'users.email')
             ->get();
     
         return response()->json($usersWithoutTasks);
     }
+    
 
     public function getDailyTasks()
 {

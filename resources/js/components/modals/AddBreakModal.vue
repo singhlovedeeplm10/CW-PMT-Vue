@@ -1,72 +1,81 @@
 <template>
-    <div
-      class="modal fade"
-      id="addbreakmodal"
-      tabindex="-1"
-      aria-labelledby="addbreakmodallabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content add-break-modal">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addbreakmodallabel">Add Break</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group mb-4" v-if="!isOnBreak">
-              <InputField
-                label="Break Reason"
-                inputType="text"
-                placeholder="Enter your break reason"
-                :isRequired="true"
-                inputClass="input-break-reason"
-                v-model="breakReason"
-              />
-            </div>
-            <ButtonComponent
-              label="Take Break"
-              iconClass="fas fa-clock"
-              buttonClass="btn-success w-100"
-              @click="startBreak"
+  <div
+    class="modal fade"
+    id="addbreakmodal"
+    tabindex="-1"
+    aria-labelledby="addbreakmodallabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content add-break-modal">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addbreakmodallabel">Add Break</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-4" v-if="!isOnBreak">
+            <InputField
+              label="Break Reason"
+              inputType="text"
+              placeholder="Enter your break reason"
+              :isRequired="true"
+              inputClass="input-break-reason"
+              v-model="breakReason"
             />
+          </div>
+          <ButtonComponent
+            v-if="!isLoading"
+            label="Take Break"
+            iconClass="fas fa-clock"
+            buttonClass="btn-success w-100"
+            @click="startBreak"
+          />
+          <div v-else class="text-center">
+            <span class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </span>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import InputField from "@/components/InputField.vue";
-  import ButtonComponent from "@/components/ButtonComponent.vue";
-  import { ref } from "vue";
-  import { toast } from "vue3-toastify";
-  import "vue3-toastify/dist/index.css";
-  import axios from "axios";
-  import * as bootstrap from "bootstrap";
-  
-  export default {
-    name: "AddBreakModal",
-    components: {
-      InputField,
-      ButtonComponent,
-    },
-    props: {
-      isOnBreak: Boolean,
-    },
-    emits: ["breakStarted"],
-    setup(_, { emit }) {
+  </div>
+</template>
+
+<script>
+import InputField from "@/components/InputField.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import { ref } from "vue";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+import axios from "axios";
+import * as bootstrap from "bootstrap";
+
+export default {
+  name: "AddBreakModal",
+  components: {
+    InputField,
+    ButtonComponent,
+  },
+  props: {
+    isOnBreak: Boolean,
+  },
+  emits: ["breakStarted"],
+  setup(_, { emit }) {
     const breakReason = ref("");
+    const isLoading = ref(false);
 
     const startBreak = async () => {
       if (!breakReason.value.trim()) {
         toast.error("Break reason is required.", { position: "top-right" });
         return;
       }
+
+      isLoading.value = true;
 
       try {
         const response = await axios.post(
@@ -96,16 +105,20 @@
         toast.error("Failed to start break. Please try again.", {
           position: "top-right",
         });
+      } finally {
+        isLoading.value = false;
       }
     };
 
     return {
       breakReason,
       startBreak,
+      isLoading,
     };
   },
 };
 </script>
+
   
   <style scoped>
   .add-break-modal {

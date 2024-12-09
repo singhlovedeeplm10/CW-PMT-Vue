@@ -39,16 +39,19 @@ Route::put('/update-tasks/{id}', [TaskController::class, 'updateTask']);
 Route::delete('/delete-tasks/{id}', [TaskController::class, 'deleteTask']);
 
 // LEAVES API ROUTE
+// leave routes (USER)
 Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/leaves', [LeaveController::class, 'showLeaves']);
-Route::middleware('auth:sanctum')->put('update-leaves/{leave}', [LeaveController::class, 'update']);
+Route::middleware('auth:sanctum')->put('/update-leaves/{leave}', [LeaveController::class, 'update']);
+Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
 
+// team leave routes (ADMIN)
 Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'teamLeave']);
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
 Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
-
 Route::get('/users/search', [LeaveController::class, 'search']);
-Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
+
+
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
 
@@ -58,8 +61,7 @@ Route::post('/users', [UserController::class, 'addUser']);
 Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
-Route::middleware('auth:sanctum')->get('/user-role', [AuthController::class, 'getUserRole']);
-
+Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
 
 // TECHNOLOGIES API ROUTE
 Route::post('/technologies', [TechnologyController::class, 'addTech']);
@@ -90,4 +92,3 @@ Route::get('/break-entries', [BreakController::class, 'getBreakEntries']);
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-

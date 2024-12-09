@@ -112,7 +112,7 @@
       v-if="showModal" 
       :leave="selectedLeave" 
       @close="closeModal"
-      ref="updateTeamLeaveModal"
+      ref="updateTeamLeavemodal"
     ></update-team-leave-modal>
     </master-component>
   </template>
@@ -182,14 +182,37 @@
           );
         }
       },
+      async fetchLeaveDetails(id) {
+    try {
+        const response = await axios.get(`/api/leaves/${id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+        });
+
+        if (response.data.success) {
+            this.selectedLeave = response.data.data;
+
+            // Remove condition to make the form always editable
+            this.selectedLeave.isEditable = true;
+
+            this.showModal = true;
+        } else {
+            alert('Failed to fetch leave details.');
+        }
+    } catch (error) {
+        console.error("Error fetching leave details:", error.response?.data || error.message);
+        alert('An error occurred while fetching leave details.');
+    }
+},
   
       viewLeaveDetails(leave) {
-      this.fetchLeaves(leave.id);
+      this.fetchLeaveDetails(leave.id);
     this.selectedLeave = leave;
     this.showModal = true;
     this.$nextTick(() => {
       // Bootstrap 5's modal API to show the modal
-      const modalElement = document.getElementById('updateteamleavemodal');
+      const modalElement = document.getElementById('updateTeamLeavemodal');
     if (modalElement) {
       // Initialize Bootstrap modal correctly
       const modal = new bootstrap.Modal(modalElement);
@@ -199,7 +222,7 @@
   },
   closeModal() {
     this.showModal = false;
-    const modalElement = document.getElementById('updateteamleavemodal');
+    const modalElement = document.getElementById('updateTeamLeavemodal');
     const modal = new bootstrap.Modal(modalElement);
     modal.hide();
   },
