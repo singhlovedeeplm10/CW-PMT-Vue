@@ -9,20 +9,54 @@
       </div>
 
       <div class="table-container">
-        <ShowListing
-          title=""
-          :columns="['id', 'name', 'email']"
-          :data="users.data"
-          :currentPage="currentPage"
-          :totalPages="totalPages"
-          @page-changed="fetchUsers"
-        />
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users.data" :key="user.id">
+              <td>{{ user.id }}</td>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.status === '1' ? 'Active' : 'Inactive' }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-primary me-2"
+                  @click="editUser(user)"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
+      <!-- Pagination Component -->
+      <pagination
+        :totalPages="totalPages"
+        :currentPage="currentPage"
+        @page-changed="fetchUsers"
+      />
+
+      <!-- Modals -->
       <add-employee-modal
         v-if="showAddEmployeeModal"
         @close="closeAddEmployeeModal"
         @employee-added="fetchUsers"
+      />
+
+      <edit-employee-modal
+        v-if="showEditEmployeeModal"
+        :user="selectedUser"
+        @close="closeEditEmployeeModal"
+        @employee-updated="fetchUsers"
       />
     </div>
   </master-component>
@@ -31,15 +65,17 @@
 <script>
 import axios from "axios";
 import MasterComponent from "./layouts/Master.vue";
-import ShowListing from "@/components/ShowListing.vue";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal.vue";
+import EditEmployeeModal from "@/components/modals/EditEmployeeModal.vue";
+import Pagination from "@/components/Pagination.vue"; // Importing Pagination component
 
 export default {
   name: "Users",
   components: {
     MasterComponent,
-    ShowListing,
     AddEmployeeModal,
+    EditEmployeeModal,
+    Pagination,
   },
   data() {
     return {
@@ -47,6 +83,8 @@ export default {
       currentPage: 1,
       totalPages: 1,
       showAddEmployeeModal: false,
+      showEditEmployeeModal: false,
+      selectedUser: null,
     };
   },
   mounted() {
@@ -69,11 +107,23 @@ export default {
     closeAddEmployeeModal() {
       this.showAddEmployeeModal = false;
     },
+    editUser(user) {
+      this.selectedUser = user;
+      this.showEditEmployeeModal = true;
+    },
+    closeEditEmployeeModal() {
+      this.showEditEmployeeModal = false;
+      this.selectedUser = null;
+    },
   },
 };
 </script>
 
+
 <style scoped>
+.table-container {
+  margin-top: 20px;
+}
 .users-page {
   padding: 20px;
   background-color: #f9f9f9;

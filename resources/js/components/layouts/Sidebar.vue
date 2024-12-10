@@ -33,6 +33,19 @@
           </li>
         </ul>
       </li>
+      <li class="sidebar-item" @click="toggleDropdownTasks">
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">Tasks</h3>
+        </div>
+        <ul v-show="dropdownOpen" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/mytasklist" class="sidebar-link">My Task List</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/dailytask" class="sidebar-link">Daily Task List</router-link>
+          </li>
+        </ul>
+      </li>
       <!-- <li class="sidebar-item" @click="toggleDropdown">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Permissions</h3>
@@ -67,6 +80,9 @@ export default {
       this.dropdownOpen = !this.dropdownOpen;
     },
     toggleDropdownLeaves() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
+    toggleDropdownTasks() {
       this.dropdownOpen = !this.dropdownOpen;
     },
     async fetchUserData() {

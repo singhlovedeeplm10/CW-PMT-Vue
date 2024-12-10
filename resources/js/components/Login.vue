@@ -13,7 +13,10 @@
         <label>Password:</label>
         <input type="password" v-model="password" required />
       </div>
-      <button type="submit" class="login-button">Login</button>
+      <button type="submit" class="login-button" :disabled="loading">
+        <span v-if="loading" class="loader"></span>
+        <span v-else>Login</span>
+      </button>
     </form>
     <p v-if="error" class="error">{{ error }}</p>
   </div>
@@ -28,15 +31,20 @@ export default {
       email: '',
       password: '',
       error: null,
+      loading: false, // State for loader
     };
   },
   methods: {
     async login() {
+      this.loading = true; // Start loader
+      this.error = null;
+
       try {
         const response = await axios.post('/api/login', {
           email: this.email,
           password: this.password,
         });
+
         if (response.data.success) {
           // Store the token in local storage
           localStorage.setItem('authToken', response.data.token);
@@ -47,10 +55,12 @@ export default {
           // Redirect to the Dashboard
           this.$router.push({ name: 'Dashboard' });
         } else {
-          this.error = 'Login failed. Please check your credentials.';
+          this.error = response.data.message; // Display the message from the API
         }
       } catch (error) {
-        this.error = 'An error occurred. Please try again.';
+        this.error = 'Your account is inactive. Please contact support.';
+      } finally {
+        this.loading = false; // Stop loader
       }
     },
   },
@@ -58,93 +68,83 @@ export default {
 </script>
 
 <style scoped>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f4f6f9;
-}
-
 .login-container {
   max-width: 400px;
-  margin: 100px auto;
-  padding: 2rem;
-  text-align: center;
-  background-color: #ffffff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  transition: transform 0.3s, box-shadow 0.3s;
+  margin: auto;
 }
 
 .header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .logo {
   width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  margin-bottom: 1rem;
 }
 
 .brand {
-  font-size: 1.8rem;
+  font-size: 24px;
   font-weight: bold;
-  color: #007bff;
+  margin-top: 10px;
+}
+
+.login-form {
+  margin-top: 20px;
 }
 
 .input-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 1.25rem;
+  margin-bottom: 15px;
 }
 
-label {
+.input-group label {
+  display: block;
   font-weight: bold;
-  color: #555;
-  margin-bottom: 0.5rem;
+  margin-bottom: 5px;
 }
 
-input[type="email"],
-input[type="password"] {
-  width: 94%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  outline: none;
+.input-group input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
 }
 
 .login-button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 10px;
   background-color: #007bff;
   color: #fff;
   border: none;
-  border-radius: 4px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  position: relative;
 }
 
-.login-button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+.login-button:disabled {
+  background-color: #6c757d;
 }
 
 .error {
-  color: #ff3333;
-  margin-top: 1rem;
-  font-weight: bold;
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.loader {
+  border: 3px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 3px solid #007bff;
+  width: 15px;
+  height: 15px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

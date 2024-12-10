@@ -1,4 +1,6 @@
 <template>
+    <master-component>
+
   <div class="task-card">
     <div class="task-card-header">
       <h4>Daily Tasks</h4>
@@ -143,15 +145,20 @@
       </div>
     </div>
   </div>
+</master-component>
 </template>
 
 <script>
+import MasterComponent from './layouts/Master.vue';
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 import { toast } from "vue3-toastify";
 
 export default {
   name: "DailyTask",
+  components: {
+    MasterComponent,
+  },
   data() {
     return {
       tasks: [], // Stores fetched tasks

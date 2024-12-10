@@ -9,7 +9,7 @@
       <task-list />
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
-      <daily-task v-if="userRole === 'Admin'" />
+      <!-- <daily-task v-if="userRole === 'Admin'" /> -->
       <user-break-list />
       <missing-member v-if="userRole === 'Admin'" />
 
@@ -20,7 +20,6 @@
       <apply-team-leave-modal />
       <update-leave-modal />
       <update-team-leave-modal />
-      <add-employee-modal />
     </div>
   </master-component>
 </template>
@@ -29,7 +28,7 @@
 import MasterComponent from './layouts/Master.vue';
 import Clockin from './clockin/Clockin.vue';
 import TaskList from './tasks/TaskList.vue';
-import DailyTask from './tasks/DailyTask.vue';
+import DailyTask from './DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
@@ -39,7 +38,6 @@ import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
 import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
 import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
-import AddEmployeeModal from './modals/AddEmployeeModal.vue';
 
 export default {
   name: "Dashboard",
@@ -57,7 +55,6 @@ export default {
     ApplyTeamLeaveModal,
     UpdateLeaveModal,
     UpdateTeamLeaveModal,
-    AddEmployeeModal
   },
   data() {
     return {

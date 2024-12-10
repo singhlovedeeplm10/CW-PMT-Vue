@@ -30,13 +30,16 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 // TASKS API ROUTE
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
-Route::get('/tasks', [TaskController::class, 'showTasks']);
+Route::middleware(['auth:sanctum'])->get('/tasks', [TaskController::class, 'showTasks']);
 Route::get('/projects', [TaskController::class, 'fetchProjects']);
 Route::get('/users-without-tasks', [TaskController::class, 'getUsersWithoutTasks']);
 
 Route::get('/daily-tasks', [TaskController::class, 'getDailyTasks']);
 Route::put('/update-tasks/{id}', [TaskController::class, 'updateTask']);
 Route::delete('/delete-tasks/{id}', [TaskController::class, 'deleteTask']);
+Route::middleware('auth:sanctum')->get('/my-daily-tasks', function (Request $request) {
+    return $request->user()->dailyTasks()->with('project')->get();
+});
 
 // LEAVES API ROUTE
 // leave routes (USER)
@@ -62,6 +65,8 @@ Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
+Route::put('/users/{id}', [UserController::class, 'updateUser']);
+
 
 // TECHNOLOGIES API ROUTE
 Route::post('/technologies', [TechnologyController::class, 'addTech']);
@@ -92,3 +97,4 @@ Route::get('/break-entries', [BreakController::class, 'getBreakEntries']);
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
+Route::middleware('auth:sanctum')->get('/tasks/today', [TaskController::class, 'getTasksForToday']);

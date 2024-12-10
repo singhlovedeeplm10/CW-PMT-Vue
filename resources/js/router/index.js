@@ -10,6 +10,9 @@ import Dashboard from '../components/Dashboard.vue';
 import Tasks from '../components/Tasks.vue'; 
 import Leaves from '../components/Leaves.vue'; 
 import TeamLeaves from '../components/TeamLeaves.vue'; 
+// import DailyTask from '../components/tasks/DailyTask.vue'; 
+import DailyTask from '../components/DailyTask.vue'; 
+import MyTaskList from '../components/MyTaskList.vue'; 
 
 
 const routes = [
@@ -20,7 +23,9 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/task', name: 'Tasks', component: Tasks },
   { path: '/leaves', name: 'Leaves', component: Leaves },
-  { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves } 
+  { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves }, 
+  { path: '/dailytask', name: 'DailyTask', component: DailyTask }, 
+  { path: '/mytasklist', name: 'MyTaskList', component: MyTaskList } 
 ];
 
 const router = createRouter({

@@ -44,21 +44,6 @@
 </table>
 
     <AddTaskModal @taskAdded="fetchTasks" />
-    <!-- Modal for Add Task -->
-    <div class="modal fade" id="addtaskmodal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Add Task</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <!-- Task form or other content -->
-            <p>Task form goes here.</p>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -83,7 +68,11 @@ export default {
   methods: {
     async fetchTasks() {
   try {
-    const response = await axios.get("/api/tasks");
+    const response = await axios.get("/api/tasks",{
+      headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+    });
     this.tasks = response.data; // Store the tasks, including project data
   } catch (error) {
     console.error("Error fetching tasks:", error);

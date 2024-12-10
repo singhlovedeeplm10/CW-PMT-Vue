@@ -20,8 +20,13 @@ class AuthController extends Controller
         // Check user credentials
         $user = User::where('email', $request->email)->first();
     
+        // Validate credentials and status
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
+        }
+    
+        if ($user->status === '0') { // Check if user is inactive
+            return response()->json(['success' => false, 'message' => 'Your account is inactive. Please contact support.'], 403);
         }
     
         // Generate token
@@ -33,8 +38,7 @@ class AuthController extends Controller
             'token' => $token,
             'lastLoginDate' => now()->toDateString(),
         ]);
-    }
-    
+    }    
 
     public function getUser(Request $request)
     {
