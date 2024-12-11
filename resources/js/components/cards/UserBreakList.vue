@@ -1,64 +1,125 @@
 <template>
-    <div class="break-card">
-      <div class="break-card-header">
-        <h4>My Breaks List</h4>
-      </div>
-      <table class="break-table">
-        <thead>
-          <tr>
-            <th>Start Time</th>
-            <th>Reason</th>
-            <th>Break Time</th>
-            <th>End Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-        </tbody>
-      </table>
-      
+  <div class="break-card">
+    <div class="break-card-header">
+      <h4 class="break-card-title">My Breaks List</h4>
     </div>
-  </template>
-  
-  <script>
-//   import axios from 'axios';
-  import AddTaskModal from '@/components/modals/AddTaskModal.vue';
-  
-  export default {
-    name: "UserBreakList",
-    
-   
-   
-  };
-  </script>
-  
-  <style scoped>
-  .break-card {
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 20px;
-    background-color: #fff;
-  }
-  .break-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .break-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .break-table th,
-  .break-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    background-color: #f2f2f2;
-  }
-  </style>  
+    <table class="break-table">
+      <thead>
+        <tr>
+          <th>Break In</th>
+          <th>Break Out</th>
+          <th>Time</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(breakData, index) in breaks" :key="index">
+          <td>{{ breakData.start_time }}</td>
+          <td>{{ breakData.break_out }}</td>
+          <td>{{ breakData.break_time }}</td>
+          <td>{{ breakData.reason }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
 
-  
+<script>
+import axios from 'axios';
 
-  
+export default {
+  name: "UserBreakList",
+  data() {
+    return {
+      breaks: [], // Holds break data
+    };
+  },
+  mounted() {
+    this.fetchBreaks();
+  },
+  methods: {
+    async fetchBreaks() {
+      try {
+        const response = await axios.get('/api/user-breaks', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.breaks = response.data;
+      } catch (error) {
+        console.error("Error fetching breaks:", error);
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.break-card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.break-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.break-card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #343a40;
+  margin: 0;
+}
+
+.break-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.break-table th {
+  padding: 12px 10px;
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 3px solid #0056b3;
+}
+
+.break-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ddd;
+  color: #495057;
+}
+
+.break-table tr:nth-child(odd) {
+  background-color: #f8f9fa;
+}
+
+.break-table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.break-table tr:hover {
+  background-color: #e9ecef;
+  cursor: pointer;
+}
+
+.break-table th:first-child,
+.break-table td:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.break-table th:last-child,
+.break-table td:last-child {
+  border-radius: 0 6px 6px 0;
+}
+</style>

@@ -17,7 +17,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(task, index) in tasks" :key="index">
+                            <tr v-for="(task, index) in tasks" :key="task.id || index">
                                 <td>
                                     <select
                                         v-model="task.project_id"
@@ -89,7 +89,7 @@ import InputField from '@/components/InputField.vue';
 import TextArea from '@/components/TextArea.vue';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 
 export default {
@@ -100,22 +100,20 @@ export default {
         TextArea
     },
     props: {
-        attendanceId: {
-            type: Number,
+        tasks: {
+            type: Array,
             required: true
         }
     },
     emits: ['taskAdded'],
-    setup(_, { emit }) {
-        const tasks = ref([{ project_id: '', hours: '', task_description: '' }]);
-        const taskErrors = ref([{ project_id: false, hours: false, task_description: false }]);
+    setup(props, { emit }) {
+        const tasks = ref(props.tasks || []);
+        const taskErrors = ref(tasks.value.map(() => ({ project_id: false, hours: false, task_description: false })));
         const projects = ref([]);
         const isSaving = ref(false);
 
         const allFieldsFilled = computed(() => {
-            return tasks.value.length > 0 && tasks.value.every(task => 
-                task.project_id && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description
-            );
+            return tasks.value.every(task => task.project_id && task.hours && !isNaN(task.hours) && task.hours > 0 && task.task_description);
         });
 
         const fetchProjects = async () => {
@@ -166,7 +164,7 @@ export default {
                     }
                 });
                 if (response.status === 200) {
-                    toast.success('Tasks saved successfully!');
+                    toast.success('Tasks saved/updated successfully!');
                     emit('taskAdded');
                     closeModal();
                 } else {
@@ -194,6 +192,10 @@ export default {
             };
             return !taskErrors.value[index].project_id && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
         };
+
+        watch(() => props.tasks, (newTasks) => {
+            tasks.value = newTasks;
+        }, { deep: true });
 
         onMounted(fetchProjects);
 

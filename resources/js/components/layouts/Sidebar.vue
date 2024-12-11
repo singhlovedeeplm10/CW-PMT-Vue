@@ -20,11 +20,12 @@
       <li class="sidebar-item">
         <router-link to="/listing" class="sidebar-link">Listing</router-link>
       </li>
-      <li class="sidebar-item" @click="toggleDropdownLeaves">
+      <!-- Leaves Dropdown -->
+      <li class="sidebar-item" @click="toggleDropdown('leaves')">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Leaves</h3>
         </div>
-        <ul v-show="dropdownOpen" class="sidebar-submenu">
+        <ul v-show="dropdowns.leaves" class="sidebar-submenu">
           <li class="sidebar-subitem">
             <router-link to="/leaves" class="sidebar-link">My Leaves</router-link>
           </li>
@@ -33,11 +34,12 @@
           </li>
         </ul>
       </li>
-      <li class="sidebar-item" @click="toggleDropdownTasks">
+      <!-- Tasks Dropdown -->
+      <li class="sidebar-item" @click="toggleDropdown('tasks')">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Tasks</h3>
         </div>
-        <ul v-show="dropdownOpen" class="sidebar-submenu">
+        <ul v-show="dropdowns.tasks" class="sidebar-submenu">
           <li class="sidebar-subitem">
             <router-link to="/mytasklist" class="sidebar-link">My Task List</router-link>
           </li>
@@ -46,19 +48,6 @@
           </li>
         </ul>
       </li>
-      <!-- <li class="sidebar-item" @click="toggleDropdown">
-        <div class="permissions-header">
-          <h3 class="sidebar-subtitle">Permissions</h3>
-        </div>
-        <ul v-show="dropdownOpen" class="sidebar-submenu">
-          <li class="sidebar-subitem">
-            <router-link to="" class="sidebar-link">View Permissions</router-link>
-          </li>
-          <li class="sidebar-subitem">
-            <router-link to="" class="sidebar-link">Add Permissions</router-link>
-          </li>
-        </ul>
-      </li> -->
     </ul>
   </aside>
 </template>
@@ -70,24 +59,24 @@ export default {
   name: 'SidebarComponent',
   data() {
     return {
-      dropdownOpen: false,
+      dropdowns: {
+        leaves: false,
+        tasks: false,
+      },
       userName: 'Guest',
       userRole: null,
     };
   },
   methods: {
-    toggleDropdown() {
-      this.dropdownOpen = !this.dropdownOpen;
-    },
-    toggleDropdownLeaves() {
-      this.dropdownOpen = !this.dropdownOpen;
-    },
-    toggleDropdownTasks() {
-      this.dropdownOpen = !this.dropdownOpen;
+    toggleDropdown(dropdownName) {
+      // Toggle the selected dropdown and close others
+      this.dropdowns = {
+        ...this.dropdowns,
+        [dropdownName]: !this.dropdowns[dropdownName],
+      };
     },
     async fetchUserData() {
       try {
-        // Fetch username
         const userResponse = await axios.get('/api/username', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
@@ -99,15 +88,16 @@ export default {
       }
     },
     async fetchUserRole() {
-      axios.get('/api/user-role', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`
-        }
-      }).then(response => {
+      try {
+        const response = await axios.get('/api/user-role', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
         this.userRole = response.data.role;
-      }).catch(error => {
+      } catch (error) {
         console.error('Error fetching user role:', error);
-      });
+      }
     },
   },
   mounted() {

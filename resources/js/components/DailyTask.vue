@@ -48,135 +48,121 @@
                 class="btn btn-primary btn-sm"
                 @click="openModal(task)"
               >
-                <i class="fas fa-eye"></i> View
+                <i class="fas fa-eye"></i>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Modal -->
-      <div
-        class="modal fade"
-        id="dailytaskmodal"
-        tabindex="-1"
-        aria-labelledby="dailytaskmodalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="dailytaskmodalLabel">Edit Task</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="dailytaskmodal"
+  tabindex="-1"
+  aria-labelledby="dailytaskmodalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog custom-modal-width modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header custom-header">
+        <h5 class="modal-title" id="dailytaskmodalLabel">
+    Edit Tasks for {{ userName }}
+  </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <!-- Modal Body -->
+      <div class="modal-body custom-body">
+        <div v-for="(task, index) in currentTasks" :key="task.id" class="mb-4">
+          <form
+            @submit.prevent="updateTask(task)"
+            class="d-flex align-items-center flex-wrap"
+          >
+            <!-- Project Name Dropdown -->
+            <div
+              class="form-group me-3 mb-3"
+              style="flex: 1; min-width: 300px;"
+            >
+              <label for="projectName" class="form-label">Project Name</label>
+              <select
+                class="form-control"
+                id="projectName"
+                v-model="task.project_id"
+              >
+                <option value="">Select Project</option>
+                <option
+                  v-for="project in projects"
+                  :key="project.id"
+                  :value="project.id"
+                >
+                  {{ project.name }}
+                </option>
+              </select>
             </div>
-            <div class="modal-body">
-              <form @submit.prevent="updateTask">
-                <!-- Project Name Dropdown -->
-                <div class="row mb-3">
-  <div class="col-md-3">
-    <label for="projectName" class="form-label">Project Name</label>
-  </div>
-  <div class="col-md-9">
-    <select
-      class="form-control"
-      id="projectName"
-      v-model="currentTask.project_id"
-    >
-      <option value="">Select Project</option>
-      <option
-        v-for="project in projects"
-        :key="project.id"
-        :value="project.id"
-      >
-        {{ project.name }}
-      </option>
-    </select>
+            <!-- Hours Field -->
+            <div
+              class="form-group me-3 mb-3"
+              style="flex: 1; min-width: 100px;"
+            >
+              <label for="hours" class="form-label">Hours</label>
+              <input
+                type="number"
+                class="form-control"
+                id="hours"
+                v-model="task.hours"
+                step="0.01"
+              />
+            </div>
+            <!-- Task Description Field -->
+            <div
+              class="form-group me-3 mb-3"
+              style="flex: 2; min-width: 400px;"
+            >
+              <label for="taskDescription" class="form-label"
+                >Task Description</label
+              >
+              <textarea
+                class="form-control"
+                id="taskDescription"
+                v-model="task.task_description"
+              ></textarea>
+            </div>
+            <!-- Buttons -->
+<!-- Buttons for Update and Delete -->
+<div class="form-group d-flex align-items-center mb-3" style="flex: 1; min-width: 200px;">
+  <!-- Update Task -->
+  <button type="button" class="btn btn-success me-2" @click="updateTask(task)" :disabled="isLoading">
+    <i class="fas fa-check"></i> 
+  </button>
+
+  <!-- Delete Task -->
+  <button type="button" class="btn btn-danger me-2" @click="deleteTask(task)" :disabled="isLoading">
+    <i class="fas fa-trash"></i> 
+  </button>
+</div>
+
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
-
-                <!-- Hours Field -->
-                <div class="row mb-3">
-                  <div class="col-md-3">
-                    <label for="hours" class="form-label">Hours</label>
-                  </div>
-                  <div class="col-md-9">
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="hours"
-                      v-model="currentTask.hours"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-
-                <!-- Task Description Field -->
-                <div class="row mb-3">
-                  <div class="col-md-3">
-                    <label for="taskDescription" class="form-label">Task Description</label>
-                  </div>
-                  <div class="col-md-9">
-                    <textarea
-                      class="form-control"
-                      id="taskDescription"
-                      v-model="currentTask.task_description"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <!-- Task Status Field -->
-                <div class="row mb-3">
-                  <div class="col-md-3">
-                    <label for="taskStatus" class="form-label">Task Status</label>
-                  </div>
-                  <div class="col-md-9">
-                    <select
-                      class="form-control"
-                      id="taskStatus"
-                      v-model="currentTask.task_status"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-success"
-                @click="completeTask"
-                :disabled="isLoading"
-              >
-                <i class="fas fa-check"></i> Complete
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger"
-                @click="deleteTask"
-                :disabled="isLoading"
-              >
-                <i class="fas fa-trash"></i> Delete
-              </button>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </master-component>
 </template>
@@ -196,6 +182,7 @@ export default {
   return {
     tasks: [],
     selectedDate: new Date().toISOString().slice(0, 10), // Default to today
+    currentTasks: [], // Add this line to declare currentTasks
     currentTask: {
       id: null,
       project_name: '',
@@ -203,25 +190,18 @@ export default {
       task_description: '',
       task_status: 'pending',
       project_id: null, // Add project_id to the current task data
+      userName: '',
     },
     projects: [], // Store fetched projects
     isLoading: false,
   };
 },
+
   mounted() {
     this.fetchDailyTasks();
     this.fetchProjects();
   },
   methods: {
-    async fetchProjects() {
-    try {
-      const response = await axios.get('/api/projects'); // Ensure this API route is defined in your Laravel backend
-      this.projects = response.data.projects; // Store fetched projects in the projects array
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-      toast.error('Failed to fetch projects.');
-    }
-  },
     async fetchDailyTasks() {
       try {
         const response = await axios.get('/api/daily-tasks', {
@@ -242,54 +222,88 @@ export default {
         toast.error('Failed to fetch projects. Please try again.');
       }
     },
-    openModal(task) {
-      this.currentTask = {
-      id: task.id,
-      project_id: task.project?.id || null, // Set project_id based on task data
-      project_name: task.project?.name || 'N/A',
-      hours: task.hours || 0,
-      task_description: task.task_description || '',
-      task_status: task.task_status || 'pending',
-    };
+    async openModal(task) {
+  try {
+    const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`);
+    if (response.data.success) {
+      const userTasks = response.data.tasks;
 
-    const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
-    modal.show();
-  },
-    async updateTask() {
-      try {
-        this.isLoading = true;
-        const response = await axios.put(
-          `/api/update-tasks/${this.currentTask.id}`,
-          this.currentTask
-        );
-        this.fetchDailyTasks();
-        toast.success('Task updated successfully!');
-        this.isLoading = false;
-      } catch (error) {
-        console.error('Error updating task:', error);
-        this.isLoading = false;
-        toast.error('Error updating task. Please try again.');
+      if (userTasks.length > 0) {
+        // Populate currentTasks with all tasks
+        this.currentTasks = userTasks.map((task) => ({
+          id: task.id,
+          project_id: task.project?.id || null,
+          project_name: task.project?.name || '',
+          hours: task.hours || 0,
+          task_description: task.task_description || '',
+          task_status: task.task_status || 'pending',
+          user_name: task.user?.name || 'Unknown',
+        }));
+      } else {
+        this.currentTasks = [];
       }
-    },
-    async deleteTask() {
-      try {
-        this.isLoading = true;
-        await axios.delete(`/api/delete-tasks/${this.currentTask.id}`);
-        this.tasks = this.tasks.filter(
-          (task) => task.id !== this.currentTask.id
-        );
-        toast.success('Task deleted successfully!');
-        this.isLoading = false;
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById('dailytaskmodal')
-        );
-        modal.hide();
-      } catch (error) {
-        console.error('Error deleting task:', error);
-        this.isLoading = false;
-        toast.error('Error deleting task. Please try again.');
-      }
-    },
+
+      // Set the userName for the modal heading dynamically
+      this.userName = task.user.name;
+
+      // Open the modal
+      const modal = new bootstrap.Modal(
+        document.getElementById('dailytaskmodal')
+      );
+      modal.show();
+    }
+  } catch (error) {
+    console.error('Error fetching user tasks:', error);
+    toast.error('Failed to fetch user tasks. Please try again.');
+  }
+},
+
+async updateTask(task) {
+  try {
+    this.isLoading = true;
+    const response = await axios.put(`/api/update-tasks/${task.id}`, task);
+    
+    // Update the task in the currentTasks array with the updated task data
+    const updatedTaskIndex = this.currentTasks.findIndex(t => t.id === task.id);
+    if (updatedTaskIndex !== -1) {
+      this.currentTasks[updatedTaskIndex] = response.data;
+    }
+
+    // You can also update the main tasks array if required
+    // Example: Update the task in this.tasks if necessary.
+
+    toast.success('Task updated successfully!');
+    this.isLoading = false;
+  } catch (error) {
+    console.error('Error updating task:', error);
+    this.isLoading = false;
+    toast.error('Error updating task. Please try again.');
+  }
+},
+async deleteTask(task) {
+  try {
+    this.isLoading = true;
+    const response = await axios.delete(`/api/delete-tasks/${task.id}`);
+
+    // Remove the task from the currentTasks array
+    this.currentTasks = this.currentTasks.filter(t => t.id !== task.id);
+
+    // You can also update the main tasks array if required
+    // Example: Remove the task from this.tasks if necessary.
+
+    toast.success('Task deleted successfully!');
+    this.isLoading = false;
+
+    // Hide the modal after deletion
+    const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
+    modal.hide();
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    this.isLoading = false;
+    toast.error('Error deleting task. Please try again.');
+  }
+},
+
   },
 };
 </script>
@@ -317,5 +331,22 @@ ul{
 }
 .bg-light-green {
   background-color: white; /* Light green */
+}
+.modal-body.custom-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+button {
+  white-space: nowrap;
+}
+.custom-modal-width {
+  max-width: 77%; /* Adjust the percentage as needed */
+  margin: auto;
 }
 </style>

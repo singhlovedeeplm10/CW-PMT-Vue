@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class BreakController extends Controller
 {
@@ -150,13 +151,57 @@ class BreakController extends Controller
     }
 }
 
-public function getBreakEntries(Request $request)
+public function getUserBreaks(Request $request)
 {
-    $date = $request->query('date');
-    $breakEntries = Breaks::with('user')
-        ->whereDate('break_time', $date)
-        ->get();
-    return response()->json($breakEntries);
+    try {
+        $userId = $request->user()->id; // Ensure the user is authenticated
+        Log::info("Fetching breaks for user ID: " . $userId);
+
+        $breaks = Breaks::where('user_id', $userId)
+            ->select('start_time', 'break_time', 'reason') // Fetch only required fields
+            ->get()
+            ->map(function ($break) {
+                // Calculate "Break Out" time
+                $breakOutTime = \Carbon\Carbon::parse($break->start_time)
+                    ->addSeconds($this->convertBreakTimeToSeconds($break->break_time));
+
+                return [
+                    'start_time' => \Carbon\Carbon::parse($break->start_time)->format('h:i A'),
+                    'break_out' => $breakOutTime->format('h:i A'), // Calculated Break Out time
+                    'break_time' => gmdate('H:i:s', $this->convertBreakTimeToSeconds($break->break_time)), // Format in hours, minutes, seconds
+                    'reason' => $break->reason,
+                ];
+            });
+
+        return response()->json($breaks);
+    } catch (\Exception $e) {
+        Log::error("Error fetching breaks: " . $e->getMessage());
+        return response()->json(['error' => 'Failed to fetch breaks'], 500);
+    }
+}
+
+/**
+ * Convert break time to seconds.
+ * Handles cases where break_time might be stored in different formats.
+ *
+ * @param string|int $breakTime
+ * @return int
+ */
+private function convertBreakTimeToSeconds($breakTime)
+{
+    // If break_time is already an integer (e.g., stored as seconds)
+    if (is_numeric($breakTime)) {
+        return (int) $breakTime;
+    }
+
+    // If break_time is stored in H:i:s format
+    try {
+        $timeParts = explode(':', $breakTime);
+        return ($timeParts[0] * 3600) + ($timeParts[1] * 60) + $timeParts[2];
+    } catch (\Exception $e) {
+        Log::error("Invalid break_time format: " . $breakTime);
+        return 0; // Default to 0 seconds if parsing fails
+    }
 }
 
 

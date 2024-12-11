@@ -93,8 +93,11 @@ Route::middleware('auth:sanctum')->post('/end-break', [BreakController::class, '
 Route::middleware('auth:sanctum')->get('/daily-breaks', [BreakController::class, 'getDailyBreaks']);
 Route::middleware('auth:sanctum')->get('/weekly-break-time', [BreakController::class, 'getWeeklyBreakTime']);
 Route::get('/break-entries', [BreakController::class, 'getBreakEntries']);
+Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 'getUserBreaks']);
 
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-Route::middleware('auth:sanctum')->get('/tasks/today', [TaskController::class, 'getTasksForToday']);
+Route::get('/fetch-user-tasks/{userId}', [TaskController::class, 'fetchUserTask']);
+Route::get('/user-daily-tasks', [TaskController::class, 'getUserDailyTasks']);
+Route::middleware('auth:sanctum')->get('/user-tasks', [TaskController::class, 'getUserTasks']);

@@ -1,4 +1,3 @@
-
 <template>
   <div class="task-card">
     <div class="task-card-header">
@@ -24,26 +23,27 @@
       </a>
     </div>
     <table class="task-table">
-  <thead>
-    <tr>
-      <th>Project Name</th>
-      <th>Hours</th>
-      <th>Task Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr v-if="tasks.length === 0">
-      <td colspan="3" class="text-center">No Task added</td>
-    </tr>
-    <tr v-else v-for="task in tasks" :key="task.id">
-      <td>{{ task.project?.name || 'N/A' }}</td>
-      <td>{{ task.hours }}</td>
-      <td>{{ task.task_description }}</td>
-    </tr>
-  </tbody>
-</table>
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Hours</th>
+          <th>Task Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="tasks.length === 0">
+          <td colspan="3" class="text-center">No Task added</td>
+        </tr>
+        <tr v-else v-for="task in tasks" :key="task.id">
+          <td>{{ task.project?.name || 'N/A' }}</td>
+          <td>{{ task.hours }}</td>
+          <td>{{ task.task_description }}</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <AddTaskModal @taskAdded="fetchTasks" />
+    <!-- Pass tasks to AddTaskModal -->
+    <AddTaskModal :tasks="tasks" @taskAdded="fetchTasks" />
   </div>
 </template>
 
@@ -52,7 +52,7 @@ import axios from "axios";
 import AddTaskModal from "@/components/modals/AddTaskModal.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import * as bootstrap from "bootstrap"; // Explicitly import Bootstrap JS
+import * as bootstrap from "bootstrap"; 
 
 export default {
   name: "TaskList",
@@ -67,56 +67,47 @@ export default {
   },
   methods: {
     async fetchTasks() {
-  try {
-    const response = await axios.get("/api/tasks",{
-      headers: {
+      try {
+        const response = await axios.get("/api/user-tasks", {
+          headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
-    });
-    this.tasks = response.data; // Store the tasks, including project data
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    toast.error("Failed to fetch tasks. Please try again.");
-  }
-},
+        });
+        this.tasks = response.data; // Store the tasks, including project data
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        toast.error("Failed to fetch tasks. Please try again.");
+      }
+    },
 
     async checkClockInStatus() {
-  try {
-    // Send a request to the server to verify clock-in status
-    const response = await axios.get("/api/check-clock-in-status", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Fix header syntax
-      },
-    });
+      try {
+        const response = await axios.get("/api/check-clock-in-status", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
-    // Check the server's response
-    if (response.data.clocked_in) {
-      // If clocked in, show the modal
-      const modalElement = document.getElementById("addtaskmodal");
-      if (modalElement) {
-        const modalInstance = new bootstrap.Modal(modalElement); // Proper modal instance creation
-        modalInstance.show();
-      } else {
-        toast.error("Modal not found!", { position: "top-right" });
+        if (response.data.clocked_in) {
+          const modalElement = document.getElementById("addtaskmodal");
+          if (modalElement) {
+            const modalInstance = new bootstrap.Modal(modalElement);
+            modalInstance.show();
+          } else {
+            toast.error("Modal not found!", { position: "top-right" });
+          }
+        } else {
+          toast.warning("You need to clock in to add tasks!", { position: "top-right" });
+        }
+      } catch (error) {
+        console.error("Error checking clock-in status:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Something went wrong. Please try again!", { position: "top-right" });
       }
-    } else {
-      // User is not clocked in
-      toast.warning("You need to clock in to add tasks!", {
-        position: "top-right",
-      });
     }
-  } catch (error) {
-    console.error("Error checking clock-in status:", error.response?.data || error.message);
-    toast.error(
-      error.response?.data?.message || "Something went wrong. Please try again!",
-      { position: "top-right" }
-    );
-  }
-},
-
   },
 };
 </script>
+
 
   <style scoped>
   .task-card {
