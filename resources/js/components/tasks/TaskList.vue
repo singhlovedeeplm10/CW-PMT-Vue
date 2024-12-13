@@ -8,19 +8,6 @@
       >
         Tasks
       </button>
-      <button 
-        class="btn btn-success" 
-        data-bs-toggle="modal" 
-        data-bs-target="#addbreakmodal"
-      >
-        Show Customers
-      </button>
-      <router-link to="/task">
-        <button class="btn btn-success">Task List</button>
-      </router-link>
-      <a href="{{ route('leaves.list') }}" class="action-btn">
-        <button class="btn btn-success">Leaves List</button>
-      </a>
     </div>
     <table class="task-table">
       <thead>

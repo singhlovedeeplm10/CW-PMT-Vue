@@ -40,6 +40,11 @@ Route::delete('/delete-tasks/{id}', [TaskController::class, 'deleteTask']);
 Route::middleware('auth:sanctum')->get('/my-daily-tasks', function (Request $request) {
     return $request->user()->dailyTasks()->with('project')->get();
 });
+Route::get('/fetch-user-tasks/{userId}', [TaskController::class, 'fetchUserTask']);
+Route::get('/user-daily-tasks', [TaskController::class, 'getUserDailyTasks']);
+Route::middleware('auth:sanctum')->get('/user-tasks', [TaskController::class, 'getUserTasks']);
+Route::middleware('auth:sanctum')->delete('/tasks/{id}', [TaskController::class, 'deleteUserTask']);
+
 
 // LEAVES API ROUTE
 // leave routes (USER)
@@ -85,6 +90,8 @@ Route::middleware('auth:sanctum')->post('/clock-out', [AttendanceController::cla
 Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::class, 'getWeeklyHours']);
 Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
+Route::middleware('auth:sanctum')->get('/get-clockin-token', [AttendanceController::class, 'getClockinToken']);
+
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
@@ -98,6 +105,4 @@ Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-Route::get('/fetch-user-tasks/{userId}', [TaskController::class, 'fetchUserTask']);
-Route::get('/user-daily-tasks', [TaskController::class, 'getUserDailyTasks']);
-Route::middleware('auth:sanctum')->get('/user-tasks', [TaskController::class, 'getUserTasks']);
+

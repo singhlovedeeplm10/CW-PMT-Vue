@@ -151,13 +151,23 @@ class BreakController extends Controller
     }
 }
 
+public function getBreakEntries(Request $request)
+{
+    $date = $request->query('date');
+    $breakEntries = Breaks::with('user')
+        ->whereDate('break_time', $date)
+        ->get();
+    return response()->json($breakEntries);
+}
+
 public function getUserBreaks(Request $request)
 {
     try {
         $userId = $request->user()->id; // Ensure the user is authenticated
-        Log::info("Fetching breaks for user ID: " . $userId);
+        Log::info("Fetching today's breaks for user ID: " . $userId);
 
         $breaks = Breaks::where('user_id', $userId)
+            ->whereDate('created_at', \Carbon\Carbon::today()) // Fetch only today's data
             ->select('start_time', 'break_time', 'reason') // Fetch only required fields
             ->get()
             ->map(function ($break) {
@@ -175,7 +185,7 @@ public function getUserBreaks(Request $request)
 
         return response()->json($breaks);
     } catch (\Exception $e) {
-        Log::error("Error fetching breaks: " . $e->getMessage());
+        Log::error("Error fetching today's breaks: " . $e->getMessage());
         return response()->json(['error' => 'Failed to fetch breaks'], 500);
     }
 }

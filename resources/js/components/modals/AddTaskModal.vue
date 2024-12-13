@@ -57,8 +57,23 @@
                                     />
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-danger btn-sm" @click="removeTaskRow(index)">×</button>
-                                </td>
+    <button 
+        type="button" 
+        class="btn btn-danger btn-sm me-2" 
+        @click="removeTaskRow(index)"
+        title="Remove from UI">
+        ×
+    </button>
+    <button 
+        type="button" 
+        class="btn btn-warning btn-sm" 
+        @click="deleteTask(task.id, index)"
+        v-if="task.id"
+        title="Delete from Database">
+        <i class="bi bi-trash"></i>
+        Delete
+    </button>
+</td>
                             </tr>
                         </tbody>
                     </table>
@@ -193,6 +208,32 @@ export default {
             return !taskErrors.value[index].project_id && !taskErrors.value[index].hours && !taskErrors.value[index].task_description;
         };
 
+        const deleteTask = async (taskId, index) => {
+    if (!taskId) {
+        toast.error('Task ID is invalid.');
+        return;
+    }
+    if (!confirm('Are you sure you want to delete this task?')) return;
+
+    try {
+        const response = await axios.delete(`/api/tasks/${taskId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            }
+        });
+        if (response.status === 200) {
+            toast.success('Task deleted successfully!');
+            tasks.value.splice(index, 1);
+        } else {
+            toast.error('Unexpected response. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        toast.error('Failed to delete the task.');
+    }
+};
+
+
         watch(() => props.tasks, (newTasks) => {
             tasks.value = newTasks;
         }, { deep: true });
@@ -210,6 +251,7 @@ export default {
             saveTask,
             handleSaveTask,
             closeModal,
+            deleteTask
         };
     }
 };

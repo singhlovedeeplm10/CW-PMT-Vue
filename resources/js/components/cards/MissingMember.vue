@@ -42,7 +42,7 @@
         :highlightToday="true"
       />
     </h4>
-    <h4>Upcoming Leaves</h4>
+    <!-- <h4>Upcoming Leaves</h4> -->
   </div>
   <div class="task-card-body mt-3">
     <div class="d-flex flex-wrap">
@@ -192,4 +192,3 @@ export default {
 }
 
 </style>
-<!-- <style src="../resources/css/home.css"></style> -->

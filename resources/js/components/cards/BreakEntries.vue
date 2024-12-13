@@ -5,7 +5,12 @@
         <div class="task-card flex-fill shadow-sm" id="card2">
             <div class="task-card-header d-flex justify-content-between align-items-center">
                 <h4>Break Entries - 
-                    <i class="fa fa-calendar ms-2 calendar-icon" id="calendarIcon1" style="cursor: pointer;"></i>
+                    <!-- <Calendar
+        :selectedDate="date"
+        @dateSelected="onDateSelected"
+        :showHeader="true"
+        :highlightToday="true"
+      /> -->
                 </h4>
             </div>
             <div class="task-card-body mt-3">
@@ -39,9 +44,12 @@
 
 <script>
 import axios from "axios";
+// import Calendar from "@/components/Calendar.vue";
+
 
 export default {
     name: "BreakEntries",
+    // components: { Calendar },
     data() {
         return {
             breakEntries: [], // Data from the breaks table
@@ -73,5 +81,59 @@ export default {
 };
 </script>
 
-  
-<style src="../resources/css/home.css"></style>
+<style scoped>
+.task-card-body {
+    overflow-y: auto; /* Enables vertical scrolling */
+    max-height: 350px; /* Limits the height of the content area */
+}
+
+/* Custom scrollbar styling */
+.task-card-body::-webkit-scrollbar {
+    width: 6px; /* Scrollbar width */
+    background-color: #f1f1f1; /* Background color of the scrollbar track */
+}
+
+.task-card-body::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1; /* Scrollbar thumb color */
+    border-radius: 10px; /* Rounded scrollbar thumb */
+}
+
+.task-card-body::-webkit-scrollbar-thumb:hover {
+    background-color: #a1a1a1; /* Thumb color on hover */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    text-align: left;
+    padding: 20px;
+}
+
+tbody td {
+    padding: 8px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+#card2{
+    border: 1px solid rgb(112, 165, 245);
+}
+.task-card-header h4 {
+    color: #3498db;
+    font-size: 18px;
+    font-weight: bold;
+    display: contents;
+}
+</style>

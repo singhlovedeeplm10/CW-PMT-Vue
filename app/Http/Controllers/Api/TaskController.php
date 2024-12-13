@@ -197,13 +197,38 @@ public function getUserDailyTasks()
     {
         // Fetch authenticated user
         $user = $request->user();
-
-        // Fetch tasks for the logged-in user, with related project details
+    
+        // Fetch tasks for the logged-in user, created today, with related project details
         $tasks = DailyTask::where('user_id', $user->id)
+            ->whereDate('created_at', now()) // Filter by today's date
             ->with('project') // Load project details along with tasks
             ->get();
-
+    
         // Return the tasks as JSON
         return response()->json($tasks);
     }
+    
+    public function deleteUserTask($id)
+{
+    try {
+        $task = DailyTask::findOrFail($id);
+        $task->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task deleted successfully.',
+        ], 200);
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Task not found.',
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred while deleting the task.',
+        ], 500);
+    }
+}
+
 }

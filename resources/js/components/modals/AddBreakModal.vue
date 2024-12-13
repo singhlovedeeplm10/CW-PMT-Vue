@@ -70,46 +70,49 @@ export default {
     const isLoading = ref(false);
 
     const startBreak = async () => {
-      if (!breakReason.value.trim()) {
-        toast.error("Break reason is required.", { position: "top-right" });
-        return;
+  if (!breakReason.value.trim()) {
+    toast.error("Break reason is required.", { position: "top-right" });
+    return;
+  }
+
+  isLoading.value = true;
+
+  try {
+    const response = await axios.post(
+      "/api/start-break",
+      { reason: breakReason.value },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
       }
+    );
 
-      isLoading.value = true;
+    if (response.status === 201) {
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("addbreakmodal")
+      );
+      modal.hide();
+      toast.success("Break started successfully.", {
+        position: "top-right",
+      });
 
-      try {
-        const response = await axios.post(
-          "/api/start-break",
-          {
-            reason: breakReason.value,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
-        );
+      // Emit event with break data
+      emit("breakStarted", { reason: breakReason.value, startTime: Date.now() });
 
-        if (response.status === 201) {
-          const modal = bootstrap.Modal.getInstance(
-            document.getElementById("addbreakmodal")
-          );
-          modal.hide();
-          toast.success("Break started successfully.", {
-            position: "top-right",
-          });
-
-          emit("breakStarted", { reason: breakReason.value, startTime: Date.now() });
-        }
-      } catch (error) {
-        toast.error("Failed to start break. Please try again.", {
-          position: "top-right",
-        });
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
+      // Store the break state in localStorage
+      localStorage.setItem("isOnBreak", "true");
+      localStorage.setItem("breakStartTime", Date.now());  // Save break start time
+      localStorage.setItem("totalBreakTime", 0);  // Initialize break time to 0
+    }
+  } catch (error) {
+    toast.error("Failed to start break. Please try again.", {
+      position: "top-right",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
     return {
       breakReason,
       startBreak,

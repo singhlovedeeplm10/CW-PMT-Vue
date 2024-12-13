@@ -19,13 +19,14 @@ class AttendanceController extends Controller
     public function clockIn(Request $request)
     {
         $user = Auth::user();
-    
-        // Create attendance record
+        
+        // Create attendance record with IST timezone
+        $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
         $attendance = Attendance::create([
             'user_id' => $user->id,
-            'clockin_time' => Carbon::now(),
+            'clockin_time' => $clockinTime,
         ]);
-    
+        
         // Generate ClockinToken
         $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
     
@@ -35,6 +36,7 @@ class AttendanceController extends Controller
             'token' => $clockinToken, // Return the token
         ]);
     }
+    
     
     public function clockOut(Request $request)
     {
@@ -49,11 +51,11 @@ class AttendanceController extends Controller
             if (!$attendance) {
                 return response()->json(['message' => 'No active clock-in record found.'], 400);
             }
-            
+    
             // Calculate total task hours for the day
             $totalTaskHours = DB::table('daily_tasks')
                 ->where('user_id', $userId)
-                ->whereDate('created_at', today()) // Ensure we only check for today's tasks
+                ->whereDate('created_at', today('Asia/Kolkata')) // Use IST
                 ->sum('hours');
     
             // Check if total task hours are exactly 8
@@ -62,7 +64,7 @@ class AttendanceController extends Controller
             }
     
             // Proceed with clocking out
-            $clockOutTime = now();
+            $clockOutTime = Carbon::now()->setTimezone('Asia/Kolkata');
             $productiveHours = $clockOutTime->diff($attendance->clockin_time)->format('%H:%I:%S');
     
             // Update the attendance record
@@ -76,8 +78,8 @@ class AttendanceController extends Controller
             $user->tokens()->where('name', 'ClockinToken')->delete();
     
             // Calculate today's productive hours
-            $todayStart = now()->startOfDay();
-            $todayEnd = now()->endOfDay();
+            $todayStart = now()->startOfDay()->setTimezone('Asia/Kolkata');
+            $todayEnd = now()->endOfDay()->setTimezone('Asia/Kolkata');
     
             $productiveHoursInSeconds = Attendance::where('user_id', $userId)
                 ->whereBetween('clockin_time', [$todayStart, $todayEnd])
@@ -98,6 +100,7 @@ class AttendanceController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    
 
     public function checkClockInStatus(Request $request)
     {
@@ -180,5 +183,32 @@ class AttendanceController extends Controller
             ], 500);
         }
     }    
+
+    public function getClockinToken()
+    {
+        $user = Auth::user();
+    
+        // Check if the user has a ClockinToken in the `personal_access_tokens` table
+        $token = $user->tokens()->where('name', 'ClockinToken')->first();
+    
+        if ($token) {
+            // Fetch clock-in time from attendance
+            $attendance = Attendance::where('user_id', $user->id)->latest('clockin_time')->first();
+            $isOnBreak = false; // Add logic to check if user is on a break
+            $breakStartTime = null; // Fetch break start time if applicable
+            $totalBreakTime = 0; // Fetch total break time if applicable
+    
+            return response()->json([
+                'isClockedIn' => true,
+                'clockInTime' => $attendance->clockin_time,
+                'isOnBreak' => $isOnBreak,
+                'breakStartTime' => $breakStartTime,
+                'totalBreakTime' => $totalBreakTime,
+            ]);
+        }
+    
+        return response()->json(['isClockedIn' => false]);
+    }    
+
     
 }

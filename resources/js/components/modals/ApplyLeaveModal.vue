@@ -39,7 +39,6 @@
                 label="Select Half"
                 id="halfDayOption"
                 name="half_day"
-                placeholder="Select Half"
                 :error="halfDayError"
               />
             </div>
@@ -209,6 +208,7 @@ export default {
         { label: "Short Leave", value: "Short Leave" },
       ],
       halfDayOptions: [
+        { label: "Select Half", value: "" },
         { label: "First Half", value: "First Half" },
         { label: "Second Half", value: "Second Half" },
       ],

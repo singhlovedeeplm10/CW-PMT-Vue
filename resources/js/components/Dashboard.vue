@@ -14,7 +14,7 @@
       <missing-member v-if="userRole === 'Admin'" />
 
       <!-- Conditionally render break-entries -->
-      <break-entries v-if="userRole === 'Admin'" />
+      <break-entries v-if="userRole === 'Admin'"  />
 
       <apply-leave-modal />
       <apply-team-leave-modal />

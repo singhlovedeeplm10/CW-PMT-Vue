@@ -64,7 +64,7 @@
       },
       placeholder: {
         type: String,
-        default: "Select an option",
+        // default: "Select an option",
       },
       error: {
         type: String,
