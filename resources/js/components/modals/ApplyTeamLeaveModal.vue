@@ -19,6 +19,38 @@
           </div>
           <div class="modal-body">
             <form @submit.prevent="validateAndSubmit">
+
+               <!-- Autocomplete Input for User -->
+               <div class="mb-3">
+                <label for="userSearch">Select User</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="userSearch"
+                  v-model="userSearchQuery"
+                  @input="fetchUsers"
+                  placeholder="Search users by name"
+                />
+                <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
+  <li
+    v-for="user in userSuggestions"
+    :key="user.id"
+    @click="selectUser(user)"
+    class="suggestion-item d-flex align-items-center"
+  >
+    <img
+      src="img/CWlogo.jpeg"
+      alt="User Avatar"
+      class="rounded-circle me-2"
+      style="width: 40px; height: 40px;"
+    />
+    <span>{{ user.name }}</span>
+  </li>
+</ul>
+
+                <span v-if="userError" class="text-danger">{{ userError }}</span>
+              </div>
+              
               <div class="mb-3">
                 <SelectInput
                   :options="leaveTypeOptions"
@@ -57,36 +89,7 @@
                 </div>
               </div>
               
-              <!-- Autocomplete Input for User -->
-              <div class="mb-3">
-                <label for="userSearch">Select User</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="userSearch"
-                  v-model="userSearchQuery"
-                  @input="fetchUsers"
-                  placeholder="Search users by name"
-                />
-                <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
-  <li
-    v-for="user in userSuggestions"
-    :key="user.id"
-    @click="selectUser(user)"
-    class="suggestion-item d-flex align-items-center"
-  >
-    <img
-      src="img/CWlogo.jpeg"
-      alt="User Avatar"
-      class="rounded-circle me-2"
-      style="width: 40px; height: 40px;"
-    />
-    <span>{{ user.name }}</span>
-  </li>
-</ul>
-
-                <span v-if="userError" class="text-danger">{{ userError }}</span>
-              </div>
+             
 
               <!-- Dynamic Fields for Short Leave -->
               <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">

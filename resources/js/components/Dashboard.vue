@@ -5,12 +5,13 @@
       <h1>Welcome to the Dashboard</h1>
       <p>This is a protected page accessible only after login.</p>
 
-      <clockin :openModal="openModal" />
+      <clockin :openModal="openModal" @breakEnded="handleBreakEnded" />
+
       <task-list />
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
       <!-- <daily-task v-if="userRole === 'Admin'" /> -->
-      <user-break-list />
+      <user-break-list ref="userBreakList" />
       <missing-member v-if="userRole === 'Admin'" />
 
       <!-- Conditionally render break-entries -->
@@ -25,6 +26,7 @@
 </template>
 
 <script>
+import { ref } from 'vue';
 import MasterComponent from './layouts/Master.vue';
 import Clockin from './clockin/Clockin.vue';
 import TaskList from './tasks/TaskList.vue';
@@ -88,6 +90,21 @@ export default {
     } else {
       this.fetchUserRole();
     }
+  },
+  setup() {
+    const userBreakList = ref(null);
+
+    const handleBreakEnded = () => {
+      // Call the fetchBreaks method of UserBreakList via ref
+      if (userBreakList.value) {
+        userBreakList.value.fetchBreaks();
+      }
+    };
+
+    return {
+      userBreakList,
+      handleBreakEnded,
+    };
   },
 };
 </script>

@@ -1,19 +1,29 @@
 <template>
   <div class="container">
     <div class="box box-1">
-      <h3 class="box-time">{{ formattedWeeklyTime }}</h3>
-      <p>Weekly Productive Hours</p>
-      <i class="fas fa-shopping-bag"></i>
-    </div>
+  <h3 class="box-time">
+    <span v-if="loadingWeeklyHours"><i class="fas fa-circle-notch fa-spin"></i></span>
+    <span v-else>{{ formattedWeeklyTime }}</span>
+  </h3>
+  <p>Weekly Productive Hours</p>
+  <i class="fas fa-shopping-bag"></i>
+</div>
 
     <div class="box box-2">
-      <h3 id="productive-hours" class="box-time">{{ formattedTime }}</h3>
+      <h3 id="productive-hours" class="box-time">
+        <span v-if="loadingDailyHours"><i class="fas fa-circle-notch fa-spin"></i></span>
+        <span v-else>{{ formattedTime }}</span>
+      </h3>
       <p>Today's Productive Hours</p>
       <i class="fas fa-chart-bar"></i>
     </div>
 
     <div class="box box-3">
-      <h3 class="box-time">{{ formattedBreakTime }}</h3>
+      <h3 class="box-time">
+        <span v-if="loadingBreakTime"><i class="fas fa-circle-notch fa-spin"></i></span>
+        <span v-else>{{ formattedBreakTime }}</span>
+      </h3>
+      
       <p>Today's Total Break</p>
       <button
         class="btn"
@@ -39,6 +49,7 @@
       @breakStarted="onBreakStarted"
     />
   </div>
+  
 </template>
 
 <script>
@@ -56,7 +67,10 @@ export default {
     ButtonComponent,
     AddBreakModal,
   },
-  setup() {
+  setup(_, { emit }) {
+    const loadingWeeklyHours = ref(true);  // For the Weekly Hours box
+    const loadingDailyHours = ref(true);  
+    const loadingBreakTime = ref(true);   
     const isClockedIn = ref(false);
     const clockInTime = ref(null);
     const timer = ref(0);
@@ -95,6 +109,7 @@ export default {
     });
 
     const fetchTotalBreakTime = async () => {
+      loadingBreakTime.value = true;
       try {
         const response = await axios.get("/api/daily-breaks", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
@@ -108,9 +123,14 @@ export default {
         console.error("Error fetching total break time:", error);
         toast.error("Failed to fetch total break time", { position: "top-right" });
       }
+      finally {
+        loadingBreakTime.value = false;
+  }
     };
 
     const fetchWeeklyHours = async () => {
+      loadingWeeklyHours.value = true;
+
   try {
     // Fetch weekly productive hours
     const weeklyHoursResponse = await axios.get("/api/weekly-hours", {
@@ -134,10 +154,14 @@ export default {
     console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
     toast.error("Failed to fetch weekly hours or break time", { position: "top-right" });
   }
+  finally {
+    loadingWeeklyHours.value = false;
+  }
 };
 
 
     const fetchDailyHours = async () => {
+      loadingDailyHours.value = true;
       try {
         const response = await axios.get("/api/daily-hours", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
@@ -151,6 +175,9 @@ export default {
         console.error("Error fetching daily hours:", error);
         toast.error("Failed to fetch daily hours", { position: "top-right" });
       }
+      finally {
+        loadingDailyHours.value = false;
+  }
     };
 
     const fetchWeeklyBreakHours = async () => {
@@ -252,46 +279,47 @@ const onBreakStarted = ({ reason, startTime }) => {
     };
 
     const endBreak = async () => {
-  if (!isOnBreak.value) return;
+      if (!isOnBreak.value) return;
 
-  try {
-    const breakDuration = Math.floor((Date.now() - breakStartTime.value) / 1000);
-    const response = await axios.post(
-      "/api/end-break",
-      { break_time: breakDuration },
-      { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
-    );
-    
-    // Stop the break timer
-    clearInterval(breakInterval.value);
-    breakInterval.value = null;
+      try {
+        const breakDuration = Math.floor((Date.now() - breakStartTime.value) / 1000);
+        const response = await axios.post(
+          "/api/end-break",
+          { break_time: breakDuration },
+          { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        );
 
-    // Update frontend timers
-    totalBreakTime.value += breakDuration;
-    dailyHours.value = Math.max(dailyHours.value - breakDuration, 0);
+        // Stop the break timer
+        clearInterval(breakInterval.value);
+        breakInterval.value = null;
 
-    // Set break state to false
-    isOnBreak.value = false;
+        // Update frontend timers
+        totalBreakTime.value += breakDuration;
+        dailyHours.value = Math.max(dailyHours.value - breakDuration, 0);
 
-    // Clean up localStorage
-    localStorage.removeItem("isOnBreak");
-    localStorage.removeItem("breakStartTime");
-    localStorage.removeItem("totalBreakTime");
+        // Set break state to false
+        isOnBreak.value = false;
 
-    toast.success(response.data.message || "Break ended successfully.", {
-      position: "top-right",
-    });
+        // Clean up localStorage
+        localStorage.removeItem("isOnBreak");
+        localStorage.removeItem("breakStartTime");
+        localStorage.removeItem("totalBreakTime");
 
-    await fetchTotalBreakTime();
-  } catch (error) {
-    console.error("Failed to end break:", error.response?.data || error.message);
-    toast.error("Failed to end break. Please try again.", {
-      position: "top-right",
-    });
+        toast.success(response.data.message || "Break ended successfully.", {
+          position: "top-right",
+        });
+
+        // Emit an event to notify the parent component
+        emit("breakEnded");
+        await fetchTotalBreakTime();
+        
+      } catch (error) {
+        console.error("Failed to end break:", error.response?.data || error.message);
+        toast.error("Failed to end break. Please try again.", {
+          position: "top-right",
+        });
   }
 };
-
-
 
     const handleAddBreak = () => {
       if (!isClockedIn.value) {
@@ -360,7 +388,10 @@ const onBreakStarted = ({ reason, startTime }) => {
       isOnBreak,
       totalBreakTime,
       breakStartTime,
-      fetchWeeklyBreakHours
+      fetchWeeklyBreakHours,
+      loadingWeeklyHours,
+      loadingDailyHours,
+      loadingBreakTime
     };
   },
 };

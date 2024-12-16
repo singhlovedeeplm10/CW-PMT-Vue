@@ -98,9 +98,17 @@
               </button>
             </td>
           </tr>
-          <tr v-if="leaves.length === 0">
-            <td colspan="7" class="text-center">No leaves found.</td>
-          </tr>
+          <tr v-if="loading">
+  <td colspan="7" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </td>
+</tr>
+<tr v-else-if="leaves.length === 0">
+  <td colspan="7" class="text-center">No leaves found.</td>
+</tr>
+
         </tbody>
       </table>
     </div>
@@ -133,6 +141,7 @@ export default {
   },
   data() {
     return {
+      loading: false, // State to track loading
       leaves: [],
       search: {
         type: "",
@@ -146,6 +155,7 @@ export default {
   },
   methods: {
     async fetchLeaves() {
+      this.loading = true; // Show loader
       try {
         const params = {
           type: this.search.type || null,
@@ -170,7 +180,9 @@ export default {
       } catch (error) {
         console.error("Error fetching leaves:", error.response?.data || error.message);
         alert(error.response?.data?.error || "An error occurred while fetching leaves.");
-      }
+      }finally {
+      this.loading = false; // Hide loader
+    }
     },
     async fetchLeaveDetails(id) {
     try {
@@ -257,5 +269,9 @@ export default {
 .text-secondary{
   color: rgb(144, 237, 237);
   font-weight: bold;
+}
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
 }
 </style>

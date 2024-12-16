@@ -18,7 +18,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-if="tasks.length === 0">
+        <!-- Show loader while fetching tasks -->
+        <tr v-if="loading">
+          <td colspan="3" class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Show message if no tasks found and not loading -->
+        <tr v-if="!loading && tasks.length === 0">
           <td colspan="3" class="text-center">No Task added</td>
         </tr>
         <tr v-else v-for="task in tasks" :key="task.id">
@@ -47,6 +57,7 @@ export default {
   data() {
     return {
       tasks: [], // Array to store fetched tasks
+      loading: true, // Track loading state
     };
   },
   mounted() {
@@ -54,6 +65,7 @@ export default {
   },
   methods: {
     async fetchTasks() {
+      this.loading = true; // Set loading to true while fetching
       try {
         const response = await axios.get("/api/user-tasks", {
           headers: {
@@ -64,6 +76,8 @@ export default {
       } catch (error) {
         console.error("Error fetching tasks:", error);
         toast.error("Failed to fetch tasks. Please try again.");
+      }finally {
+        this.loading = false; // Set loading to false after fetching
       }
     },
 
@@ -120,4 +134,8 @@ export default {
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
+  .spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
   </style>

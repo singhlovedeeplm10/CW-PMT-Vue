@@ -137,6 +137,7 @@ export default {
   border-radius: 10px;
   background-color: #fff;
   width: 100%;
+  border: 1px solid rgb(247, 117, 236);
 }
 
 /* Smooth scrollbar styling */

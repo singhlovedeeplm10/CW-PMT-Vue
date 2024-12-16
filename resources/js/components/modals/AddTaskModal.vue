@@ -60,11 +60,12 @@
     <button 
         type="button" 
         class="btn btn-danger btn-sm me-2" 
-        @click="removeTaskRow(index)"
-        title="Remove from UI">
+        @click="deleteTask(task.id, index)"
+        v-if="task.id"
+        title="Delete from Database">
         ×
     </button>
-    <button 
+    <!-- <button 
         type="button" 
         class="btn btn-warning btn-sm" 
         @click="deleteTask(task.id, index)"
@@ -72,7 +73,7 @@
         title="Delete from Database">
         <i class="bi bi-trash"></i>
         Delete
-    </button>
+    </button> -->
 </td>
                             </tr>
                         </tbody>
@@ -146,10 +147,10 @@ export default {
             taskErrors.value.push({ project_id: false, hours: false, task_description: false });
         };
 
-        const removeTaskRow = (index) => {
-            tasks.value.splice(index, 1);
-            taskErrors.value.splice(index, 1);
-        };
+        // const removeTaskRow = (index) => {
+        //     tasks.value.splice(index, 1);
+        //     taskErrors.value.splice(index, 1);
+        // };
 
         const handleSaveTask = async () => {
             if (!allFieldsFilled.value) {
@@ -247,7 +248,6 @@ export default {
             allFieldsFilled,
             isSaving,
             addTaskRow,
-            removeTaskRow,
             saveTask,
             handleSaveTask,
             closeModal,

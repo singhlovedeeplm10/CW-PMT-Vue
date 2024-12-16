@@ -16,14 +16,32 @@ class UserController extends Controller
         return view('test');
     }
 
-    public function index($page = 1)
+    public function index(Request $request, $page = 1)
     {
-        // Fetch paginated users, setting the page parameter in the query
-        $users = User::paginate(5, ['*'], 'page', $page);
-
-        // Return the paginated data as JSON
+        $query = User::query();
+    
+        // Filter by name
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+    
+        // Filter by email
+        if ($request->has('email') && $request->email != '') {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+    
+        // Filter by status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+    
+        // Fetch paginated users
+        $users = $query->paginate(5, ['*'], 'page', $page);
+    
+        // Return the filtered and paginated data as JSON
         return response()->json($users);
     }
+    
 
     public function addUser(Request $request)
     {
@@ -81,4 +99,33 @@ class UserController extends Controller
         'data' => $user,
     ]);
 }
+public function updateStatus(Request $request, $id)
+    {
+        // Validate the request
+        $request->validate([
+            'status' => 'required|in:0,1', // Ensure valid status
+        ]);
+
+        // Find the user by ID
+        $user = User::find($id);
+
+        // If user not found, return an error response
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        // Update the user status
+        $user->status = $request->status;
+        $user->save();
+
+        // Return a success response
+        return response()->json([
+            'success' => true,
+            'message' => 'User status updated successfully.',
+            'data' => $user,
+        ]);
+    }
 }
