@@ -187,6 +187,7 @@ export default {
 }
 
 .task-card-description, .leave-card-description {
+  text-align: center;
   font-size: 14px;
   font-weight: 500;
   color: #333;
