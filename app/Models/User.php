@@ -78,4 +78,9 @@ public function breaks()
     {
         return $this->team_lead_name; // Replace with your logic for fetching team lead name
     }
+
+    public function profile()
+{
+    return $this->hasOne(UserProfile::class);
+}
 }

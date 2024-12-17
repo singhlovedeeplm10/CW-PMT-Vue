@@ -19,6 +19,8 @@ class UserProfile extends Model
         'offer_letter',
         'joining_letter',
         'contract',
+        'user_image',  // Added new field
+        'user_DOB',    // Added new field
     ];
 
     public function user()

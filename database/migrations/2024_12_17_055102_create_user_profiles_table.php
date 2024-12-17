@@ -22,8 +22,10 @@ return new class extends Migration
             $table->string('offer_letter')->nullable();
             $table->string('joining_letter')->nullable();
             $table->string('contract')->nullable();
+            $table->string('user_image')->nullable(); // New column for user image
+            $table->date('user_DOB')->nullable(); // New column for user date of birth
             $table->timestamps();
-        });
+        });        
     }
 
     /**

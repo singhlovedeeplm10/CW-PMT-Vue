@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -67,38 +68,57 @@ class UserController extends Controller
     }
 
     public function updateUser(Request $request, $id)
-{
-    // Validate the request
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $id, // Ensure unique email excluding the current user
-        'status' => 'required|in:0,1', // Ensure valid status
-    ]);
-
-    // Find the user by ID
-    $user = User::find($id);
-
-    // If user not found, return an error response
-    if (!$user) {
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'status' => 'required|in:0,1',
+            'password' => 'nullable|min:6',
+            'address' => 'nullable|string|max:255',
+            'qualifications' => 'nullable|string|max:255',
+            'employee_code' => 'nullable|string|max:255',
+            'user_DOB' => 'nullable|date',
+            'user_image' => 'nullable|image|mimes:jpeg,png,jpg', // Image validation
+        ]);
+    
+        $user = User::findOrFail($id);
+    
+        // Update User Table
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'status' => $validated['status'],
+            'password' => $request->filled('password') ? Hash::make($validated['password']) : $user->password,
+        ]);
+    
+        // Handle User Profile Update
+        $profileData = [
+            'address' => $validated['address'] ?? null,
+            'qualifications' => $validated['qualifications'] ?? null,
+            'employee_code' => $validated['employee_code'] ?? null,
+            'user_DOB' => $validated['user_DOB'] ?? null,
+        ];
+    
+        // Handle Image Upload
+        if ($request->hasFile('user_image')) {
+            $imagePath = $request->file('user_image')->store('profile_images', 'public');
+            $profileData['user_image'] = $imagePath;
+        }
+    
+        // Update or Create User Profile
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            $profileData
+        );
+    
         return response()->json([
-            'success' => false,
-            'message' => 'User not found.',
-        ], 404);
+            'success' => true,
+            'message' => 'User updated successfully.',
+            'data' => $user->load('profile'),
+        ]);
     }
 
-    // Update the user details
-    $user->name = $request->name;
-    $user->email = $request->email;
-    $user->status = $request->status;
-    $user->save();
-
-    // Return a success response
-    return response()->json([
-        'success' => true,
-        'message' => 'User updated successfully.',
-        'data' => $user,
-    ]);
-}
 public function updateStatus(Request $request, $id)
     {
         // Validate the request

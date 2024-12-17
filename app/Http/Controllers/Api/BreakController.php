@@ -154,11 +154,18 @@ class BreakController extends Controller
 public function getBreakEntries(Request $request)
 {
     $date = $request->query('date');
-    $breakEntries = Breaks::with('user')
-        ->whereDate('break_time', $date)
-        ->get();
+
+    // Fetch break entries along with user data and their profile images
+    $breakEntries = Breaks::with(['user' => function ($query) {
+        $query->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+            ->select('users.id', 'users.name', 'user_profiles.user_image');
+    }])
+    ->whereDate('break_time', $date)
+    ->get();
+
     return response()->json($breakEntries);
 }
+
 
 public function getUserBreaks(Request $request)
 {

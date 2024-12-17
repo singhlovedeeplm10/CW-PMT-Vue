@@ -86,12 +86,18 @@ class TaskController extends Controller
                 $join->on('users.id', '=', 'daily_tasks.user_id')
                     ->whereDate('daily_tasks.created_at', $today);
             })
+            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join user_profiles
             ->whereNull('daily_tasks.user_id')
-            ->select('users.id', 'users.name', 'users.email')
+            ->select(
+                'users.id',
+                'users.name',
+                'user_profiles.user_image' // Include the image path
+            )
             ->get();
     
         return response()->json($usersWithoutTasks);
     }
+    
     
     public function getDailyTasks(Request $request)
     {

@@ -23,14 +23,22 @@
                     </thead>
                     <tbody>
                         <tr v-for="breakEntry in breakEntries" :key="breakEntry.id">
-                            <td>
-                                <div class="profile">
-                                    <img src="img/CWlogo.jpeg" alt="User Image">
-                                    <span>{{ breakEntry.user.name }}</span>
-                                </div>
-                            </td>
-                            <td>{{ formatBreakTime(breakEntry.break_time) }}</td>
-                        </tr>
+            <td>
+                <div class="profile">
+                    <img 
+                        :src="breakEntry.user.user_image 
+                            ? `/storage/${breakEntry.user.user_image}` 
+                            : 'img/default-user.jpg'" 
+                        alt="User Image"
+                        class="rounded-circle"
+                        width="50"
+                        height="50"
+                    >
+                    <span>{{ breakEntry.user.name }}</span>
+                </div>
+            </td>
+            <td>{{ formatBreakTime(breakEntry.break_time) }}</td>
+        </tr>
                     </tbody>
                 </table>
 

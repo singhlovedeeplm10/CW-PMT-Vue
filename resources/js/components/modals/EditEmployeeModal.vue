@@ -1,11 +1,12 @@
 <template>
-    <div class="modal fade show" style="display: block; background: rgba(0, 0, 0, 0.5);">
-      <div class="modal-content">
-        <div class="modal-header custom-modal-header">
-          <h5 class="modal-title">Edit Employee</h5>
-          <button type="button" class="btn-close" @click="$emit('close')"></button>
-        </div>
-        <form @submit.prevent="updateEmployee">
+  <div class="modal fade show" style="display: block; background: rgba(0, 0, 0, 0.5);">
+    <div class="modal-content">
+      <div class="modal-header custom-modal-header">
+        <h5 class="modal-title">Edit Employee</h5>
+        <button type="button" class="btn-close" @click="$emit('close')"></button>
+      </div>
+      <form @submit.prevent="updateEmployee">
+        <div class="form-container">
           <div class="form-group">
             <label for="name" class="form-label">Name</label>
             <input
@@ -28,77 +29,156 @@
           </div>
           <div class="form-group">
             <label for="status" class="form-label">Status</label>
-            <select
-              id="status"
-              v-model="formData.status"
-              class="form-control custom-input"
-            >
+            <select id="status" v-model="formData.status" class="form-control custom-input">
               <option value="1">Active</option>
               <option value="0">Inactive</option>
             </select>
           </div>
-          <div class="modal-footer custom-modal-footer">
-            <button type="submit" class="btn custom-btn-submit">Save Changes</button>
-            <button
-              type="button"
-              class="btn custom-btn-close"
-              @click="$emit('close')"
-            >
-              Cancel
-            </button>
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input
+              id="password"
+              type="password"
+              v-model="formData.password"
+              class="form-control custom-input"
+              placeholder="Enter new password (optional)"
+            />
           </div>
-        </form>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      user: {
-        type: Object,
-        required: true,
-      },
-    },
-    data() {
-      return {
-        formData: { ...this.user }, // Clone user object to avoid mutating the prop
-      };
-    },
-    methods: {
-      async updateEmployee() {
-        try {
-          await axios.put(`/api/users/${this.user.id}`, this.formData);
-          this.$emit("employee-updated");
-          this.$emit("close");
-        } catch (error) {
-          console.error("Error updating employee:", error);
-        }
-      },
-    },
-  };
-  </script>  
-  
-  <style scoped>
-/* Modal Overlay */
-.modal-overlay {
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+          <div class="form-group">
+            <label for="address" class="form-label">Address</label>
+            <input
+              id="address"
+              type="text"
+              v-model="formData.address"
+              class="form-control custom-input"
+              placeholder="Enter address"
+            />
+          </div>
+          <div class="form-group">
+            <label for="qualifications" class="form-label">Qualifications</label>
+            <input
+              id="qualifications"
+              type="text"
+              v-model="formData.qualifications"
+              class="form-control custom-input"
+              placeholder="Enter qualifications"
+            />
+          </div>
+          <div class="form-group">
+            <label for="employee_code" class="form-label">Employee Code</label>
+            <input
+              id="employee_code"
+              type="text"
+              v-model="formData.employee_code"
+              class="form-control custom-input"
+              placeholder="Enter employee code"
+            />
+          </div>
+          <div class="form-group">
+            <label for="user_DOB" class="form-label">Date of Birth</label>
+            <input
+              id="user_DOB"
+              type="date"
+              v-model="formData.user_DOB"
+              class="form-control custom-input"
+            />
+          </div>
+          <div class="form-group">
+            <label for="user_image" class="form-label">Profile Image</label>
+            <input
+              id="user_image"
+              type="file"
+              @change="handleImageUpload"
+              class="form-control custom-input"
+            />
+          </div>
+        </div>
 
+        <div class="modal-footer custom-modal-footer">
+          <button type="submit" class="btn custom-btn-submit" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span v-if="!loading">Save Changes</span>
+          </button>
+          <button
+            type="button"
+            class="btn custom-btn-close"
+            @click="$emit('close')"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+import { toast } from 'vue3-toastify';
+
+export default {
+  props: {
+    user: {
+      type: Object,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      formData: { ...this.user, password: "", user_image: null },
+      loading: false, // Track loading state
+    };
+  },
+  methods: {
+    handleImageUpload(event) {
+      this.formData.user_image = event.target.files[0];
+    },
+    async updateEmployee() {
+      this.loading = true; // Show loader when the form starts submitting
+      try {
+        const formData = new FormData();
+        Object.keys(this.formData).forEach((key) => {
+          if (this.formData[key] !== null) {
+            formData.append(key, this.formData[key]);
+          }
+        });
+
+        // Send the updated payload
+        await axios.post(`/api/users/${this.user.id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        // Show a success toast notification
+        toast.success("Employee updated successfully!");
+
+        this.$emit("employee-updated");
+        this.$emit("close");
+      } catch (error) {
+        // Show an error toast notification
+        toast.error("Error updating employee: " + error.message);
+
+        console.error("Error updating employee:", error);
+      } finally {
+        this.loading = false; // Hide loader after the request finishes
+      }
+    },
+  },
+};
+</script>
+
+  <style scoped>
 /* Modal Content */
 .modal-content {
   background: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
+  width: 800px; /* Wider modal for horizontal layout */
   margin: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Modal Header */
@@ -115,23 +195,32 @@
   border: none;
   background: transparent;
   color: white;
-  font-size: 1.25rem;
-  transition: background 0.3s ease;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
-/* Modal Body */
-.form-label {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 5px;
+/* Form Layout */
+.form-container {
+  display: flex;
+  flex-wrap: wrap; /* Allows items to wrap */
+  gap: 15px; /* Space between inputs */
+  justify-content: space-between;
 }
 
+/* Form Groups (2 per row) */
+.form-group {
+  flex: 0 0 48%; /* Set form fields to take up half the modal width */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input Styling */
 .custom-input {
   border-radius: 5px;
   border: 1px solid #ddd;
   padding: 10px;
   width: 100%;
-  margin-bottom: 20px;
+  margin-top: 5px;
   transition: border-color 0.3s ease;
 }
 
@@ -143,33 +232,27 @@
 
 /* Modal Footer */
 .custom-modal-footer {
-  background-color: #f9f9f9;
-  padding: 15px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   border-top: 1px solid #ddd;
+  background-color: #f9f9f9;
+  padding: 10px 15px;
 }
 
-/* Button Styles */
+/* Buttons */
+.custom-btn-submit,
 .custom-btn-close {
-  background-color: #6c757d;
-  color: white;
-  padding: 10px 20px;
+  padding: 10px 15px;
+  border: none;
   border-radius: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.custom-btn-close:hover {
-  background-color: #5a6268;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
 }
 
 .custom-btn-submit {
   background-color: #4e73df;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .custom-btn-submit:hover {
@@ -177,9 +260,13 @@
   transform: translateY(-2px);
 }
 
-.custom-btn-submit:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.custom-btn-close {
+  background-color: #6c757d;
+}
+
+.custom-btn-close:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
 }
 </style>
   

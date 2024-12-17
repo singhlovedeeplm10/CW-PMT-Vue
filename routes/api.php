@@ -70,7 +70,7 @@ Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
-Route::put('/users/{id}', [UserController::class, 'updateUser']);
+Route::post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 
 
@@ -106,4 +106,3 @@ Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
-

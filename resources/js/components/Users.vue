@@ -177,7 +177,6 @@ export default {
 </script>
 
 
-
 <style scoped>
 .search-fields {
   display: flex;
@@ -248,9 +247,9 @@ export default {
   color: #fff;
 }
 
-.table tbody tr td button:hover {
+/* .table tbody tr td button:hover {
   background-color: #0056b3;
-}
+} */
 
 .pagination {
   display: flex;

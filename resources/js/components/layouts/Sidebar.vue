@@ -8,7 +8,7 @@
       <li class="sidebar-item">
         <router-link to="/dashboard" class="sidebar-link">Dashboard</router-link>
       </li>
-      <li class="sidebar-item">
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/users" class="sidebar-link">Users</router-link>
       </li>
       <li class="sidebar-item">

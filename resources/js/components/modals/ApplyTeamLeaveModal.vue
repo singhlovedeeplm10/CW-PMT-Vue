@@ -38,8 +38,8 @@
     @click="selectUser(user)"
     class="suggestion-item d-flex align-items-center"
   >
-    <img
-      src="img/CWlogo.jpeg"
+  <img
+      :src="user.user_image"
       alt="User Avatar"
       class="rounded-circle me-2"
       style="width: 40px; height: 40px;"
