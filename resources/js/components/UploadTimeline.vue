@@ -93,7 +93,9 @@
   
           // Show success toast
           toast.success("Timeline uploaded successfully!");
-
+  
+          // Redirect to Timeline.vue
+          // this.$router.push({ name: 'TimeLine' });
   
         } catch (error) {
           // Show error toast

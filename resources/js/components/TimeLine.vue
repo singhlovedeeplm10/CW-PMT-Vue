@@ -8,8 +8,8 @@
             <div class="timeline-content">
               <div class="timeline-date">{{ formatDate(event.date) }}</div>
               <div class="timeline-card">
-                <h3 class="timeline-title">{{ event.title }}</h3>
-                <p class="timeline-description">{{ event.description }}</p>
+                <h3 class="timeline-head">{{ event.timeline }}</h3>
+                <h2 class="timeline-title">{{ event.title }}</h2> <p class="timeline-description">{{ event.description }}</p>
                 <template v-if="event.type === 'email'">
                   <div class="timeline-actions">
                     <button class="btn btn-primary">Read more</button>
@@ -88,7 +88,8 @@
           this.events = response.data.map(timeline => ({
             date: timeline.created_at,  // Use the creation date or another date field
             type: 'photos',  // You can check the type based on the file type
-            title: `${timeline.user ? timeline.user.name : 'Unknown User'} shared a new post`,  // Check if user exists
+            timeline: `${timeline.user ? timeline.user.name : 'Unknown User'} shared a new post`,  // Check if user exists
+            title: timeline.title,
             description: timeline.description,
             photos: timeline.timeline_uploads.filter(upload => upload.file_type === 'image').map(upload => `/storage/${upload.file_path}`),
             videoUrl: timeline.timeline_uploads.find(upload => upload.file_type === 'video') ? `/storage/${timeline.timeline_uploads.find(upload => upload.file_type === 'video').file_path}` : null
@@ -275,12 +276,24 @@
     color: #34495e;
     margin-bottom: 10px; /* Reduced margin */
   }
+  .timeline-head {
+    font-size: 1.3rem; /* Reduced title font size */
+    font-weight: 700;
+    color: #34495e;
+    margin-bottom: 10px; /* Reduced margin */
+  }
   
   .timeline-description {
     font-size: 0.9rem; /* Reduced description font size */
     color: #7f8c8d;
     margin-bottom: 15px; /* Reduced margin */
     line-height: 1.4;
+  }
+  .timeline-title {
+    font-size: 1.3rem; /* Reduced title font size */
+    font-weight: 700;
+    color: #34495e;
+    margin-bottom: 10px; /* Reduced margin */
   }
   
   /* Actions & Buttons */
