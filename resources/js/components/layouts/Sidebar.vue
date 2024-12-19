@@ -1,50 +1,56 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <img src="img/CWlogo.jpeg" alt="Profile Image" class="profile-image" />
+      <!-- Show profile image -->
+      <img :src="userImage || 'img/default-profile.png'" alt="Profile Image" class="profile-image" />
       <h2 class="sidebar-title">{{ userName }}</h2>
     </div>
     <ul class="sidebar-list">
       <li class="sidebar-item">
-        <router-link to="/dashboard" class="sidebar-link">Dashboard</router-link>
+        <router-link to="/dashboard" class="sidebar-link" active-class="active-link">Dashboard</router-link>
       </li>
       <li v-if="userRole === 'Admin'" class="sidebar-item">
-        <router-link to="/users" class="sidebar-link">Users</router-link>
+        <router-link to="/users" class="sidebar-link" active-class="active-link">Employees</router-link>
       </li>
       <li class="sidebar-item">
-        <router-link to="" class="sidebar-link">Test</router-link>
+        <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
-      <li class="sidebar-item">
-        <router-link to="/projects" class="sidebar-link">Projects</router-link>
+      <li class="sidebar-item" @click="toggleDropdown('timelines')">
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">TimeLine</h3>
+        </div>
+        <ul v-show="dropdowns.timelines" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
+          </li>
+        </ul>
       </li>
-      <li class="sidebar-item">
-        <router-link to="/listing" class="sidebar-link">Listing</router-link>
-      </li>
-      <!-- Leaves Dropdown -->
       <li class="sidebar-item" @click="toggleDropdown('leaves')">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Leaves</h3>
         </div>
         <ul v-show="dropdowns.leaves" class="sidebar-submenu">
           <li class="sidebar-subitem">
-            <router-link to="/leaves" class="sidebar-link">My Leaves</router-link>
+            <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/teamleaves" class="sidebar-link">My Team Leaves</router-link>
+            <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
           </li>
         </ul>
       </li>
-      <!-- Tasks Dropdown -->
       <li class="sidebar-item" @click="toggleDropdown('tasks')">
         <div class="permissions-header">
           <h3 class="sidebar-subtitle">Tasks</h3>
         </div>
         <ul v-show="dropdowns.tasks" class="sidebar-submenu">
           <li class="sidebar-subitem">
-            <router-link to="/mytasklist" class="sidebar-link">My Task List</router-link>
+            <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/dailytask" class="sidebar-link">Daily Task List</router-link>
+            <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
           </li>
         </ul>
       </li>
@@ -53,55 +59,57 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
-  name: 'SidebarComponent',
+  name: "SidebarComponent",
   data() {
     return {
       dropdowns: {
         leaves: false,
         tasks: false,
+        timelines: false,
       },
-      userName: 'Guest',
+      userName: "Guest",
       userRole: null,
+      userImage: null, // Add userImage property
     };
   },
   methods: {
     toggleDropdown(dropdownName) {
-      // Toggle the selected dropdown and close others
       this.dropdowns = {
         ...this.dropdowns,
         [dropdownName]: !this.dropdowns[dropdownName],
       };
     },
-    async fetchUserData() {
+    async fetchUserDetails() {
       try {
-        const userResponse = await axios.get('/api/username', {
+        const response = await axios.get("/api/user-details", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        this.userName = userResponse.data.user.name;
+        this.userName = response.data.user_name;
+        this.userImage = response.data.user_image;
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error("Error fetching user details:", error);
       }
     },
     async fetchUserRole() {
       try {
-        const response = await axios.get('/api/user-role', {
+        const response = await axios.get("/api/user-role", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
         this.userRole = response.data.role;
       } catch (error) {
-        console.error('Error fetching user role:', error);
+        console.error("Error fetching user role:", error);
       }
     },
   },
   mounted() {
-    this.fetchUserData();
+    this.fetchUserDetails();
     this.fetchUserRole();
   },
 };
@@ -110,7 +118,7 @@ export default {
 <style scoped>
 .sidebar {
   width: 200px;
-  height: 2500px;
+  height: 3000px;
   background-color: #1d1f27;
   padding: 20px;
   color: #fff;
@@ -182,14 +190,8 @@ export default {
   color: #f1c40f;
 }
 
-
-.arrow-down {
-  transform: rotate(0deg);
-  transition: transform 0.3s ease;
-}
-
-.arrow-up {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
+.active-link {
+  color: #3498db;
+  font-weight: bold;
 }
 </style>

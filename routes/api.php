@@ -14,7 +14,11 @@ use App\Http\Controllers\API\BreakController;
 use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\TaskController;
+use App\Http\Controllers\API\TimelineController;
 
+
+Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);
+Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class, 'getTimelineData']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -69,9 +73,13 @@ Route::post('/users', [UserController::class, 'addUser']);
 Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
+Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);
+
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
 Route::post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
+Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 'getUserProfile']);
+
 
 
 // TECHNOLOGIES API ROUTE

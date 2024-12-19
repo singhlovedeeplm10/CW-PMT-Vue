@@ -13,6 +13,9 @@ import TeamLeaves from '../components/TeamLeaves.vue';
 // import DailyTask from '../components/tasks/DailyTask.vue'; 
 import DailyTask from '../components/DailyTask.vue'; 
 import MyTaskList from '../components/MyTaskList.vue'; 
+import MyAccount from '../components/MyAccount.vue'; 
+import TimeLine from '../components/TimeLine.vue'; 
+import UploadTimeline from '../components/UploadTimeline.vue';
 
 
 const routes = [
@@ -25,7 +28,10 @@ const routes = [
   { path: '/leaves', name: 'Leaves', component: Leaves },
   { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves }, 
   { path: '/dailytask', name: 'DailyTask', component: DailyTask }, 
-  { path: '/mytasklist', name: 'MyTaskList', component: MyTaskList } 
+  { path: '/mytasklist', name: 'MyTaskList', component: MyTaskList },
+  { path: '/myaccount', name: 'MyAccount', component: MyAccount }, 
+  { path: '/timeline', name: 'TimeLine', component: TimeLine },
+  { path: '/uploadtimeline', name: 'UploadTimeline', component: UploadTimeline }
 ];
 
 const router = createRouter({

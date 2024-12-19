@@ -120,6 +120,9 @@
   .task-list{
     margin: 20px;
   }
+  .task-list h1{
+    font-size: 30px;
+  }
   .table th,
   .table td {
     vertical-align: middle;
@@ -184,8 +187,7 @@
     width: 100%;
     height: 30px;
     font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ced4da;
+    border: none;
     box-shadow: none;
   }
   </style>

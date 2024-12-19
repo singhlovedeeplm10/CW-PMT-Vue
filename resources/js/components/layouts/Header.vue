@@ -11,7 +11,7 @@
       <div class="header-right">
         <!-- Logout Icon with Hover Dropdown -->
         <div class="logout-container">
-          <img src="img/CWlogo.jpeg" alt="Profile Image" class="profile-image" />
+          <img :src="userImage || 'img/default-profile.png'" alt="Profile Image" class="profile-image" />
           <div class="logout-dropdown">
             <a href="javascript:void(0)" @click="goToAccount">My Account</a>
             <a href="javascript:void(0)" @click="logout">Logout</a>
@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
@@ -30,14 +31,31 @@ export default {
   name: 'HeaderComponent',
   setup() {
     const router = useRouter();
+    const userImage = ref(null);
+
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get('/api/user-details', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+
+        if (response.data.user_image) {
+          userImage.value = response.data.user_image;
+        }
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
 
     const logout = async () => {
       try {
         // Call the logout API endpoint
         await axios.post('/api/logout', {}, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
         });
 
         // Remove token from local storage
@@ -52,12 +70,17 @@ export default {
     };
 
     const goToAccount = () => {
-      router.push('/account');
+      router.push('/myaccount');
     };
+
+    onMounted(() => {
+      fetchUserDetails();
+    });
 
     return {
       logout,
       goToAccount,
+      userImage,
     };
   },
 };

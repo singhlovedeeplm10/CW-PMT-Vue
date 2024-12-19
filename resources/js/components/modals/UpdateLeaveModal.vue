@@ -102,20 +102,44 @@
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select
-                v-model="leave.half_day"
-                id="halfDay"
-                class="form-select"
+  <label for="halfDay" class="form-label">Half Day</label>
+  <select
+    v-model="leave.half"
+    id="halfDay"
+    class="form-select"
+    :disabled="!leave.isEditable"
+    required
+  >
+    <option value="First Half">First Half</option>
+    <option value="Second Half">Second Half</option>
+  </select>
+</div>
+
+
+            <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
+<label for="startDate" class="form-label">Start Date</label>
+              <input
+                type="date"
+                v-model="leave.start_date"
+                id="startDate"
+                class="form-control"
                 :disabled="!leave.isEditable"
                 required
-              >
-                <option value="first_half">First Half</option>
-                <option value="second_half">Second Half</option>
-              </select>
+              />
             </div>
 
             <!-- Conditionally show "Short Leave" specific fields -->
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+  <label for="startDate" class="form-label">Start Date</label>
+  <input
+    type="date"
+    v-model="leave.start_date"
+    id="startDate"
+    class="form-control"
+    :disabled="!leave.isEditable"
+    required
+  />
+</div>
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
     <label for="startTime" class="form-label">Start Time</label>
     <input
@@ -198,58 +222,62 @@ export default {
     },
 
     async submitLeaveUpdate() {
-      this.loading = true;
+  this.loading = true;
 
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("User is not authenticated.");
-          return;
-        }
+  try {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("User is not authenticated.");
+      return;
+    }
 
-        // Prepare data for the API request
-        const leaveData = {
-          type_of_leave: this.leave.type_of_leave,
-          start_date: this.leave.start_date || null,
-          end_date: this.leave.end_date || null,
-          reason: this.leave.reason,
-          contact_during_leave: this.leave.contact_during_leave,
-          status: this.leave.status,
-        };
+    // Prepare data for the API request
+    const leaveData = {
+      type_of_leave: this.leave.type_of_leave,
+      start_date: this.leave.start_date || null,
+      end_date: this.leave.type_of_leave === "Short Leave" ? null : this.leave.end_date || null,
+      reason: this.leave.reason,
+      contact_during_leave: this.leave.contact_during_leave,
+      status: this.leave.status,
+    };
 
-        if (this.leave.type_of_leave === "Half Day Leave") {
-          leaveData.half_day = this.leave.half_day;
-        }
+// Map Half Day to backend values (ensure it matches the field name in the migration)
+if (this.leave.type_of_leave === "Half Day Leave") {
+  leaveData.half = this.leave.half === "First Half" ? "First Half" : "Second Half";
+}
 
-        if (this.leave.type_of_leave === "Short Leave") {
-          leaveData.start_time = this.leave.start_time;
-          leaveData.end_time = this.leave.end_time;
-        }
 
-        // Make API request
-        const response = await axios.put(
-          `/api/update-leaves/${this.leave.id}`,
-          leaveData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    if (this.leave.type_of_leave === "Short Leave") {
+      leaveData.start_time = this.leave.start_time;
+      leaveData.end_time = this.leave.end_time;
+    }
 
-        toast.success(response.data.message);
-        this.$emit("leave-updated", response.data.leave);
-        this.closeModal();
-      } catch (error) {
-        if (error.response && error.response.status === 422) {
-          toast.error("Validation error: " + JSON.stringify(error.response.data.error));
-        } else {
-          toast.error("Failed to update leave. Please try again.");
-        }
-      } finally {
-        this.loading = false;
+    // Make API request
+    const response = await axios.put(
+      `/api/update-leaves/${this.leave.id}`,
+      leaveData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    },
+    );
+
+    toast.success(response.data.message);
+    this.$emit("leave-updated", response.data.leave);
+    this.closeModal();
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      toast.error("Validation error: " + JSON.stringify(error.response.data.error));
+    } else {
+      toast.error("Failed to update leave. Please try again.");
+    }
+  } finally {
+    this.loading = false;
+  }
+},
+
+
   },
 };
 </script>

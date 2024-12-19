@@ -19,8 +19,10 @@ class UserProfile extends Model
         'offer_letter',
         'joining_letter',
         'contract',
-        'user_image',  // Added new field
-        'user_DOB',    // Added new field
+        'user_image',      // Profile image field
+        'user_DOB',        // Date of birth field
+        'gender',          // Gender field
+        'contact',         // Contact field
     ];
 
     public function user()

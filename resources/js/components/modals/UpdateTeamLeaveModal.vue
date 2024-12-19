@@ -112,26 +112,29 @@
 
             <!-- Conditionally show "Short Leave" specific fields -->
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-              <label for="startTime" class="form-label">Start Time</label>
-              <input
-                type="time"
-                v-model="leave.start_time"
-                id="startTime"
-                class="form-control"
-                required
-              />
-            </div>
+  <label for="startTime" class="form-label">Start Time</label>
+  <input
+    type="time"
+    v-model="leave.start_time"
+    id="startTime"
+    class="form-control"
+    required
+    pattern="[0-9]{2}:[0-9]{2}" 
+  />
+</div>
 
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-              <label for="endTime" class="form-label">End Time</label>
-              <input
-                type="time"
-                v-model="leave.end_time"
-                id="endTime"
-                class="form-control"
-                required
-              />
-            </div>
+<div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+  <label for="endTime" class="form-label">End Time</label>
+  <input
+    type="time"
+    v-model="leave.end_time"
+    id="endTime"
+    class="form-control"
+    required
+    pattern="[0-9]{2}:[0-9]{2}" 
+  />
+</div>
+
 
             <div class="mb-3">
               <label for="status" class="form-label">Leave Status</label>
@@ -193,55 +196,56 @@ export default {
 
     // Submit the updated leave data
     async submitLeaveUpdate() {
-      try {
-        this.isLoading = true; // Show loader
+    try {
+        this.isLoading = true;
         const token = localStorage.getItem("authToken");
         if (!token) {
-          alert("User is not authenticated.");
-          return;
+            alert("User is not authenticated.");
+            return;
         }
 
-        // Prepare the data to be sent based on leave type
         const leaveData = {
-          type_of_leave: this.leave.type_of_leave,
-          start_date: this.leave.start_date,
-          end_date: this.leave.end_date,
-          reason: this.leave.reason,
-          contact_during_leave: this.leave.contact_during_leave,
-          status: this.leave.status,
+            type_of_leave: this.leave.type_of_leave,
+            start_date: this.leave.start_date,
+            end_date: this.leave.end_date,
+            reason: this.leave.reason,
+            contact_during_leave: this.leave.contact_during_leave,
+            status: this.leave.status,
         };
 
         if (this.leave.type_of_leave === "Half Day Leave") {
-          leaveData.half_day = this.leave.half_day;
+            leaveData.half_day = this.leave.half_day;
+        } else {
+            leaveData.half_day = null;
         }
 
         if (this.leave.type_of_leave === "Short Leave") {
-          leaveData.start_time = this.leave.start_time;
-          leaveData.end_time = this.leave.end_time;
+  leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i
+  leaveData.end_time = this.leave.end_time?.substring(0, 5); // Format as H:i
+}
+ else {
+            leaveData.start_time = null;
+            leaveData.end_time = null;
         }
 
-        // Send the request to update the leave
         const response = await axios.put(
-          `/api/update-team-leaves/${this.leave.id}`,
-          leaveData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+            `/api/update-team-leaves/${this.leave.id}`,
+            leaveData,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
         );
 
-        console.log(response.data.message);
-        toast.success("Leave updated successfully!"); // Show success toast
-        this.$emit("leave-updated", response.data.leave); // Emit event to update the parent component
+        toast.success("Leave updated successfully!");
+        this.$emit("leave-updated", response.data.leave);
         this.closeModal();
-      } catch (error) {
+    } catch (error) {
         console.error("Error updating leave:", error);
-        toast.error("Failed to update leave. Please try again."); // Show error toast
-      } finally {
-        this.isLoading = false; // Hide loader
-      }
-    },
+        toast.error("Failed to update leave. Please try again.");
+    } finally {
+        this.isLoading = false;
+    }
+},
   },
 };
 </script>

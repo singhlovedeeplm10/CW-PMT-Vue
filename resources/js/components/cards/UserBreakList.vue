@@ -13,6 +13,12 @@
         </tr>
       </thead>
       <tbody>
+        <tr v-if="loading">
+          <td colspan="4" class="text-center">Loading...</td>
+        </tr>
+        <tr v-else-if="breaks.length === 0">
+          <td colspan="4" class="text-center">No Breaks Found</td>
+        </tr>
         <tr v-for="(breakData, index) in breaks" :key="index">
           <td>{{ breakData.start_time }}</td>
           <td>{{ breakData.break_out }}</td>
@@ -32,6 +38,7 @@ export default {
   data() {
     return {
       breaks: [], // Holds break data
+      loading: true, // Loading state
     };
   },
   mounted() {
@@ -48,6 +55,8 @@ export default {
         this.breaks = response.data;
       } catch (error) {
         console.error("Error fetching breaks:", error);
+      } finally {
+        this.loading = false; // Data fetch complete
       }
     },
   },
@@ -56,7 +65,7 @@ export default {
 
 <style scoped>
 .break-card {
-  width: 47%;
+  width: 100%;
   padding: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 12px;

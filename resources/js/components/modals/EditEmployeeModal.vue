@@ -55,6 +55,24 @@
             />
           </div>
           <div class="form-group">
+  <label for="gender" class="form-label">Gender</label>
+  <select id="gender" v-model="formData.gender" class="form-control custom-input">
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+</div>
+<div class="form-group">
+  <label for="contact" class="form-label">Contact</label>
+  <input
+    id="contact"
+    type="text"
+    v-model="formData.contact"
+    class="form-control custom-input"
+    placeholder="Enter contact number"
+  />
+</div>
+
+          <div class="form-group">
             <label for="qualifications" class="form-label">Qualifications</label>
             <input
               id="qualifications"

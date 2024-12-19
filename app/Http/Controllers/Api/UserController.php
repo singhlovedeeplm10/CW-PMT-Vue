@@ -80,6 +80,8 @@ class UserController extends Controller
             'employee_code' => 'nullable|string|max:255',
             'user_DOB' => 'nullable|date',
             'user_image' => 'nullable|image|mimes:jpeg,png,jpg', // Image validation
+            'gender' => 'nullable|in:male,female', // Validation for gender
+            'contact' => 'nullable|digits:10', // Validation for contact
         ]);
     
         $user = User::findOrFail($id);
@@ -98,6 +100,8 @@ class UserController extends Controller
             'qualifications' => $validated['qualifications'] ?? null,
             'employee_code' => $validated['employee_code'] ?? null,
             'user_DOB' => $validated['user_DOB'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'contact' => $validated['contact'] ?? null,
         ];
     
         // Handle Image Upload
@@ -118,6 +122,7 @@ class UserController extends Controller
             'data' => $user->load('profile'),
         ]);
     }
+    
 
 public function updateStatus(Request $request, $id)
     {
@@ -148,4 +153,21 @@ public function updateStatus(Request $request, $id)
             'data' => $user,
         ]);
     }
+
+    public function getUserProfile()
+{
+    $user = auth()->user(); // Get logged-in user
+    $profile = $user->profile; // Use the relationship to get profile data
+
+    return response()->json([
+        'name' => $user->name,
+        'email' => $user->email,
+        'status' => $user->status,
+        'dob' => $profile->user_DOB,
+        'address' => $profile->address,
+        'user_image' => $profile->user_image,
+        'employee_code' => $profile->employee_code,
+    ]);
+}
+
 }

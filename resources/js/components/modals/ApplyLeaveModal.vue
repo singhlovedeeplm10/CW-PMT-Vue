@@ -29,10 +29,11 @@
                 :error="leaveTypeError"
                 @change="handleLeaveTypeChange"
               />
+              <!-- <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span> -->
             </div>
 
             <!-- Dynamic Fields for Half Day -->
-            <div v-if="form.type_of_leave === 'Half Day'" class="mb-3">
+            <div v-if="form.type_of_leave === 'Half Day Leave'" class="mb-3">
               <SelectInput
                 :options="halfDayOptions"
                 v-model="form.half_day"
@@ -41,8 +42,9 @@
                 name="half_day"
                 :error="halfDayError"
               />
+              <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
             </div>
-            <div v-if="form.type_of_leave === 'Half Day'" class="row mb-3">
+            <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
                 <DateInput
                   v-model="form.start_date"
@@ -53,6 +55,7 @@
                   :error="startDateError"
                   @change="validateStartAndEndDate"
                 />
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
 
@@ -68,6 +71,7 @@
                   :error="startDateError"
                   @change="validateStartAndEndDate"
                 />
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
@@ -82,6 +86,7 @@
                   :error="startTimeError"
                   @change="validateShortLeaveTime"
                 />
+                <!-- <span v-if="startTimeError" class="text-danger">{{ startTimeError }}</span> -->
               </div>
               <div class="col">
                 <TimeInput
@@ -94,6 +99,7 @@
                   :error="endTimeError"
                   @change="validateShortLeaveTime"
                 />
+                <!-- <span v-if="endTimeError" class="text-danger">{{ endTimeError }}</span> -->
               </div>
             </div>
 
@@ -109,6 +115,7 @@
                   :error="startDateError"
                   @change="validateStartAndEndDate"
                 />
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
                 <DateInput
@@ -120,6 +127,7 @@
                   :error="endDateError"
                   @change="validateStartAndEndDate"
                 />
+                <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
 
@@ -133,6 +141,7 @@
                 :rows="3"
                 :isRequired="true"
               />
+              <span v-if="reasonError" class="text-danger">{{ reasonError }}</span>
             </div>
 
             <!-- Contact During Leave Field -->
@@ -143,8 +152,8 @@
                 id="contact"
                 placeholder="Enter contact details"
                 :isRequired="true"
-                :errorMessage="contactError"
               />
+              <span v-if="contactError" class="text-danger">{{ contactError }}</span>
             </div>
 
             <div class="modal-footer">
@@ -204,7 +213,7 @@ export default {
       leaveTypeOptions: [
         { label: "Select Leave Type", value: "" },
         { label: "Full Day Leave", value: "Full Day Leave" },
-        { label: "Half Day Leave", value: "Half Day" },
+        { label: "Half Day Leave", value: "Half Day Leave" },
         { label: "Short Leave", value: "Short Leave" },
       ],
       halfDayOptions: [
@@ -218,6 +227,7 @@ export default {
       endTimeError: null,
       leaveTypeError: null,
       halfDayError: null,
+      reasonError: null,
       contactError: null,
       minDate: new Date().toISOString().split("T")[0],
       loading: false,
@@ -267,11 +277,42 @@ export default {
       }
     },
     async validateAndSubmit() {
-      this.validateShortLeaveTime();
-      this.validateStartAndEndDate();
+      // Reset errors
+      this.leaveTypeError = this.form.type_of_leave
+        ? null
+        : "Leave type is required.";
+      this.startDateError = this.form.start_date
+        ? null
+        : "Start date is required.";
+      this.reasonError = this.form.reason ? null : "Reason is required.";
+      this.contactError = this.form.contact_during_leave
+        ? null
+        : "Contact during leave is required.";
 
-      if (this.startDateError || this.endDateError || this.endTimeError) {
-        return; // Prevent form submission if there are errors
+      if (this.form.type_of_leave === "Short Leave") {
+        this.startTimeError = this.form.start_time
+          ? null
+          : "Start time is required.";
+        this.endTimeError = this.form.end_time
+          ? null
+          : "End time is required.";
+      }
+
+      if (this.form.type_of_leave === "Full Day Leave") {
+        this.endDateError = this.form.end_date ? null : "End date is required.";
+      }
+
+      if (
+        this.leaveTypeError ||
+        this.startDateError ||
+        this.reasonError ||
+        this.contactError ||
+        this.startTimeError ||
+        this.endTimeError ||
+        this.endDateError
+      ) {
+        // Prevent form submission if there are validation errors
+        return;
       }
 
       this.loading = true;
@@ -314,11 +355,13 @@ export default {
       this.endTimeError = null;
       this.leaveTypeError = null;
       this.halfDayError = null;
+      this.reasonError = null;
       this.contactError = null;
     },
   },
 };
 </script>
+
   
 <style scoped>
 /* Modal CSS */

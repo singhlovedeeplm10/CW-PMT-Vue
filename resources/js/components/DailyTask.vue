@@ -335,6 +335,11 @@ export default {
   padding: 20px;
   margin: 20px;
 }
+.task-card-header h4{
+   color: black;
+   font-size: 30px;
+   font-weight: 500;
+}
 ul{
   list-style-type: none;
 }
