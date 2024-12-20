@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('timeline_uploads', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('timeline_id');
-            $table->string('file_path');
-            $table->enum('file_type', ['image', 'video']);
+            $table->string('file_path')->nullable(); // Made nullable
+            $table->enum('file_type', ['image', 'video'])->nullable(); // Made nullable
             $table->string('file_link')->nullable();
             $table->timestamps();
-
+        
             $table->foreign('timeline_id')->references('id')->on('timelines')->onDelete('cascade');
         });
     }

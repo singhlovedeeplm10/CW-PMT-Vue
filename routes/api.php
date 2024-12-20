@@ -19,6 +19,9 @@ use App\Http\Controllers\API\TimelineController;
 
 Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);
 Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class, 'getTimelineData']);
+Route::post('/like-post', [TimelineController::class, 'likePost'])->name('like-post');
+Route::post('/timeline/comment', [TimelineController::class, 'postComment']);
+Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -114,3 +117,4 @@ Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
+

@@ -42,4 +42,8 @@ class Timeline extends Model
 {
     return $this->hasMany(TimelineUpload::class, 'timeline_id');
 }
+public function likesComments()
+{
+    return $this->hasOne(LikesComment::class, 'timeline_id');
+}
 }
