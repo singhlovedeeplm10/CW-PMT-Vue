@@ -16,44 +16,57 @@
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
-        <div class="permissions-header">
-          <h3 class="sidebar-subtitle">TimeLine</h3>
-        </div>
-        <ul v-show="dropdowns.timelines" class="sidebar-submenu">
-          <li class="sidebar-subitem">
-            <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
-          </li>
-          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
-          </li>
-        </ul>
-      </li>
-      <li class="sidebar-item" @click="toggleDropdown('leaves')">
-        <div class="permissions-header">
-          <h3 class="sidebar-subtitle">Leaves</h3>
-        </div>
-        <ul v-show="dropdowns.leaves" class="sidebar-submenu">
-          <li class="sidebar-subitem">
-            <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
-          </li>
-          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
-          </li>
-        </ul>
-      </li>
-      <li class="sidebar-item" @click="toggleDropdown('tasks')">
-        <div class="permissions-header">
-          <h3 class="sidebar-subtitle">Tasks</h3>
-        </div>
-        <ul v-show="dropdowns.tasks" class="sidebar-submenu">
-          <li class="sidebar-subitem">
-            <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
-          </li>
-          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
-          </li>
-        </ul>
-      </li>
+  <div class="permissions-header">
+    <h3 class="sidebar-subtitle">TimeLine</h3>
+    <!-- Dropdown Icon -->
+    <span :class="dropdowns.timelines ? 'icon-rotate' : ''">
+      ▼
+    </span>
+  </div>
+  <ul v-show="dropdowns.timelines" class="sidebar-submenu">
+    <li class="sidebar-subitem">
+      <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
+    </li>
+    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+      <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
+    </li>
+  </ul>
+</li>
+<li class="sidebar-item" @click="toggleDropdown('leaves')">
+  <div class="permissions-header">
+    <h3 class="sidebar-subtitle">Leaves</h3>
+    <!-- Dropdown Icon -->
+    <span :class="dropdowns.leaves ? 'icon-rotate' : ''">
+      ▼
+    </span>
+  </div>
+  <ul v-show="dropdowns.leaves" class="sidebar-submenu">
+    <li class="sidebar-subitem">
+      <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
+    </li>
+    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+      <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
+    </li>
+  </ul>
+</li>
+<li class="sidebar-item" @click="toggleDropdown('tasks')">
+  <div class="permissions-header">
+    <h3 class="sidebar-subtitle">Tasks</h3>
+    <!-- Dropdown Icon -->
+    <span :class="dropdowns.tasks ? 'icon-rotate' : ''">
+      ▼
+    </span>
+  </div>
+  <ul v-show="dropdowns.tasks" class="sidebar-submenu">
+    <li class="sidebar-subitem">
+      <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
+    </li>
+    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+      <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
+    </li>
+  </ul>
+</li>
+
     </ul>
   </aside>
 </template>
@@ -163,7 +176,6 @@ export default {
 .sidebar-subtitle {
   font-size: 1.2rem;
   margin-bottom: 10px;
-  color: #e74c3c;
 }
 
 .sidebar-submenu {
@@ -193,5 +205,20 @@ export default {
 .active-link {
   color: #3498db;
   font-weight: bold;
+}
+.permissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+span {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.icon-rotate {
+  transform: rotate(180deg);
 }
 </style>

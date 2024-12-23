@@ -15,9 +15,13 @@ return new class extends Migration
             $table->id();
             $table->json('timeline_id');
             $table->json('timeline_uploads_id');
-            $table->json('likes')->nullable();
+            $table->integer('likes')->default(0);  // Change from json to integer
             $table->text('comments')->nullable();
+            $table->unsignedBigInteger('user_id'); // New user_id column
             $table->timestamps();
+        
+            // Foreign key constraint
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('likes_comments');
+        Schema::dropIfExists('timeline_likes_comments');
     }
 };

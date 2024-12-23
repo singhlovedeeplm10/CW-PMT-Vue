@@ -84,21 +84,24 @@ class TimelineController extends Controller
 
     public function getTimelineData()
     {
+        // Retrieve timelines with associated uploads and user
         $timelines = Timeline::with(['timelineUploads', 'user'])->get();
-    
+        
         foreach ($timelines as $timeline) {
-            // Calculate likes count for each timeline
+            // Calculate the total likes count for each timeline
             $likesCount = DB::table('likes_comments')
                 ->where('timeline_id', $timeline->id)
-                ->sum(DB::raw('JSON_LENGTH(likes)'));
+                ->sum('likes'); // Sum up all likes as 'likes' is now an integer
             
-            $timeline->likes_count = $likesCount; // Add likes count to timeline object
-    
+            // Add the likes count to the timeline object
+            $timeline->likes_count = $likesCount;
+        
+            // Process each timeline upload (images, videos, etc.)
             foreach ($timeline->timelineUploads as $upload) {
                 if ($upload->file_type === 'video' || $upload->file_type === 'image') {
                     $upload->file_url = $upload->file_path ? asset('storage/' . $upload->file_path) : null;
                 }
-    
+        
                 // Add thumbnail and icon for external links
                 if ($upload->file_link) {
                     if (strpos($upload->file_link, 'youtube.com') !== false) {
@@ -112,8 +115,10 @@ class TimelineController extends Controller
             }
         }
     
+        // Return the timelines with likes count
         return response()->json($timelines);
     }
+    
     
     
     // Helper function to get YouTube thumbnail
@@ -129,7 +134,14 @@ class TimelineController extends Controller
             'timeline_id' => 'required|integer',
             'timeline_uploads_id' => 'required|integer',
         ]);
+        
+        // Ensure the user is authenticated and we have a valid user_id
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
     
+        // Check if the like already exists
         $like = DB::table('likes_comments')->where([
             ['timeline_id', '=', $validated['timeline_id']],
             ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
@@ -137,27 +149,32 @@ class TimelineController extends Controller
     
         if ($like) {
             // Increment the like count
-            $likes = json_decode($like->likes, true) ?? [];
-            $likes[] = auth()->id(); // Add current user ID to likes array
-    
             DB::table('likes_comments')
                 ->where('id', $like->id)
-                ->update(['likes' => json_encode($likes)]);
+                ->increment('likes', 1); // Increment by 1
         } else {
-            // Create a new like entry
+            // Create a new like entry with 1 like
             DB::table('likes_comments')->insert([
                 'timeline_id' => $validated['timeline_id'],
                 'timeline_uploads_id' => $validated['timeline_uploads_id'],
-                'likes' => json_encode([auth()->id()]),
+                'likes' => 1,  // Set initial like count to 1
+                'user_id' => $userId, 
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
     
-        // Return the total likes count
-        $totalLikes = count(json_decode($like->likes ?? '[]', true) ?? []);
+        // Get the updated like count
+        $totalLikes = DB::table('likes_comments')
+            ->where([
+                ['timeline_id', '=', $validated['timeline_id']],
+                ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
+            ])
+            ->value('likes'); // Get the current like count
+    
         return response()->json(['success' => true, 'totalLikes' => $totalLikes]);
-    } 
+    }
+    
     
     public function postComment(Request $request)
     {
@@ -166,15 +183,23 @@ class TimelineController extends Controller
             'timeline_uploads_id' => 'required|json',
             'comment' => 'required|string',
         ]);
-
+    
+        // Ensure the user is authenticated and we have a valid user_id
+        $userId = auth()->id();
+        if (!$userId) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+    
         LikesComment::create([
             'timeline_id' => $request->timeline_id,
             'timeline_uploads_id' => $request->timeline_uploads_id,
             'comments' => $request->comment,
+            'user_id' => $userId, // Ensure user_id is set
         ]);
-
+    
         return response()->json(['success' => true, 'message' => 'Comment added successfully!']);
     }
+    
 
     // Fetch comments for a specific post
     public function fetchComments(Request $request)
@@ -183,15 +208,57 @@ class TimelineController extends Controller
             'timeline_id' => 'required|array', // Ensure that timeline_id is an array
             'timeline_uploads_id' => 'required|array', // Ensure that timeline_uploads_id is an array
         ]);
-    
-        // Fetch comments from the LikesComment model based on the timeline_id and timeline_uploads_id
+        
+        // Fetch comments along with user data (user name) from LikesComment model
         $comments = LikesComment::whereIn('timeline_id', $request->query('timeline_id'))
             ->whereIn('timeline_uploads_id', $request->query('timeline_uploads_id'))
-            ->pluck('comments');
-    
+            ->with('user') // Eager load the user relationship
+            ->get(['comments', 'user_id']);
+        
+        // Map the comments to include the user's name, but only if the comment is not null
+        $comments = $comments->map(function ($comment) {
+            // Only include user name if the comment is not null
+            if ($comment->comments) {
+                return [
+                    'comment' => $comment->comments,
+                    'user_name' => $comment->user ? $comment->user->name : 'Unknown User', // Get the user's name
+                ];
+            }
+            // If the comment is null, return only the comment with an empty user_name
+            return [
+                'comment' => $comment->comments,
+                'user_name' => '', // Empty user name when comment is null
+            ];
+        });
+        
         return response()->json(['comments' => $comments]);
     }
-    
-    
+         
+    public function updateTimeline(Request $request, $id)
+    {
+        // Find the timeline post by its ID
+        $timeline = Timeline::find($id);
 
+        // Check if the timeline exists
+        if (!$timeline) {
+            return response()->json(['error' => 'Timeline not found'], 404);
+        }
+
+        // Validate the incoming data
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        // Update the timeline's title and description
+        $timeline->title = $validatedData['title'];
+        $timeline->description = $validatedData['description'];
+
+        // Save the changes to the database
+        $timeline->save();
+
+        // Return a success response
+        return response()->json(['success' => true, 'timeline' => $timeline]);
+    }
+    
 }
