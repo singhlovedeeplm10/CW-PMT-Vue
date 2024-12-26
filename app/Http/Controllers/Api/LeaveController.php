@@ -228,9 +228,18 @@ class LeaveController extends Controller
             // Validate request data
             $validatedData = $request->validate([
                 'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
-                'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
-                'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date',
-                'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+                'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+                'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave|date',
+'end_date' => [
+    'nullable',
+    'required_if:type_of_leave,Full Day Leave',
+    'date',
+    function ($attribute, $value, $fail) use ($request) {
+        if ($value && $request->start_date && $value < $request->start_date) {
+            $fail('The end date must be a date after or equal to the start date.');
+        }
+    },
+],
                 'start_time' => [
                     'nullable',
                     'required_if:type_of_leave,Short Leave',
@@ -251,17 +260,16 @@ class LeaveController extends Controller
             // Update leave record
             $leave->update([
                 'type_of_leave' => $validatedData['type_of_leave'],
-                'half' => $validatedData['half'] ?? null,
+                'half' => $validatedData['half_day'] ?? null,
                 'start_date' => $validatedData['start_date'] ?? null,
-                'end_date' => $validatedData['end_date'] ?? null,
+                'end_date' => $validatedData['type_of_leave'] === 'Half Day Leave' ? $validatedData['start_date'] : ($validatedData['end_date'] ?? null),
                 'start_time' => $validatedData['start_time'] ?? null,
                 'end_time' => $validatedData['end_time'] ?? null,
                 'reason' => $validatedData['reason'],
                 'contact_during_leave' => $validatedData['contact_during_leave'],
                 'status' => $validatedData['status'],
                 'last_updated_by' => Auth::user()->name,
-            ]);
-    
+            ]);            
             return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
     
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -271,7 +279,8 @@ class LeaveController extends Controller
             \Log::error('Error updating leave:', ['exception' => $e]);
             return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
         }
-    }    
+    }
+    
     
     public function search(Request $request)
     {
@@ -297,30 +306,30 @@ class LeaveController extends Controller
     }
     
 
-public function teamLeave(Request $request)
+    public function teamLeave(Request $request)
     {
         // Validate the incoming request data
         $validator = Validator::make($request->all(), [
             'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
-            'half' => 'nullable|in:First Half,Second Half',
+            'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half', // Ensure 'half' is required for 'Half Day Leave'
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after:start_time',
             'reason' => 'required|string',
             'contact_during_leave' => 'required|string|max:15',
-            'selected_user' => 'required|exists:users,id', // Make sure the selected user exists in the 'users' table
+            'selected_user' => 'required|exists:users,id', // Validate the selected user exists in the 'users' table
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 422);
         }
-
+    
         // Create the leave record
         $leave = Leave::create([
             'user_id' => $request->selected_user, // Store the selected user's ID
             'type_of_leave' => $request->type_of_leave,
-            'half' => $request->half,  // Store the half value if applicable
+            'half' => $request->type_of_leave === 'Half Day Leave' ? $request->half : null, // Save 'half' only for 'Half Day Leave'
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'start_time' => $request->start_time,
@@ -330,9 +339,10 @@ public function teamLeave(Request $request)
             'last_updated_by' => Auth::user()->name, // Save the name of the authenticated user
             'status' => 'pending', // Default status for new leave request
         ]);
-
+    
         return response()->json(['message' => 'Leave applied successfully!', 'data' => $leave], 201);
     }
+    
     
     public function show($id)
     {
@@ -467,11 +477,13 @@ public function getUsersOnLeave(Request $request)
         }])
         ->get()
         ->map(function ($leave) {
+            $user = $leave->user;
+
             return [
-                'id' => $leave->user->id,
-                'name' => $leave->user->name,
-                'user_image' => $leave->user->profile->user_image 
-                    ? asset('storage/' . $leave->user->profile->user_image)
+                'id' => $user->id,
+                'name' => $user->name,
+                'user_image' => $user->profile && $user->profile->user_image
+                    ? asset('storage/' . $user->profile->user_image)
                     : asset('img/CWlogo.jpeg'), // Fallback image if user_image is null
             ];
         });

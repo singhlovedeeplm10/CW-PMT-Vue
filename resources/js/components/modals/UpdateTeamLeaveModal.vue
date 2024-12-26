@@ -98,17 +98,18 @@
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select
-                v-model="leave.half_day"
-                id="halfDay"
-                class="form-select"
-                required
-              >
-                <option value="first_half">First Half</option>
-                <option value="second_half">Second Half</option>
-              </select>
-            </div>
+  <label for="halfDay" class="form-label">Half Day</label>
+  <select
+    v-model="leave.half_day"
+    id="halfDay"
+    class="form-select"
+    required
+  >
+    <option value="First Half">First Half</option>
+    <option value="Second Half">Second Half</option>
+  </select>
+</div>
+
 
             <!-- Conditionally show "Short Leave" specific fields -->
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
@@ -132,6 +133,17 @@
     class="form-control"
     required
     pattern="[0-9]{2}:[0-9]{2}" 
+  />
+</div>
+
+<div v-if="leave.type_of_leave === 'Half Day Leave' || leave.type_of_leave === 'Short Leave'" class="mb-3">
+  <label for="startDate" class="form-label">Start Date</label>
+  <input
+    type="date"
+    v-model="leave.start_date"
+    id="startDate"
+    class="form-control"
+    required
   />
 </div>
 
@@ -207,17 +219,19 @@ export default {
         const leaveData = {
             type_of_leave: this.leave.type_of_leave,
             start_date: this.leave.start_date,
-            end_date: this.leave.end_date,
+end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : null,
+
             reason: this.leave.reason,
             contact_during_leave: this.leave.contact_during_leave,
             status: this.leave.status,
         };
 
         if (this.leave.type_of_leave === "Half Day Leave") {
-            leaveData.half_day = this.leave.half_day;
-        } else {
-            leaveData.half_day = null;
-        }
+    leaveData.half_day = this.leave.half_day;
+} else {
+    leaveData.half_day = null;
+}
+
 
         if (this.leave.type_of_leave === "Short Leave") {
   leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i

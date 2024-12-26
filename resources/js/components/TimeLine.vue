@@ -4,7 +4,11 @@
       <h2 class="timeline-heading">Activity Timeline</h2>
       <div class="timeline">
         <div v-for="(event, index) in events" :key="index" class="timeline-item">
-          <div class="timeline-icon" :class="event.type"></div>
+          <div class="timeline-icon" :class="event.type">
+            <!-- Display icon based on event type (video/image) -->
+            <i v-if="event.type === 'video'" class="fas fa-video"></i>
+            <i v-else-if="event.type === 'photos'" class="fas fa-image"></i>
+          </div>
           <div class="timeline-content">
             <div class="timeline-date">{{ formatDate(event.date) }}</div>
             <div class="timeline-card">
@@ -13,18 +17,19 @@
               <p class="timeline-description">{{ event.description }}</p>
 
               <!-- External Link Display -->
-              <template v-if="event.externalLinks.length">
-                <div class="external-links">
-                  <div v-for="(link, i) in event.externalLinks" :key="i" class="external-link">
-                    <a :href="link.url" target="_blank" class="thumbnail-link">
-                      <img v-if="link.thumbnail" :src="link.thumbnail" alt="External Thumbnail" class="thumbnail" />
-                      <div class="link-icon-overlay">
-                        <i :class="link.icon" class="link-icon"></i>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </template>
+              <template v-if="event.externalLinks && event.externalLinks.length">
+  <div class="external-links">
+    <div v-for="(link, i) in event.externalLinks" :key="i" class="external-link">
+      <a :href="link.url" target="_blank" class="thumbnail-link">
+        <img v-if="link.thumbnail" :src="link.thumbnail" alt="External Thumbnail" class="thumbnail" />
+        <div class="link-icon-overlay">
+          <i :class="link.icon" class="link-icon"></i>
+        </div>
+      </a>
+    </div>
+  </div>
+</template>
+
 
               <!-- Local Media Display -->
               <template v-if="event.type === 'photos'">
@@ -54,57 +59,73 @@
 
               <!-- Like and Comment Icons -->
               <div class="post-actions">
-                <i class="fas fa-thumbs-up action-icon" @click="likePost(index)"></i>
+                <i 
+                  class="fas fa-thumbs-up action-icon"
+                  :class="{'liked': event.likedByUser}" 
+                  @click="likePost(index)"
+                ></i>
                 <span class="likes-count">{{ event.likes_count }}</span>
                 <i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
-
                 <!-- Comment Input Section -->
                 <div v-if="event.showCommentInput" class="comment-input-container">
-                  <input
-                    type="text"
+                  <textarea
                     v-model="event.newComment"
-                    class="comment-input"
+                    class="comment-input full-width-textarea"
                     placeholder="Add a comment..."
-                  />
+                    rows="3"
+                  ></textarea>
                   <button @click="postComment(index)" class="post-button">Post</button>
                   <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
-                  <p>
-                    <strong v-if="comment.user_name">{{ comment.user_name }} commented: </strong>
-                    <span v-if="comment.user_name">{{ comment.comment }}</span>
-                    <span v-else>{{ comment.comment }}</span>
-                  </p>
-                </div>
+  <p class="comment-text">
+    <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} commented: </strong>
+    <span v-if="comment.user_name">{{ comment.comment }}</span>
+    <span v-else>{{ comment.comment }}</span>
+  </p>
+</div>
+
                 </div>
 
-                <!-- Edit Post Button (Visible only for Admin) -->
-                <button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button">Edit Post</button>
+<button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button top-right">
+  <i class="fas fa-edit"></i>
+</button>
+
+
+                <EditPostModal
+                  :show="showEditModal"
+                  :editData="editData"
+                  @save-edit="savePostEdit"
+                  @close="closeEditModal"
+                />
               </div>
-
-              <!-- Comment Section -->
-              <!-- <div class="comments-list">
-                
-              </div> -->
-
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Image Viewer Modal -->
-      <div v-if="selectedImage" class="image-viewer" @click="closeImage">
-        <img :src="selectedImage" class="enlarged-image" />
-      </div>
+<!-- Image Viewer Modal -->
+<div v-if="selectedImage" class="image-viewer" @click.self="closeImage">
+  <div class="image-slider">
+    <!-- Display the current image -->
+    <img :src="selectedImage" class="enlarged-image" />
 
-      <!-- Edit Post Modal -->
-      <div v-if="showEditModal" class="edit-post-modal">
-        <div class="modal-content">
-          <h3>Edit Post</h3>
-          <input type="text" v-model="editData.title" placeholder="Edit Title" class="modal-input" />
-          <textarea v-model="editData.description" placeholder="Edit Description" class="modal-input"></textarea>
-          <button @click="savePostEdit" class="save-button">Save</button>
-          <button @click="closeEditModal" class="cancel-button">Cancel</button>
-        </div>
-      </div>
+    <!-- Navigation buttons -->
+    <div class="slider-controls">
+      <button v-if="currentImageIndex > 0" @click="prevImage" class="prev-btn">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button v-if="currentImageIndex < images.length - 1" @click="nextImage" class="next-btn">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Close button -->
+    <button @click="closeImage" class="close-btn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+
     </div>
   </master-component>
 </template>
@@ -114,16 +135,23 @@
 <script>
 import axios from 'axios';
 import MasterComponent from "./layouts/Master.vue";
+import EditPostModal from "@/components/modals/EditPostModal.vue";
+
 
 export default {
   name: "TimeLine",
-  components: { MasterComponent },
+  components: {
+    MasterComponent,
+    EditPostModal,
+  },
   data() {
     return {
       events: [
         { comments: [] } // Initialize the comments array
       ],
       selectedImage: null,
+      currentImageIndex: 0, // New state for managing the current image in the slider
+      images: [], // Store the images to show in the modal
       showEditModal: false,
       editData: {
         title: '',
@@ -159,28 +187,30 @@ export default {
         });
 
         this.events = response.data.map((timeline) => ({
-          date: timeline.created_at,
-          type: timeline.timeline_uploads.some((upload) => upload.file_type === 'video') ? 'video' : 'photos',
-          timeline: `${timeline.user ? timeline.user.name : 'Unknown User'} shared a new post`,
-          title: timeline.title,
-          description: timeline.description,
-          photos: timeline.timeline_uploads.filter((upload) => upload.file_type === 'image' && upload.file_path)
-            .map((upload) => `/storage/${upload.file_path}`),
-          videoUrl: timeline.timeline_uploads.find((upload) => upload.file_type === 'video' && upload.file_path)
-            ? `/storage/${timeline.timeline_uploads.find((upload) => upload.file_type === 'video').file_path}` 
-            : null,
-          externalLinks: timeline.timeline_uploads
-            .filter((upload) => upload.file_link)
-            .map((upload) => ({
-              url: upload.file_link,
-              thumbnail: upload.thumbnail || null,
-              icon: upload.icon || 'fas fa-link',
-            })),
-          likes_count: timeline.likes_count || 0, // Include the likes_count from the backend
-          timeline_id: timeline.id,
-          timeline_uploads_id: timeline.timeline_uploads[0]?.id || null, // Ensure valid ID
-          comments: [],
-        }));
+  date: timeline.created_at,
+  type: timeline.timeline_uploads.some((upload) => upload.file_type === 'video') ? 'video' : 'photos',
+  timeline: `${timeline.user ? timeline.user.name : 'Unknown User'} shared a new post`,
+  title: timeline.title,
+  description: timeline.description,
+  photos: timeline.timeline_uploads.filter((upload) => upload.file_type === 'image' && upload.file_path)
+    .map((upload) => `/storage/${upload.file_path}`) || [],  // Ensure photos is always an array
+  videoUrl: timeline.timeline_uploads.find((upload) => upload.file_type === 'video' && upload.file_path)
+    ? `/storage/${timeline.timeline_uploads.find((upload) => upload.file_type === 'video').file_path}` 
+    : null,
+  externalLinks: timeline.timeline_uploads
+    .filter((upload) => upload.file_link)
+    .map((upload) => ({
+      url: upload.file_link,
+      thumbnail: upload.thumbnail || null,
+      icon: upload.icon || 'fas fa-link',
+    })) || [],  // Ensure externalLinks is always an array
+  likes_count: timeline.likes_count || 0,
+  timeline_id: timeline.id,
+  timeline_uploads_id: timeline.timeline_uploads[0]?.id || null,
+  likedByUser: timeline.likedByUser || false,  // Add likedByUser
+  comments: [],
+}));
+
       } catch (error) {
         console.error('There was an error fetching the timeline data:', error);
       }
@@ -207,11 +237,35 @@ export default {
 
     viewImage(photo) {
       this.selectedImage = photo;
+      // Set up the images array (for the slider)
+      const eventIndex = this.events.findIndex(event => event.photos.includes(photo));
+      if (eventIndex !== -1) {
+        this.images = this.events[eventIndex].photos;  // Get all images from the selected event
+        this.currentImageIndex = this.images.indexOf(photo);  // Set the current image index
+      }
     },
 
     closeImage() {
-      this.selectedImage = null;
-    },
+    this.selectedImage = null;
+    this.images = [];
+  },
+
+    // Navigate to the next image
+    nextImage() {
+    if (this.currentImageIndex < this.images.length - 1) {
+      this.currentImageIndex++;
+      this.selectedImage = this.images[this.currentImageIndex];
+    }
+  },
+
+  // Navigate to the previous image
+  prevImage() {
+    if (this.currentImageIndex > 0) {
+      this.currentImageIndex--;
+      this.selectedImage = this.images[this.currentImageIndex];
+    }
+  },
+
 
     async likePost(index) {
       const event = this.events[index];
@@ -230,8 +284,9 @@ export default {
         );
 
         if (response.data.success) {
-          // Update the likes count from the backend
+          // Update the likes count and liked state from the backend
           this.events[index].likes_count = response.data.totalLikes;
+          this.events[index].likedByUser = response.data.likedByUser;
         }
       } catch (error) {
         console.error('Error liking post:', error);
@@ -318,6 +373,11 @@ export default {
       this.showEditModal = true;
     },
 
+    openEditModal(post) {
+      this.editData = { ...post };
+      this.showEditModal = true;
+    },
+
     closeEditModal() {
       this.showEditModal = false;
       this.editData = { title: '', description: '', eventIndex: null };
@@ -352,24 +412,6 @@ export default {
 </script>
 
   <style scoped>
-
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 50%;
-  max-width: 500px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.modal-input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
 .save-button,
 .cancel-button {
   padding: 10px 20px;
@@ -392,11 +434,13 @@ export default {
   background-color: #c0392b;
 }
 .comment-input-container {
-  margin-top: 15px;
-  padding: 15px;
-  background: #f9f9f9;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  width: 100%;
+  margin-top: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 .comment-input-container h4 {
   margin-bottom: 10px;
@@ -406,14 +450,12 @@ export default {
 }
 
 .comment-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  width: calc(100% - 100px);
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .comment-input:focus {
@@ -421,20 +463,27 @@ export default {
   outline: none;
 }
 
+.full-width-textarea {
+  width: 100%; /* Make the textarea full width */
+  resize: none; /* Disable resizing if needed */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
 .post-button {
-  padding: 10px 16px;
-  background-color: #4caf50;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 3px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .post-button:hover {
-  background-color: #45a049;
-  transform: scale(1.05);
+  background-color: #0056b3;
 }
   /* Like and Comment Icons */
   .post-actions {
@@ -455,14 +504,27 @@ export default {
   transform: scale(1.2);
 }
 
-  .comment {
+.comment {
   margin-top: 10px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border: 1px solid #eaeaea;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.comment-text {
   font-size: 14px;
-  color: #2c3e50;
+  color: #333;
+  line-height: 1.5;
+}
+
+.comment-author {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.comment:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 .comment strong {
   color: #3498db;
@@ -476,26 +538,85 @@ export default {
   margin-bottom: 10px;
 }
   
-  /* Image Viewer */
-  .image-viewer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
+/* Image Viewer Modal Styles */
+.image-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.image-viewer[style*="display: flex"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.image-slider {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
   
-  .enlarged-image {
-    max-width: 80%; /* Smaller max width */
-    max-height: 80%; /* Smaller max height */
-    border-radius: 12px;
-    transition: transform 0.3s ease-in-out;
-  }
+.enlarged-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;  /* Ensure the image maintains its aspect ratio */
+  max-height: 80vh; /* Limit image height */
+  border-radius: 8px;
+}
+.slider-controls {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+}
+
+.prev-btn,
+.next-btn {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.prev-btn:hover,
+.next-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
   
   .clickable-image {
     cursor: pointer;
@@ -774,6 +895,21 @@ export default {
   color: white;
   text-shadow: 0 0 5px black;
 }
+.edit-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  position: absolute; /* Absolute positioning for flexibility */
+}
 
+.edit-button.top-right {
+  top: 10px; /* Adjust as needed */
+  right: 10px; /* Adjust as needed */
+}
+.liked {
+  color: blue; /* Change the color of the like icon when it's liked */
+}
   </style>
   

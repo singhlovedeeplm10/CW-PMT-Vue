@@ -120,7 +120,6 @@ class TimelineController extends Controller
     }
     
     
-    
     // Helper function to get YouTube thumbnail
     private function getYouTubeThumbnail($youtubeUrl)
     {
@@ -141,39 +140,55 @@ class TimelineController extends Controller
             return response()->json(['error' => 'User not authenticated'], 401);
         }
     
-        // Check if the like already exists
-        $like = DB::table('likes_comments')->where([
+        // Check if the user has already liked this post
+        $existingLike = DB::table('likes_comments')->where([
             ['timeline_id', '=', $validated['timeline_id']],
             ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
+            ['user_id', '=', $userId],
         ])->first();
     
-        if ($like) {
-            // Increment the like count
+        if ($existingLike) {
+            // User has already liked, so remove the like (dislike)
             DB::table('likes_comments')
-                ->where('id', $like->id)
-                ->increment('likes', 1); // Increment by 1
+                ->where('id', $existingLike->id)
+                ->delete();
+            
+            // Decrement the like count by 1
+            DB::table('likes_comments')
+                ->where([
+                    ['timeline_id', '=', $validated['timeline_id']],
+                    ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
+                ])
+                ->decrement('likes', 1); // Decrement likes count by 1
         } else {
-            // Create a new like entry with 1 like
+            // User has not liked, so add a like
             DB::table('likes_comments')->insert([
                 'timeline_id' => $validated['timeline_id'],
                 'timeline_uploads_id' => $validated['timeline_uploads_id'],
-                'likes' => 1,  // Set initial like count to 1
-                'user_id' => $userId, 
+                'user_id' => $userId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            
+            // Increment the like count by 1
+            DB::table('likes_comments')
+                ->where([
+                    ['timeline_id', '=', $validated['timeline_id']],
+                    ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
+                ])
+                ->increment('likes', 1); // Increment likes count by 1
         }
     
-        // Get the updated like count
+        // Get the updated like count after the action
         $totalLikes = DB::table('likes_comments')
             ->where([
                 ['timeline_id', '=', $validated['timeline_id']],
                 ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
             ])
-            ->value('likes'); // Get the current like count
-    
-        return response()->json(['success' => true, 'totalLikes' => $totalLikes]);
-    }
+            ->value('likes');
+        
+        return response()->json(['success' => true, 'totalLikes' => $totalLikes, 'likedByUser' => !$existingLike]);
+    }      
     
     
     public function postComment(Request $request)
@@ -201,38 +216,32 @@ class TimelineController extends Controller
     }
     
 
-    // Fetch comments for a specific post
-    public function fetchComments(Request $request)
-    {
-        $request->validate([
-            'timeline_id' => 'required|array', // Ensure that timeline_id is an array
-            'timeline_uploads_id' => 'required|array', // Ensure that timeline_uploads_id is an array
-        ]);
-        
-        // Fetch comments along with user data (user name) from LikesComment model
-        $comments = LikesComment::whereIn('timeline_id', $request->query('timeline_id'))
-            ->whereIn('timeline_uploads_id', $request->query('timeline_uploads_id'))
-            ->with('user') // Eager load the user relationship
-            ->get(['comments', 'user_id']);
-        
-        // Map the comments to include the user's name, but only if the comment is not null
-        $comments = $comments->map(function ($comment) {
-            // Only include user name if the comment is not null
-            if ($comment->comments) {
-                return [
-                    'comment' => $comment->comments,
-                    'user_name' => $comment->user ? $comment->user->name : 'Unknown User', // Get the user's name
-                ];
-            }
-            // If the comment is null, return only the comment with an empty user_name
-            return [
-                'comment' => $comment->comments,
-                'user_name' => '', // Empty user name when comment is null
-            ];
-        });
-        
-        return response()->json(['comments' => $comments]);
-    }
+// Fetch comments for a specific post
+public function fetchComments(Request $request)
+{
+    $request->validate([
+        'timeline_id' => 'required|array', // Ensure that timeline_id is an array
+        'timeline_uploads_id' => 'required|array', // Ensure that timeline_uploads_id is an array
+    ]);
+
+    // Fetch comments along with user data, excluding null comments
+    $comments = LikesComment::whereIn('timeline_id', $request->query('timeline_id'))
+        ->whereIn('timeline_uploads_id', $request->query('timeline_uploads_id'))
+        ->whereNotNull('comments') // Exclude null comments
+        ->with('user') // Eager load the user relationship
+        ->get(['comments', 'user_id']);
+
+    // Map the comments to include the user's name
+    $comments = $comments->map(function ($comment) {
+        return [
+            'comment' => $comment->comments,
+            'user_name' => $comment->user ? $comment->user->name : 'Unknown User', // Get the user's name
+        ];
+    });
+
+    return response()->json(['comments' => $comments]);
+}
+
          
     public function updateTimeline(Request $request, $id)
     {

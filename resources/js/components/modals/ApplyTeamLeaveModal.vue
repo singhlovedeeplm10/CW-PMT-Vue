@@ -67,17 +67,18 @@
 
             <!-- Dynamic Fields for Half Day -->
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <SelectInput
-                :options="halfDayOptions"
-                v-model="form.half_day"
-                label="Select Half"
-                id="halfDayOption"
-                name="half_day"
-                placeholder="Select Half"
-                :error="halfDayError"
-              />
-              <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span>
-            </div>
+  <SelectInput
+    :options="halfDayOptions"
+    v-model="form.half" 
+    label="Select Half"
+    id="halfDayOption"
+    name="half_day"
+    placeholder="Select Half"
+    :error="halfDayError"
+  />
+  <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span>
+</div>
+
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
                 <DateInput
@@ -234,7 +235,7 @@ export default {
         type_of_leave: "",
         start_date: "",
         end_date: "",
-        half_day: "",
+        half: "", // Update the field name from half_day to half
         start_time: "",
         end_time: "",
         reason: "",
