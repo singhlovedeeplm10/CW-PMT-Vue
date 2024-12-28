@@ -16,20 +16,19 @@
               <h2 class="timeline-title">{{ event.title }}</h2>
               <p class="timeline-description">{{ event.description }}</p>
 
-              <!-- External Link Display -->
+              <!-- External Link Display (YouTube Thumbnails) -->
               <template v-if="event.externalLinks && event.externalLinks.length">
-  <div class="external-links">
-    <div v-for="(link, i) in event.externalLinks" :key="i" class="external-link">
-      <a :href="link.url" target="_blank" class="thumbnail-link">
-        <img v-if="link.thumbnail" :src="link.thumbnail" alt="External Thumbnail" class="thumbnail" />
-        <div class="link-icon-overlay">
-          <i :class="link.icon" class="link-icon"></i>
-        </div>
-      </a>
-    </div>
-  </div>
-</template>
-
+                <div class="external-links">
+                  <div v-for="(link, i) in event.externalLinks" :key="i" class="external-link">
+                    <a @click.prevent="openVideoModal(link.url)" class="thumbnail-link">
+                      <img v-if="link.thumbnail" :src="link.thumbnail" alt="External Thumbnail" class="thumbnail" />
+                      <div class="link-icon-overlay">
+                        <i :class="link.icon" class="link-icon"></i>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </template>
 
               <!-- Local Media Display -->
               <template v-if="event.type === 'photos'">
@@ -45,6 +44,7 @@
                 </div>
               </template>
 
+              <!-- Video or Other Content -->
               <template v-else-if="event.type === 'video'">
                 <div class="video-wrapper">
                   <video
@@ -59,13 +59,20 @@
 
               <!-- Like and Comment Icons -->
               <div class="post-actions">
-                <i 
+                <i
                   class="fas fa-thumbs-up action-icon"
-                  :class="{'liked': event.likedByUser}" 
+                  :class="{'liked': event.likedByUser}"
                   @click="likePost(index)"
                 ></i>
                 <span class="likes-count">{{ event.likes_count }}</span>
                 <i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
+
+                <!-- Delete Button -->
+                <button class="delete-button top-right" @click="deleteTimeline(event.timeline_id, index)">
+  <i class="fas fa-trash"></i>
+</button>
+
+
                 <!-- Comment Input Section -->
                 <div v-if="event.showCommentInput" class="comment-input-container">
                   <textarea
@@ -76,18 +83,18 @@
                   ></textarea>
                   <button @click="postComment(index)" class="post-button">Post</button>
                   <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
-  <p class="comment-text">
-    <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} commented: </strong>
-    <span v-if="comment.user_name">{{ comment.comment }}</span>
-    <span v-else>{{ comment.comment }}</span>
-  </p>
-</div>
-
+                    <p class="comment-text">
+                      <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} commented: </strong>
+                      <span v-if="comment.user_name">{{ comment.comment }}</span>
+                      <span v-else>{{ comment.comment }}</span>
+                    </p>
+                  </div>
                 </div>
 
-<button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button top-right">
-  <i class="fas fa-edit"></i>
-</button>
+                <button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button top-right">
+                  <i class="fas fa-edit"></i>
+                </button>
+
 
 
                 <EditPostModal
@@ -102,33 +109,51 @@
         </div>
       </div>
 
-<!-- Image Viewer Modal -->
-<div v-if="selectedImage" class="image-viewer" @click.self="closeImage">
-  <div class="image-slider">
-    <!-- Display the current image -->
-    <img :src="selectedImage" class="enlarged-image" />
+      <!-- Video Modal -->
+      <div v-if="isVideoModalVisible" class="video-modal-overlay" @click.self="closeVideoModal">
+        <div class="video-modal">
+          <button class="close-btn" @click="closeVideoModal">
+            <i class="fas fa-times"></i>
+          </button>
+          <iframe
+            v-if="videoUrl"
+            :src="videoUrl"
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+            width="100%"
+            height="315px"
+            class="video-iframe"
+          ></iframe>
+        </div>
+      </div>
 
-    <!-- Navigation buttons -->
-    <div class="slider-controls">
-      <button v-if="currentImageIndex > 0" @click="prevImage" class="prev-btn">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <button v-if="currentImageIndex < images.length - 1" @click="nextImage" class="next-btn">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
+      <!-- Image Viewer Modal -->
+      <div v-if="selectedImage" class="image-viewer" @click.self="closeImage">
+        <div class="image-slider">
+          <!-- Display the current image -->
+          <img :src="selectedImage" class="enlarged-image" />
 
-    <!-- Close button -->
-    <button @click="closeImage" class="close-btn">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-</div>
+          <!-- Navigation buttons -->
+          <div class="slider-controls">
+            <button v-if="currentImageIndex > 0" @click="prevImage" class="prev-btn">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button v-if="currentImageIndex < images.length - 1" @click="nextImage" class="next-btn">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
 
-
+          <!-- Close button -->
+          <button @click="closeImage" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </master-component>
 </template>
+
 
 
 
@@ -159,6 +184,8 @@ export default {
         eventIndex: null
       },
       userRole: null,  // Add the userRole property
+      isVideoModalVisible: false,
+      videoUrl: null,  // Holds the YouTube video URL
     };
   },
   created() {
@@ -219,6 +246,23 @@ export default {
     formatDate(date) {
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(date).toLocaleDateString(undefined, options);
+    },
+
+    openVideoModal(url) {
+      // Extract the YouTube video ID from the URL and set it to the iframe source
+      const videoId = this.extractYouTubeId(url);
+      this.videoUrl = `https://www.youtube.com/embed/${videoId}`;
+      this.isVideoModalVisible = true;
+    },
+
+    closeVideoModal() {
+      this.isVideoModalVisible = false;
+      this.videoUrl = null;  // Clear the video URL
+    },
+
+    extractYouTubeId(url) {
+      const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
     },
 
     playVideo(url) {
@@ -407,31 +451,61 @@ export default {
         console.error('Error saving post edit:', error);
       }
     },
+    async deleteTimeline(timelineId, index) {
+    if (confirm('Are you sure you want to delete this timeline?')) {
+      try {
+        // Send delete request to the backend
+        const response = await axios.delete(`/api/delete/timelines/${timelineId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        if (response.data.success) {
+          // Remove the timeline from the events array
+          this.events.splice(index, 1);
+          alert('Timeline deleted successfully');
+        } else {
+          alert('Error deleting timeline');
+        }
+      } catch (error) {
+        console.error('Error deleting timeline:', error);
+        alert('An error occurred while deleting the timeline');
+      }
+    }
+  },
+    
   },
 };
 </script>
 
   <style scoped>
-.save-button,
-.cancel-button {
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  .video-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.save-button:hover {
-  background-color: #2980b9;
+.video-modal {
+  position: relative;
+  /* background: white;
+  padding: 20px; */
+  border-radius: 8px;
+  width: 80%;
+  max-width: 900px;
 }
 
-.cancel-button {
-  background-color: #e74c3c;
-}
-
-.cancel-button:hover {
-  background-color: #c0392b;
+.video-iframe {
+  width: 100%;
+  height: 500px;
+  border-radius: 8px;
 }
 .comment-input-container {
   background-color: #f9f9f9;
@@ -562,8 +636,6 @@ export default {
   max-height: 90%;
   overflow: hidden;
   border-radius: 10px;
-  background-color: white;
-  padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
   
@@ -588,7 +660,7 @@ export default {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  padding: 10px;
+  padding: 5px 10px;
   font-size: 18px;
   border-radius: 50%;
   cursor: pointer;
@@ -607,7 +679,7 @@ export default {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  padding: 10px;
+  padding: 5px 12px;
   font-size: 18px;
   border-radius: 50%;
   cursor: pointer;
@@ -906,7 +978,20 @@ export default {
 
 .edit-button.top-right {
   top: 10px; /* Adjust as needed */
-  right: 10px; /* Adjust as needed */
+  right: 20px; /* Adjust as needed */
+}
+.delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  position: absolute; /* Absolute positioning for flexibility */
+}
+
+.delete-button.top-right {
+  top: 10px; /* Adjust as needed */
+  right: 40px; /* Adjust as needed */
 }
 .liked {
   color: blue; /* Change the color of the like icon when it's liked */

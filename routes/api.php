@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->post('/like-post', [TimelineController::class
 Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController::class, 'postComment']);
 Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
 Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
+Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

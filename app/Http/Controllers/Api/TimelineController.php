@@ -133,62 +133,51 @@ class TimelineController extends Controller
             'timeline_id' => 'required|integer',
             'timeline_uploads_id' => 'required|integer',
         ]);
-        
-        // Ensure the user is authenticated and we have a valid user_id
+    
         $userId = auth()->id();
         if (!$userId) {
             return response()->json(['error' => 'User not authenticated'], 401);
         }
     
+        $postIdentifier = [
+            'timeline_id' => $validated['timeline_id'],
+            'timeline_uploads_id' => $validated['timeline_uploads_id'],
+        ];
+    
         // Check if the user has already liked this post
-        $existingLike = DB::table('likes_comments')->where([
-            ['timeline_id', '=', $validated['timeline_id']],
-            ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
-            ['user_id', '=', $userId],
-        ])->first();
+        $existingLike = DB::table('likes_comments')
+            ->where($postIdentifier)
+            ->where('user_id', $userId)
+            ->first();
     
         if ($existingLike) {
-            // User has already liked, so remove the like (dislike)
-            DB::table('likes_comments')
-                ->where('id', $existingLike->id)
-                ->delete();
-            
-            // Decrement the like count by 1
-            DB::table('likes_comments')
-                ->where([
-                    ['timeline_id', '=', $validated['timeline_id']],
-                    ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
-                ])
-                ->decrement('likes', 1); // Decrement likes count by 1
+            // Unlike the post by deleting the user's like entry
+            DB::table('likes_comments')->where('id', $existingLike->id)->delete();
+    
+            // Decrement the likes count
+            $totalLikes = DB::table('likes_comments')
+                ->where($postIdentifier)
+                ->count(); // Recalculate likes based on the remaining entries
         } else {
-            // User has not liked, so add a like
+            // Like the post by adding a new entry for the user
             DB::table('likes_comments')->insert([
                 'timeline_id' => $validated['timeline_id'],
                 'timeline_uploads_id' => $validated['timeline_uploads_id'],
                 'user_id' => $userId,
+                'likes' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            
-            // Increment the like count by 1
-            DB::table('likes_comments')
-                ->where([
-                    ['timeline_id', '=', $validated['timeline_id']],
-                    ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
-                ])
-                ->increment('likes', 1); // Increment likes count by 1
+    
+            // Increment the likes count
+            $totalLikes = DB::table('likes_comments')
+                ->where($postIdentifier)
+                ->count(); // Recalculate likes based on the new entry
         }
     
-        // Get the updated like count after the action
-        $totalLikes = DB::table('likes_comments')
-            ->where([
-                ['timeline_id', '=', $validated['timeline_id']],
-                ['timeline_uploads_id', '=', $validated['timeline_uploads_id']],
-            ])
-            ->value('likes');
-        
         return response()->json(['success' => true, 'totalLikes' => $totalLikes, 'likedByUser' => !$existingLike]);
-    }      
+    }
+         
     
     
     public function postComment(Request $request)
@@ -269,5 +258,24 @@ public function fetchComments(Request $request)
         // Return a success response
         return response()->json(['success' => true, 'timeline' => $timeline]);
     }
+
+    public function deleteTimeline($id)
+{
+    try {
+        // Find the timeline by ID
+        $timeline = Timeline::findOrFail($id);
+
+        // Delete the associated uploads
+        $timeline->timelineUploads()->delete();
+
+        // Delete the timeline
+        $timeline->delete();
+
+        return response()->json(['success' => true, 'message' => 'Timeline deleted successfully']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Error deleting timeline', 'error' => $e->getMessage()], 500);
+    }
+}
+
     
 }

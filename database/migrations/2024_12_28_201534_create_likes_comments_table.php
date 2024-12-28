@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('timeline_likes_comments');
+        Schema::dropIfExists('likes_comments');
     }
 };
