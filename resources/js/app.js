@@ -9,10 +9,17 @@ import "bootstrap/dist/css/bootstrap.css"; // Bootstrap CSS
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap Minified CSS
 import 'vue-select/dist/vue-select.css';
 
+// Import VTooltip
+import VTooltip from 'v-tooltip'; // Add this line
+import 'v-tooltip/dist/v-tooltip.css'; // Add this line for VTooltip's CSS
+
 import MasterComponent from './components/layouts/Master.vue';
 
 // Create the Vue app
 const app = createApp({});
+
+// Use VTooltip
+app.use(VTooltip); // Add this line to use VTooltip in your app
 
 // Register components after app is initialized
 app.component('master-component', MasterComponent);

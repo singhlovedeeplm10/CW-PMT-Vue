@@ -60,36 +60,60 @@
               <!-- Like and Comment Icons -->
               <div class="post-actions">
                 <i
-                  class="fas fa-thumbs-up action-icon"
-                  :class="{'liked': event.likedByUser}"
-                  @click="likePost(index)"
-                ></i>
-                <span class="likes-count">{{ event.likes_count }}</span>
-                <i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
+  class="fas fa-thumbs-up action-icon"
+  :class="{'liked': event.likedByUser}"
+  @click="likePost(index)"
+></i>
+   <!-- Likes Count -->
+   <span class="likes-count" @click="openLikesModal(event)">
+      {{ event.likes_count }}
+    </span>
+
+    <!-- Modal -->
+    <div v-if="isLikesModalOpen" class="modal-overlay-likes" @click.self="closeLikesModal">
+      <div class="modal-content-likes">
+        <h5>Liked by</h5>
+        <ul>
+          <li v-for="user in selectedLikedUsers" :key="user.name">
+            <!-- User profile image in a circular format -->
+            <img v-if="user.user_image_url" :src="user.user_image_url" alt="User Image" class="user-image">
+            <span>{{ user.name }}</span>
+          </li>
+        </ul>
+        <button class="close-button-likes" @click="closeLikesModal">Close</button>
+      </div>
+    </div>
+
+<i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
+
 
                 <!-- Delete Button -->
-                <button class="delete-button top-right" @click="deleteTimeline(event.timeline_id, index)">
+                <button v-if="userRole === 'Admin'" class="delete-button top-right" @click="deleteTimeline(event.timeline_id, index)">
   <i class="fas fa-trash"></i>
 </button>
 
 
-                <!-- Comment Input Section -->
-                <div v-if="event.showCommentInput" class="comment-input-container">
-                  <textarea
-                    v-model="event.newComment"
-                    class="comment-input full-width-textarea"
-                    placeholder="Add a comment..."
-                    rows="3"
-                  ></textarea>
-                  <button @click="postComment(index)" class="post-button">Post</button>
-                  <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
-                    <p class="comment-text">
-                      <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} commented: </strong>
-                      <span v-if="comment.user_name">{{ comment.comment }}</span>
-                      <span v-else>{{ comment.comment }}</span>
-                    </p>
-                  </div>
-                </div>
+<!-- Comment Input Section -->
+<div v-if="event.showCommentInput" class="comment-input-container">
+  <textarea
+    v-model="event.newComment"
+    class="comment-input full-width-textarea"
+    placeholder="Add a comment..."
+    rows="3"
+  ></textarea>
+  <button @click="postComment(index)" class="post-button">Post</button>
+  <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
+    <div class="comment-author-info">
+      <img v-if="comment.user_image" :src="comment.user_image" alt="User Image" class="user-image">
+      <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} </strong>
+    </div>
+    <p class="comment-text">
+      <span v-if="comment.user_name">{{ comment.comment }}</span>
+      <span v-else>{{ comment.comment }}</span>
+    </p>
+  </div>
+</div>
+
 
                 <button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button top-right">
                   <i class="fas fa-edit"></i>
@@ -186,6 +210,8 @@ export default {
       userRole: null,  // Add the userRole property
       isVideoModalVisible: false,
       videoUrl: null,  // Holds the YouTube video URL
+      isLikesModalOpen: false, 
+      selectedLikedUsers: [], 
     };
   },
   created() {
@@ -193,6 +219,15 @@ export default {
     this.fetchUserRole(); // Fetch the user role when the component is created
   },
   methods: {
+    // Open the modal and set liked users for the clicked post
+    openLikesModal(event) {
+      this.selectedLikedUsers = event.liked_users || []; // Fetch liked users
+      this.isLikesModalOpen = true; // Show modal
+    },
+    // Close the modal
+    closeLikesModal() {
+      this.isLikesModalOpen = false;
+    },
     async fetchUserRole() {
       try {
         const response = await axios.get("/api/user-role", {
@@ -220,7 +255,7 @@ export default {
   title: timeline.title,
   description: timeline.description,
   photos: timeline.timeline_uploads.filter((upload) => upload.file_type === 'image' && upload.file_path)
-    .map((upload) => `/storage/${upload.file_path}`) || [],  // Ensure photos is always an array
+    .map((upload) => `/storage/${upload.file_path}`) || [],
   videoUrl: timeline.timeline_uploads.find((upload) => upload.file_type === 'video' && upload.file_path)
     ? `/storage/${timeline.timeline_uploads.find((upload) => upload.file_type === 'video').file_path}` 
     : null,
@@ -230,13 +265,15 @@ export default {
       url: upload.file_link,
       thumbnail: upload.thumbnail || null,
       icon: upload.icon || 'fas fa-link',
-    })) || [],  // Ensure externalLinks is always an array
+    })) || [],
   likes_count: timeline.likes_count || 0,
+  liked_users: timeline.liked_users || [], // Add liked_users
   timeline_id: timeline.id,
   timeline_uploads_id: timeline.timeline_uploads[0]?.id || null,
-  likedByUser: timeline.likedByUser || false,  // Add likedByUser
+  likedByUser: timeline.likedByUser || false,
   comments: [],
 }));
+
 
       } catch (error) {
         console.error('There was an error fetching the timeline data:', error);
@@ -619,7 +656,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -630,29 +667,31 @@ export default {
   visibility: visible;
 }
 
+
 .image-slider {
   position: relative;
   max-width: 90%;
   max-height: 90%;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  /* background-color: white;
+  padding: 20px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
-  
 .enlarged-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;  /* Ensure the image maintains its aspect ratio */
-  max-height: 80vh; /* Limit image height */
-  border-radius: 8px;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
 }
+
 .slider-controls {
   position: absolute;
-  top: 50%;
+  bottom: 10px;
   width: 100%;
   display: flex;
-  justify-content: space-between;
-  transform: translateY(-50%);
+  justify-content: center; /* Center the buttons */
+  gap: 15px; /* Space between buttons */
 }
 
 .prev-btn,
@@ -660,7 +699,7 @@ export default {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  padding: 5px 10px;
+  padding: 10px 20px;
   font-size: 18px;
   border-radius: 50%;
   cursor: pointer;
@@ -996,5 +1035,60 @@ export default {
 .liked {
   color: blue; /* Change the color of the like icon when it's liked */
 }
+.likes-count {
+  cursor: pointer;
+  color: black;
+  font-size: 16px;
+  border-radius: 4px;
+}
+.modal-overlay-likes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content-likes {
+  background: hsl(0, 0%, 100%);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  /* text-align: center; */
+
+}
+li{
+  list-style-type: none;
+  list-style: none;
+  padding: 6px;
+}
+ul{
+  padding-left: 0;
+}
+
+.close-button-likes {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+.user-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
   </style>
   

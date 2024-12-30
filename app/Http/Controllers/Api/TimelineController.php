@@ -95,13 +95,33 @@ class TimelineController extends Controller
             
             // Add the likes count to the timeline object
             $timeline->likes_count = $likesCount;
-        
+    
+            // Fetch the users who liked the timeline, including their images from user_profiles
+            $likedUsers = DB::table('likes_comments')
+                ->join('users', 'likes_comments.user_id', '=', 'users.id')
+                ->join('user_profiles', 'users.id', '=', 'user_profiles.user_id')  // Join user_profiles to get user image
+                ->where('likes_comments.timeline_id', $timeline->id)
+                ->where('likes_comments.likes', 1)  // Fetch only users with likes = 1
+                ->select('users.name', 'user_profiles.user_image')  // Select both name and user_image
+                ->get();
+            
+            // Add liked users with images to the timeline object
+            $timeline->liked_users = $likedUsers->map(function ($user) {
+                // Generate the URL for the user image if it exists
+                if ($user->user_image) {
+                    $user->user_image_url = asset('storage/' . $user->user_image); // Get the full URL of the user image
+                } else {
+                    $user->user_image_url = null; // Default to null if no image is found
+                }
+                return $user;
+            });
+    
             // Process each timeline upload (images, videos, etc.)
             foreach ($timeline->timelineUploads as $upload) {
                 if ($upload->file_type === 'video' || $upload->file_type === 'image') {
                     $upload->file_url = $upload->file_path ? asset('storage/' . $upload->file_path) : null;
                 }
-        
+    
                 // Add thumbnail and icon for external links
                 if ($upload->file_link) {
                     if (strpos($upload->file_link, 'youtube.com') !== false) {
@@ -115,9 +135,11 @@ class TimelineController extends Controller
             }
         }
     
-        // Return the timelines with likes count
+        // Return the timelines with likes count and liked users
         return response()->json($timelines);
     }
+    
+    
     
     
     // Helper function to get YouTube thumbnail
@@ -217,19 +239,22 @@ public function fetchComments(Request $request)
     $comments = LikesComment::whereIn('timeline_id', $request->query('timeline_id'))
         ->whereIn('timeline_uploads_id', $request->query('timeline_uploads_id'))
         ->whereNotNull('comments') // Exclude null comments
-        ->with('user') // Eager load the user relationship
+        ->with(['user.profile']) // Eager load the user profile relationship
         ->get(['comments', 'user_id']);
 
-    // Map the comments to include the user's name
+    // Map the comments to include the user's name and image
     $comments = $comments->map(function ($comment) {
+        $userProfile = $comment->user ? $comment->user->profile : null;
         return [
             'comment' => $comment->comments,
             'user_name' => $comment->user ? $comment->user->name : 'Unknown User', // Get the user's name
+            'user_image' => $userProfile ? asset('storage/' . $userProfile->user_image) : null, // Get the user's image path if available
         ];
     });
 
     return response()->json(['comments' => $comments]);
 }
+
 
          
     public function updateTimeline(Request $request, $id)
