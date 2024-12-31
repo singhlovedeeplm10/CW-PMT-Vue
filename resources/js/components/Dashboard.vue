@@ -22,6 +22,7 @@
       <update-leave-modal />
       <update-team-leave-modal />
       <EditPostModal/>
+      <Mail/>
     </div>
   </master-component>
 </template>
@@ -42,6 +43,7 @@ import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
 import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
 import EditPostModal from './modals/EditPostModal.vue';
+import Mail from './Mail.vue';
 
 export default {
   name: "Dashboard",
@@ -59,7 +61,8 @@ export default {
     ApplyTeamLeaveModal,
     UpdateLeaveModal,
     UpdateTeamLeaveModal,
-    EditPostModal
+    EditPostModal,
+    Mail
   },
   data() {
     return {

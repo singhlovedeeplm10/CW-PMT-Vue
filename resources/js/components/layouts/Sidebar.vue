@@ -15,6 +15,9 @@
       <li class="sidebar-item">
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
+      <li class="sidebar-item">
+        <router-link to="/send-email" class="sidebar-link" active-class="active-link">Mail</router-link>
+      </li>
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
   <div class="permissions-header">
     <h3 class="sidebar-subtitle">TimeLine</h3>

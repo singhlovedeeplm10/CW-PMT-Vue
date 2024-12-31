@@ -69,20 +69,20 @@
       {{ event.likes_count }}
     </span>
 
-    <!-- Modal -->
-    <div v-if="isLikesModalOpen" class="modal-overlay-likes" @click.self="closeLikesModal">
-      <div class="modal-content-likes">
-        <h5>Liked by</h5>
-        <ul>
-          <li v-for="user in selectedLikedUsers" :key="user.name">
-            <!-- User profile image in a circular format -->
-            <img v-if="user.user_image_url" :src="user.user_image_url" alt="User Image" class="user-image">
-            <span>{{ user.name }}</span>
-          </li>
-        </ul>
-        <button class="close-button-likes" @click="closeLikesModal">Close</button>
-      </div>
-    </div>
+<!-- Modal -->
+<div v-if="isLikesModalOpen" class="modal-overlay-likes" @click.self="closeLikesModal">
+  <div class="modal-content-likes">
+    <h5 class="modal-title">Liked by</h5>
+    <ul class="user-list">
+      <li v-for="user in selectedLikedUsers" :key="user.name" class="user-item">
+        <!-- User profile image in a circular format -->
+        <img v-if="user.user_image_url" :src="user.user_image_url" alt="User Image" class="user-image">
+        <span class="user-name">{{ user.name }}</span>
+      </li>
+    </ul>
+    <button class="close-button-likes" @click="closeLikesModal">Close</button>
+  </div>
+</div>
 
 <i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
 
@@ -1041,53 +1041,127 @@ export default {
   font-size: 16px;
   border-radius: 4px;
 }
+/* Modal Overlay */
 .modal-overlay-likes {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
+/* Modal Content */
 .modal-content-likes {
-  background: hsl(0, 0%, 100%);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
   width: 100%;
-  /* text-align: center; */
-
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
 }
-li{
-  list-style-type: none;
+
+/* Modal Title */
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* User List */
+.user-list {
+  padding: 0;
+  margin: 0;
   list-style: none;
-  padding: 6px;
-}
-ul{
-  padding-left: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-.close-button-likes {
-  background: #f44336;
-  color: #fff;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-top: 20px;
+/* User Item */
+.user-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
 }
+
+.user-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* User Image */
 .user-image {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 10px;
+  margin-right: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* User Name */
+.user-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #444;
+}
+
+/* Close Button */
+.close-button-likes {
+  background: linear-gradient(135deg, #ff5f6d, #ffc371);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 25px;
+  margin-top: 20px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(255, 95, 109, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.close-button-likes:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 95, 109, 0.4);
+}
+
+/* Scrollbar Styling */
+.user-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.user-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
   </style>

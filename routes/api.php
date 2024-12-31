@@ -15,21 +15,15 @@ use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\API\TimelineController;
+use App\Http\Controllers\API\MailController;
 
 
-Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);
-Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class, 'getTimelineData']);
-Route::middleware('auth:sanctum')->post('/like-post', [TimelineController::class, 'likePost']);
-Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController::class, 'postComment']);
-Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
-Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
-Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);
 
+Route::get('/send-email', [MailController::class, 'sendTestEmail']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
 
 // LOGIN API ROUTE
 // Route::post('/login', [LoginController::class, 'login']);
@@ -120,3 +114,11 @@ Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
 
+// TIMELINE API ROUTES
+Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);
+Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class, 'getTimelineData']);
+Route::middleware('auth:sanctum')->post('/like-post', [TimelineController::class, 'likePost']);
+Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController::class, 'postComment']);
+Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
+Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
+Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);

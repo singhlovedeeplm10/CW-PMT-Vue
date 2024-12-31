@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Mail\WelcomeMail;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -64,7 +66,14 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json(['message' => 'User created successfully', 'user' => $user], 201);
+        // Send Welcome Email
+        try {
+            Mail::to($user->email)->send(new WelcomeMail(['name' => $user->name]));
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'User created but email could not be sent. ' . $e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'User created successfully, and email sent!', 'user' => $user], 201);
     }
 
     public function updateUser(Request $request, $id)
