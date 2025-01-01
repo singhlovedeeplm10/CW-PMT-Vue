@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Leave;
 use App\Models\User;
+use App\Mail\LeaveStatusMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -230,16 +232,16 @@ class LeaveController extends Controller
                 'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
                 'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
                 'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave|date',
-'end_date' => [
-    'nullable',
-    'required_if:type_of_leave,Full Day Leave',
-    'date',
-    function ($attribute, $value, $fail) use ($request) {
-        if ($value && $request->start_date && $value < $request->start_date) {
-            $fail('The end date must be a date after or equal to the start date.');
-        }
-    },
-],
+                'end_date' => [
+                    'nullable',
+                    'required_if:type_of_leave,Full Day Leave',
+                    'date',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($value && $request->start_date && $value < $request->start_date) {
+                            $fail('The end date must be a date after or equal to the start date.');
+                        }
+                    },
+                ],
                 'start_time' => [
                     'nullable',
                     'required_if:type_of_leave,Short Leave',
@@ -255,7 +257,6 @@ class LeaveController extends Controller
                 'contact_during_leave' => 'required|string|max:15',
                 'status' => 'required|in:pending,approved,disapproved,hold,canceled',
             ]);
-            
     
             // Update leave record
             $leave->update([
@@ -269,7 +270,12 @@ class LeaveController extends Controller
                 'contact_during_leave' => $validatedData['contact_during_leave'],
                 'status' => $validatedData['status'],
                 'last_updated_by' => Auth::user()->name,
-            ]);            
+            ]);
+    
+            // Send email notification if the status is updated
+            $user = $leave->user; // Fetch the user associated with the leave
+            Mail::to($user->email)->send(new LeaveStatusMail($leave));
+    
             return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
     
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -280,6 +286,7 @@ class LeaveController extends Controller
             return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
         }
     }
+    
     
     
     public function search(Request $request)

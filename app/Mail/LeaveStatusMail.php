@@ -5,23 +5,23 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use App\Models\Leave;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class WelcomeMail extends Mailable
+class LeaveStatusMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user;
-
+    public $leave;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct(Leave $leave)
     {
-        $this->user = $user;
+        $this->leave = $leave;
     }
 
     /**
@@ -30,7 +30,7 @@ class WelcomeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Mail',
+            subject: 'Leave Status Mail',
         );
     }
 
@@ -44,6 +44,19 @@ class WelcomeMail extends Mailable
     //     );
     // }
 
+    public function build()
+    {
+        return $this->subject('Your Leave Status Has Been Updated')
+            ->view('emails.leave_status_update') // Refers to the Blade template
+            ->with([
+                'name' => $this->leave->user->name,
+                'status' => $this->leave->status,
+                'type_of_leave' => $this->leave->type_of_leave,
+                'start_date' => $this->leave->start_date,
+                'end_date' => $this->leave->end_date,
+            ]);
+    }
+
     /**
      * Get the attachments for the message.
      *
@@ -52,14 +65,5 @@ class WelcomeMail extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-    
-    public function build()
-    {
-        return $this->subject('Welcome to the Company')
-            ->view('emails.welcome')
-            ->with([
-                'name' => $this->user['name'],
-            ]);
     }
 }
