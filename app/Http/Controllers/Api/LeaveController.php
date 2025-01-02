@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Leave;
+use App\Mail\LeaveApplicationMail;
 use App\Models\User;
 use App\Mail\LeaveStatusMail;
 use Illuminate\Support\Facades\Mail;
@@ -45,6 +46,21 @@ class LeaveController extends Controller
                 'last_updated_by' => Auth::user()->name,
             ]);
     
+            // Prepare leave details for the email
+            $leaveDetails = [
+                'user_name' => Auth::user()->name,
+                'type_of_leave' => $leave->type_of_leave,
+                'reason' => $leave->reason,
+                'start_date' => $leave->start_date,
+                'end_date' => $leave->end_date,
+                'start_time' => $leave->start_time,
+                'end_time' => $leave->end_time,
+                'contact_during_leave' => $leave->contact_during_leave,
+            ];
+    
+            // Send email to the admin
+            Mail::to('adbbharat@gmail.com')->send(new LeaveApplicationMail($leaveDetails));
+    
             // Respond with success
             return response()->json(['message' => 'Leave application submitted successfully!'], 201);
     
@@ -52,7 +68,7 @@ class LeaveController extends Controller
             Log::error('Leave submission failed: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to submit leave application.'], 500);
         }
-    }    
+    }
 
     public function showLeaves(Request $request)
     {
