@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
 Route::middleware(['auth:sanctum'])->get('/tasks', [TaskController::class, 'showTasks']);
-Route::get('/projects', [TaskController::class, 'fetchProjects']);
+Route::get('/user-projects', [TaskController::class, 'fetchProjects']);
 Route::get('/users-without-tasks', [TaskController::class, 'getUsersWithoutTasks']);
 
 Route::get('/daily-tasks', [TaskController::class, 'getDailyTasks']);
@@ -61,8 +61,6 @@ Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::c
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
 Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
 Route::get('/users/search', [LeaveController::class, 'search']);
-
-
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
 
@@ -73,12 +71,10 @@ Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
 Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);
-
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
 Route::post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 'getUserProfile']);
-
 
 
 // TECHNOLOGIES API ROUTE
@@ -113,6 +109,10 @@ Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 
 
 // PROJECTS API ROUTE
 Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
+Route::middleware('auth:sanctum')->post('/add-projects', [ProjectController::class, 'storeProjects']);
+Route::get('/projects', [ProjectController::class, 'getAllProjects']);
+Route::middleware('auth:sanctum')->put('/update-projects/{id}', [ProjectController::class, 'updateProject']);
+
 
 // TIMELINE API ROUTES
 Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);

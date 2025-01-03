@@ -110,4 +110,86 @@ class ProjectController extends Controller
             ], 500);
         }
     }
+
+    public function storeProjects(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'type' => 'required|in:Long,Medium,Short',
+            'status' => 'required|in:Awaiting,Started,Paused,Completed',
+            'comments' => 'nullable|string',
+            'developer_assign_list' => 'nullable|array',
+            'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+        ]);
+    
+        // Save the project data
+        try {
+            $project = Project::create([
+                'user_id' => auth()->id(), // Or provide the correct user ID
+                'name' => $validatedData['name'],
+                'description' => $validatedData['description'],
+                'type' => $validatedData['type'],
+                'status' => $validatedData['status'],
+                'comment' => $validatedData['comments'],
+                'developer_assign_list' => json_encode($validatedData['developer_assign_list'] ?? []),
+            ]);
+    
+            return response()->json([
+                'message' => 'Project added successfully',
+                'data' => $project,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to add project',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    
+    public function getAllProjects()
+    {
+        try {
+            $projects = Project::all();
+    
+            // Decode developer_assign_list and fetch user names
+            $projects = $projects->map(function ($project) {
+                $developerIds = json_decode($project->developer_assign_list, true) ?? [];
+                $developerNames = User::whereIn('id', $developerIds)->pluck('name')->toArray();
+                $project->developer_assign_list = $developerNames; // Replace IDs with names
+                return $project;
+            });
+    
+            return response()->json($projects);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch projects'], 500);
+        }
+    }
+
+    public function updateProject(Request $request, $id)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'required|string|max:255',
+            'status' => 'required|string|max:50',
+            'comment' => 'nullable|string',
+        ]);
+
+        // Find the project by ID
+        $project = Project::find($id);
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        // Update the project with the validated data
+        $project->update($validatedData);
+
+        return response()->json(['message' => 'Project updated successfully', 'project' => $project], 200);
+    }
+    
+
 }

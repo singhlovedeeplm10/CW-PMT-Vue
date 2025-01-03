@@ -15,6 +15,12 @@ class Project extends Model
         'description',
         'type',
         'status',
+        'comment',
+        'developer_assign_list',
+    ];
+
+    protected $casts = [
+        'developer_assign_list' => 'array',  // This will automatically cast the JSON to an array
     ];
 
     public function user()

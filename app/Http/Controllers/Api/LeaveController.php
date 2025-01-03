@@ -46,6 +46,10 @@ class LeaveController extends Controller
                 'last_updated_by' => Auth::user()->name,
             ]);
     
+            // Retrieve admin user details (update as per your logic)
+            $adminUser = User::where('email', 'adbbharat@gmail.com')->first();
+            $adminName = $adminUser ? $adminUser->name : 'Admin';
+    
             // Prepare leave details for the email
             $leaveDetails = [
                 'user_name' => Auth::user()->name,
@@ -56,6 +60,7 @@ class LeaveController extends Controller
                 'start_time' => $leave->start_time,
                 'end_time' => $leave->end_time,
                 'contact_during_leave' => $leave->contact_during_leave,
+                'admin_name' => $adminName, // Include admin name
             ];
     
             // Send email to the admin
@@ -69,6 +74,7 @@ class LeaveController extends Controller
             return response()->json(['error' => 'Failed to submit leave application.'], 500);
         }
     }
+    
 
     public function showLeaves(Request $request)
     {

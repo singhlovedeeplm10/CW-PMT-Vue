@@ -65,15 +65,6 @@
         title="Delete from Database">
         ×
     </button>
-    <!-- <button 
-        type="button" 
-        class="btn btn-warning btn-sm" 
-        @click="deleteTask(task.id, index)"
-        v-if="task.id"
-        title="Delete from Database">
-        <i class="bi bi-trash"></i>
-        Delete
-    </button> -->
 </td>
                             </tr>
                         </tbody>
@@ -134,7 +125,7 @@ export default {
 
         const fetchProjects = async () => {
             try {
-                const response = await axios.get('/api/projects');
+                const response = await axios.get('/api/user-projects');
                 projects.value = response.data.projects;
             } catch (error) {
                 console.error("Error fetching projects:", error);
@@ -146,11 +137,6 @@ export default {
             tasks.value.push({ project_id: '', hours: '', task_description: '' });
             taskErrors.value.push({ project_id: false, hours: false, task_description: false });
         };
-
-        // const removeTaskRow = (index) => {
-        //     tasks.value.splice(index, 1);
-        //     taskErrors.value.splice(index, 1);
-        // };
 
         const handleSaveTask = async () => {
             if (!allFieldsFilled.value) {

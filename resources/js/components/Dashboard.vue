@@ -21,6 +21,7 @@
       <apply-team-leave-modal />
       <update-leave-modal />
       <update-team-leave-modal />
+      <!-- <add-project-modal /> -->
       <!-- <EditPostModal/> -->
       <Mail/>
     </div>
@@ -43,6 +44,7 @@ import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
 import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
 import EditPostModal from './modals/EditPostModal.vue';
+// import AddProjectModal from './modals/AddProjectModal.vue';
 // import Mail from './Mail.vue';
 
 export default {
@@ -61,7 +63,8 @@ export default {
     ApplyTeamLeaveModal,
     UpdateLeaveModal,
     UpdateTeamLeaveModal,
-    EditPostModal,
+    EditPostModal
+    // AddProjectModal
     // Mail
   },
   data() {

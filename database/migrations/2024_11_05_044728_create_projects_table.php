@@ -18,10 +18,13 @@ return new class extends Migration
             $table->text('description');
             $table->enum('type', ['Long', 'Medium', 'Short']);
             $table->enum('status', ['Awaiting', 'Started', 'Paused', 'Completed']);
+            $table->text('comment')->nullable();
+            $table->json('developer_assign_list')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
+
     }
 
     /**
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('likes_comments');
     }
 };
