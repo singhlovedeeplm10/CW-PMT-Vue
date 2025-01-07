@@ -3,18 +3,18 @@
     <nav class="nav">
       <div class="header-left">
         <!-- Wrap image and heading in a link to navigate to home.blade.php -->
-        <router-link to="/dashboard" class="sidebar-link">
-          <img src="img/CWlogo.jpeg" alt="Profile Image" class="profile-image" />
-          <h1>Contriwhiz</h1>
+        <router-link to="/dashboard" class="sidebar-link header-logo">
+          <img src="img/CWlogo.jpeg" alt="Contriwhiz Logo" class="logo-image" />
+          <h1 class="logo-title">Contriwhiz</h1>
         </router-link>
       </div>
       <div class="header-right">
-        <!-- Logout Icon with Hover Dropdown -->
-        <div class="logout-container">
+        <!-- User Profile with Hover Dropdown -->
+        <div class="profile-container">
           <img :src="userImage || 'img/default-profile.png'" alt="Profile Image" class="profile-image" />
-          <div class="logout-dropdown">
-            <a href="javascript:void(0)" @click="goToAccount">My Account</a>
-            <a href="javascript:void(0)" @click="logout">Logout</a>
+          <div class="profile-dropdown">
+            <a href="javascript:void(0)" @click="goToAccount" class="dropdown-item">My Account</a>
+            <a href="javascript:void(0)" @click="logout" class="dropdown-item">Logout</a>
           </div>
         </div>
       </div>
@@ -87,100 +87,122 @@ export default {
 </script>
 
 <style scoped>
+/* General Reset */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+  margin: 0;
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #f4f6f9;
 }
-h1 {
-  font-size: 30px;
-  margin: 1px;
-  cursor: pointer;
-}
+
+/* Header Container */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1d1f27;
-  padding: 15px 12px;
-  color: #fff;
-}
-a{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #1d1f27;
-  padding: 0px 12px;
-  color: #fff;
-  list-style: none;
-  text-decoration: none;
+  background-color: #24292e; /* Modern dark shade */
+  padding: 10px 20px;
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  top: 0;
+  z-index: 1000;
 }
 
+/* Navigation Bar */
 .nav {
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
+/* Logo Section */
 .header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-image {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  margin-right: 10px;
+  transition: transform 0.3s ease;
+}
+
+.logo-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #f1c40f; /* Golden accent color */
+  transition: color 0.3s ease;
+}
+
+.header-logo:hover .logo-image {
+  transform: scale(1.1);
+}
+
+.header-logo:hover .logo-title {
+  color: #3498db; /* Light blue accent on hover */
+}
+
+/* User Profile Section */
+.header-right {
+  position: relative;
+}
+
+.profile-container {
+  position: relative;
+  cursor: pointer;
   display: flex;
   align-items: center;
 }
 
 .profile-image {
   width: 40px;
-  height: 39px;
+  height: 40px;
   border-radius: 50%;
-  margin-right: 10px;
-  cursor: pointer;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid #ffffff;
 }
 
-.home-link {
-  color: #fff;
-  text-decoration: none;
+.profile-container:hover .profile-image {
+  border: 2px solid #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.8);
 }
 
-.header-right {
-  position: relative;
-}
-
-.logout-container {
-  position: relative;
-  cursor: pointer;
-}
-
-.logout-icon {
-  font-size: 1.5rem;
-  color: #bdc3c7;
-  padding: 20px;
-  transition: color 0.3s ease;
-}
-
-.logout-container:hover .logout-icon {
-  color: #e74c3c;
-}
-
-.logout-dropdown {
+/* Dropdown Menu */
+.profile-dropdown {
   display: none;
   position: absolute;
-  top: 100%;
+  top: 120%;
   right: 0;
-  background-color: #1d1f27;
+  background-color: #2c3e50; /* Slightly lighter dark */
   padding: 10px;
-  border-radius: 5px;
-  white-space: nowrap;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 150px;
 }
 
-.logout-container:hover .logout-dropdown {
+.profile-container:hover .profile-dropdown {
   display: block;
 }
 
-.logout-dropdown a {
-  color: #fff;
+.dropdown-item {
+  display: block;
+  padding: 8px 12px;
+  color: #ffffff;
   text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.3s ease, color 0.3s ease;
+  border-radius: 4px;
 }
 
-.logout-dropdown a:hover {
-  color: #e74c3c;
+.dropdown-item:hover {
+  background-color: #3498db;
+  color: #ffffff;
 }
 </style>

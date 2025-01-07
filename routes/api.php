@@ -59,7 +59,7 @@ Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:a
 // team leave routes (ADMIN)
 Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'teamLeave']);
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
-Route::middleware('auth:sanctum')->put('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
+Route::middleware('auth:sanctum')->post('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
 Route::get('/users/search', [LeaveController::class, 'search']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);

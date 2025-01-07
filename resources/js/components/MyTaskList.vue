@@ -1,120 +1,131 @@
 <template>
-    <master-component>
-      <div class="task-list">
-        <h1>My Task List</h1>
-        <!-- Card for the table -->
-        <div class="card">
-          <div class="card-body">
-            <!-- Table -->
-            <div class="table-responsive">
-              <table class="table table-bordered table-hover" id="task-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Dated</th>
-                    <th>Project List</th>
-                  </tr>
-                  <tr>
-                    <th></th>
-                    <th>
-                      <!-- Input for date filter -->
-                      <input v-model="filterDate" type="text" class="form-control" placeholder="Search by date" />
-                    </th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, index) in paginatedData" :key="row.id">
-                    <td>{{ row.id }}</td>
-                    <td>{{ formatDate(row.created_at) }}</td>
-                    <td>
-                      <span class="badge badge-red">{{ row.hours }}</span> {{ row.project.name }}({{ row.task_description }})
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+  <master-component>
+    <div class="task-list">
+      <h1>My Task List</h1>
+      <!-- Card for the table -->
+      <div class="card">
+        <div class="card-body">
+          <!-- Table -->
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="task-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Dated</th>
+                  <th>Project List</th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th>
+                    <!-- Replace input with Calendar component -->
+                    <Calendar 
+                      v-model="filterDate" 
+                      :selectedDate="filterDate ? new Date(filterDate) : new Date()" 
+                      @dateSelected="onDateSelected" 
+                    />
+                  </th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, index) in paginatedData" :key="row.id">
+                  <td>{{ row.id }}</td>
+                  <td>{{ formatDate(row.created_at) }}</td>
+                  <td>
+                    <span class="badge badge-red">{{ row.hours }}</span> {{ row.project.name }}({{ row.task_description }})
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </master-component>
-  </template>
-  
-  <script>
-  import MasterComponent from './layouts/Master.vue';
-  import axios from 'axios';
-  
-  export default {
-    name: 'MyTaskList',
-    components: {
-      MasterComponent,
+    </div>
+  </master-component>
+</template>
+
+<script>
+import MasterComponent from './layouts/Master.vue';
+import axios from 'axios';
+import Calendar from './Calendar.vue';
+
+export default {
+  name: 'MyTaskList',
+  components: {
+    MasterComponent,
+    Calendar, // Import the Calendar component
+  },
+  data() {
+    return {
+      data: [],
+      currentPage: 1,
+      rowsPerPage: 10,
+      filterDate: '', // Used to filter by date
+    };
+  },
+  computed: {
+    filteredData() {
+      if (this.filterDate) {
+        return this.data.filter(row =>
+          row.created_at.includes(this.filterDate)
+        );
+      }
+      return this.data;
     },
-    data() {
-      return {
-        data: [],
-        currentPage: 1,
-        rowsPerPage: 10,
-        filterDate: '',
-      };
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.rowsPerPage;
+      const end = this.currentPage * this.rowsPerPage;
+      return this.filteredData.slice(start, end);
     },
-    computed: {
-      filteredData() {
-        if (this.filterDate) {
-          return this.data.filter(row =>
-            row.created_at.includes(this.filterDate)
-          );
+    startIndex() {
+      return (this.currentPage - 1) * this.rowsPerPage + 1;
+    },
+    endIndex() {
+      return Math.min(this.currentPage * this.rowsPerPage, this.filteredData.length);
+    },
+  },
+  methods: {
+    goToPage(page) {
+      this.currentPage = page;
+    },
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < Math.ceil(this.filteredData.length / this.rowsPerPage)) {
+        this.currentPage++;
+      }
+    },
+    formatDate(date) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(date).toLocaleDateString('en-US', options);
+    },
+    fetchData() {
+      axios.get('/api/my-daily-tasks', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
         }
-        return this.data;
-      },
-      paginatedData() {
-        const start = (this.currentPage - 1) * this.rowsPerPage;
-        const end = this.currentPage * this.rowsPerPage;
-        return this.filteredData.slice(start, end);
-      },
-      startIndex() {
-        return (this.currentPage - 1) * this.rowsPerPage + 1;
-      },
-      endIndex() {
-        return Math.min(this.currentPage * this.rowsPerPage, this.filteredData.length);
-      },
+      })
+      .then(response => {
+        this.data = response.data;
+      })
+      .catch(error => {
+        console.error("There was an error fetching the data:", error);
+      });
     },
-    methods: {
-      goToPage(page) {
-        this.currentPage = page;
-      },
-      previousPage() {
-        if (this.currentPage > 1) {
-          this.currentPage--;
-        }
-      },
-      nextPage() {
-        if (this.currentPage < Math.ceil(this.filteredData.length / this.rowsPerPage)) {
-          this.currentPage++;
-        }
-      },
-      formatDate(date) {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(date).toLocaleDateString('en-US', options);
-      },
-      fetchData() {
-        axios.get('/api/my-daily-tasks', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
-          }
-        })
-        .then(response => {
-          this.data = response.data;
-        })
-        .catch(error => {
-          console.error("There was an error fetching the data:", error);
-        });
-      },
+    onDateSelected(selectedDate) {
+      // Format the selected date to 'YYYY-MM-DD' and update filterDate
+      this.filterDate = selectedDate.toISOString().split("T")[0];
     },
-    mounted() {
-      this.fetchData();
-    },
-  };
-  </script>
+  },
+  mounted() {
+    this.fetchData();
+  },
+};
+</script>
+
   
   <style scoped>
   .task-list{

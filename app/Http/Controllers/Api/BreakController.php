@@ -23,22 +23,22 @@ class BreakController extends Controller
         $validatedData = $request->validate([
             'reason' => 'required|string|max:255',
         ]);
-
+    
         $user = Auth::user();
-
+    
         // Check if the user is authenticated
         if (!$user) {
             return response()->json(['error' => 'User is not authenticated.'], 401);
         }
-
+    
         // Retrieve the latest attendance for the user
         $attendance = $user->attendances()->latest()->first();
-
+    
         // Ensure the user has an active attendance record
         if (!$attendance) {
             return response()->json(['error' => 'No active attendance found.'], 400);
         }
-
+    
         // Create a new break entry
         $break = Breaks::create([
             'user_id' => $user->id,
@@ -46,12 +46,17 @@ class BreakController extends Controller
             'start_time' => now(),
             'reason' => $validatedData['reason'],
         ]);
-
+    
+        // Generate a BreakinToken and save it in the personal_access_tokens table
+        $breakToken = $user->createToken('BreakinToken')->plainTextToken;
+    
         return response()->json([
             'message' => 'Break started successfully.',
             'break' => $break,
+            'token' => $breakToken, // Return the token to the frontend if needed
         ], 201);
     }
+    
 
     public function endBreak(Request $request)
     {
@@ -83,8 +88,12 @@ class BreakController extends Controller
             'break_time' => $breakTime, // Save break_time in HH:MM:SS format
         ]);
     
+        // Remove the BreakinToken from the personal_access_tokens table
+        $user->tokens()->where('name', 'BreakinToken')->delete();
+    
         return response()->json(['message' => 'Break ended successfully.'], 200);
     }
+    
     
     public function getDailyBreaks(Request $request)
     {
@@ -153,18 +162,20 @@ class BreakController extends Controller
 
 public function getBreakEntries(Request $request)
 {
-    $date = $request->query('date');
+    // If 'date' is not provided, use today's date based on the 'created_at' field
+    $date = $request->query('date', now()->toDateString());
 
     // Fetch break entries along with user data and their profile images
     $breakEntries = Breaks::with(['user' => function ($query) {
         $query->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
             ->select('users.id', 'users.name', 'user_profiles.user_image');
     }])
-    ->whereDate('break_time', $date)
+    ->whereDate('created_at', $date)  // Use 'created_at' to filter today's entries
     ->get();
 
     return response()->json($breakEntries);
 }
+
 
 
 public function getUserBreaks(Request $request)

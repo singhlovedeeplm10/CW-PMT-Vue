@@ -114,7 +114,7 @@ export default {
     },
     emits: ['taskAdded'],
     setup(props, { emit }) {
-        const tasks = ref(props.tasks || []);
+        const tasks = ref(props.tasks || [{ project_id: '', hours: '', task_description: '' }]); // initialize with an empty task if no data
         const taskErrors = ref(tasks.value.map(() => ({ project_id: false, hours: false, task_description: false })));
         const projects = ref([]);
         const isSaving = ref(false);
@@ -196,33 +196,32 @@ export default {
         };
 
         const deleteTask = async (taskId, index) => {
-    if (!taskId) {
-        toast.error('Task ID is invalid.');
-        return;
-    }
-    if (!confirm('Are you sure you want to delete this task?')) return;
-
-    try {
-        const response = await axios.delete(`/api/tasks/${taskId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            if (!taskId) {
+                toast.error('Task ID is invalid.');
+                return;
             }
-        });
-        if (response.status === 200) {
-            toast.success('Task deleted successfully!');
-            tasks.value.splice(index, 1);
-        } else {
-            toast.error('Unexpected response. Please try again.');
-        }
-    } catch (error) {
-        console.error('Error deleting task:', error);
-        toast.error('Failed to delete the task.');
-    }
-};
+            if (!confirm('Are you sure you want to delete this task?')) return;
 
+            try {
+                const response = await axios.delete(`/api/tasks/${taskId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                if (response.status === 200) {
+                    toast.success('Task deleted successfully!');
+                    tasks.value.splice(index, 1);
+                } else {
+                    toast.error('Unexpected response. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                toast.error('Failed to delete the task.');
+            }
+        };
 
         watch(() => props.tasks, (newTasks) => {
-            tasks.value = newTasks;
+            tasks.value = newTasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : newTasks;
         }, { deep: true });
 
         onMounted(fetchProjects);

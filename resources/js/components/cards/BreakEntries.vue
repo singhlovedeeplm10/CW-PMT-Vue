@@ -1,20 +1,22 @@
 <template>
-    <!--  CARDS (BREAK ENTRIES) -->
+    <!-- CARDS (BREAK ENTRIES) -->
     <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
         <!-- 1st Task List Card -->
         <div class="task-card flex-fill shadow-sm" id="card2">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4>Break Entries - 
-                    <!-- <Calendar
-        :selectedDate="date"
-        @dateSelected="onDateSelected"
-        :showHeader="true"
-        :highlightToday="true"
-      /> -->
-                </h4>
+                <h4>Break Entries</h4>
+                <!-- Add Calendar Component -->
+                <Calendar 
+                    :selectedDate="selectedDate" 
+                    @dateSelected="onDateSelected"
+                />
             </div>
             <div class="task-card-body mt-3">
-                <table>
+                <!-- Loader Spinner -->
+                <div v-if="loading" class="loader"></div>
+                
+                <!-- Table Data -->
+                <table v-else>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -23,28 +25,24 @@
                     </thead>
                     <tbody>
                         <tr v-for="breakEntry in breakEntries" :key="breakEntry.id">
-            <td>
-                <div class="profile">
-                    <img 
-                        :src="breakEntry.user.user_image 
-                            ? `/storage/${breakEntry.user.user_image}` 
-                            : 'img/default-user.jpg'" 
-                        alt="User Image"
-                        class="rounded-circle"
-                        width="50"
-                        height="50"
-                    >
-                    <span>{{ breakEntry.user.name }}</span>
-                </div>
-            </td>
-            <td>{{ formatBreakTime(breakEntry.break_time) }}</td>
-        </tr>
+                            <td>
+                                <div class="profile">
+                                    <img 
+                                        :src="breakEntry.user.user_image 
+                                            ? `/storage/${breakEntry.user.user_image}` 
+                                            : 'img/default-user.jpg'" 
+                                        alt="User Image"
+                                        class="rounded-circle"
+                                        width="50"
+                                        height="50"
+                                    >
+                                    <span>{{ breakEntry.user.name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ formatBreakTime(breakEntry.break_time) }}</td>
+                        </tr>
                     </tbody>
                 </table>
-
-                <!-- Hidden div to hold the calendar -->
-                <div id="datepicker-container" style="display: none;"></div>
-
             </div>
         </div>
     </div>
@@ -52,39 +50,66 @@
 
 <script>
 import axios from "axios";
-// import Calendar from "@/components/Calendar.vue";
-
+import Calendar from "@/components/Calendar.vue";
 
 export default {
     name: "BreakEntries",
-    // components: { Calendar },
+    components: {
+        Calendar,
+    },
     data() {
         return {
             breakEntries: [], // Data from the breaks table
+            selectedDate: new Date(), // Default selected date is today
+            loading: false, // Loading state for fetching data
         };
     },
     methods: {
         async fetchBreakEntries() {
+            this.loading = true; // Show loader
             try {
                 const response = await axios.get("/api/break-entries", {
                     params: {
-                        date: new Date().toISOString().slice(0, 10), // Get today's date in YYYY-MM-DD format
+                        date: this.selectedDate.toISOString().slice(0, 10), // Get selected date in YYYY-MM-DD format
                     },
                 });
                 this.breakEntries = response.data;
             } catch (error) {
                 console.error("Error fetching break entries:", error);
+            } finally {
+                this.loading = false; // Hide loader after data is fetched
             }
         },
-        formatBreakTime(breakTime) {
-            if (!breakTime) return "-";
 
-            const [hours, minutes, seconds] = breakTime.split(":");
-            return `${hours} hrs ${minutes} mins ${seconds} secs`;
+        // Format break time in the desired format
+        formatBreakTime(breakTime) {
+            if (!breakTime) return "-"; // Return "-" if no break time is provided
+
+            const [hours, minutes, seconds] = breakTime.split(":").map(Number);
+
+            let formattedTime = "";
+
+            if (hours > 0) {
+                formattedTime += `${String(hours).padStart(2, '0')} hrs `;
+            }
+
+            if (minutes > 0 || hours > 0) {
+                formattedTime += `${String(minutes).padStart(2, '0')} min `;
+            }
+
+            formattedTime += `${String(seconds).padStart(2, '0')} sec`;
+
+            return formattedTime;
+        },
+
+        // Update the selected date and fetch entries for the new date
+        onDateSelected(newDate) {
+            this.selectedDate = newDate;
+            this.fetchBreakEntries(); // Fetch break entries for the selected date
         },
     },
     mounted() {
-        this.fetchBreakEntries();
+        this.fetchBreakEntries(); // Fetch entries for the default date on mount
     },
 };
 </script>
@@ -135,7 +160,7 @@ tbody td {
     border-radius: 50%;
     margin-right: 8px;
 }
-#card2{
+#card2 {
     border: 1px solid rgb(112, 165, 245);
 }
 .task-card-header h4 {
@@ -143,5 +168,22 @@ tbody td {
     font-size: 18px;
     font-weight: bold;
     display: contents;
+}
+
+/* Loader Style */
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3; /* Light background */
+    border-top: 5px solid #3498db; /* Blue color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto; /* Center the loader */
+}
+
+/* Loader spin animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>

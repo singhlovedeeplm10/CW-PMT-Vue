@@ -15,6 +15,8 @@ class DailyTask extends Model
         'user_id',
         'attendance_id',
         'project_id',
+        'project_name', // New attribute
+        'leave_id', // New attribute
         'hours',
         'task_description',
         'task_status',
@@ -33,5 +35,10 @@ class DailyTask extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function leave()
+    {
+        return $this->belongsTo(Leave::class);
     }
 }

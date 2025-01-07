@@ -23,7 +23,7 @@
       <update-team-leave-modal />
       <!-- <add-project-modal /> -->
       <!-- <EditPostModal/> -->
-      <Mail/>
+      <!-- <Mail/> -->
     </div>
   </master-component>
 </template>

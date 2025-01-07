@@ -32,17 +32,21 @@
           <td colspan="3" class="text-center">No Task added</td>
         </tr>
         <tr v-else v-for="task in tasks" :key="task.id">
-          <td>{{ task.project?.name || 'N/A' }}</td>
+          <td>{{ task.project_name || 'N/A' }}</td>
           <td>{{ task.hours }}</td>
           <td>{{ task.task_description }}</td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Pass tasks to AddTaskModal -->
-    <AddTaskModal :tasks="tasks" @taskAdded="fetchTasks" />
+    <!-- Pass tasks to AddTaskModal, pass an empty array if no tasks are present -->
+    <AddTaskModal 
+      :tasks="tasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : tasks" 
+      @taskAdded="fetchTasks" 
+    />
   </div>
 </template>
+
 
 <script>
 import axios from "axios";

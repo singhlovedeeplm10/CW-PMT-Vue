@@ -169,27 +169,26 @@ class ProjectController extends Controller
 
     public function updateProject(Request $request, $id)
     {
-        // Validate the incoming request data
+        // Validate the incoming request data with enum values for type and status
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|string|max:255',
-            'status' => 'required|string|max:50',
+            'type' => 'required|string|in:Long,Medium,Short', // Validate against enum values
+            'status' => 'required|string|in:Awaiting,Started,Paused,Completed', // Validate against enum values
             'comment' => 'nullable|string',
         ]);
-
+    
         // Find the project by ID
         $project = Project::find($id);
-
+    
         if (!$project) {
             return response()->json(['error' => 'Project not found'], 404);
         }
-
+    
         // Update the project with the validated data
         $project->update($validatedData);
-
+    
         return response()->json(['message' => 'Project updated successfully', 'project' => $project], 200);
     }
-    
-
+        
 }

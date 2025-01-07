@@ -22,9 +22,10 @@
           class="form-control search-select"
         >
           <option value="">All Status</option>
-          <option value="Active">Active</option>
+          <option value="Started">Started</option>
+          <option value="Awaiting">Awaiting</option>
           <option value="Completed">Completed</option>
-          <option value="On Hold">On Hold</option>
+          <option value="Paused">Paused</option>
         </select>
       </div>
 

@@ -1,13 +1,8 @@
 <template>
   <div class="calendar">
-    <!-- Optional Header for Month/Year Selection -->
     <div v-if="showHeader" class="calendar-header">
-      <!-- <button @click="previousMonth">&lt;</button> -->
-      <!-- <span>{{ monthYear }}</span> -->
-      <!-- <button @click="nextMonth">&gt;</button> -->
     </div>
 
-    <!-- Date Input for selecting a specific date -->
     <input
       type="date"
       :value="formattedSelectedDate"
@@ -15,10 +10,6 @@
       class="form-control"
     />
 
-    <!-- Optional Highlight for Today -->
-    <!-- <div v-if="highlightToday" class="today-highlight">
-      Today's Date: {{ today.toDateString() }}
-    </div> -->
   </div>
 </template>
 

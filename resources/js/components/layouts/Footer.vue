@@ -17,7 +17,7 @@ export default {
   justify-content: center;
   align-items: center;
   height: 60px;
-  background-color: #1d1f27;
+  background-color: #24292e;
   color: #fff;
   font-family: 'Arial', sans-serif;
   

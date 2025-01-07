@@ -242,7 +242,7 @@ end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : 
             leaveData.end_time = null;
         }
 
-        const response = await axios.put(
+        const response = await axios.post(
             `/api/update-team-leaves/${this.leave.id}`,
             leaveData,
             {

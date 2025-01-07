@@ -32,6 +32,14 @@ class TaskController extends Controller
         ]);
         
         foreach ($request->input('tasks') as $task) {
+            // Get the project name based on project_id
+            $project = Project::find($task['project_id']);
+            if (!$project) {
+                return response()->json(['message' => 'Invalid project ID.'], 400);
+            }
+    
+            $projectName = $project->name;
+    
             // Check if task id exists to update or create
             if (isset($task['id'])) {
                 // Update existing task
@@ -39,6 +47,7 @@ class TaskController extends Controller
                 if ($existingTask) {
                     $existingTask->update([
                         'project_id' => $task['project_id'],
+                        'project_name' => $projectName, // Save project name
                         'hours' => $task['hours'],
                         'task_description' => $task['task_description'],
                         'task_status' => 'pending',  // Assuming status should remain pending
@@ -50,6 +59,7 @@ class TaskController extends Controller
                     'user_id' => $user->id,
                     'attendance_id' => $attendance->id,
                     'project_id' => $task['project_id'],
+                    'project_name' => $projectName, // Save project name
                     'hours' => $task['hours'],
                     'task_description' => $task['task_description'],
                     'task_status' => 'pending',  // Default status
@@ -59,6 +69,7 @@ class TaskController extends Controller
     
         return response()->json(['message' => 'Tasks saved/updated successfully.'], 200);
     }
+    
     
     public function showTasks()
     {
@@ -124,17 +135,36 @@ class TaskController extends Controller
     }
     
 
-public function updateTask(Request $request, $id)
-{
-    $task = DailyTask::findOrFail($id);
-    $task->update([
-        'hours' => $request->hours,
-        'task_description' => $request->task_description,
-        'task_status' => $request->task_status,
-    ]);
-
-    return response()->json($task);
-}
+    public function updateTask(Request $request, $id)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'hours' => 'required|numeric|min:0',
+            'task_description' => 'required|string|max:1000',
+            'task_status' => 'required|in:pending,in_progress,completed',
+            'project_id' => 'required|exists:projects,id', // Ensure the project exists
+        ]);
+    
+        // Find the task by ID
+        $task = DailyTask::findOrFail($id);
+    
+        // Retrieve the project name using the project_id
+        $project = Project::findOrFail($request->project_id);
+        $projectName = $project->name;
+    
+        // Update the task with new data
+        $task->update([
+            'hours' => $request->hours,
+            'task_description' => $request->task_description,
+            'task_status' => $request->task_status,
+            'project_id' => $request->project_id, // Update the project ID
+            'project_name' => $projectName, // Save the project name
+        ]);
+    
+        // Return the updated task as JSON
+        return response()->json($task);
+    }    
+    
 
 public function deleteTask($id)
 {

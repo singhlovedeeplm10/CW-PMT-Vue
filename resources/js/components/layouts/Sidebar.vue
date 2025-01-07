@@ -15,9 +15,9 @@
       <li class="sidebar-item">
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
-      <li class="sidebar-item">
+      <!-- <li class="sidebar-item">
         <router-link to="/send-email" class="sidebar-link" active-class="active-link">Mail</router-link>
-      </li>
+      </li> -->
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
   <div class="permissions-header">
     <h3 class="sidebar-subtitle">TimeLine</h3>
@@ -130,98 +130,118 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .sidebar {
-  width: 200px;
-  height: 4000px;
-  background-color: #1d1f27;
-  padding: 20px;
-  color: #fff;
-  font-family: 'Arial', sans-serif;
+  width: 240px;
+  min-height: 100vh; /* Full viewport height */
+  background: #24292e; /* Gradient for a sleek look */
+  color: #ecf0f1;
+  padding: 20px 10px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-.sidebar-title {
-  font-size: 1.5rem;
-  color: #f1c40f;
-  margin-left: 10px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #7f8c8d;
+  padding-bottom: 15px;
 }
 
 .profile-image {
-  width: 40px;
-  height: 39px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  margin-right: 10px;
+  border: 2px solid #f39c12;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.sidebar-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #f39c12;
 }
 
 .sidebar-list {
-  list-style-type: none;
+  list-style: none;
+  margin: 0;
   padding: 0;
 }
 
 .sidebar-item {
-  margin-bottom: 15px;
-  cursor: pointer;
-}
-
-.permissions-header {
-  display: flex; 
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar-subtitle {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-
-.sidebar-submenu {
-  list-style-type: none;
-  padding-left: 20px;
-}
-
-.sidebar-subitem {
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 .sidebar-link {
+  display: block;
   text-decoration: none;
   color: #bdc3c7;
   font-size: 1rem;
-  transition: color 0.3s ease;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.sidebar-link:hover {
-  color: #3498db;
-}
-
-.sidebar-link:active {
-  color: #f1c40f;
-}
-
+.sidebar-link:hover,
 .active-link {
-  color: #3498db;
+  background-color: #16a085; /* Highlight on hover/active */
+  color: #fff;
   font-weight: bold;
+  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
+
 .permissions-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.permissions-header:hover {
+  background-color: rgba(236, 240, 241, 0.2);
+}
+
+.sidebar-subtitle {
+  font-size: 1rem;
+  color: #ecf0f1;
+  font-weight: bold;
+}
+
+.sidebar-submenu {
+  list-style: none;
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+.sidebar-subitem {
+  margin: 5px 0;
 }
 
 span {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   transition: transform 0.3s ease;
-  cursor: pointer;
 }
 
 .icon-rotate {
   transform: rotate(180deg);
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    position: fixed;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .sidebar-header {
+    justify-content: center;
+  }
+}
 </style>
+

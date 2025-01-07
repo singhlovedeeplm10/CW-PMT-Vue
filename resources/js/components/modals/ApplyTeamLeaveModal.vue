@@ -130,7 +130,6 @@
                   :maxTime="'18:00'"
                   :error="endTimeError"
                 />
-                <span v-if="endTimeError" class="text-danger">{{ endTimeError }}</span>
               </div>
             </div>
 
@@ -348,51 +347,52 @@ export default {
     this.contactError = null;
   },
   async submitForm() {
-    this.isSubmitting = true;
+  this.isSubmitting = true;
 
-    try {
-      const response = await axios.post("/api/apply-team-leave", this.form, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+  try {
+    const response = await axios.post("/api/apply-team-leave", this.form, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
 
-      // Show success toast
-      toast.success("Leave Applied Successfully!");
+    // Show success toast
+    toast.success("Leave Applied Successfully!");
 
-      // Emit the event to notify parent component
-      this.$emit("leaveApplied");
+    // Emit the event to notify parent component
+    this.$emit("leaveApplied");
 
-      // Close the modal
-      const modalElement = document.getElementById("applyleavemodal");
-      const modalInstance = Modal.getInstance(modalElement);
-      modalInstance.hide();
+    // Close the modal
+    const modalElement = document.getElementById("applyteamleavemodal");
+    const modalInstance = Modal.getInstance(modalElement);
+    modalInstance.hide();
 
-      // Reset the form
-      this.resetForm();
-    } catch (error) {
-      toast.error(
-        error.response?.data?.error || "An error occurred while applying for leave."
-      );
-    } finally {
-      this.isSubmitting = false;
-    }
-  },
-  resetForm() {
-    this.form = {
-      type_of_leave: "",
-      start_date: "",
-      end_date: "",
-      half_day: "",
-      start_time: "",
-      end_time: "",
-      reason: "",
-      contact_during_leave: "",
-      selected_user: null,
-    };
-    this.userSuggestions = [];
-    this.userSearchQuery = "";
-  },
+    // Reset the form
+    this.resetForm();
+  } catch (error) {
+    toast.error(
+      error.response?.data?.error || "An error occurred while applying for leave."
+    );
+  } finally {
+    this.isSubmitting = false;
+  }
+},
+resetForm() {
+  this.form = {
+    type_of_leave: "",
+    start_date: "",
+    end_date: "",
+    half: "",
+    start_time: "",
+    end_time: "",
+    reason: "",
+    contact_during_leave: "",
+    selected_user: null,
+  };
+  this.userSuggestions = [];
+  this.userSearchQuery = "";
+},
+
 },
 };
 </script>

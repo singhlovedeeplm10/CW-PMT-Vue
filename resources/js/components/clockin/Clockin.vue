@@ -159,7 +159,6 @@ export default {
   }
 };
 
-
     const fetchDailyHours = async () => {
       loadingDailyHours.value = true;
       try {
@@ -197,7 +196,6 @@ export default {
   }
 };
 
-
     const startTimer = () => {
       stopTimer();
       interval = setInterval(() => {
@@ -213,7 +211,6 @@ export default {
         interval = null;
       }
     };
-
     const handleClockInOut = async () => {
   try {
     const url = isClockedIn.value ? "/api/clock-out" : "/api/clock-in";
@@ -247,14 +244,13 @@ export default {
       await fetchTotalBreakTime(); // Fetch the latest break time
 
       // Optionally, update the daily break time as well
-      await fetchWeeklyBreakHours();
+      // await fetchWeeklyBreakHours(); 
     }
   } catch (error) {
     console.error("Error:", error.response?.data || error.message);
     toast.error(error.response?.data?.message || "An error occurred", { position: "top-right" });
   }
 };
-
 
 
 const onBreakStarted = ({ reason, startTime }) => {

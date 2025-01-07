@@ -60,7 +60,10 @@
                 class="form-control"
                 :disabled="!leave.isEditable"
                 required
+                :min="minDate"
+                @change="validateStartDate"
               />
+              <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
             </div>
 
             <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
@@ -72,7 +75,10 @@
                 class="form-control"
                 :disabled="!leave.isEditable"
                 required
+                :min="leave.start_date"
+                @change="validateEndDate"
               />
+              <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
             </div>
 
             <!-- Reason and Contact fields -->
@@ -115,9 +121,8 @@
   </select>
 </div>
 
-
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-<label for="startDate" class="form-label">Start Date</label>
+              <label for="startDate" class="form-label">Start Date</label>
               <input
                 type="date"
                 v-model="leave.start_date"
@@ -125,45 +130,50 @@
                 class="form-control"
                 :disabled="!leave.isEditable"
                 required
+                :min="minDate"
+                @change="validateStartDate"
               />
             </div>
 
             <!-- Conditionally show "Short Leave" specific fields -->
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-  <label for="startDate" class="form-label">Start Date</label>
-  <input
-    type="date"
-    v-model="leave.start_date"
-    id="startDate"
-    class="form-control"
-    :disabled="!leave.isEditable"
-    required
-  />
-</div>
+              <label for="startDate" class="form-label">Start Date</label>
+              <input
+                type="date"
+                v-model="leave.start_date"
+                id="startDate"
+                class="form-control"
+                :disabled="!leave.isEditable"
+                required
+                :min="minDate"
+                @change="validateStartDate"
+              />
+            </div>
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-    <label for="startTime" class="form-label">Start Time</label>
-    <input
-        type="time"
-        v-model="leave.start_time"
-        id="startTime"
-        class="form-control"
-        :disabled="!leave.isEditable"
-        required
-    />
-</div>
+                <label for="startTime" class="form-label">Start Time</label>
+                <input
+                    type="time"
+                    v-model="leave.start_time"
+                    id="startTime"
+                    class="form-control"
+                    :disabled="!leave.isEditable"
+                    required
+                />
+            </div>
 
-<div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-    <label for="endTime" class="form-label">End Time</label>
-    <input
-        type="time"
-        v-model="leave.end_time"
-        id="endTime"
-        class="form-control"
-        :disabled="!leave.isEditable"
-        required
-    />
-</div>
-
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+                <label for="endTime" class="form-label">End Time</label>
+                <input
+                    type="time"
+                    v-model="leave.end_time"
+                    id="endTime"
+                    class="form-control"
+                    :disabled="!leave.isEditable"
+                    required
+                />
+                <!-- Error message -->
+                <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
+            </div>
 
             <div class="mb-3">
               <label for="status" class="form-label">Leave Status</label>
@@ -214,70 +224,117 @@ export default {
   data() {
     return {
       loading: false,
+      timeError: "", // Store the time validation error message
+      startDateError: "", // Store error for start date
+      endDateError: "", // Store error for end date
+      minDate: this.getCurrentDate(), // Set minDate to current date
     };
   },
   methods: {
+    getCurrentDate() {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
     closeModal() {
       this.$emit("close");
     },
 
-    async submitLeaveUpdate() {
-  this.loading = true;
-
-  try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("User is not authenticated.");
-      return;
-    }
-
-    // Prepare data for the API request
-    const leaveData = {
-      type_of_leave: this.leave.type_of_leave,
-      start_date: this.leave.start_date || null,
-      end_date: this.leave.type_of_leave === "Short Leave" ? null : this.leave.end_date || null,
-      reason: this.leave.reason,
-      contact_during_leave: this.leave.contact_during_leave,
-      status: this.leave.status,
-    };
-
-// Map Half Day to backend values (ensure it matches the field name in the migration)
-if (this.leave.type_of_leave === "Half Day Leave") {
-  leaveData.half = this.leave.half === "First Half" ? "First Half" : "Second Half";
-}
-
-
-    if (this.leave.type_of_leave === "Short Leave") {
-      leaveData.start_time = this.leave.start_time;
-      leaveData.end_time = this.leave.end_time;
-    }
-
-    // Make API request
-    const response = await axios.put(
-      `/api/update-leaves/${this.leave.id}`,
-      leaveData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    validateStartDate() {
+      this.startDateError = "";
+      if (new Date(this.leave.start_date) < new Date(this.minDate)) {
+        this.startDateError = "Start date cannot be in the past.";
       }
-    );
+    },
 
-    toast.success(response.data.message);
-    this.$emit("leave-updated", response.data.leave);
-    this.closeModal();
-  } catch (error) {
-    if (error.response && error.response.status === 422) {
-      toast.error("Validation error: " + JSON.stringify(error.response.data.error));
-    } else {
-      toast.error("Failed to update leave. Please try again.");
-    }
-  } finally {
-    this.loading = false;
-  }
-},
+    validateEndDate() {
+      this.endDateError = "";
+      if (new Date(this.leave.end_date) < new Date(this.leave.start_date)) {
+        this.endDateError = "End date cannot be before the start date.";
+      }
+    },
 
+    async submitLeaveUpdate() {
+      this.timeError = ""; // Reset the time error message on form submission
 
+      // Check if both startTime and endTime are provided for Short Leave
+      if (
+        this.leave.type_of_leave === "Short Leave" &&
+        this.leave.start_time &&
+        this.leave.end_time
+      ) {
+        const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
+        const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
+        const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+
+        // Validate that the time difference is not more than 2 hours
+        if (timeDiff > 2) {
+          this.timeError = "Short leave duration cannot exceed 2 hours.";
+          return; // Prevent form submission if validation fails
+        }
+      }
+
+      // Skip submission if there are any date errors
+      if (this.startDateError || this.endDateError) {
+        return;
+      }
+
+      this.loading = true;
+
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("User is not authenticated.");
+          return;
+        }
+
+        // Prepare data for the API request
+        const leaveData = {
+          type_of_leave: this.leave.type_of_leave,
+          start_date: this.leave.start_date || null,
+          end_date: this.leave.type_of_leave === "Short Leave" ? null : this.leave.end_date || null,
+          reason: this.leave.reason,
+          contact_during_leave: this.leave.contact_during_leave,
+          status: this.leave.status,
+        };
+
+        // Map Half Day to backend values (ensure it matches the field name in the migration)
+        if (this.leave.type_of_leave === "Half Day Leave") {
+          leaveData.half = this.leave.half === "First Half" ? "First Half" : "Second Half";
+        }
+
+        if (this.leave.type_of_leave === "Short Leave") {
+          leaveData.start_time = this.leave.start_time;
+          leaveData.end_time = this.leave.end_time;
+        }
+
+        // Make API request
+        const response = await axios.put(
+          `/api/update-leaves/${this.leave.id}`,
+          leaveData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        toast.success(response.data.message);
+        this.$emit("leave-updated", response.data.leave);
+        this.closeModal();
+      } catch (error) {
+        if (error.response && error.response.status === 422) {
+          toast.error("Validation error: " + JSON.stringify(error.response.data.error));
+        } else {
+          toast.error("Failed to update leave. Please try again.");
+        }
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 };
 </script>
