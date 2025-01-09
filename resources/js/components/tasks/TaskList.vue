@@ -64,6 +64,13 @@ export default {
       loading: true, // Track loading state
     };
   },
+  props: {
+  isReadonly: {
+    type: Boolean,
+    default: false, // Default value
+  },
+},
+
   mounted() {
     this.fetchTasks();
   },

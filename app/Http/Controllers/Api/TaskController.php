@@ -123,16 +123,18 @@ class TaskController extends Controller
                     'user' => $tasks->first()->user,
                     'projects' => $tasks->map(function ($task) {
                         return [
-                            'project_name' => $task->project->name,
+                            'project_name' => $task->project_name,
                             'task_description' => $task->task_description,
-                            'hours' => $task->hours, // Keep the hours for each entry
+                            'hours' => $task->hours,
+                            'leave_id' => $task->leave_id, // Include leave_id in the response
                         ];
                     }),
                 ];
             });
     
-        return response()->json($dailyTasks->values());
+        return response()->json($dailyTasks);
     }
+     
     
 
     public function updateTask(Request $request, $id)
@@ -230,19 +232,28 @@ public function getUserDailyTasks()
         }
     }
     public function getUserTasks(Request $request)
-    {
-        // Fetch authenticated user
-        $user = $request->user();
+{
+    // Fetch authenticated user
+    $user = $request->user();
+
+    // Fetch tasks for the logged-in user, created today, with related project details
+    $tasks = DailyTask::where('user_id', $user->id)
+        ->whereDate('created_at', now()) // Filter by today's date
+        ->with('project') // Load project details along with tasks
+        ->get();
+
+    // Add additional properties to tasks based on `leave_id`
+    $tasks = $tasks->map(function ($task) {
+        $task->isReadonly = !is_null($task->leave_id); // Mark as readonly if `leave_id` is not null
+        $task->hasNullProjectId = is_null($task->project_id); // Flag tasks with null project_id
+        return $task;
+    });
+
+    // Return the tasks as JSON
+    return response()->json($tasks);
+}
+
     
-        // Fetch tasks for the logged-in user, created today, with related project details
-        $tasks = DailyTask::where('user_id', $user->id)
-            ->whereDate('created_at', now()) // Filter by today's date
-            ->with('project') // Load project details along with tasks
-            ->get();
-    
-        // Return the tasks as JSON
-        return response()->json($tasks);
-    }
     
     public function deleteUserTask($id)
 {

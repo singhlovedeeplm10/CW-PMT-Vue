@@ -227,6 +227,7 @@ export default {
       pausedTime.value = dailyHours.value;
       startTimer();
       toast.success("User Clocked In", { position: "top-right" });
+      emit("clockedIn");
     } else {
       // Clock Out logic
       isClockedIn.value = false;

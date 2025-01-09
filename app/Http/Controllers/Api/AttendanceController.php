@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\Leave;
+use App\Models\DailyTask;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -19,14 +21,57 @@ class AttendanceController extends Controller
     public function clockIn(Request $request)
     {
         $user = Auth::user();
-        
+    
         // Create attendance record with IST timezone
         $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
         $attendance = Attendance::create([
             'user_id' => $user->id,
             'clockin_time' => $clockinTime,
         ]);
-        
+    
+        // Check for approved leave on the same day
+        $today = Carbon::now()->setTimezone('Asia/Kolkata')->toDateString();
+        $leave = Leave::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->where('start_date', $today)
+            ->first();
+    
+        if ($leave) {
+            // Check if a daily task for the leave already exists
+            $existingTask = DailyTask::where('user_id', $user->id)
+                ->where('leave_id', $leave->id)
+                ->whereDate('created_at', $today) // Ensure it's for the same day
+                ->exists();
+    
+            if (!$existingTask) {
+                // Calculate hours based on leave type
+                $hours = 0;
+                switch ($leave->type_of_leave) {
+                    case 'Full Day Leave':
+                        $hours = 8; // Example: 8 hours for full-day leave
+                        break;
+                    case 'Half Day Leave':
+                        $hours = 4; // Example: 4 hours for half-day leave
+                        break;
+                    case 'Short Leave':
+                        $hours = 2; // Example: 2 hours for short leave
+                        break;
+                }
+    
+                // Create a task for the leave
+                DailyTask::create([
+                    'user_id' => $leave->user_id,
+                    'attendance_id' => $attendance->id,
+                    'project_id' => null,
+                    'project_name' => $leave->type_of_leave, // Leave type
+                    'leave_id' => $leave->id,
+                    'task_description' => $leave->reason, // Reason as description
+                    'hours' => $hours,
+                    'task_status' => 'pending', // Default status
+                ]);
+            }
+        }
+    
         // Generate ClockinToken
         $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
     

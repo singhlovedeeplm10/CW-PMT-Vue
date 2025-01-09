@@ -249,81 +249,84 @@ class LeaveController extends Controller
      
       
 
-public function updateTeamLeave(Request $request, Leave $leave)
-{
-    try {
-        \Log::info('Request to update leave:', $request->all());
-        // Validate request data
-        $validatedData = $request->validate([
-            'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
-            'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
-            'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave|date',
-            'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
-            'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
-            'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
-            'reason' => 'required|string',
-            'contact_during_leave' => 'required|string|max:15',
-            'status' => 'required|in:pending,approved,disapproved,hold,canceled',
-        ]);
-        
-        $leave->update([
-            'type_of_leave' => $validatedData['type_of_leave'],
-            'half_day' => $validatedData['half_day'] ?? null,
-            'start_date' => $validatedData['start_date'] ?? null,
-            'end_date' => $validatedData['type_of_leave'] === 'Half Day Leave' ? $validatedData['start_date'] : ($validatedData['end_date'] ?? null),
-            'start_time' => $validatedData['start_time'] ?? null,
-            'end_time' => $validatedData['end_time'] ?? null,
-            'reason' => $validatedData['reason'],
-            'contact_during_leave' => $validatedData['contact_during_leave'],
-            'status' => $validatedData['status'],
-            'last_updated_by' => Auth::user()->name,
-        ]);
-        
-        // If status is approved, handle daily_tasks logic
-        if ($validatedData['status'] === 'approved' && in_array($validatedData['type_of_leave'], ['Short Leave', 'Half Day Leave'])) {
-            $attendance = Attendance::where('user_id', $leave->user_id)
-            ->whereDate('clockin_time', $validatedData['start_date'])
-            ->first();
+    public function updateTeamLeave(Request $request, Leave $leave)
+    {
+        try {
+            \Log::info('Request to update leave:', $request->all());
             
-            
-            if ($attendance) {
-                $hours = $validatedData['type_of_leave'] === 'Half Day Leave' 
-                    ? 4 
-                    : strtotime($validatedData['end_time']) - strtotime($validatedData['start_time']);
-                    // return response()->json(['message' => 'Leave updated successfully!', 'leave' => DailyTask], 200);
+            // Validate request data
+            $validatedData = $request->validate([
+                'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave',
+                'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+                'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave|date',
+                'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+                'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+                'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+                'reason' => 'required|string',
+                'contact_during_leave' => 'required|string|max:15',
+                'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+            ]);
+    
+            // Update leave record
+            $leave->update([
+                'type_of_leave' => $validatedData['type_of_leave'],
+                'half_day' => $validatedData['half_day'] ?? null,
+                'start_date' => $validatedData['start_date'] ?? null,
+                'end_date' => $validatedData['type_of_leave'] === 'Half Day Leave' ? $validatedData['start_date'] : ($validatedData['end_date'] ?? null),
+                'start_time' => $validatedData['start_time'] ?? null,
+                'end_time' => $validatedData['end_time'] ?? null,
+                'reason' => $validatedData['reason'],
+                'contact_during_leave' => $validatedData['contact_during_leave'],
+                'status' => $validatedData['status'],
+                'last_updated_by' => Auth::user()->name,
+            ]);
+    
+            // If status is approved, handle daily_tasks logic
+            if ($validatedData['status'] === 'approved' && in_array($validatedData['type_of_leave'], ['Short Leave', 'Half Day Leave'])) {
+                $attendance = Attendance::where('user_id', $leave->user_id)
+                    ->whereDate('clockin_time', $validatedData['start_date'])
+                    ->first();
+    
+                if ($attendance) {
+                    $hours = $validatedData['type_of_leave'] === 'Half Day Leave' 
+                        ? 4 
+                        : (strtotime($validatedData['end_time']) - strtotime($validatedData['start_time'])) / 3600;
+    
                     DailyTask::create([
                         'user_id' => $leave->user_id,
                         'attendance_id' => $attendance->id,
-                        'project_id' => NULL, 
+                        'project_id' => NULL,
                         'project_name' => $validatedData['type_of_leave'], // Leave type
+                        'leave_id' => $leave->id, // Add leave_id
                         'task_description' => $validatedData['reason'], // Reason as description
-                        'hours' => $hours / 3600,
+                        'hours' => $hours,
                         'task_status' => 'pending', // Default status
                     ]);
+                }
             }
-       }
-
-        // Send email notification if the status is updated
-        $user = $leave->user;
-        Mail::to($user->email)->send(new LeaveStatusMail($leave));
-
-        return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
-    } catch (ModelNotFoundException $e) {
-        // Handle the case when the model is not found
-        return response()->json([
-            'message' => 'Leave not found',
-            'error' => $e->getMessage()
-        ], 404);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        \Log::error('Error occurred:', ['error' => $e->getMessage()]);
-        \Log::error('Validation failed:', $e->errors());
-        return response()->json(['errors' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        \Log::error('Error occurred:', ['error' => $e->getMessage()]);
-        \Log::error('Error updating leave:', ['exception' => $e]);
-        return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
+    
+            // Send email notification if the status is updated
+            $user = $leave->user;
+            Mail::to($user->email)->send(new LeaveStatusMail($leave));
+    
+            return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
+        } catch (ModelNotFoundException $e) {
+            // Handle the case when the model is not found
+            return response()->json([
+                'message' => 'Leave not found',
+                'error' => $e->getMessage()
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Error occurred:', ['error' => $e->getMessage()]);
+            \Log::error('Validation failed:', $e->errors());
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error occurred:', ['error' => $e->getMessage()]);
+            \Log::error('Error updating leave:', ['exception' => $e]);
+            return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
+        }
     }
-}
+    
 
     
     public function search(Request $request)

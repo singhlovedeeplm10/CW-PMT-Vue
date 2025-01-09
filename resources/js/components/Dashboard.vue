@@ -5,9 +5,9 @@
       <h1>Welcome to the Dashboard</h1>
       <p>This is a protected page accessible only after login.</p>
 
-      <clockin :openModal="openModal" @breakEnded="handleBreakEnded" />
+      <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
-      <task-list />
+      <task-list ref = "userDailyTask" />
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
       <!-- <daily-task v-if="userRole === 'Admin'" /> -->
@@ -102,6 +102,7 @@ export default {
   },
   setup() {
     const userBreakList = ref(null);
+    const userDailyTask = ref(null);
 
     const handleBreakEnded = () => {
       // Call the fetchBreaks method of UserBreakList via ref
@@ -109,10 +110,18 @@ export default {
         userBreakList.value.fetchBreaks();
       }
     };
+    const handleClockinTask = () => {
+      // Call the fetchBreaks method of UserBreakList via ref
+      if (userDailyTask.value) {
+        userDailyTask.value.fetchTasks();
+      }
+    };
 
     return {
       userBreakList,
       handleBreakEnded,
+      userDailyTask,
+      handleClockinTask
     };
   },
 };

@@ -18,55 +18,61 @@
                         </thead>
                         <tbody>
                             <tr v-for="(task, index) in tasks" :key="task.id || index">
-                                <td>
-                                    <select
-                                        v-model="task.project_id"
-                                        class="form-select"
-                                        :class="{'is-invalid': taskErrors[index]?.project_id}"
-                                    >
-                                        <option value="" disabled>Select Project</option>
-                                        <option v-for="project in projects" :key="project.id" :value="project.id">
-                                            {{ project.name }}
-                                        </option>
-                                    </select>
-                                    <div v-if="taskErrors[index]?.project_id" class="invalid-feedback">
-                                        Please select a project.
-                                    </div>
-                                </td>
-                                <td>
-                                    <InputField
-                                        v-model="task.hours"
-                                        inputType="number"
-                                        :hasError="taskErrors[index]?.hours"
-                                        errorMessage="Please enter a valid number for hours."
-                                        placeholder="Enter Hours"
-                                        isRequired
-                                        step="0.01"
-                                        inputClass="form-control-hours"
-                                    />
-                                </td>
-                                <td>
-                                    <TextArea
-                                        v-model="task.task_description"
-                                        :hasError="taskErrors[index]?.task_description"
-                                        errorMessage="Task description is required."
-                                        placeholder="Enter task description"
-                                        isRequired
-                                        :rows="8"
-                                        textareaClass="custom-textarea"
-                                    />
-                                </td>
-                                <td>
-    <button 
-        type="button" 
-        class="btn btn-danger btn-sm me-2" 
-        @click="deleteTask(task.id, index)"
-        v-if="task.id"
-        title="Delete from Database">
-        ×
+  <td>
+    <select
+      v-model="task.project_id"
+      class="form-select"
+      :class="{ 'is-invalid': taskErrors[index]?.project_id }"
+      :disabled="task.leave_id"
+    >
+      <option value="" disabled>Select Project</option>
+      <option v-for="project in projects" :key="project.id" :value="project.id">
+        {{ project.name }}
+      </option>
+    </select>
+    <div v-if="taskErrors[index]?.project_id" class="invalid-feedback">
+      Please select a project.
+    </div>
+  </td>
+  <td>
+    <InputField
+      v-model="task.hours"
+      inputType="number"
+      :hasError="taskErrors[index]?.hours"
+      errorMessage="Please enter a valid number for hours."
+      placeholder="Enter Hours"
+      isRequired
+      step="0.01"
+      inputClass="form-control-hours"
+      :isReadonly="!!task.leave_id" 
+    />
+  </td>
+  <td>
+    <TextArea 
+  v-model="task.task_description"
+  :hasError="taskErrors[index]?.task_description"
+  errorMessage="Task description is required."
+  placeholder="Enter task description"
+  isRequired
+  :rows="8"
+  textareaClass="custom-textarea"
+  :isReadonly="!!task.leave_id"  
+/>
+
+  </td>
+  <td>
+    <button
+      type="button"
+      class="btn btn-danger btn-sm me-2"
+      @click="deleteTask(task.id, index)"
+      v-if="task.id && !task.leave_id"
+      title="Delete from Database"
+    >
+      ×
     </button>
-</td>
-                            </tr>
+  </td>
+</tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -75,6 +81,7 @@
                         label="Add More" 
                         buttonClass="btn-dark" 
                         :clickEvent="addTaskRow" 
+                        :disabled="isSaving"
                     />
                     <button 
                         class="btn btn-primary" 
@@ -89,6 +96,7 @@
         </div>
     </div>
 </template>
+
 
 <script>
 import ButtonComponent from '@/components/ButtonComponent.vue';
@@ -110,7 +118,11 @@ export default {
         tasks: {
             type: Array,
             required: true
-        }
+        },
+        isReadonly: {
+    type: Boolean,
+    default: false, // Default value
+  },
     },
     emits: ['taskAdded'],
     setup(props, { emit }) {
