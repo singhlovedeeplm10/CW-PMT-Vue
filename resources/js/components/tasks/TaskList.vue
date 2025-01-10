@@ -18,7 +18,6 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Show loader while fetching tasks -->
         <tr v-if="loading">
           <td colspan="3" class="text-center">
             <div class="spinner-border text-primary" role="status">
@@ -26,8 +25,6 @@
             </div>
           </td>
         </tr>
-
-        <!-- Show message if no tasks found and not loading -->
         <tr v-if="!loading && tasks.length === 0">
           <td colspan="3" class="text-center">No Task added</td>
         </tr>
@@ -39,14 +36,13 @@
       </tbody>
     </table>
 
-    <!-- Pass tasks to AddTaskModal, pass an empty array if no tasks are present -->
     <AddTaskModal 
       :tasks="tasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : tasks" 
+      :projects="projects"  
       @taskAdded="fetchTasks" 
     />
   </div>
 </template>
-
 
 <script>
 import axios from "axios";
@@ -62,33 +58,38 @@ export default {
     return {
       tasks: [], // Array to store fetched tasks
       loading: true, // Track loading state
+      projects: []  // Array to store project list
     };
   },
-  props: {
-  isReadonly: {
-    type: Boolean,
-    default: false, // Default value
-  },
-},
-
   mounted() {
     this.fetchTasks();
+    this.fetchProjects();
   },
   methods: {
     async fetchTasks() {
-      this.loading = true; // Set loading to true while fetching
+      this.loading = true;
       try {
         const response = await axios.get("/api/user-tasks", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
         });
-        this.tasks = response.data; // Store the tasks, including project data
+        this.tasks = response.data;
       } catch (error) {
         console.error("Error fetching tasks:", error);
         toast.error("Failed to fetch tasks. Please try again.");
-      }finally {
-        this.loading = false; // Set loading to false after fetching
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async fetchProjects() {
+      try {
+        const response = await axios.get("/api/user-projects");
+        this.projects = response.data.projects;
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        toast.error("Failed to fetch projects.");
       }
     },
 
@@ -119,6 +120,7 @@ export default {
   },
 };
 </script>
+
 
 
   <style scoped>

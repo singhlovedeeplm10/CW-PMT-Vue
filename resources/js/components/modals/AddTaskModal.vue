@@ -4,7 +4,6 @@
             <div class="modal-content">
                 <div class="modal-header modal-header-custom">
                     <h5 class="modal-title" id="addtaskmodallabel">Tasks</h5>
-                    <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body modal-body-custom">
                     <table class="table table-bordered">
@@ -18,61 +17,62 @@
                         </thead>
                         <tbody>
                             <tr v-for="(task, index) in tasks" :key="task.id || index">
-  <td>
-    <select
-      v-model="task.project_id"
-      class="form-select"
-      :class="{ 'is-invalid': taskErrors[index]?.project_id }"
-      :disabled="task.leave_id"
-    >
-      <option value="" disabled>Select Project</option>
-      <option v-for="project in projects" :key="project.id" :value="project.id">
-        {{ project.name }}
-      </option>
-    </select>
-    <div v-if="taskErrors[index]?.project_id" class="invalid-feedback">
-      Please select a project.
-    </div>
-  </td>
-  <td>
-    <InputField
-      v-model="task.hours"
-      inputType="number"
-      :hasError="taskErrors[index]?.hours"
-      errorMessage="Please enter a valid number for hours."
-      placeholder="Enter Hours"
-      isRequired
-      step="0.01"
-      inputClass="form-control-hours"
-      :isReadonly="!!task.leave_id" 
-    />
-  </td>
-  <td>
-    <TextArea 
-  v-model="task.task_description"
-  :hasError="taskErrors[index]?.task_description"
-  errorMessage="Task description is required."
-  placeholder="Enter task description"
-  isRequired
-  :rows="8"
-  textareaClass="custom-textarea"
-  :isReadonly="!!task.leave_id"  
-/>
-
-  </td>
-  <td>
-    <button
-      type="button"
-      class="btn btn-danger btn-sm me-2"
-      @click="deleteTask(task.id, index)"
-      v-if="task.id && !task.leave_id"
-      title="Delete from Database"
-    >
-      ×
-    </button>
-  </td>
-</tr>
-
+                                <td>
+                                    <select
+                                        v-model="task.project_id"
+                                        class="form-select"
+                                        :class="{ 'is-invalid': taskErrors[index]?.project_id }"
+                                        :disabled="task.leave_id"
+                                    >
+                                        <option value="" disabled>Select Project</option>
+                                        <option v-for="project in projects" :key="project.id" :value="project.id">
+                                            {{ project.name }}
+                                        </option>
+                                        <option v-if="!projects.find(p => p.id === task.project_id)" :value="task.project_id">
+                                            {{ task.project_name || 'Custom Project' }}
+                                        </option>
+                                    </select>
+                                    <div v-if="taskErrors[index]?.project_id" class="invalid-feedback">
+                                        Please select a project.
+                                    </div>
+                                </td>
+                                <td>
+                                    <InputField
+                                        v-model="task.hours"
+                                        inputType="number"
+                                        :hasError="taskErrors[index]?.hours"
+                                        errorMessage="Please enter a valid number for hours."
+                                        placeholder="Enter Hours"
+                                        isRequired
+                                        step="0.01"
+                                        inputClass="form-control-hours"
+                                        :isReadonly="!!task.leave_id" 
+                                    />
+                                </td>
+                                <td>
+                                    <TextArea 
+                                        v-model="task.task_description"
+                                        :hasError="taskErrors[index]?.task_description"
+                                        errorMessage="Task description is required."
+                                        placeholder="Enter task description"
+                                        isRequired
+                                        :rows="8"
+                                        textareaClass="custom-textarea"
+                                        :isReadonly="!!task.leave_id"  
+                                    />
+                                </td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger btn-sm me-2"
+                                        @click="deleteTask(task.id, index)"
+                                        v-if="task.id && !task.leave_id"
+                                        title="Delete from Database"
+                                    >
+                                        ×
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -85,7 +85,7 @@
                     />
                     <button 
                         class="btn btn-primary" 
-                        :disabled="!allFieldsFilled || isSaving" 
+                        :disabled="isSaving" 
                         @click="handleSaveTask"
                     >
                         <span v-if="isSaving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -96,7 +96,6 @@
         </div>
     </div>
 </template>
-
 
 <script>
 import ButtonComponent from '@/components/ButtonComponent.vue';
@@ -151,44 +150,46 @@ export default {
         };
 
         const handleSaveTask = async () => {
-            if (!allFieldsFilled.value) {
-                toast.error("Please fill all the fields.");
-                return;
-            }
             isSaving.value = true;
             await saveTask();
             isSaving.value = false;
         };
 
         const saveTask = async () => {
-            let valid = true;
-            tasks.value.forEach((task, index) => {
-                if (!validateTask(task, index)) valid = false;
-            });
+    let valid = true;
 
-            if (!valid) {
-                toast.error("Please correct errors in the form.");
-                return;
-            }
+    // Filter out tasks that are readonly or have `leave_id` set
+    const filteredTasks = tasks.value.filter(task => !task.leave_id);
 
-            try {
-                const response = await axios.post('/api/tasks', { tasks: tasks.value }, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    }
-                });
-                if (response.status === 200) {
-                    toast.success('Tasks saved/updated successfully!');
-                    emit('taskAdded');
-                    closeModal();
-                } else {
-                    toast.error('Unexpected response. Please try again.');
-                }
-            } catch (error) {
-                console.error("Error saving tasks:", error);
-                toast.error('Error saving tasks.');
+    // Validate only filtered tasks
+    filteredTasks.forEach((task, index) => {
+        if (!validateTask(task, index)) valid = false;
+    });
+
+    if (!valid) {
+        toast.error("Please correct errors in the form.");
+        return;
+    }
+
+    try {
+        const response = await axios.post('/api/tasks', { tasks: filteredTasks }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
-        };
+        });
+        if (response.status === 200) {
+            toast.success('Tasks saved/updated successfully!');
+            emit('taskAdded');
+            closeModal();
+        } else {
+            toast.error('Unexpected response. Please try again.');
+        }
+    } catch (error) {
+        console.error("Error saving tasks:", error);
+        toast.error('Error saving tasks.');
+    }
+};
+
 
         const closeModal = () => {
             tasks.value = [{ project_id: '', hours: '', task_description: '' }];

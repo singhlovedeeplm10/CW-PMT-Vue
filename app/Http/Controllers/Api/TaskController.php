@@ -15,60 +15,68 @@ use Illuminate\Support\Facades\DB;
 class TaskController extends Controller
 {
     public function storeTasks(Request $request)
-    {
-        $user = Auth::user();
-        $attendance = Attendance::where('user_id', $user->id)->whereNotNull('clockin_time')->first();
-        
-        if (!$attendance) {
-            return response()->json(['message' => 'User not clocked in.'], 403);
-        }
-        
-        // Validate incoming data
-        $request->validate([
-            'tasks.*.project_id' => 'required|exists:projects,id',
-            'tasks.*.hours' => 'required|numeric|min:0',
-            'tasks.*.task_description' => 'required|string',
-            'tasks.*.id' => 'nullable|exists:daily_tasks,id', // Allow task id for updates
-        ]);
-        
-        foreach ($request->input('tasks') as $task) {
-            // Get the project name based on project_id
-            $project = Project::find($task['project_id']);
-            if (!$project) {
-                return response()->json(['message' => 'Invalid project ID.'], 400);
-            }
-    
-            $projectName = $project->name;
-    
-            // Check if task id exists to update or create
-            if (isset($task['id'])) {
-                // Update existing task
-                $existingTask = DailyTask::where('id', $task['id'])->where('user_id', $user->id)->first();
-                if ($existingTask) {
-                    $existingTask->update([
-                        'project_id' => $task['project_id'],
-                        'project_name' => $projectName, // Save project name
-                        'hours' => $task['hours'],
-                        'task_description' => $task['task_description'],
-                        'task_status' => 'pending',  // Assuming status should remain pending
-                    ]);
-                }
-            } else {
-                // Create new task
-                DailyTask::create([
-                    'user_id' => $user->id,
-                    'attendance_id' => $attendance->id,
+{
+    $user = Auth::user();
+    $attendance = Attendance::where('user_id', $user->id)->whereNotNull('clockin_time')->first();
+
+    if (!$attendance) {
+        return response()->json(['message' => 'User not clocked in.'], 403);
+    }
+
+    // Filter and validate tasks
+    $tasks = collect($request->input('tasks', []))->filter(function ($task) {
+        return !empty($task['project_id']) && !empty($task['hours']) && !empty($task['task_description']);
+    });
+
+    if ($tasks->isEmpty()) {
+        return response()->json(['message' => 'All tasks must have valid fields.'], 400);
+    }
+
+    $request->merge(['tasks' => $tasks->toArray()]);
+    $request->validate([
+        'tasks.*.project_id' => 'required|exists:projects,id',
+        'tasks.*.hours' => 'required|numeric|min:0',
+        'tasks.*.task_description' => 'required|string',
+        'tasks.*.id' => 'nullable|exists:daily_tasks,id',
+    ], [
+        'tasks.*.project_id.required' => 'Each task must have a project selected.',
+        'tasks.*.project_id.exists' => 'Selected project does not exist.',
+        'tasks.*.hours.required' => 'Each task must have hours specified.',
+        'tasks.*.hours.numeric' => 'Hours must be a number.',
+        'tasks.*.task_description.required' => 'Each task must have a description.',
+    ]);
+
+    foreach ($tasks as $task) {
+        $project = Project::find($task['project_id']);
+        $projectName = $project->name;
+
+        if (isset($task['id'])) {
+            $existingTask = DailyTask::where('id', $task['id'])->where('user_id', $user->id)->first();
+            if ($existingTask) {
+                $existingTask->update([
                     'project_id' => $task['project_id'],
-                    'project_name' => $projectName, // Save project name
+                    'project_name' => $projectName,
                     'hours' => $task['hours'],
                     'task_description' => $task['task_description'],
-                    'task_status' => 'pending',  // Default status
+                    'task_status' => 'pending',
                 ]);
             }
+        } else {
+            DailyTask::create([
+                'user_id' => $user->id,
+                'attendance_id' => $attendance->id,
+                'project_id' => $task['project_id'],
+                'project_name' => $projectName,
+                'hours' => $task['hours'],
+                'task_description' => $task['task_description'],
+                'task_status' => 'pending',
+            ]);
         }
-    
-        return response()->json(['message' => 'Tasks saved/updated successfully.'], 200);
     }
+
+    return response()->json(['message' => 'Tasks saved/updated successfully.'], 200);
+}
+
     
     
     public function showTasks()

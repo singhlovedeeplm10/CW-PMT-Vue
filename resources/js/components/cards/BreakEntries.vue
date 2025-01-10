@@ -115,15 +115,35 @@ export default {
 </script>
 
 <style scoped>
+.task-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+    max-height: 100%;
+}
+
+.task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
 .task-card-body {
     overflow-y: auto; /* Enables vertical scrolling */
-    max-height: 350px; /* Limits the height of the content area */
+    max-height: 300px; /* Restricts the content area height */
+    padding-right: 10px; /* Adds padding for better readability */
+    box-sizing: border-box; /* Ensures padding is included in width/height */
 }
 
 /* Custom scrollbar styling */
 .task-card-body::-webkit-scrollbar {
     width: 6px; /* Scrollbar width */
-    background-color: #f1f1f1; /* Background color of the scrollbar track */
+    background-color: #f1f1f1; /* Scrollbar track color */
 }
 
 .task-card-body::-webkit-scrollbar-thumb {
@@ -142,11 +162,17 @@ table {
 
 thead th {
     text-align: left;
-    padding: 20px;
+    padding: 10px;
+    font-size: 14px;
+    background-color: #f8f8f8; /* Adds a subtle background */
+    border-bottom: 1px solid #ddd;
 }
 
 tbody td {
-    padding: 8px;
+    padding: 10px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f1f1; /* Adds spacing between rows */
+    word-break: break-word; /* Ensures long words break properly */
 }
 
 .profile {
@@ -160,14 +186,17 @@ tbody td {
     border-radius: 50%;
     margin-right: 8px;
 }
+
+/* Specific card border and header styles */
 #card2 {
     border: 1px solid rgb(112, 165, 245);
+    border-radius: 8px; /* Smooth border corners */
 }
+
 .task-card-header h4 {
     color: #3498db;
     font-size: 18px;
     font-weight: bold;
-    display: contents;
 }
 
 /* Loader Style */
@@ -187,3 +216,4 @@ tbody td {
     100% { transform: rotate(360deg); }
 }
 </style>
+

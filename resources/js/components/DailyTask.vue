@@ -152,7 +152,7 @@
     type="button"
     class="btn btn-danger me-2"
     @click="deleteTask(task)"
-    :disabled="task.leave_id !== null || isLoading"
+    
   >
     <i class="fas fa-trash"></i>
   </button>

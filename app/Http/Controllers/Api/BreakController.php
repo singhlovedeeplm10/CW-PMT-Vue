@@ -18,81 +18,86 @@ use Illuminate\Support\Facades\Log;
 class BreakController extends Controller
 {
     public function startBreak(Request $request)
-    {
-        // Validate the incoming request
-        $validatedData = $request->validate([
-            'reason' => 'required|string|max:255',
-        ]);
-    
-        $user = Auth::user();
-    
-        // Check if the user is authenticated
-        if (!$user) {
-            return response()->json(['error' => 'User is not authenticated.'], 401);
-        }
-    
-        // Retrieve the latest attendance for the user
-        $attendance = $user->attendances()->latest()->first();
-    
-        // Ensure the user has an active attendance record
-        if (!$attendance) {
-            return response()->json(['error' => 'No active attendance found.'], 400);
-        }
-    
-        // Create a new break entry
-        $break = Breaks::create([
-            'user_id' => $user->id,
-            'attendance_id' => $attendance->id,
-            'start_time' => now(),
-            'reason' => $validatedData['reason'],
-        ]);
-    
-        // Generate a BreakinToken and save it in the personal_access_tokens table
-        $breakToken = $user->createToken('BreakinToken')->plainTextToken;
-    
-        return response()->json([
-            'message' => 'Break started successfully.',
-            'break' => $break,
-            'token' => $breakToken, // Return the token to the frontend if needed
-        ], 201);
-    }
-    
+{
+    // Validate the incoming request
+    $validatedData = $request->validate([
+        'reason' => 'required|string|max:255',
+    ]);
 
-    public function endBreak(Request $request)
-    {
-        // Ensure the user is authenticated
-        $user = auth()->user();
-    
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized.'], 401);
-        }
-    
-        // Validate the input
-        $request->validate([
-            'break_time' => 'required|integer|min:1', // Ensure break_time is validated
-        ]);
-    
-        // Retrieve the latest break for the user
-        $break = $user->breaks()->latest()->first();
-    
-        if (!$break) {
-            return response()->json(['error' => 'No active break found.'], 404);
-        }
-    
-        // Convert break_time from seconds to HH:MM:SS format
-        $breakTime = gmdate('H:i:s', $request->input('break_time'));
-    
-        // Update the break with end time and break_time
-        $break->update([
-            'end_time' => now(),
-            'break_time' => $breakTime, // Save break_time in HH:MM:SS format
-        ]);
-    
-        // Remove the BreakinToken from the personal_access_tokens table
-        $user->tokens()->where('name', 'BreakinToken')->delete();
-    
-        return response()->json(['message' => 'Break ended successfully.'], 200);
+    $user = Auth::user();
+
+    // Check if the user is authenticated
+    if (!$user) {
+        return response()->json(['error' => 'User is not authenticated.'], 401);
     }
+
+    // Retrieve the latest attendance for the user
+    $attendance = $user->attendances()->latest()->first();
+
+    // Ensure the user has an active attendance record
+    if (!$attendance) {
+        return response()->json(['error' => 'No active attendance found.'], 400);
+    }
+
+    // Get the current time in 'Asia/Kolkata' timezone
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    // Create a new break entry
+    $break = Breaks::create([
+        'user_id' => $user->id,
+        'attendance_id' => $attendance->id,
+        'start_time' => $currentTime, // Save start time in 'Asia/Kolkata' timezone
+        'reason' => $validatedData['reason'],
+    ]);
+
+    // Generate a BreakinToken and save it in the personal_access_tokens table
+    $breakToken = $user->createToken('BreakinToken')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Break started successfully.',
+        'break' => $break,
+        'token' => $breakToken, // Return the token to the frontend if needed
+    ], 201);
+}
+
+public function endBreak(Request $request)
+{
+    // Ensure the user is authenticated
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized.'], 401);
+    }
+
+    // Validate the input
+    $request->validate([
+        'break_time' => 'required|integer|min:1', // Ensure break_time is validated
+    ]);
+
+    // Retrieve the latest break for the user
+    $break = $user->breaks()->latest()->first();
+
+    if (!$break) {
+        return response()->json(['error' => 'No active break found.'], 404);
+    }
+
+    // Convert break_time from seconds to HH:MM:SS format
+    $breakTime = gmdate('H:i:s', $request->input('break_time'));
+
+    // Get the current time in 'Asia/Kolkata' timezone
+    $currentTime = Carbon::now('Asia/Kolkata');
+
+    // Update the break with end time and break_time
+    $break->update([
+        'end_time' => $currentTime, // Save end time in 'Asia/Kolkata' timezone
+        'break_time' => $breakTime, // Save break_time in HH:MM:SS format
+    ]);
+
+    // Remove the BreakinToken from the personal_access_tokens table
+    $user->tokens()->where('name', 'BreakinToken')->delete();
+
+    return response()->json(['message' => 'Break ended successfully.'], 200);
+}
     
     
     public function getDailyBreaks(Request $request)
@@ -230,6 +235,46 @@ private function convertBreakTimeToSeconds($breakTime)
         Log::error("Invalid break_time format: " . $breakTime);
         return 0; // Default to 0 seconds if parsing fails
     }
+}
+public function getBreakinToken()
+{
+    $user = Auth::user();
+
+    // Check if the user has a BreakinToken in the `personal_access_tokens` table
+    $token = $user->tokens()->where('name', 'BreakinToken')->first();
+
+    if ($token) {
+        // Check the latest break record where the user is currently on a break
+        $latestBreak = Breaks::where('user_id', $user->id)
+            ->whereNull('end_time') // Ensure the break hasn't ended
+            ->latest('start_time') // Fetch the latest ongoing break
+            ->first();
+
+        $isOnBreak = !is_null($latestBreak);
+        $breakStartTime = $isOnBreak ? $latestBreak->start_time : null;
+
+        // Fetch total break time for today
+        $totalBreakTime = Breaks::where('user_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->get()
+            ->sum(function ($break) {
+                if ($break->break_time) {
+                    $timeParts = explode(':', $break->break_time);
+                    if (count($timeParts) == 3) {
+                        return ($timeParts[0] * 3600) + ($timeParts[1] * 60) + $timeParts[2];
+                    }
+                }
+                return 0;
+            });
+
+        return response()->json([
+            'isOnBreak' => $isOnBreak,
+            'breakStartTime' => $breakStartTime,
+            'totalBreakTime' => $totalBreakTime,
+        ]);
+    }
+
+    return response()->json(['isOnBreak' => false, 'totalBreakTime' => 0]);
 }
 
 
