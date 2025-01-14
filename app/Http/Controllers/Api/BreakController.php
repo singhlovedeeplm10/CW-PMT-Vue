@@ -191,16 +191,16 @@ public function getUserBreaks(Request $request)
 
         $breaks = Breaks::where('user_id', $userId)
             ->whereDate('created_at', \Carbon\Carbon::today()) // Fetch only today's data
-            ->select('start_time', 'break_time', 'reason') // Fetch only required fields
+            ->select('end_time', 'break_time', 'reason') // Include end_time for computation
             ->get()
             ->map(function ($break) {
-                // Calculate "Break Out" time
-                $breakOutTime = \Carbon\Carbon::parse($break->start_time)
-                    ->addSeconds($this->convertBreakTimeToSeconds($break->break_time));
+                // Calculate "Start Time" by subtracting break time from end time
+                $breakStartTime = \Carbon\Carbon::parse($break->end_time)
+                    ->subSeconds($this->convertBreakTimeToSeconds($break->break_time));
 
                 return [
-                    'start_time' => \Carbon\Carbon::parse($break->start_time)->format('h:i A'),
-                    'break_out' => $breakOutTime->format('h:i A'), // Calculated Break Out time
+                    'start_time' => $breakStartTime->format('h:i A'), // Calculated Start Time
+                    'break_out' => \Carbon\Carbon::parse($break->end_time)->format('h:i A'), // End Time as Break Out time
                     'break_time' => gmdate('H:i:s', $this->convertBreakTimeToSeconds($break->break_time)), // Format in hours, minutes, seconds
                     'reason' => $break->reason,
                 ];
@@ -236,6 +236,7 @@ private function convertBreakTimeToSeconds($breakTime)
         return 0; // Default to 0 seconds if parsing fails
     }
 }
+
 public function getBreakinToken()
 {
     $user = Auth::user();

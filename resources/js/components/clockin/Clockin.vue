@@ -369,26 +369,28 @@ const startBreakTimer = () => {
       isOnBreak.value = true;
       breakStartTime.value = new Date(breakinResponse.data.breakStartTime).getTime(); // Convert to timestamp
       totalBreakTime.value = breakinResponse.data.totalBreakTime || 0;
-      startBreakTimer(); // Start the timer with the updated total time
+      startBreakTimer(); // Start the break timer with the updated total time
     }
 
     // Fetch daily hours
     await fetchDailyHours();
 
+    // Adjust productive hours by subtracting total break time (frontend only)
+    // Ensure that the daily hours are updated by subtracting the total break time before starting the timer
+    dailyHours.value -= totalBreakTime.value;
+
     // Set timer to daily hours and start timer if clocked in
     if (isClockedIn.value) {
-      pausedTime.value = dailyHours.value; // Initialize timer with daily hours
+      pausedTime.value = dailyHours.value; // Initialize timer with the adjusted daily hours
       startTimer();
     }
-
-    // Adjust productive hours by subtracting total break time (frontend only)
-    dailyHours.value -= totalBreakTime.value;
 
   } catch (error) {
     console.error("Error fetching status:", error.response?.data || error.message);
     toast.error("Failed to fetch status", { position: "top-right" });
   }
 });
+
 
 
 
