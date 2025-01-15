@@ -4,6 +4,7 @@
       <h3>Edit Project</h3>
 
       <form @submit.prevent="submitForm">
+        <!-- Other fields -->
         <div class="form-group">
           <label for="project-name">Project Name</label>
           <input
@@ -52,6 +53,65 @@
             <option value="Completed">Completed</option>
           </select>
         </div>
+
+        <!-- Developer Assign List -->
+        <div class="form-group">
+          <label>Assigned Developers</label>
+          <ul class="developer-list">
+            <li v-for="(developer, index) in editedProject.developer_assign_list" :key="index">
+              {{ developer }}
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                @click="removeDeveloper(index)"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Autocomplete Input for User -->
+        <div class="mb-3" style="position: relative;">
+          <label for="userSearch">Select Users</label>
+          <div class="selected-users">
+            <span
+              v-for="(user, index) in selectedUsers"
+              :key="user.id"
+              class="selected-user"
+            >
+              {{ user.name }}
+              <button type="button" @click="removeUser(index)" class="btn-close ms-2" aria-label="Remove user"></button>
+            </span>
+          </div>
+          <input
+            type="text"
+            class="form-control"
+            id="userSearch"
+            v-model="userSearchQuery"
+            @input="fetchUsers"
+            placeholder="Search users by name"
+          />
+          <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
+            <li
+              v-for="user in userSuggestions"
+              :key="user.id"
+              @click="selectUser(user)"
+              class="suggestion-item d-flex align-items-center"
+            >
+              <img
+                :src="user.user_image"
+                alt="User Avatar"
+                class="rounded-circle me-2"
+                style="width: 40px; height: 40px;"
+              />
+              <span>{{ user.name }}</span>
+            </li>
+          </ul>
+          <span v-if="userError" class="text-danger">{{ userError }}</span>
+        </div>
+
+        <!-- Form Actions -->
         <div class="form-group">
           <button type="submit" class="btn btn-primary" :disabled="loading">
             <span v-if="loading" class="loader"></span>
@@ -82,13 +142,55 @@ export default {
   data() {
     return {
       editedProject: { ...this.project },
-      loading: false, // New loading state
+      loading: false, // Loading state
+      userSearchQuery: "", // Search query for autocomplete
+      userSuggestions: [], // Suggested users
+      selectedUsers: [], // Selected users
+      userError: null, // Error message for user search
     };
   },
 
   methods: {
     close() {
       this.$emit("close");
+    },
+
+    removeDeveloper(index) {
+      this.editedProject.developer_assign_list.splice(index, 1);
+    },
+
+    async fetchUsers() {
+      if (this.userSearchQuery.length > 0) {
+        try {
+          const response = await axios.get("/api/users/search", {
+            params: { query: this.userSearchQuery },
+          });
+          this.userSuggestions = response.data;
+          this.userError = null;
+        } catch (error) {
+          this.userError = "Error fetching users.";
+        }
+      } else {
+        this.userSuggestions = [];
+      }
+    },
+
+    selectUser(user) {
+      if (!this.selectedUsers.some((u) => u.id === user.id)) {
+        this.selectedUsers.push(user);
+        this.editedProject.developer_assign_list.push(user.id);
+      }
+      this.userSuggestions = [];
+      this.userSearchQuery = "";
+    },
+
+    removeUser(index) {
+      const user = this.selectedUsers[index];
+      this.selectedUsers.splice(index, 1);
+      const userIdIndex = this.editedProject.developer_assign_list.indexOf(user.id);
+      if (userIdIndex !== -1) {
+        this.editedProject.developer_assign_list.splice(userIdIndex, 1);
+      }
     },
 
     async submitForm() {
@@ -123,6 +225,49 @@ export default {
 </script>
   
 <style scoped>
+.autocomplete-suggestions {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  width: 100%;
+  z-index: 1000;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background: #f0f0f0;
+}
+
+.selected-user {
+  display: inline-flex;
+  align-items: center;
+  background: #e9ecef;
+  border-radius: 20px;
+  padding: 5px 10px;
+  margin: 5px;
+}
+.developer-list {
+  list-style: none;
+  padding: 0;
+}
+
+.developer-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.developer-list button {
+  margin-left: 10px;
+}
 .loader {
   border: 2px solid #f3f3f3; /* Light grey */
   border-top: 2px solid #007bff; /* Blue */

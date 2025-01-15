@@ -69,7 +69,17 @@
           </div>
           <!-- Autocomplete Input for User -->
           <div class="mb-3" style="position: relative;">
-            <label for="userSearch">Select User</label>
+            <label for="userSearch">Select Users</label>
+            <div class="selected-users">
+              <span
+                v-for="(user, index) in selectedUsers"
+                :key="user.id"
+                class="selected-user"
+              >
+                {{ user.name }}
+                <button type="button" @click="removeUser(index)" class="btn-close ms-2" aria-label="Remove user"></button>
+              </span>
+            </div>
             <input
               type="text"
               class="form-control"
@@ -144,6 +154,7 @@ export default {
     const userSearchQuery = ref("");
     const userSuggestions = ref([]);
     const userError = ref(null);
+    const selectedUsers = ref([]); // Store selected users
 
     // Add project method
     const addProject = async () => {
@@ -197,13 +208,24 @@ export default {
       }
     };
 
-    // Select user and add their ID to the list
+    // Select user and add to the selectedUsers list
     const selectUser = (user) => {
-      if (!project.value.developer_assign_list.includes(user.id)) {
-        project.value.developer_assign_list.push(user.id);
+      if (!selectedUsers.value.some(u => u.id === user.id)) {
+        selectedUsers.value.push(user);
+        project.value.developer_assign_list.push(user.id); // Add user ID to project
       }
       userSuggestions.value = [];
       userSearchQuery.value = "";
+    };
+
+    // Remove user from selected users
+    const removeUser = (index) => {
+      const user = selectedUsers.value[index];
+      selectedUsers.value.splice(index, 1);
+      const userIdIndex = project.value.developer_assign_list.indexOf(user.id);
+      if (userIdIndex !== -1) {
+        project.value.developer_assign_list.splice(userIdIndex, 1); // Remove user ID from project
+      }
     };
 
     return {
@@ -215,6 +237,8 @@ export default {
       userError,
       fetchUsers,
       selectUser,
+      selectedUsers,
+      removeUser,
     };
   },
 };
@@ -376,6 +400,31 @@ export default {
   .spinner-border {
     margin-right: 10px;
   }
+  .selected-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.selected-user {
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.selected-user .btn-close {
+  margin-left: 5px;
+  padding: 0;
+  font-size: 16px;
+  color: #888;
+}
+
+.selected-user .btn-close:hover {
+  color: red;
+}
   </style>
   
   

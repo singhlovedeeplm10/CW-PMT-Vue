@@ -30,7 +30,7 @@
                                     <img 
                                         :src="breakEntry.user.user_image 
                                             ? `/storage/${breakEntry.user.user_image}` 
-                                            : 'img/default-user.jpg'" 
+                                            : 'img/CWlogo.jpeg'" 
                                         alt="User Image"
                                         class="rounded-circle"
                                         width="50"

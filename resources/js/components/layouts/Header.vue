@@ -11,7 +11,7 @@
       <div class="header-right">
         <!-- User Profile with Hover Dropdown -->
         <div class="profile-container">
-          <img :src="userImage || 'img/default-profile.png'" alt="Profile Image" class="profile-image" />
+          <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
           <div class="profile-dropdown">
             <a href="javascript:void(0)" @click="goToAccount" class="dropdown-item">My Account</a>
             <a href="javascript:void(0)" @click="logout" class="dropdown-item">Logout</a>

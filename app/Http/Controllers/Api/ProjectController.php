@@ -168,27 +168,44 @@ class ProjectController extends Controller
     }
 
     public function updateProject(Request $request, $id)
-    {
-        // Validate the incoming request data with enum values for type and status
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'type' => 'required|string|in:Long,Medium,Short', // Validate against enum values
-            'status' => 'required|string|in:Awaiting,Started,Paused,Completed', // Validate against enum values
-            'comment' => 'nullable|string',
-        ]);
-    
-        // Find the project by ID
-        $project = Project::find($id);
-    
-        if (!$project) {
-            return response()->json(['error' => 'Project not found'], 404);
-        }
-    
-        // Update the project with the validated data
-        $project->update($validatedData);
-    
-        return response()->json(['message' => 'Project updated successfully', 'project' => $project], 200);
+{
+    // Validate the incoming request data with enum values for type and status
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'type' => 'required|string|in:Long,Medium,Short', // Validate against enum values
+        'status' => 'required|string|in:Awaiting,Started,Paused,Completed', // Validate against enum values
+        'comment' => 'nullable|string',
+        'developer_assign_list' => 'nullable|array', // Validate developer_assign_list as an array
+    ]);
+
+    // Find the project by ID
+    $project = Project::find($id);
+
+    if (!$project) {
+        return response()->json(['error' => 'Project not found'], 404);
     }
+
+    // Update the project with the validated data
+    $project->name = $validatedData['name'];
+    $project->description = $validatedData['description'] ?? $project->description;
+    $project->type = $validatedData['type'];
+    $project->status = $validatedData['status'];
+    $project->comment = $validatedData['comment'] ?? $project->comment;
+
+    // If developer_assign_list is provided, update it
+    if (isset($validatedData['developer_assign_list'])) {
+        $project->developer_assign_list = json_encode($validatedData['developer_assign_list']);
+    }
+
+    // Save the changes
+    $project->save();
+
+    return response()->json([
+        'message' => 'Project updated successfully',
+        'project' => $project,
+    ], 200);
+}
+
         
 }

@@ -2,7 +2,7 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <!-- Show profile image -->
-      <img :src="userImage || 'img/default-profile.png'" alt="Profile Image" class="profile-image" />
+      <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
       <h2 class="sidebar-title">{{ userName }}</h2>
     </div>
     <ul class="sidebar-list">
