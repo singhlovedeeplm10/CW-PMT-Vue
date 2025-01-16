@@ -26,11 +26,12 @@
             {{ leave.status }}
           </div>
 
+          <!-- Close Button with data-bs-dismiss -->
           <button
             type="button"
             class="btn-close"
-            @click="closeModal"
             aria-label="Close"
+            data-bs-dismiss="modal" 
           ></button>
         </div>
         <div class="modal-body">
@@ -198,7 +199,12 @@
                 <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 Update
               </button>
-              <button type="button" class="btn btn-secondary" @click="closeModal">
+              <!-- Close Button with data-bs-dismiss -->
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal" 
+              >
                 Close
               </button>
             </div>
@@ -209,8 +215,11 @@
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
+import { Modal } from "bootstrap";
+import * as bootstrap from 'bootstrap';
 import { toast } from "vue3-toastify";
 
 export default {
@@ -239,9 +248,6 @@ export default {
       return `${year}-${month}-${day}`;
     },
 
-    closeModal() {
-      this.$emit("close");
-    },
 
     validateStartDate() {
       this.startDateError = "";
@@ -258,83 +264,98 @@ export default {
     },
 
     async submitLeaveUpdate() {
-      this.timeError = ""; // Reset the time error message on form submission
+  this.timeError = ""; // Reset the time error message on form submission
 
-      // Check if both startTime and endTime are provided for Short Leave
-      if (
-        this.leave.type_of_leave === "Short Leave" &&
-        this.leave.start_time &&
-        this.leave.end_time
-      ) {
-        const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
-        const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
-        const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+  // Check if both startTime and endTime are provided for Short Leave
+  if (
+    this.leave.type_of_leave === "Short Leave" &&
+    this.leave.start_time &&
+    this.leave.end_time
+  ) {
+    const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
+    const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
+    const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
 
-        // Validate that the time difference is not more than 2 hours
-        if (timeDiff > 2) {
-          this.timeError = "Short leave duration cannot exceed 2 hours.";
-          return; // Prevent form submission if validation fails
-        }
+    // Validate that the time difference is not more than 2 hours
+    if (timeDiff > 2) {
+      this.timeError = "Short leave duration cannot exceed 2 hours.";
+      return; // Prevent form submission if validation fails
+    }
+  }
+
+  // Skip submission if there are any date errors
+  if (this.startDateError || this.endDateError) {
+    return;
+  }
+
+  this.loading = true;
+
+  try {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("User is not authenticated.");
+      return;
+    }
+
+    // Prepare data for the API request
+    const leaveData = {
+      type_of_leave: this.leave.type_of_leave,
+      start_date: this.leave.start_date || null,
+      end_date:
+        this.leave.type_of_leave === "Short Leave"
+          ? null
+          : this.leave.end_date || null,
+      reason: this.leave.reason,
+      contact_during_leave: this.leave.contact_during_leave,
+      status: this.leave.status,
+    };
+
+    // Map Half Day to backend values (ensure it matches the field name in the migration)
+    if (this.leave.type_of_leave === "Half Day Leave") {
+      leaveData.half =
+        this.leave.half === "First Half" ? "First Half" : "Second Half";
+    }
+
+    if (this.leave.type_of_leave === "Short Leave") {
+      leaveData.start_time = this.leave.start_time;
+      leaveData.end_time = this.leave.end_time;
+    }
+
+    // Make API request
+    const response = await axios.put(
+      `/api/update-leaves/${this.leave.id}`,
+      leaveData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      // Skip submission if there are any date errors
-      if (this.startDateError || this.endDateError) {
-        return;
-      }
+    toast.success(response.data.message);
+    this.$emit("leaveApplied");
 
-      this.loading = true;
+    // Close the modal after successful submission
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("updateleavemodal")
+    );
+    if (modal) {
+      modal.hide();
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      toast.error(
+        "Validation error: " + JSON.stringify(error.response.data.error)
+      );
+    } else {
+      toast.error("Failed to update leave. Please try again.");
+    }
+  } finally {
+    this.loading = false;
+  }
+},
 
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("User is not authenticated.");
-          return;
-        }
 
-        // Prepare data for the API request
-        const leaveData = {
-          type_of_leave: this.leave.type_of_leave,
-          start_date: this.leave.start_date || null,
-          end_date: this.leave.type_of_leave === "Short Leave" ? null : this.leave.end_date || null,
-          reason: this.leave.reason,
-          contact_during_leave: this.leave.contact_during_leave,
-          status: this.leave.status,
-        };
-
-        // Map Half Day to backend values (ensure it matches the field name in the migration)
-        if (this.leave.type_of_leave === "Half Day Leave") {
-          leaveData.half = this.leave.half === "First Half" ? "First Half" : "Second Half";
-        }
-
-        if (this.leave.type_of_leave === "Short Leave") {
-          leaveData.start_time = this.leave.start_time;
-          leaveData.end_time = this.leave.end_time;
-        }
-
-        // Make API request
-        const response = await axios.put(
-          `/api/update-leaves/${this.leave.id}`,
-          leaveData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        toast.success(response.data.message);
-        this.$emit("leave-updated", response.data.leave);
-        this.closeModal();
-      } catch (error) {
-        if (error.response && error.response.status === 422) {
-          toast.error("Validation error: " + JSON.stringify(error.response.data.error));
-        } else {
-          toast.error("Failed to update leave. Please try again.");
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
   },
 };
 </script>

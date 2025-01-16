@@ -350,6 +350,7 @@ export default {
   this.isSubmitting = true;
 
   try {
+    // Send a request to apply the leave
     const response = await axios.post("/api/apply-team-leave", this.form, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -359,17 +360,21 @@ export default {
     // Show success toast
     toast.success("Leave Applied Successfully!");
 
-    // Emit the event to notify parent component
+    // Emit the event to notify the parent component
     this.$emit("leaveApplied");
 
-    // Close the modal
-    const modalElement = document.getElementById("applyteamleavemodal");
-    const modalInstance = Modal.getInstance(modalElement);
-    modalInstance.hide();
+    // Find the modal element
+    const modalDismissButton = document.querySelector('[data-bs-dismiss="modal"]');
+
+    // If the modal dismiss button exists, trigger its click event
+    if (modalDismissButton) {
+      modalDismissButton.click(); // This closes the modal
+    }
 
     // Reset the form
     this.resetForm();
   } catch (error) {
+    // Handle error and show a toast with the error message
     toast.error(
       error.response?.data?.error || "An error occurred while applying for leave."
     );

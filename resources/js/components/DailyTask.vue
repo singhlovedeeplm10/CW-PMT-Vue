@@ -101,15 +101,22 @@
     :disabled="task.leave_id !== null"
   >
     <option value="">Select Project</option>
+    <!-- Display existing projects, pre-selecting the one from the daily_tasks table -->
     <option
       v-for="project in projects"
       :key="project.id"
       :value="project.id"
+      :selected="task.project_id === project.id || task.project_name === project.name"
     >
       {{ project.name }}
     </option>
+    <!-- Option for the project name stored in daily_tasks if it's not in the projects table -->
+    <option v-if="!projects.some(p => p.name === task.project_name)" :value="task.project_id">
+      {{ task.project_name }}
+    </option>
   </select>
 </div>
+
 
 <!-- Hours Field -->
 <div class="form-group me-3 mb-3" style="flex: 1; min-width: 100px;">
@@ -239,14 +246,16 @@ export default {
 
     async openModal(task) {
   try {
+    // Fetch user tasks based on the selected task's user
     const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`);
     if (response.data.success) {
       const userTasks = response.data.tasks;
 
+      // Map the tasks with necessary information including the project name
       this.currentTasks = userTasks.map((task) => ({
         id: task.id,
-        project_id: task.project?.id || null,
-        project_name: task.project?.name || '',
+        project_id: task.project?.id || null, // Keep track of the project ID
+        project_name: task.project?.name || task.project_name, // Prefill with project name from daily_tasks table
         hours: task.hours || 0,
         task_description: task.task_description || '',
         task_status: task.task_status || 'pending',
@@ -255,9 +264,8 @@ export default {
 
       this.userName = task.user.name;
 
-      const modal = new bootstrap.Modal(
-        document.getElementById('dailytaskmodal')
-      );
+      // Open the modal
+      const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
       modal.show();
     }
   } catch (error) {
@@ -265,7 +273,6 @@ export default {
     toast.error('Failed to fetch user tasks. Please try again.');
   }
 },
-
 
     async updateTask(task) {
   try {
@@ -319,7 +326,7 @@ async deleteTask(task) {
 <style scoped>
 .bg-light-gray {
   background-color: #f0f0f0 !important;
-  cursor: not-allowed;
+  /* cursor: not-allowed; */
 }
 
 .date-picker {

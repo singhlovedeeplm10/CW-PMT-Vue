@@ -111,7 +111,7 @@
       <update-team-leave-modal 
       v-if="showModal" 
       :leave="selectedLeave" 
-      @close="closeModal"
+      @leaveApplied="fetchLeaves"
       ref="updateTeamLeavemodal"
     ></update-team-leave-modal>
     </master-component>

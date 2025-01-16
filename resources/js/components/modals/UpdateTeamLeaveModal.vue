@@ -30,7 +30,7 @@
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-            @click="closeModal"
+            
             aria-label="Close"
           ></button>
         </div>
@@ -173,7 +173,7 @@
                 <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 <span v-if="!isLoading">Update</span>
               </button>
-              <button type="button" class="btn btn-secondary" @click="closeModal">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                 Close
               </button>
             </div>
@@ -186,6 +186,7 @@
 
 <script>
 import axios from "axios";
+import * as bootstrap from 'bootstrap';
 import { toast } from "vue3-toastify";
 
 export default {
@@ -202,12 +203,10 @@ export default {
     };
   },
   methods: {
-    closeModal() {
-      this.$emit("close");
-    },
+    
 
-    // Submit the updated leave data
-    async submitLeaveUpdate() {
+  // Submit the updated leave data
+async submitLeaveUpdate() {
     try {
         this.isLoading = true;
         const token = localStorage.getItem("authToken");
@@ -219,25 +218,22 @@ export default {
         const leaveData = {
             type_of_leave: this.leave.type_of_leave,
             start_date: this.leave.start_date,
-end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : null,
-
+            end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : null,
             reason: this.leave.reason,
             contact_during_leave: this.leave.contact_during_leave,
             status: this.leave.status,
         };
 
         if (this.leave.type_of_leave === "Half Day Leave") {
-    leaveData.half_day = this.leave.half_day;
-} else {
-    leaveData.half_day = null;
-}
-
+            leaveData.half_day = this.leave.half_day;
+        } else {
+            leaveData.half_day = null;
+        }
 
         if (this.leave.type_of_leave === "Short Leave") {
-  leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i
-  leaveData.end_time = this.leave.end_time?.substring(0, 5); // Format as H:i
-}
- else {
+            leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i
+            leaveData.end_time = this.leave.end_time?.substring(0, 5); // Format as H:i
+        } else {
             leaveData.start_time = null;
             leaveData.end_time = null;
         }
@@ -251,8 +247,16 @@ end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : 
         );
 
         toast.success("Leave updated successfully!");
-        this.$emit("leave-updated", response.data.leave);
-        this.closeModal();
+        this.$emit("leaveApplied");
+
+        
+    // Close the modal after successful submission
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("updateTeamLeavemodal")
+    );
+    if (modal) {
+      modal.hide();
+    }
     } catch (error) {
         console.error("Error updating leave:", error);
         toast.error("Failed to update leave. Please try again.");
@@ -260,6 +264,7 @@ end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : 
         this.isLoading = false;
     }
 },
+
   },
 };
 </script>

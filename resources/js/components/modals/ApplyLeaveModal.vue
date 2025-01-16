@@ -277,67 +277,73 @@ export default {
       }
     },
     async validateAndSubmit() {
-      // Reset errors
-      this.leaveTypeError = this.form.type_of_leave
-        ? null
-        : "Leave type is required.";
-      this.startDateError = this.form.start_date
-        ? null
-        : "Start date is required.";
-      this.reasonError = this.form.reason ? null : "Reason is required.";
-      this.contactError = this.form.contact_during_leave
-        ? null
-        : "Contact during leave is required.";
+  // Reset errors
+  this.leaveTypeError = this.form.type_of_leave
+    ? null
+    : "Leave type is required.";
+  this.startDateError = this.form.start_date
+    ? null
+    : "Start date is required.";
+  this.reasonError = this.form.reason ? null : "Reason is required.";
+  this.contactError = this.form.contact_during_leave
+    ? null
+    : "Contact during leave is required.";
 
-      if (this.form.type_of_leave === "Short Leave") {
-        this.startTimeError = this.form.start_time
-          ? null
-          : "Start time is required.";
-        this.endTimeError = this.form.end_time
-          ? null
-          : "End time is required.";
-      }
+  if (this.form.type_of_leave === "Short Leave") {
+    this.startTimeError = this.form.start_time
+      ? null
+      : "Start time is required.";
+    this.endTimeError = this.form.end_time
+      ? null
+      : "End time is required.";
+  }
 
-      if (this.form.type_of_leave === "Full Day Leave") {
-        this.endDateError = this.form.end_date ? null : "End date is required.";
-      }
+  if (this.form.type_of_leave === "Full Day Leave") {
+    this.endDateError = this.form.end_date ? null : "End date is required.";
+  }
 
-      if (
-        this.leaveTypeError ||
-        this.startDateError ||
-        this.reasonError ||
-        this.contactError ||
-        this.startTimeError ||
-        this.endTimeError ||
-        this.endDateError
-      ) {
-        // Prevent form submission if there are validation errors
-        return;
-      }
+  if (
+    this.leaveTypeError ||
+    this.startDateError ||
+    this.reasonError ||
+    this.contactError ||
+    this.startTimeError ||
+    this.endTimeError ||
+    this.endDateError
+  ) {
+    // Prevent form submission if there are validation errors
+    return;
+  }
 
-      this.loading = true;
-      try {
-        const response = await axios.post("/api/apply-leave", this.form, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+  this.loading = true;
+  try {
+    const response = await axios.post("/api/apply-leave", this.form, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
 
-        toast.success("Leave Applied Successfully!");
-        this.$emit("leaveApplied");
+    toast.success("Leave Applied Successfully!");
+    this.$emit("leaveApplied");
 
-        const modalElement = document.getElementById("applyleavemodal");
-        const modalInstance = Modal.getInstance(modalElement);
-        modalInstance.hide();
+    // Find the modal element
+    const modalElement = document.getElementById("applyleavemodal");
+    
+    // Trigger Bootstrap's modal dismissal using data-bs-dismiss
+    const dismissButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
+    if (dismissButton) {
+      dismissButton.click();  // This will close the modal
+    }
 
-        this.resetForm();
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to apply leave. Please try again.");
-      } finally {
-        this.loading = false;
-      }
-    },
+    this.resetForm();
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to apply leave. Please try again.");
+  } finally {
+    this.loading = false;
+  }
+},
+
     resetForm() {
       this.form = {
         type_of_leave: "",

@@ -12,7 +12,7 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/users" class="sidebar-link" active-class="active-link">Employees</router-link>
       </li>
-      <li class="sidebar-item">
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
       <!-- <li class="sidebar-item">

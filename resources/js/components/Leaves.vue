@@ -119,7 +119,7 @@
     <update-leave-modal 
       v-if="showModal" 
       :leave="selectedLeave" 
-      @close="closeModal"
+      @leaveApplied="fetchLeaves"
       ref="updateLeaveModal"
     ></update-leave-modal>
   </master-component>
