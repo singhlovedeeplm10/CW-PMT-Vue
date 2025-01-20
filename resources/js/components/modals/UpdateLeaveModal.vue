@@ -48,6 +48,7 @@
                 <option value="Short Leave">Short Leave</option>
                 <option value="Half Day Leave">Half Day Leave</option>
                 <option value="Full Day Leave">Full Day Leave</option>
+                <option value="Work From Home">Work From Home</option>
               </select>
             </div>
 
@@ -68,6 +69,36 @@
             </div>
 
             <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
+              <label for="endDate" class="form-label">End Date</label>
+              <input
+                type="date"
+                v-model="leave.end_date"
+                id="endDate"
+                class="form-control"
+                :disabled="!leave.isEditable"
+                required
+                :min="leave.start_date"
+                @change="validateEndDate"
+              />
+              <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
+            </div>
+            <!-- Conditionally show start date and end date based on leave type -->
+            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
+              <label for="startDate" class="form-label">Start Date</label>
+              <input
+                type="date"
+                v-model="leave.start_date"
+                id="startDate"
+                class="form-control"
+                :disabled="!leave.isEditable"
+                required
+                :min="minDate"
+                @change="validateStartDate"
+              />
+              <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
+            </div>
+
+            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
               <label for="endDate" class="form-label">End Date</label>
               <input
                 type="date"

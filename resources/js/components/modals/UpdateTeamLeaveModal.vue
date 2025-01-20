@@ -47,6 +47,7 @@
                 <option value="Short Leave">Short Leave</option>
                 <option value="Half Day Leave">Half Day Leave</option>
                 <option value="Full Day Leave">Full Day Leave</option>
+                <option value="Work From Home">Work From Home</option>
               </select>
             </div>
 
@@ -63,6 +64,29 @@
             </div>
 
             <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
+              <label for="endDate" class="form-label">End Date</label>
+              <input
+                type="date"
+                v-model="leave.end_date"
+                id="endDate"
+                class="form-control"
+                required
+              />
+            </div>
+            
+            <!-- Conditionally show start date and end date based on leave type -->
+            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
+              <label for="startDate" class="form-label">Start Date</label>
+              <input
+                type="date"
+                v-model="leave.start_date"
+                id="startDate"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
               <label for="endDate" class="form-label">End Date</label>
               <input
                 type="date"
@@ -218,7 +242,9 @@ async submitLeaveUpdate() {
         const leaveData = {
             type_of_leave: this.leave.type_of_leave,
             start_date: this.leave.start_date,
-            end_date: this.leave.type_of_leave === "Full Day Leave" ? this.leave.end_date : null,
+            end_date: ["Full Day Leave", "Work From Home"].includes(this.leave.type_of_leave) 
+        ? this.leave.end_date 
+        : null,
             reason: this.leave.reason,
             contact_during_leave: this.leave.contact_during_leave,
             status: this.leave.status,

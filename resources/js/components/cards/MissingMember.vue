@@ -145,56 +145,96 @@ export default {
 
 
 <style scoped>
-/* Card styling */
+/* Card container styling */
 #card1, #card2 {
   max-height: 300px; /* Limit the height of the card */
   overflow-y: auto; /* Enable vertical scrolling if content overflows */
-  padding: 15px;
-  border-radius: 10px;
-  background-color: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  background: linear-gradient(to bottom, #ffffff, #f9f9f9); /* Subtle gradient */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
   width: 100%;
-  border: 1px solid rgb(247, 117, 236);
+  border: 1px solid #ddd;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+#card1:hover, #card2:hover {
+  transform: translateY(-5px); /* Slight hover lift */
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15); /* Highlight on hover */
 }
 
 /* Smooth scrollbar styling */
 #card1::-webkit-scrollbar, #card2::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 #card1::-webkit-scrollbar-thumb, #card2::-webkit-scrollbar-thumb {
-  background-color: #ccc;
+  background: rgba(100, 100, 100, 0.3);
   border-radius: 10px;
 }
 
 #card1::-webkit-scrollbar-thumb:hover, #card2::-webkit-scrollbar-thumb:hover {
-  background-color: #aaa;
+  background: rgba(100, 100, 100, 0.6);
+}
+
+/* Header styling */
+.task-card-header h4 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #444;
+  margin: 0;
+  text-transform: capitalize;
 }
 
 /* Flex container for team members */
 .d-flex.flex-wrap {
-  flex: 0 1 calc(25% - 10px); /* Adjust width to fit 4 items per row */
-  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px; /* Consistent spacing between items */
+  justify-content: flex-start;
 }
 
 /* Individual task card item */
 .task-card-item, .leave-card-item {
   flex: 0 1 calc(25% - 10px); /* Adjust width to fit 4 items per row */
   margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f5f5f5;
+  transition: box-shadow 0.3s, background-color 0.3s;
 }
 
+.task-card-item:hover, .leave-card-item:hover {
+  background: #e9f3ff; /* Subtle blue highlight on hover */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Avatar styling */
 .task-card-item img, .leave-card-item img {
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  border: 2px solid #ddd; /* Border for the image */
+  border-radius: 50%;
+  transition: transform 0.3s, border-color 0.3s;
 }
 
+.task-card-item img:hover, .leave-card-item img:hover {
+  transform: scale(1.1); /* Slight zoom effect on hover */
+  border-color: #4a90e2; /* Change border color on hover */
+}
+
+/* Description styling */
 .task-card-description, .leave-card-description {
   text-align: center;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: #555;
   word-wrap: break-word; /* Handle long names */
 }
 
-/* Loader Container Styling */
+/* Loader container styling */
 .loader-container {
   display: flex;
   justify-content: center;
@@ -203,12 +243,37 @@ export default {
   width: 100%; /* Ensure it takes full width */
 }
 
-/* Loader Spinner Styling */
+/* Loader spinner styling */
 .spinner-border {
-  color: rgb(73, 153, 244);
+  color: #4a90e2;
   width: 3rem;
   height: 3rem;
-  border-width: 0.3em;
+  border-width: 0.4em;
+}
+
+/* Calendar Header Styling */
+.task-card-header Calendar {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  #card1, #card2 {
+    width: 100%;
+  }
+  
+  .task-card-item, .leave-card-item {
+    flex: 0 1 calc(50% - 10px); /* Adjust to fit 2 items per row on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .task-card-item, .leave-card-item {
+    flex: 0 1 100%; /* Adjust to fit 1 item per row on very small screens */
+  }
 }
 </style>
+
 

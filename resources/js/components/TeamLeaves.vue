@@ -29,6 +29,16 @@
             <tr>
               <th></th>
               <th>
+  <input
+    type="text"
+    class="form-control"
+    v-model="search.employee_name"
+    placeholder="Search Employee Name"
+    @input="fetchLeaves"
+  />
+</th>
+
+              <th>
                 <input
                   type="text"
                   class="form-control"
@@ -141,6 +151,7 @@
           duration: "",
           status: "",
           created_date: "",
+          employee_name: "", 
         },
         showModal: false,  // Modal visibility
       selectedLeave: null,
@@ -155,6 +166,7 @@
             duration: this.search.duration || null,
             status: this.search.status || null,
             created_date: this.search.created_date || null,
+            employee_name: this.search.employee_name || null, 
           };
   
           // Make API request to fetch leaves

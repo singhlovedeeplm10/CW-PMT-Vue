@@ -23,7 +23,8 @@
       <update-team-leave-modal />
       <!-- <add-project-modal /> -->
       <!-- <EditPostModal/> -->
-      <!-- <Mail/> -->
+      <members-work-from-home v-if="userRole === 'Admin'" />
+
     </div>
   </master-component>
 </template>
@@ -37,6 +38,7 @@ import DailyTask from './DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
+import MembersWorkFromHome from './cards/MembersWorkFromHome.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import AddBreakModal from './modals/AddBreakModal.vue';
 import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
@@ -44,8 +46,7 @@ import ApplyTeamLeaveModal from './modals/ApplyTeamLeaveModal.vue';
 import UpdateLeaveModal from './modals/UpdateLeaveModal.vue';
 import UpdateTeamLeaveModal from './modals/UpdateTeamLeaveModal.vue';
 import EditPostModal from './modals/EditPostModal.vue';
-// import AddProjectModal from './modals/AddProjectModal.vue';
-// import Mail from './Mail.vue';
+
 
 export default {
   name: "Dashboard",
@@ -56,6 +57,7 @@ export default {
     DailyTask,
     BreakEntries,
     MissingMember,
+    MembersWorkFromHome,
     AddTaskModal,
     AddBreakModal,
     UserBreakList,

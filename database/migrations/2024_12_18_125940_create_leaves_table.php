@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave']);
+            $table->enum('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave', 'Work From Home']);
             $table->enum('half', ['First Half', 'Second Half'])->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

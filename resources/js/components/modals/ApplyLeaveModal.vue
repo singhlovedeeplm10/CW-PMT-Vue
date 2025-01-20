@@ -130,6 +130,33 @@
                 <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
+            <!-- Dynamic Fields for Work From Home -->
+            <div v-if="form.type_of_leave === 'Work From Home'" class="row mb-3">
+              <div class="col">
+                <DateInput
+                  v-model="form.start_date"
+                  label="Start Date"
+                  id="fromDate"
+                  name="start_date"
+                  :minDate="minDate"
+                  :error="startDateError"
+                  @change="validateStartAndEndDate"
+                />
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
+              </div>
+              <div class="col">
+                <DateInput
+                  v-model="form.end_date"
+                  label="End Date"
+                  id="toDate"
+                  name="end_date"
+                  :minDate="form.start_date"
+                  :error="endDateError"
+                  @change="validateStartAndEndDate"
+                />
+                <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
+              </div>
+            </div>
 
             <!-- Reason Field with TextArea -->
             <div class="mb-3">
@@ -215,6 +242,7 @@ export default {
         { label: "Full Day Leave", value: "Full Day Leave" },
         { label: "Half Day Leave", value: "Half Day Leave" },
         { label: "Short Leave", value: "Short Leave" },
+        { label: "Work From Home", value: "Work From Home" },
       ],
       halfDayOptions: [
         { label: "Select Half", value: "" },
