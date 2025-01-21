@@ -16,6 +16,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\API\TimelineController;
 use App\Http\Controllers\API\MailController;
+use App\Http\Controllers\API\PolicyController;
 
 
 
@@ -124,3 +125,10 @@ Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController
 Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
 Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
 Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);
+
+
+// POLICIES API ROUTES
+Route::middleware('auth:sanctum')->post('/save-policies', [PolicyController::class, 'savePolicy']);
+Route::get('/policies', [PolicyController::class, 'getPolicies']);
+Route::delete('/delete-policies/{id}', [PolicyController::class, 'deletePolicies']);
+Route::put('/update-policies/{id}', [PolicyController::class, 'updatePolicies']);

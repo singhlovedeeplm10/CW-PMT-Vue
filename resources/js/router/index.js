@@ -16,7 +16,7 @@ import MyTaskList from '../components/MyTaskList.vue';
 import MyAccount from '../components/MyAccount.vue'; 
 import TimeLine from '../components/TimeLine.vue'; 
 import UploadTimeline from '../components/UploadTimeline.vue';
-import Mail from '../components/Mail.vue';
+import Policies from '../components/Policies.vue';
 
 
 const routes = [
@@ -33,7 +33,7 @@ const routes = [
   { path: '/myaccount', name: 'MyAccount', component: MyAccount }, 
   { path: '/timeline', name: 'TimeLine', component: TimeLine },
   { path: '/uploadtimeline', name: 'UploadTimeline', component: UploadTimeline },
-  { path: '/send-email', name: 'Mail', component: Mail }
+  { path: '/policies', name: 'Policies', component: Policies },
 ];
 
 const router = createRouter({
