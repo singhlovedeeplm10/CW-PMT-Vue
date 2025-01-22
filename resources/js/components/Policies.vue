@@ -1,19 +1,40 @@
 <template>
   <master-component>
     <div class="policies-page">
-      <h1>Policies Page</h1>
-      <p>This is the Policies page content.</p>
+      <!-- Conditionally render the page header and "Add New Policy" button -->
+      <template v-if="!currentDocument">
+        <h1>Policies Page</h1>
+        <p>This is the Policies page content.</p>
 
-      <!-- Add Project Button -->
-      <button class="btn btn-primary" @click="showModal = true">
-        Add New Policy
-      </button>
+        <!-- Add Project Button -->
+        <button class="btn btn-primary" @click="showModal = true">
+          Add New Policy
+        </button>
 
-      <!-- Add Policy Modal -->
-      <AddPolicyModal v-if="showModal" @policyadded="fetchPolicies" @close="showModal = false" />
+        <!-- Add Policy Modal -->
+        <AddPolicyModal v-if="showModal" @policyadded="fetchPolicies" @close="showModal = false" />
+      </template>
+
+      <!-- Display the document in the same window when a document is clicked -->
+      <div v-if="currentDocument" class="document-view">
+        <h2 class="document-header d-flex align-items-center">
+          <!-- Back Button -->
+          <button @click="currentDocument = null" class="btn back-button">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <!-- Title -->
+          <span class="document-title">{{ currentDocument.title }}</span>
+        </h2>
+
+        <!-- Last Updated Date -->
+        <p class="last-updated">Last Updated: {{ formatDate(currentDocument.last_updated_at) }}</p>
+
+        <!-- Document Viewer -->
+        <iframe :src="currentDocument.url" class="document-iframe" frameborder="0"></iframe>
+      </div>
 
       <!-- Policies Table -->
-      <div class="table-container mt-4">
+      <div v-if="!currentDocument" class="table-container mt-4">
         <table class="table">
           <thead>
             <tr>
@@ -37,23 +58,38 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(policy, index) in filteredPolicies" :key="policy.id" class="table-row">
+            <tr
+              v-for="(policy, index) in filteredPolicies"
+              :key="policy.id"
+              class="table-row"
+            >
               <td>{{ index + 1 }}</td> <!-- Display the serial number -->
               <td>{{ policy.policy_title }}</td>
               <td>{{ formatDate(policy.last_updated_at) }}</td>
               <td class="manage-buttons">
                 <!-- Eye Icon to View Document -->
-                <button @click="openDocument(policy.document_url)" class="btn btn-info">
+                <button
+                  @click="openDocument(policy)"
+                  class="btn btn-info"
+                >
                   <i class="fas fa-eye"></i>
                 </button>
 
                 <!-- Edit Icon to Edit Policy -->
-                <button v-if="userRole === 'Admin'" @click="editPolicy(policy)" class="btn btn-warning">
+                <button
+                  v-if="userRole === 'Admin'"
+                  @click="editPolicy(policy)"
+                  class="btn btn-warning"
+                >
                   <i class="fas fa-edit"></i>
                 </button>
 
                 <!-- Delete Icon to Delete Policy -->
-                <button v-if="userRole === 'Admin'" @click="deletePolicy(policy.id)" class="btn btn-danger">
+                <button
+                  v-if="userRole === 'Admin'"
+                  @click="deletePolicy(policy.id)"
+                  class="btn btn-danger"
+                >
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -72,12 +108,12 @@
     </div>
   </master-component>
 </template>
-
-
 <script>
 import MasterComponent from './layouts/Master.vue';
 import AddPolicyModal from './modals/AddPolicyModal.vue';
 import EditPolicyModal from './modals/EditPolicyModal.vue';
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 import axios from 'axios';
 
 export default {
@@ -93,14 +129,16 @@ export default {
       showEditModal: false,
       userRole: null,
       policies: [],
-      searchQuery: '', // Add a search query data property
+      searchQuery: '', 
       editPolicyData: {
         id: null,
         policy_title: '',
         document_path: null,
       },
+      currentDocument: null, // Add a property to store the document data
     };
   },
+
   mounted() {
     this.fetchPolicies();
     this.fetchUserRole(); // Call fetchUserRole when component is mounted
@@ -125,10 +163,14 @@ export default {
           console.error('Error fetching policies:', error);
         });
     },
-    // Open the document in a new tab
-    openDocument(documentUrl) {
-      if (documentUrl) {
-        window.open(documentUrl, '_blank');
+    // Open the document in the same window and show the last updated date
+    openDocument(policy) {
+      if (policy.document_url) {
+        this.currentDocument = {
+          url: policy.document_url,  // Use the correct URL to the document fetched from the backend
+          title: policy.policy_title,
+          last_updated_at: policy.last_updated_at,  // Include the last updated date
+        };
       } else {
         console.error('Document URL is invalid or missing.');
       }
@@ -157,10 +199,12 @@ export default {
           if (index !== -1) {
             this.policies[index] = updatedPolicy; // Directly update the policy in the array
           }
+          toast.success("Changes saved successfully!");
           this.closeEditModal(); // Close the modal after saving
         })
         .catch(error => {
           console.error('Error updating policy:', error);
+          toast.error("Failed to save changes. Please try again.");
         });
     },
     // Delete policy from both frontend and backend
@@ -197,6 +241,60 @@ export default {
 
 
 <style scoped>
+.last-updated {
+  position: absolute;
+  top: 45px; /* Adjust vertical position */
+  right: 50px; /* Adjust horizontal position */
+  font-size: 17px; /* Slightly smaller font size for subtlety */
+}
+
+.document-view {
+  padding: 20px;
+  background-color: #f8f9fa; /* Light background for a professional look */
+  border: 1px solid #e0e0e0; /* Subtle border for separation */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.document-header {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  color: #343a40; /* Dark text for a professional tone */
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background-color: #007bff; /* Primary blue for consistency */
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  margin-right: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #0056b3; /* Slightly darker blue on hover */
+}
+
+.document-title {
+  font-size: 1.5rem;
+  color: #212529; /* Neutral dark for title */
+}
+
+.document-iframe {
+  width: 100%;
+  height: 600px;
+  border: 1px solid #dee2e6; /* Light border for the iframe */
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Shadow to make it pop */
+}
+
 /* Page Container */
 .policies-page {
   padding: 20px;

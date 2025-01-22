@@ -18,7 +18,6 @@ return new class extends Migration
             $table->date('last_updated_at')->nullable(); // Last updated date
             $table->string('document_path'); // Path for uploaded documents
             $table->timestamps(); // created_at and updated_at columns
-
             // Add foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });

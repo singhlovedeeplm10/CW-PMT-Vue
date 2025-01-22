@@ -11,26 +11,28 @@ use Illuminate\Support\Facades\Storage;
 class PolicyController extends Controller
 {
     public function savePolicy(Request $request)
-{
-    $request->validate([
-        'policy_title' => 'required|string|max:255',
-        'document' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:2048',
-    ]);
-
-    $documentPath = $request->file('document')->store('policies');
-
-    $policy = Policy::create([
-        'user_id' => auth()->id(),
-        'policy_title' => $request->input('policy_title'),
-        'last_updated_at' => now(),
-        'document_path' => $documentPath,
-    ]);
-
-    return response()->json([
-        'message' => 'Policy added successfully',
-        'policy' => $policy,
-    ]);
-}
+    {
+        $request->validate([
+            'policy_title' => 'required|string|max:255',
+            'document' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:2048',
+        ]);
+    
+        // Store the document in the 'public/policies' directory
+        $documentPath = $request->file('document')->store('policies', 'public');
+    
+        $policy = Policy::create([
+            'user_id' => auth()->id(),
+            'policy_title' => $request->input('policy_title'),
+            'last_updated_at' => now(),
+            'document_path' => $documentPath, // This will store the relative path like 'policies/filename.ext'
+        ]);
+    
+        return response()->json([
+            'message' => 'Policy added successfully',
+            'policy' => $policy,
+        ]);
+    }
+    
 
 public function getPolicies()
 {
@@ -67,7 +69,7 @@ public function deletePolicies($id)
     $policy->policy_title = $request->input('policy_title');
     
     if ($request->hasFile('document')) {
-        $path = $request->file('document')->store('policies');
+        $path = $request->file('document')->store('policies', 'public');
         $policy->document_path = $path;
     }
 

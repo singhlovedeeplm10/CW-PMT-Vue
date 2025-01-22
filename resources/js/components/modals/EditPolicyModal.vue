@@ -1,83 +1,105 @@
 <template>
-    <div class="modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Edit Policy</h5>
-            <button type="button" class="close" @click="closeModal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
+  <div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Policy</h5>
+          <button type="button" class="close" @click="closeModal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveChanges">
+            <div class="form-group">
+              <label for="policyTitle">Policy Title</label>
+              <input
+                type="text"
+                id="policyTitle"
+                v-model="policyData.policy_title"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="document">Upload New Document (Optional)</label>
+              <input
+                type="file"
+                id="document"
+                @change="handleFileChange"
+                class="form-control"
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span v-if="isLoading"> Saving...</span>
+              <span v-else>Save Changes</span>
             </button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="saveChanges">
-              <div class="form-group">
-                <label for="policyTitle">Policy Title</label>
-                <input
-                  type="text"
-                  id="policyTitle"
-                  v-model="policyData.policy_title"
-                  class="form-control"
-                  required
-                />
-              </div>
-  
-              <div class="form-group">
-                <label for="document">Upload New Document (Optional)</label>
-                <input
-                  type="file"
-                  id="document"
-                  @change="handleFileChange"
-                  class="form-control"
-                />
-              </div>
-  
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-            </form>
-          </div>
+          </form>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "EditPolicyModal",
-    props: {
-      policy: {
-        type: Object,
-        required: true,
-      },
+  </div>
+</template>
+
+<script>
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+
+export default {
+  name: "EditPolicyModal",
+  props: {
+    policy: {
+      type: Object,
+      required: true,
     },
-    data() {
-      return {
-        policyData: { ...this.policy },
-        newDocument: null, // Holds the new file if a new document is uploaded
-      };
+  },
+  data() {
+    return {
+      policyData: { ...this.policy },
+      newDocument: null, // Holds the new file if a new document is uploaded
+      isLoading: false, // Tracks the loading state
+    };
+  },
+  methods: {
+    // Close the modal
+    closeModal() {
+      this.$emit("close"); // Emit close event to parent component
     },
-    methods: {
-      // Close the modal
-      closeModal() {
-        this.$emit('close'); // Emit close event to parent component
-      },
-      // Handle file change (upload document)
-      handleFileChange(event) {
-        this.newDocument = event.target.files[0];
-      },
-      // Save changes and update policy
-      saveChanges() {
+    // Handle file change (upload document)
+    handleFileChange(event) {
+      this.newDocument = event.target.files[0];
+    },
+    // Save changes and update policy
+    async saveChanges() {
+      this.isLoading = true; // Start the loader
+
+      try {
         if (this.newDocument) {
           const formData = new FormData();
-          formData.append('policy_title', this.policyData.policy_title);
-          formData.append('document', this.newDocument);
-  
-          this.$emit('save', { ...this.policyData, document: formData });
+          formData.append("policy_title", this.policyData.policy_title);
+          formData.append("document", this.newDocument);
+
+          this.$emit("save", { ...this.policyData, document: formData });
         } else {
-          this.$emit('save', this.policyData); // If no file, just update title
+          this.$emit("save", this.policyData); // If no file, just update title
         }
-      },
+
+        // Simulate saving delay for demo purposes (optional)
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // toast.success("Changes saved successfully!");
+      } catch (error) {
+        // toast.error("Failed to save changes. Please try again.");
+      } finally {
+        this.isLoading = false; // Stop the loader
+      }
     },
-  };
-  </script>
+  },
+};
+</script>
+
   
   <style scoped>
   /* Modal Overlay Styling */
