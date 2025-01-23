@@ -122,17 +122,14 @@
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-  <label for="halfDay" class="form-label">Half Day</label>
-  <select
-    v-model="leave.half_day"
-    id="halfDay"
-    class="form-select"
-    required
-  >
+    <label for="halfDay" class="form-label">Half Day</label>
+    <select v-model="leave.half" id="halfDay" class="form-select" required>
     <option value="First Half">First Half</option>
     <option value="Second Half">Second Half</option>
-  </select>
+</select>
+
 </div>
+
 
 
             <!-- Conditionally show "Short Leave" specific fields -->
@@ -251,10 +248,11 @@ async submitLeaveUpdate() {
         };
 
         if (this.leave.type_of_leave === "Half Day Leave") {
-            leaveData.half_day = this.leave.half_day;
-        } else {
-            leaveData.half_day = null;
-        }
+    leaveData.half = this.leave.half;
+} else {
+    leaveData.half = null;
+}
+
 
         if (this.leave.type_of_leave === "Short Leave") {
             leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i

@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
     <!-- Task List Card -->
-    <div class="task-card flex-fill shadow-sm" id="card2">
+    <div class="task-card flex-fill shadow-sm position-relative" id="card2">
       <div class="task-card-header d-flex justify-content-between align-items-center">
         <h4>Members on WFH</h4>
         <calendar
@@ -10,9 +10,20 @@
           class="mb-3"
         />
       </div>
-      <div class="task-card-body">        
+      <div class="task-card-body">
+        <!-- Loader Spinner -->
+        <div
+          v-if="loading"
+          class="d-flex justify-content-center align-items-center position-absolute w-100 h-100"
+          style="top: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 10;"
+        >
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
         <!-- Table for displaying WFH members -->
-        <table class="table table-bordered">
+        <table class="table table-bordered" v-if="!loading">
           <thead>
             <tr>
               <th>Name</th>
@@ -34,12 +45,11 @@
             </tr>
           </tbody>
         </table>
-        <p v-if="members.length === 0" class="text-muted">No members on WFH for the selected date.</p>
+        <p v-if="!loading && members.length === 0" class="text-muted">No members on WFH for the selected date.</p>
       </div>
     </div>
   </div>
 </template>
-
 
 <script>
 import axios from "axios";
@@ -54,10 +64,12 @@ export default {
     return {
       members: [], // Array to hold WFH members and their date ranges
       selectedDate: new Date(), // Currently selected date
+      loading: true, // Loading state to control the spinner visibility
     };
   },
   methods: {
     async fetchWFHMembers(selectedDate) {
+      this.loading = true; // Show spinner
       try {
         const date = selectedDate.toISOString().split("T")[0]; // Format the selected date to 'YYYY-MM-DD'
         const response = await axios.get(`/api/work-from-home-members?date=${date}`, {
@@ -73,6 +85,8 @@ export default {
       } catch (error) {
         console.error("Error fetching WFH members:", error);
         alert("An error occurred while fetching WFH members.");
+      } finally {
+        this.loading = false; // Hide spinner
       }
     },
   },
@@ -81,6 +95,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .task-card {

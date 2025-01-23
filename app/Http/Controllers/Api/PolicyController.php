@@ -63,19 +63,32 @@ public function deletePolicies($id)
     }
 
     public function updatePolicies(Request $request, $id)
-{
-    $policy = Policy::findOrFail($id);
-
-    $policy->policy_title = $request->input('policy_title');
+    {
+        $policy = Policy::findOrFail($id);
     
-    if ($request->hasFile('document')) {
-        $path = $request->file('document')->store('policies', 'public');
-        $policy->document_path = $path;
+        // Update policy title
+        $policy->policy_title = $request->input('policy_title');
+    
+        // Handle file upload
+        if ($request->hasFile('document')) {
+            // Delete the old document if it exists
+            if ($policy->document_path && Storage::exists('public/' . $policy->document_path)) {
+                Storage::delete('public/' . $policy->document_path);
+            }
+    
+            // Store the new document
+            $path = $request->file('document')->store('policies', 'public');
+            $policy->document_path = $path;
+        }
+    
+        // Update the last updated date
+        $policy->last_updated_at = now();
+    
+        // Save the policy
+        $policy->save();
+    
+        return response()->json($policy);
     }
-
-    $policy->save();
-
-    return response()->json($policy);
-}
+    
 
 }

@@ -73,29 +73,29 @@ export default {
     },
     // Save changes and update policy
     async saveChanges() {
-      this.isLoading = true; // Start the loader
+  this.isLoading = true; // Start the loader
+  try {
+    const formData = new FormData();
+    formData.append("policy_title", this.policyData.policy_title);
 
-      try {
-        if (this.newDocument) {
-          const formData = new FormData();
-          formData.append("policy_title", this.policyData.policy_title);
-          formData.append("document", this.newDocument);
+    // Append the new document only if it's selected
+    if (this.newDocument) {
+      formData.append("document", this.newDocument);
+    }
 
-          this.$emit("save", { ...this.policyData, document: formData });
-        } else {
-          this.$emit("save", this.policyData); // If no file, just update title
-        }
+    // Send the FormData to the parent component for the API request
+    formData.append("id", this.policyData.id); // Add the ID to the request
+    this.$emit("save", formData);
 
-        // Simulate saving delay for demo purposes (optional)
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Optional: Simulate saving delay for demo purposes
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  } catch (error) {
+    console.error("Error saving changes:", error);
+  } finally {
+    this.isLoading = false; // Stop the loader
+  }
+},
 
-        // toast.success("Changes saved successfully!");
-      } catch (error) {
-        // toast.error("Failed to save changes. Please try again.");
-      } finally {
-        this.isLoading = false; // Stop the loader
-      }
-    },
   },
 };
 </script>

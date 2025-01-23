@@ -7,7 +7,7 @@
         <p>This is the Policies page content.</p>
 
         <!-- Add Project Button -->
-        <button class="btn btn-primary" @click="showModal = true">
+        <button v-if="userRole === 'Admin'" class="btn btn-primary" @click="showModal = true">
           Add New Policy
         </button>
 
@@ -43,7 +43,7 @@
               <th>Updated At</th>
               <th>Manage</th>
             </tr>
-            <!-- Search Field under Policy Title -->
+            <!-- Search Field under Policy Title 
             <tr>
               <th colspan="4">
                 <div class="search-field">
@@ -55,7 +55,7 @@
                   />
                 </div>
               </th>
-            </tr>
+            </tr>-->
           </thead>
           <tbody>
             <tr
@@ -165,16 +165,17 @@ export default {
     },
     // Open the document in the same window and show the last updated date
     openDocument(policy) {
-      if (policy.document_url) {
-        this.currentDocument = {
-          url: policy.document_url,  // Use the correct URL to the document fetched from the backend
-          title: policy.policy_title,
-          last_updated_at: policy.last_updated_at,  // Include the last updated date
-        };
-      } else {
-        console.error('Document URL is invalid or missing.');
-      }
-    },
+  if (policy.document_url) {
+    this.currentDocument = {
+      url: policy.document_url, // Ensure the URL is up-to-date
+      title: policy.policy_title,
+      last_updated_at: policy.last_updated_at,
+    };
+  } else {
+    console.error("Document URL is invalid or missing.");
+  }
+},
+
     // Format date to a readable format
     formatDate(date) {
       if (!date) return 'N/A';
@@ -192,21 +193,27 @@ export default {
     },
     // Update the policy after editing
     updatePolicy(updatedPolicyData) {
-      axios.put(`/api/update-policies/${updatedPolicyData.id}`, updatedPolicyData)
-        .then(response => {
-          const updatedPolicy = response.data;
-          const index = this.policies.findIndex(policy => policy.id === updatedPolicy.id);
-          if (index !== -1) {
-            this.policies[index] = updatedPolicy; // Directly update the policy in the array
-          }
-          toast.success("Changes saved successfully!");
-          this.closeEditModal(); // Close the modal after saving
-        })
-        .catch(error => {
-          console.error('Error updating policy:', error);
-          toast.error("Failed to save changes. Please try again.");
-        });
-    },
+  axios
+    .post(`/api/update-policies/${this.editPolicyData.id}`, updatedPolicyData, {
+      headers: { "Content-Type": "multipart/form-data" }, // Set content type
+    })
+    .then((response) => {
+      const updatedPolicy = response.data;
+      const index = this.policies.findIndex(
+        (policy) => policy.id === updatedPolicy.id
+      );
+      if (index !== -1) {
+        this.policies[index] = updatedPolicy; // Update policy in the list
+      }
+      toast.success("Changes saved successfully!");
+      this.fetchPolicies(); // Re-fetch policies to ensure updated data
+      this.closeEditModal(); // Close modal
+    })
+    .catch((error) => {
+      console.error("Error updating policy:", error);
+      toast.error("Failed to save changes. Please try again.");
+    });
+},
     // Delete policy from both frontend and backend
     deletePolicy(policyId) {
       if (confirm('Are you sure you want to delete this policy?')) {

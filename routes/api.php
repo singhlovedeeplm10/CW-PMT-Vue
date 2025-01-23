@@ -63,7 +63,7 @@ Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 
 Route::middleware('auth:sanctum')->post('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
 Route::get('/users/search', [LeaveController::class, 'search']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
-Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
+// Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
 Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH']);
 
 
@@ -131,4 +131,4 @@ Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineCon
 Route::middleware('auth:sanctum')->post('/save-policies', [PolicyController::class, 'savePolicy']);
 Route::get('/policies', [PolicyController::class, 'getPolicies']);
 Route::delete('/delete-policies/{id}', [PolicyController::class, 'deletePolicies']);
-Route::put('/update-policies/{id}', [PolicyController::class, 'updatePolicies']);
+Route::post('/update-policies/{id}', [PolicyController::class, 'updatePolicies']);

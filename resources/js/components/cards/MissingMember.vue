@@ -40,11 +40,11 @@
         <h4>
           Team Members on Leave -
           <Calendar
-            :selectedDate="date"
-            @dateSelected="onDateSelected"
-            :showHeader="true"
-            :highlightToday="true"
-          />
+    :selectedDate="date"
+    @dateSelected="onDateSelected" 
+    :showHeader="true"
+    :highlightToday="true"
+  />
         </h4>
       </div>
       <div class="task-card-body mt-3">
@@ -94,17 +94,17 @@ export default {
 
     // Fetch users on leave based on the selected date
     const fetchUsersOnLeave = async (selectedDate) => {
-      try {
-        const response = await axios.get("/api/users-on-leave", {
-          params: { date: selectedDate },
-        });
-        usersOnLeave.value = response.data;
-      } catch (error) {
-        console.error("Error fetching users on leave:", error);
-      } finally {
-        loadingUsersOnLeave.value = false; // Stop loading after fetching data
-      }
-    };
+  try {
+    const response = await axios.get("/api/users-on-leave", {
+      params: { date: selectedDate }, // Pass the selected date as a query parameter
+    });
+    usersOnLeave.value = response.data;
+  } catch (error) {
+    console.error("Error fetching users on leave:", error);
+  } finally {
+    loadingUsersOnLeave.value = false; // Stop loading after fetching data
+  }
+};
 
     // Fetch users without tasks
     const fetchUsersWithoutTasks = async () => {
@@ -120,10 +120,10 @@ export default {
 
     // Handle date selection from the calendar
     const onDateSelected = (selectedDate) => {
-      date.value = selectedDate;
-      loadingUsersOnLeave.value = true; // Set loading state before fetching
-      fetchUsersOnLeave(selectedDate); // Fetch users on leave for the selected date
-    };
+  date.value = selectedDate; // Update the selected date
+  loadingUsersOnLeave.value = true; // Set loading state before fetching
+  fetchUsersOnLeave(selectedDate); // Fetch users on leave for the selected date
+};
 
     // Fetch initial data on component mount
     onMounted(() => {
