@@ -1,26 +1,29 @@
 <template>
   <div class="login-container">
-    <div class="header">
-      <img src="img/CWlogo.jpeg" alt="Logo" class="logo" />
-      <h2 class="brand">CONTRIWHIZ</h2>
+    <div class="login-card">
+      <div class="header">
+        <img src="img/CWlogo.jpeg" alt="Logo" class="logo" />
+        <h2 class="brand">CONTRIWHIZ</h2>
+      </div>
+      <form @submit.prevent="login" class="login-form">
+        <div class="input-group">
+          <label>Email:</label>
+          <input type="email" v-model="email" required />
+        </div>
+        <div class="input-group">
+          <label>Password:</label>
+          <input type="password" v-model="password" required />
+        </div>
+        <button type="submit" class="login-button" :disabled="loading">
+          <span v-if="loading" class="loader"></span>
+          <span v-else>Login</span>
+        </button>
+      </form>
+      <p v-if="error" class="error">{{ error }}</p>
     </div>
-    <form @submit.prevent="login" class="login-form">
-      <div class="input-group">
-        <label>Email:</label>
-        <input type="email" v-model="email" required />
-      </div>
-      <div class="input-group">
-        <label>Password:</label>
-        <input type="password" v-model="password" required />
-      </div>
-      <button type="submit" class="login-button" :disabled="loading">
-        <span v-if="loading" class="loader"></span>
-        <span v-else>Login</span>
-      </button>
-    </form>
-    <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -68,72 +71,111 @@ export default {
 </script>
 
 <style scoped>
+/* Background and container styling */
 .login-container {
-  max-width: 400px;
-  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-family: 'Roboto', sans-serif;
 }
 
-.header {
+.login-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  width: 100%;
+  max-width: 400px;
   text-align: center;
 }
 
+/* Header section */
+.header {
+  margin-bottom: 20px;
+}
+
 .logo {
-  width: 100px;
+  width: 80px;
+  margin-bottom: 10px;
 }
 
 .brand {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-top: 10px;
+  color: #007bff;
+  margin: 0;
 }
 
+/* Form styling */
 .login-form {
   margin-top: 20px;
 }
 
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .input-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
 }
 
 .input-group input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s;
 }
 
+.input-group input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Button styling */
 .login-button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
   background-color: #007bff;
   color: #fff;
   border: none;
-  font-size: 16px;
+  border-radius: 5px;
   cursor: pointer;
-  position: relative;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .login-button:disabled {
   background-color: #6c757d;
+  cursor: not-allowed;
 }
 
+.login-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: scale(1.02);
+}
+
+/* Error message */
 .error {
-  color: red;
+  color: #e74c3c;
+  font-size: 14px;
   margin-top: 10px;
-  text-align: center;
 }
 
+/* Loader */
 .loader {
   border: 3px solid #f3f3f3;
   border-radius: 50%;
   border-top: 3px solid #007bff;
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   animation: spin 1s linear infinite;
   display: inline-block;
   vertical-align: middle;
@@ -148,3 +190,4 @@ export default {
   }
 }
 </style>
+

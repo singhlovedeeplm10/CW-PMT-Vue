@@ -5,13 +5,12 @@
 
       <!-- Policy Title -->
       <div class="form-group">
-        <label for="policy-title">Policy Title</label>
-        <input
-          type="text"
-          id="policy-title"
-          class="form-control"
+        <InputField
+          label="Policy Title"
           v-model="policyTitle"
           placeholder="Enter policy title"
+          inputClass="form-control"
+          :isRequired="true"
         />
       </div>
 
@@ -29,36 +28,40 @@
 
       <!-- Buttons -->
       <div class="modal-footer">
-        <button class="btn btn-secondary" @click="$emit('close')">Cancel</button>
-        <button
-          class="btn btn-primary"
+        <ButtonComponent
+          label="Cancel"
+          buttonClass="btn-secondary"
+          @click="closeModal"
+        />
+        <ButtonComponent
+          label="Save Policy"
+          buttonClass="btn-primary"
+          :isDisabled="loading"
+          :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
           @click="submitPolicy"
-          :disabled="loading"
-        >
-          <span v-if="loading">
-            <i class="fa fa-spinner fa-spin"></i> Saving...
-          </span>
-          <span v-else>
-            Save Policy
-          </span>
-        </button>
+        />
       </div>
     </div>
   </div>
 </template>
 
-  
 <script>
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import InputField from "@/components/InputField.vue"; // Import InputField
 
 export default {
   name: "AddPolicyModal",
+  components: {
+    ButtonComponent,
+    InputField, // Register InputField
+  },
   data() {
     return {
       policyTitle: "",
       document: null,
-      loading: false,  // Add loading state
+      loading: false, // Add loading state
     };
   },
   methods: {
@@ -94,9 +97,13 @@ export default {
         this.loading = false; // Stop loading
       }
     },
+    closeModal() {
+      this.$emit("close"); // Close the modal
+    },
   },
 };
 </script>
+
 
   
   <style scoped>

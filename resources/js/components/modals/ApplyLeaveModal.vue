@@ -184,20 +184,21 @@
             </div>
 
             <div class="modal-footer">
-              <button type="submit" class="btn btn-success" :disabled="loading">
-                <span v-if="loading">
-                  <i class="fas fa-spinner fa-spin"></i> Applying...
-                </span>
-                <span v-else>Apply</span>
-              </button>
+              <ButtonComponent
+  :label="'Apply'"
+  :buttonClass="'btn-success'"
+  :isDisabled="loading"
+  :isLoading="loading"
+  :loadingText="'Applying...'"
+  @click="validateAndSubmit"
+/>
+<ButtonComponent
+  :label="'Cancel'"
+  :buttonClass="'btn-secondary'"
+  :customAttributes="{ 'data-bs-dismiss': 'modal' }"
+/>
 
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
+
             </div>
           </form>
         </div>
@@ -213,6 +214,7 @@ import DateInput from "@/components/DateInput.vue";
 import SelectInput from "@/components/SelectInput.vue";
 import TextArea from "@/components/TextArea.vue";
 import InputField from "@/components/InputField.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 import { Modal } from "bootstrap";
 import { toast } from "vue3-toastify";
 
@@ -224,6 +226,7 @@ export default {
     SelectInput,
     TextArea,
     InputField,
+    ButtonComponent
   },
   data() {
     return {
@@ -371,6 +374,8 @@ export default {
     this.loading = false;
   }
 },
+
+
 
     resetForm() {
       this.form = {

@@ -21,51 +21,45 @@
             />
           </div>
           <div class="mb-3">
-            <label for="description" class="form-label">Project Description</label>
-            <textarea
-              id="description"
+            <TextArea
+              label="Project Description"
               v-model="project.description"
-              class="form-control custom-input"
               placeholder="Enter project description"
               rows="4"
-            ></textarea>
+              textareaClass="custom-input"
+            />
           </div>
           <div class="mb-3">
-            <label for="type" class="form-label">Project Type</label>
-            <select
-              id="type"
-              v-model="project.type"
-              class="form-select custom-input"
-            >
-              <option value="">Select Type</option>
-              <option value="Long">Long</option>
-              <option value="Medium">Medium</option>
-              <option value="Short">Short</option>
-            </select>
-          </div>
+      <SelectInput
+        label="Project Type"
+        id="type"
+        v-model="project.type"
+        :options="projectTypeOptions"
+        placeholder="Select Type"
+        valueKey="value"
+        labelKey="label"
+      />
+    </div>
+
+    <div class="mb-3">
+      <SelectInput
+        label="Project Status"
+        id="status"
+        v-model="project.status"
+        :options="projectStatusOptions"
+        placeholder="Select Status"
+        valueKey="value"
+        labelKey="label"
+      />
+    </div>
           <div class="mb-3">
-            <label for="status" class="form-label">Project Status</label>
-            <select
-              id="status"
-              v-model="project.status"
-              class="form-select custom-input"
-            >
-              <option value="">Select Status</option>
-              <option value="Awaiting">Awaiting</option>
-              <option value="Started">Started</option>
-              <option value="Paused">Paused</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="comments" class="form-label">Comments</label>
-            <textarea
-              id="comments"
+            <TextArea
+              label="Comments"
               v-model="project.comments"
-              class="form-control custom-input"
               placeholder="Enter comments (optional)"
               rows="3"
-            ></textarea>
+              textareaClass="custom-input"
+            />
           </div>
           <!-- Autocomplete Input for User -->
           <div class="mb-3" style="position: relative;">
@@ -109,23 +103,29 @@
         </div>
         <!-- Modal Footer -->
         <div class="modal-footer custom-modal-footer">
-          <button type="button" class="btn btn-secondary custom-btn-close" @click="$emit('close')">
-            Close
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary custom-btn-submit"
-            @click="addProject"
-            :disabled="isLoading"
+          <ButtonComponent
+            label="Close"
+            buttonClass="btn-secondary custom-btn-close"
+            @click="$emit('close')"
+          />
+          
+          <ButtonComponent
+            label="Add Project"
+            buttonClass="btn-primary custom-btn-submit"
+            :isDisabled="isLoading"
+            :clickEvent="addProject"
           >
-            <template v-if="isLoading">
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Loading...
+            <template #default>
+              <span v-if="isLoading">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Loading...
+              </span>
+              <span v-else>
+                Add Project
+              </span>
             </template>
-            <template v-else>
-              Add Project
-            </template>
-          </button>
+          </ButtonComponent>
+
         </div>
       </div>
     </div>
@@ -137,9 +137,17 @@ import { ref } from "vue";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import TextArea from "@/components/TextArea.vue"; // Import the TextArea component
+import SelectInput from "@/components/SelectInput.vue"; // Import SelectInput
 
 export default {
   name: "AddProjectModal",
+  components: {
+    ButtonComponent,
+    TextArea,
+    SelectInput
+  },
   emits: ["close", "project-added"],
   setup(_, { emit }) {
     const project = ref({
@@ -155,6 +163,22 @@ export default {
     const userSuggestions = ref([]);
     const userError = ref(null);
     const selectedUsers = ref([]); // Store selected users
+
+    // Define options for project type and status
+    const projectTypeOptions = ref([
+    { label: "Select Project Type", value: "" },
+      { value: "Long", label: "Long" },
+      { value: "Medium", label: "Medium" },
+      { value: "Short", label: "Short" },
+    ]);
+
+    const projectStatusOptions = ref([
+    { label: "Select Project Status", value: "" },
+      { value: "Awaiting", label: "Awaiting" },
+      { value: "Started", label: "Started" },
+      { value: "Paused", label: "Paused" },
+      { value: "Completed", label: "Completed" },
+    ]);
 
     // Add project method
     const addProject = async () => {
@@ -237,7 +261,9 @@ export default {
       userError,
       fetchUsers,
       selectUser,
+      projectTypeOptions,
       selectedUsers,
+      projectStatusOptions,
       removeUser,
     };
   },

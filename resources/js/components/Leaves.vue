@@ -4,13 +4,12 @@
       <!-- Header with Heading and Apply Leave Button -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="page-heading">My Leaves</h1>
-        <button
-          class="btn btn-primary add-leave-btn"
-          data-bs-toggle="modal"
-          data-bs-target="#applyleavemodal"
-        >
-          Apply Leave
-        </button>
+        <!-- Button to open Apply Leave Modal -->
+        <ButtonComponent 
+          label="Apply Leave" 
+          buttonClass="btn-primary add-leave-btn"
+          :clickEvent="openApplyLeaveModal"  
+        />
       </div>
 
       <!-- Search Input Fields -->
@@ -90,30 +89,29 @@
             <td>{{ leave.created_at }}</td>
             <td>{{ leave.updated_by }}</td>
             <td>
-              <button 
-                class="btn btn-info"
-                @click="viewLeaveDetails(leave)"
-              >
-                <i class="fas fa-eye"></i> <!-- Eye icon -->
-              </button>
+              <ButtonComponent 
+                label="" 
+                buttonClass="btn-info"
+                iconClass="fas fa-eye"
+                :clickEvent="() => viewLeaveDetails(leave)"
+              />
             </td>
           </tr>
           <tr v-if="loading">
-  <td colspan="7" class="text-center">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </td>
-</tr>
-<tr v-else-if="leaves.length === 0">
-  <td colspan="7" class="text-center">No leaves found.</td>
-</tr>
-
+            <td colspan="7" class="text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </td>
+          </tr>
+          <tr v-else-if="leaves.length === 0">
+            <td colspan="7" class="text-center">No leaves found.</td>
+          </tr>
         </tbody>
       </table>
     </div>
     <!-- Include the ApplyLeaveModal component -->
-    <apply-leave-modal @leaveApplied="fetchLeaves"></apply-leave-modal>
+    <apply-leave-modal @leaveApplied="fetchLeaves" ref="applyLeaveModal"></apply-leave-modal>
     
     <!-- UpdateLeaveModal -->
     <update-leave-modal 
@@ -129,6 +127,7 @@
 import MasterComponent from './layouts/Master.vue';
 import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
 import UpdateLeaveModal from "@/components/modals/UpdateLeaveModal.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 
@@ -137,11 +136,12 @@ export default {
   components: {
     MasterComponent,
     ApplyLeaveModal,
-    UpdateLeaveModal
+    UpdateLeaveModal,
+    ButtonComponent // Register ButtonComponent
   },
   data() {
     return {
-      loading: false, // State to track loading
+      loading: false, 
       leaves: [],
       search: {
         type: "",
@@ -149,13 +149,22 @@ export default {
         status: "",
         created_date: "",
       },
-      showModal: false,  // Modal visibility
-      selectedLeave: null,  // Selected leave for the modal
+      showModal: false,  
+      selectedLeave: null,  
     };
   },
   methods: {
+    // Method to open the Apply Leave modal
+    openApplyLeaveModal() {
+      const modalElement = document.getElementById('applyleavemodal');
+      if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+      }
+    },
+
     async fetchLeaves() {
-      this.loading = true; // Show loader
+      this.loading = true;
       try {
         const params = {
           type: this.search.type || null,
@@ -180,60 +189,58 @@ export default {
       } catch (error) {
         console.error("Error fetching leaves:", error.response?.data || error.message);
         alert(error.response?.data?.error || "An error occurred while fetching leaves.");
-      }finally {
-      this.loading = false; // Hide loader
-    }
+      } finally {
+        this.loading = false;
+      }
     },
     async fetchLeaveDetails(id) {
-    try {
-      const response = await axios.get(`/api/leaves/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+      try {
+        const response = await axios.get(`/api/leaves/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
-      if (response.data.success) {
-        this.selectedLeave = response.data.data;
-        this.showModal = true;
+        if (response.data.success) {
+          this.selectedLeave = response.data.data;
+          this.showModal = true;
 
-        // Check if the leave status is "pending"
-        this.selectedLeave.isEditable = this.selectedLeave.status === 'pending';
-      } else {
-        alert('Failed to fetch leave details.');
+          this.selectedLeave.isEditable = this.selectedLeave.status === 'pending';
+        } else {
+          alert('Failed to fetch leave details.');
+        }
+      } catch (error) {
+        console.error("Error fetching leave details:", error.response?.data || error.message);
+        alert('An error occurred while fetching leave details.');
       }
-    } catch (error) {
-      console.error("Error fetching leave details:", error.response?.data || error.message);
-      alert('An error occurred while fetching leave details.');
-    }
-  },
+    },
 
     viewLeaveDetails(leave) {
       this.fetchLeaveDetails(leave.id);
-    this.selectedLeave = leave;
-    this.showModal = true;
-    this.$nextTick(() => {
-      // Bootstrap 5's modal API to show the modal
-      const modalElement = document.getElementById('updateleavemodal');
-    if (modalElement) {
-      // Initialize Bootstrap modal correctly
-      const modal = new bootstrap.Modal(modalElement);
-      modal.show();
-    }
-    });
-  },
+      this.selectedLeave = leave;
+      this.showModal = true;
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('updateleavemodal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      });
+    },
 
-  closeModal() {
-    this.showModal = false;
-    const modalElement = document.getElementById('updateleavemodal');
-    const modal = new bootstrap.Modal(modalElement);
-    modal.hide();
+    closeModal() {
+      this.showModal = false;
+      const modalElement = document.getElementById('updateleavemodal');
+      const modal = new bootstrap.Modal(modalElement);
+      modal.hide();
+    },
   },
-},
   mounted() {
     this.fetchLeaves();
   },
 };
 </script>
+
 
 <style scoped>
 .leaves-page {

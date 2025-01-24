@@ -5,13 +5,10 @@
         <h4>Daily Tasks</h4>
         <div class="date-picker">
           <label for="date" class="form-label">Date:</label>
-          <input
-            type="date"
-            id="date"
-            v-model="selectedDate"
-            class="form-control"
-            @change="fetchDailyTasks"
-          />
+          <Calendar
+      :selectedDate="selectedDate"
+      @dateSelected="handleDateSelected"
+    />
           <button @click="fetchDailyTasks" class="btn btn-success ms-2">Search</button>
         </div>
       </div>
@@ -188,6 +185,7 @@
 
 <script>
 import MasterComponent from './layouts/Master.vue';
+import Calendar from "@/components/Calendar.vue";
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 import { toast } from 'vue3-toastify';
@@ -196,22 +194,23 @@ export default {
   name: 'DailyTask',
   components: {
     MasterComponent,
+    Calendar, // Register Calendar component
   },
   data() {
     return {
       tasks: [],
-      selectedDate: new Date().toISOString().slice(0, 10), // Default to today
-      currentTasks: [], // Add this line to declare currentTasks
+      selectedDate: new Date(), // Default to today as a Date object
+      currentTasks: [],
       currentTask: {
         id: null,
         project_name: '',
         hours: null,
         task_description: '',
         task_status: 'pending',
-        project_id: null, // Add project_id to the current task data
+        project_id: null,
         userName: '',
       },
-      projects: [], // Store fetched projects
+      projects: [],
       isLoading: false,
     };
   },
@@ -225,7 +224,7 @@ export default {
     async fetchDailyTasks() {
       try {
         const response = await axios.get('/api/daily-tasks', {
-          params: { date: this.selectedDate }, // Send the selected date as a parameter
+          params: { date: this.selectedDate.toISOString().slice(0, 10) }, // Format the selected date
         });
         this.tasks = response.data;
       } catch (error) {
@@ -236,7 +235,7 @@ export default {
 
     async fetchProjects() {
       try {
-        const response = await axios.get('/api/user-projects'); // Fetch projects from server
+        const response = await axios.get('/api/user-projects');
         this.projects = response.data.projects;
       } catch (error) {
         console.error('Error fetching projects:', error);
@@ -245,79 +244,70 @@ export default {
     },
 
     async openModal(task) {
-  try {
-    // Fetch user tasks based on the selected task's user
-    const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`);
-    if (response.data.success) {
-      const userTasks = response.data.tasks;
+      try {
+        const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`, {
+          params: { date: this.selectedDate.toISOString().slice(0, 10) },
+        });
+        if (response.data.success) {
+          const userTasks = response.data.tasks;
 
-      // Map the tasks with necessary information including the project name
-      this.currentTasks = userTasks.map((task) => ({
-        id: task.id,
-        project_id: task.project?.id || null, // Keep track of the project ID
-        project_name: task.project?.name || task.project_name, // Prefill with project name from daily_tasks table
-        hours: task.hours || 0,
-        task_description: task.task_description || '',
-        task_status: task.task_status || 'pending',
-        leave_id: task.leave_id, // Include leave_id in the current task data
-      }));
+          this.currentTasks = userTasks.map((task) => ({
+            id: task.id,
+            project_id: task.project?.id || null,
+            project_name: task.project?.name || task.project_name,
+            hours: task.hours || 0,
+            task_description: task.task_description || '',
+            task_status: task.task_status || 'pending',
+            leave_id: task.leave_id,
+          }));
 
-      this.userName = task.user.name;
+          this.userName = task.user.name;
 
-      // Open the modal
-      const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
-      modal.show();
-    }
-  } catch (error) {
-    console.error('Error fetching user tasks:', error);
-    toast.error('Failed to fetch user tasks. Please try again.');
-  }
-},
+          const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
+          modal.show();
+        }
+      } catch (error) {
+        console.error('Error fetching user tasks:', error);
+        toast.error('Failed to fetch user tasks. Please try again.');
+      }
+    },
 
     async updateTask(task) {
-  try {
-    this.isLoading = true;
-    const response = await axios.put(`/api/update-tasks/${task.id}`, task);
-    
-    toast.success('Task updated successfully!');
-    
-    // Re-fetch tasks to get the updated list from the server
-    await this.fetchDailyTasks();
+      try {
+        this.isLoading = true;
+        const response = await axios.put(`/api/update-tasks/${task.id}`, task);
+        toast.success('Task updated successfully!');
+        await this.fetchDailyTasks();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
+        modal.hide();
+        this.isLoading = false;
+      } catch (error) {
+        console.error('Error updating task:', error);
+        this.isLoading = false;
+        toast.error('Error updating task. Please try again.');
+      }
+    },
 
-    // Close the modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
-    modal.hide();
+    async deleteTask(task) {
+      try {
+        this.isLoading = true;
+        const response = await axios.delete(`/api/delete-tasks/${task.id}`);
+        toast.success('Task deleted successfully!');
+        await this.fetchDailyTasks();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
+        modal.hide();
+        this.isLoading = false;
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        this.isLoading = false;
+        toast.error('Error deleting task. Please try again.');
+      }
+    },
 
-    this.isLoading = false;
-  } catch (error) {
-    console.error('Error updating task:', error);
-    this.isLoading = false;
-    toast.error('Error updating task. Please try again.');
-  }
-},
-
-async deleteTask(task) {
-  try {
-    this.isLoading = true;
-    const response = await axios.delete(`/api/delete-tasks/${task.id}`);
-
-    toast.success('Task deleted successfully!');
-
-    // Re-fetch tasks to get the updated list from the server
-    await this.fetchDailyTasks();
-
-    // Close the modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
-    modal.hide();
-
-    this.isLoading = false;
-  } catch (error) {
-    console.error('Error deleting task:', error);
-    this.isLoading = false;
-    toast.error('Error deleting task. Please try again.');
-  }
-},
-
+    handleDateSelected(newDate) {
+      this.selectedDate = newDate;
+      this.fetchDailyTasks();
+    },
   },
 };
 </script>

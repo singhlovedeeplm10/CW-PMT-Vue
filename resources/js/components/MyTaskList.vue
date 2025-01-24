@@ -6,8 +6,18 @@
       <div class="card">
         <div class="card-body">
           <!-- Table -->
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover" id="task-table">
+          <div v-if="isLoading" class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+            <p>Loading tasks, please wait...</p>
+          </div>
+          <div v-else class="table-responsive">
+            <table
+              v-if="data.length"
+              class="table table-bordered table-hover"
+              id="task-table"
+            >
               <thead>
                 <tr>
                   <th>#</th>
@@ -18,10 +28,10 @@
                   <th></th>
                   <th>
                     <!-- Replace input with Calendar component -->
-                    <Calendar 
-                      v-model="filterDate" 
-                      :selectedDate="filterDate ? new Date(filterDate) : new Date()" 
-                      @dateSelected="onDateSelected" 
+                    <Calendar
+                      v-model="filterDate"
+                      :selectedDate="filterDate ? new Date(filterDate) : new Date()"
+                      @dateSelected="onDateSelected"
                     />
                   </th>
                   <th></th>
@@ -29,14 +39,17 @@
               </thead>
               <tbody>
                 <tr v-for="(row, index) in paginatedData" :key="row.id">
-                  <td>{{ row.id }}</td>
+                  <td>{{ startIndex + index }}</td>
                   <td>{{ formatDate(row.created_at) }}</td>
                   <td>
-                    <span class="badge badge-red">{{ row.hours }}</span> {{ row.project.name }}({{ row.task_description }})
+                    <span class="badge badge-red">{{ row.hours }}</span>
+                    {{ row.project.name }}({{ row.task_description }})
                   </td>
                 </tr>
               </tbody>
             </table>
+            <!-- Message if no data is available -->
+            <p v-else class="text-center text-muted">No tasks available for the selected date.</p>
           </div>
         </div>
       </div>
@@ -61,6 +74,7 @@ export default {
       currentPage: 1,
       rowsPerPage: 10,
       filterDate: '', // Used to filter by date
+      isLoading: false, // Add isLoading to manage loader
     };
   },
   computed: {
@@ -103,21 +117,26 @@ export default {
       return new Date(date).toLocaleDateString('en-US', options);
     },
     fetchData() {
-      axios.get('/api/my-daily-tasks', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
-        }
-      })
-      .then(response => {
-        this.data = response.data;
-      })
-      .catch(error => {
-        console.error("There was an error fetching the data:", error);
-      });
+      this.isLoading = true; // Start loader
+      axios
+        .get('/api/my-daily-tasks', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
+          },
+        })
+        .then(response => {
+          this.data = response.data;
+        })
+        .catch(error => {
+          console.error('There was an error fetching the data:', error);
+        })
+        .finally(() => {
+          this.isLoading = false; // Stop loader
+        });
     },
     onDateSelected(selectedDate) {
       // Format the selected date to 'YYYY-MM-DD' and update filterDate
-      this.filterDate = selectedDate.toISOString().split("T")[0];
+      this.filterDate = selectedDate.toISOString().split('T')[0];
     },
   },
   mounted() {
@@ -125,6 +144,7 @@ export default {
   },
 };
 </script>
+
 
   
   <style scoped>

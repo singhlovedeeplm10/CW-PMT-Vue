@@ -16,13 +16,14 @@
           />
         </div>
         <div class="form-group">
-          <label for="project-description">Description</label>
-          <textarea
-            id="project-description"
+          <TextArea
+            label="Description"
             v-model="editedProject.description"
-            required
-            class="form-control"
-          ></textarea>
+            :isRequired="true"
+            placeholder="Enter project description"
+            textareaClass="form-control"
+            rows="4"
+          />
         </div>
         <div class="form-group">
           <label for="project-type">Project Type</label>
@@ -113,13 +114,20 @@
 
         <!-- Form Actions -->
         <div class="form-group">
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            <span v-if="loading" class="loader"></span>
-            <span v-else>Save Changes</span>
-          </button>
-          <button type="button" class="btn btn-secondary" @click="close" :disabled="loading">
-            Cancel
-          </button>
+          <ButtonComponent
+            :label="loading ? 'Saving...' : 'Save Changes'"
+            :iconClass="loading ? 'spinner-border spinner-border-sm' : null"
+            :buttonClass="'btn-primary'"
+            :isDisabled="loading"
+            :clickEvent="submitForm"
+          />
+          <!-- Cancel Button -->
+          <ButtonComponent
+            label="Cancel"
+            buttonClass="btn-secondary"
+            :isDisabled="loading"
+            :clickEvent="close"
+          />
         </div>
       </form>
     </div>
@@ -127,11 +135,17 @@
 </template>
 
 <script>
-import { toast } from 'vue3-toastify';
-import axios from 'axios';
+import { toast } from "vue3-toastify";
+import axios from "axios";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import TextArea from "@/components/TextArea.vue";
 
 export default {
   name: "EditProjectModal",
+  components: {
+    ButtonComponent,
+    TextArea,
+  },
   props: {
     project: {
       type: Object,
@@ -223,6 +237,7 @@ export default {
   },
 };
 </script>
+
   
 <style scoped>
 .autocomplete-suggestions {

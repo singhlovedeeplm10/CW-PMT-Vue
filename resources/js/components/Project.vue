@@ -4,10 +4,12 @@
       <h1>Projects Page</h1>
       <p>This is the Projects page content.</p>
 
-      <!-- Add Project Button -->
-      <button class="btn btn-primary" @click="openAddProjectModal">
-        Add New Project
-      </button>
+      <!-- Add Project Button using ButtonComponent -->
+      <ButtonComponent
+        label="Add New Project"
+        buttonClass="btn-primary"
+        @click="openAddProjectModal"
+      />
 
       <!-- Search Fields -->
       <div class="search-container">
@@ -86,10 +88,12 @@
   </master-component>
 </template>
 
+
 <script>
 import MasterComponent from './layouts/Master.vue';
 import AddProjectModal from './modals/AddProjectModal.vue';
 import EditProjectModal from './modals/EditProjectModal.vue';
+import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
 import axios from 'axios';
 
 export default {
@@ -98,6 +102,7 @@ export default {
     MasterComponent,
     AddProjectModal,
     EditProjectModal,
+    ButtonComponent
   },
   data() {
     return {

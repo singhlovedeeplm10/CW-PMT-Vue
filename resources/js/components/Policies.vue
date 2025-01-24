@@ -7,9 +7,12 @@
         <p>This is the Policies page content.</p>
 
         <!-- Add Project Button -->
-        <button v-if="userRole === 'Admin'" class="btn btn-primary" @click="showModal = true">
-          Add New Policy
-        </button>
+        <ButtonComponent
+          v-if="userRole === 'Admin'"
+          label="Add New Policy"
+          buttonClass="btn-primary"
+          @click="showModal = true"
+        />
 
         <!-- Add Policy Modal -->
         <AddPolicyModal v-if="showModal" @policyadded="fetchPolicies" @close="showModal = false" />
@@ -112,6 +115,7 @@
 import MasterComponent from './layouts/Master.vue';
 import AddPolicyModal from './modals/AddPolicyModal.vue';
 import EditPolicyModal from './modals/EditPolicyModal.vue';
+import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import axios from 'axios';
@@ -122,6 +126,7 @@ export default {
     MasterComponent,
     AddPolicyModal,
     EditPolicyModal,
+    ButtonComponent
   },
   data() {
     return {
@@ -222,9 +227,11 @@ export default {
         axios.delete(`/api/delete-policies/${policyId}`)
           .then(() => {
             console.log('Policy deleted successfully');
+            toast.success("Policy deleted successfully");
           })
           .catch(error => {
             console.error('Error deleting policy:', error);
+            toast.error("Error deleting policy:", error);
             this.fetchPolicies(); // Re-fetch policies if deletion fails
           });
       }

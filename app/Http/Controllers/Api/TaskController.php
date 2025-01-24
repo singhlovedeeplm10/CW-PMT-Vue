@@ -202,15 +202,15 @@ public function getTasksForToday(Request $request)
     ]);
 }
 
-public function fetchUserTask($userId)
+public function fetchUserTask($userId, Request $request)
 {
     try {
-        // Get the start of today
-        $today = Carbon::today();
+        // Use the provided date or default to today
+        $date = $request->input('date', Carbon::today()->toDateString());
 
-        // Fetch tasks for the user created today along with related project and user details
+        // Fetch tasks based on the user and the given date
         $tasks = DailyTask::where('user_id', $userId)
-            ->whereDate('created_at', $today) // Filter tasks created today
+            ->whereDate('created_at', $date)
             ->with(['user', 'project'])
             ->get();
 
@@ -225,6 +225,7 @@ public function fetchUserTask($userId)
         ], 500);
     }
 }
+
 
 public function getUserDailyTasks()
     {

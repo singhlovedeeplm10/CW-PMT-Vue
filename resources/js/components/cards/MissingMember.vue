@@ -38,14 +38,14 @@
     <div class="card flex-fill me-3 shadow-sm" id="card2">
       <div class="task-card-header d-flex justify-content-between align-items-center">
         <h4>
-          Team Members on Leave -
+          Team Members on Leave - </h4>
           <Calendar
     :selectedDate="date"
     @dateSelected="onDateSelected" 
     :showHeader="true"
     :highlightToday="true"
   />
-        </h4>
+        
       </div>
       <div class="task-card-body mt-3">
         <!-- Loader for Team Members on Leave -->

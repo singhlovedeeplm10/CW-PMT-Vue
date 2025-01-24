@@ -11,13 +11,13 @@
         <div class="modal-body">
           <form @submit.prevent="saveChanges">
             <div class="form-group">
-              <label for="policyTitle">Policy Title</label>
-              <input
-                type="text"
-                id="policyTitle"
+              <!-- Replaced with InputField -->
+              <InputField
+                label="Policy Title"
                 v-model="policyData.policy_title"
-                class="form-control"
-                required
+                placeholder="Enter policy title"
+                inputClass="form-control"
+                :isRequired="true"
               />
             </div>
 
@@ -31,11 +31,13 @@
               />
             </div>
 
-            <button type="submit" class="btn btn-primary" :disabled="isLoading">
-              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span v-if="isLoading"> Saving...</span>
-              <span v-else>Save Changes</span>
-            </button>
+            <!-- Use ButtonComponent here -->
+            <ButtonComponent
+              :label="isLoading ? 'Saving...' : 'Save Changes'"
+              :isDisabled="isLoading"
+              :iconClass="isLoading ? 'spinner-border spinner-border-sm' : null"
+              :clickEvent="saveChanges"
+            />
           </form>
         </div>
       </div>
@@ -44,11 +46,17 @@
 </template>
 
 <script>
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import InputField from "@/components/InputField.vue"; // Import InputField
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 
 export default {
   name: "EditPolicyModal",
+  components: {
+    ButtonComponent,
+    InputField, // Register InputField
+  },
   props: {
     policy: {
       type: Object,
@@ -73,33 +81,31 @@ export default {
     },
     // Save changes and update policy
     async saveChanges() {
-  this.isLoading = true; // Start the loader
-  try {
-    const formData = new FormData();
-    formData.append("policy_title", this.policyData.policy_title);
+      this.isLoading = true; // Start the loader
+      try {
+        const formData = new FormData();
+        formData.append("policy_title", this.policyData.policy_title);
 
-    // Append the new document only if it's selected
-    if (this.newDocument) {
-      formData.append("document", this.newDocument);
-    }
+        // Append the new document only if it's selected
+        if (this.newDocument) {
+          formData.append("document", this.newDocument);
+        }
 
-    // Send the FormData to the parent component for the API request
-    formData.append("id", this.policyData.id); // Add the ID to the request
-    this.$emit("save", formData);
+        // Send the FormData to the parent component for the API request
+        formData.append("id", this.policyData.id); // Add the ID to the request
+        this.$emit("save", formData);
 
-    // Optional: Simulate saving delay for demo purposes
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  } catch (error) {
-    console.error("Error saving changes:", error);
-  } finally {
-    this.isLoading = false; // Stop the loader
-  }
-},
-
+        // Optional: Simulate saving delay for demo purposes
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error) {
+        console.error("Error saving changes:", error);
+      } finally {
+        this.isLoading = false; // Stop the loader
+      }
+    },
   },
 };
 </script>
-
   
   <style scoped>
   /* Modal Overlay Styling */

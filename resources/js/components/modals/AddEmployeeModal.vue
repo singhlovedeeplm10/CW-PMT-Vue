@@ -49,23 +49,27 @@
           </div>
         </div>
         <div class="modal-footer custom-modal-footer">
-          <button type="button" class="btn btn-secondary custom-btn-close" @click="$emit('close')">
-            Close
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary custom-btn-submit"
-            @click="addEmployee"
-            :disabled="isLoading"
-          >
-            <template v-if="isLoading">
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Loading...
-            </template>
-            <template v-else>
-              Add Employee
-            </template>
-          </button>
+          <ButtonComponent
+            label="Close"
+            buttonClass="btn-secondary custom-btn-close"
+            :clickEvent="() => $emit('close')"
+          />
+          <ButtonComponent
+  label=""
+  :isDisabled="isLoading"
+  buttonClass="btn-primary custom-btn-submit"
+  :clickEvent="addEmployee"
+>
+  <template v-if="isLoading">
+    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    Loading...
+  </template>
+  <template v-else>
+    Add Employee
+  </template>
+</ButtonComponent>
+
+
         </div>
       </div>
     </div>
@@ -77,10 +81,14 @@ import { ref } from "vue";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 
 export default {
   name: "AddEmployeeModal",
   emits: ["close", "employee-added"],
+  components: {
+    ButtonComponent
+  },
   setup(_, { emit }) {
     const employee = ref({
       name: "",
@@ -117,6 +125,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 /* Modal background */

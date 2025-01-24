@@ -3,30 +3,31 @@
     <div class="upload-timeline-container">
       <h1 class="title">Upload Timeline</h1>
       <form class="timeline-form" @submit.prevent="submitTimeline">
+        <!-- Title Field -->
         <div class="form-group">
-          <label for="title">Title</label>
-          <input
-            type="text"
-            id="title"
+          <InputField
+            label="Title"
             v-model="form.title"
             placeholder="Enter the title"
-            required
+            inputClass="form-control"
+            :isRequired="true"
           />
         </div>
 
+        <!-- Description Field -->
         <div class="form-group">
-          <label for="description">Description</label>
-          <textarea
-            id="description"
+          <TextArea
+            label="Description"
             v-model="form.description"
             placeholder="Write your description"
-            class="summernote"
-          ></textarea>
+            textareaClass="summernote"
+            :isRequired="true"
+          />
         </div>
 
+        <!-- Upload Media Field -->
         <div class="form-group">
           <label for="uploadMedia">Upload Image/Video</label>
-          <!-- Added 'multiple' attribute to allow multiple files selection -->
           <input
             type="file"
             id="uploadMedia"
@@ -35,21 +36,29 @@
           />
         </div>
 
+        <!-- Upload Link Field -->
         <div class="form-group">
-          <label for="uploadLink">Upload Link for Image/Video</label>
-          <input
-            type="url"
-            id="uploadLink"
+          <InputField
+            label="Upload Link for Image/Video"
             v-model="form.uploadLink"
             placeholder="Enter the URL"
+            inputType="url"
+            inputClass="form-control"
           />
         </div>
 
-        <button class="submit-btn" type="submit" :disabled="isLoading">
-          <!-- Conditional rendering for loader or button text -->
-          <span v-if="isLoading" class="loader"></span>
-          <span v-else>Upload</span>
-        </button>
+        <!-- Submit Button -->
+        <ButtonComponent
+          label="Upload"
+          :buttonClass="'submit-btn'"
+          :isDisabled="isLoading"
+          @click="submitTimeline"
+        >
+          <template v-slot:default>
+            <span v-if="isLoading" class="loader"></span>
+            <span v-else>Upload</span>
+          </template>
+        </ButtonComponent>
       </form>
     </div>
   </master-component>
@@ -57,64 +66,60 @@
 
 <script>
 import MasterComponent from "./layouts/Master.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import TextArea from "@/components/TextArea.vue";
+import InputField from "@/components/InputField.vue"; // Import InputField
 import { toast } from "vue3-toastify";
 
 export default {
   name: "UploadTimeline",
-  components: { MasterComponent },
+  components: { MasterComponent, ButtonComponent, TextArea, InputField }, // Register InputField
   data() {
     return {
       form: {
         title: "",
         description: "",
-        uploadMedia: [],  // Changed to an array to hold multiple files
+        uploadMedia: [],
         uploadLink: "",
       },
-      isLoading: false,  // Loading state
+      isLoading: false,
     };
   },
   methods: {
     handleFileUpload(event) {
-      // Store all selected files in the form data (array)
       this.form.uploadMedia = Array.from(event.target.files);
     },
     async submitTimeline() {
-      this.isLoading = true;  // Set loading to true when the upload starts
+      this.isLoading = true;
       const formData = new FormData();
-      formData.append('title', this.form.title);
-      formData.append('description', this.form.description);
+      formData.append("title", this.form.title);
+      formData.append("description", this.form.description);
 
-      // Add all selected files to the form data
       if (this.form.uploadMedia.length > 0) {
-        this.form.uploadMedia.forEach(file => {
-          formData.append('uploadMedia[]', file);  // Use 'uploadMedia[]' for multiple files
+        this.form.uploadMedia.forEach((file) => {
+          formData.append("uploadMedia[]", file);
         });
       }
 
-      // Add the external link (if provided)
       if (this.form.uploadLink) {
-        formData.append('uploadLink', this.form.uploadLink);
+        formData.append("uploadLink", this.form.uploadLink);
       }
 
       try {
-        const response = await axios.post('/api/upload-timeline', formData, {
+        const response = await axios.post("/api/upload-timeline", formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
 
-        // Show success toast
         toast.success("Timeline uploaded successfully!");
-
-        // Redirect to Timeline.vue
-        this.$router.push({ name: 'TimeLine' });
+        this.$router.push({ name: "TimeLine" });
       } catch (error) {
-        // Show error toast
         toast.error("Failed to upload timeline.");
         console.error(error.response.data);
       } finally {
-        this.isLoading = false;  // Reset loading state after the request
+        this.isLoading = false;
       }
     },
   },

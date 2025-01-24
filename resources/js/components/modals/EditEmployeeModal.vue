@@ -113,17 +113,21 @@
         </div>
 
         <div class="modal-footer custom-modal-footer">
-          <button type="submit" class="btn custom-btn-submit" :disabled="loading">
-            <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span v-if="!loading">Save Changes</span>
-          </button>
-          <button
-            type="button"
-            class="btn custom-btn-close"
-            @click="$emit('close')"
+          <ButtonComponent
+            :label="loading ? '' : 'Save Changes'"
+            :iconClass="loading ? 'spinner-border spinner-border-sm' : null"
+            :buttonClass="'custom-btn-submit'"
+            :isDisabled="loading"
+            :clickEvent="updateEmployee"
           >
-            Cancel
-          </button>
+            <span v-if="loading">Loading...</span>
+          </ButtonComponent>
+
+          <ButtonComponent
+            label="Cancel"
+            buttonClass="custom-btn-close"
+            :clickEvent="() => $emit('close')"
+          />
         </div>
       </form>
     </div>
@@ -132,8 +136,13 @@
 
 <script>
 import { toast } from 'vue3-toastify';
+import ButtonComponent from "@/components/ButtonComponent.vue";
+
 
 export default {
+  components: {
+    ButtonComponent
+  },
   props: {
     user: {
       type: Object,

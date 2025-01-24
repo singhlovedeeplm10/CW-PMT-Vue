@@ -3,9 +3,13 @@
     <div class="users-page">
       <div class="header d-flex justify-content-between align-items-center" style="padding: 15px 37px 14px;">
         <h2 class="title">Employees</h2>
-        <button class="btn btn-primary" @click="openAddEmployeeModal">
-          Add Employee
-        </button>
+        
+        <!-- Replace the original button with ButtonComponent -->
+        <ButtonComponent
+          label="Add Employee"
+          :clickEvent="openAddEmployeeModal"
+          buttonClass="btn-primary"
+        />
       </div>
 
       <!-- Search Filters -->
@@ -102,6 +106,7 @@ import MasterComponent from "./layouts/Master.vue";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/modals/EditEmployeeModal.vue";
 import Pagination from "@/components/Pagination.vue"; // Importing Pagination component
+import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
 
 export default {
   name: "Users",
@@ -110,6 +115,7 @@ export default {
     AddEmployeeModal,
     EditEmployeeModal,
     Pagination,
+    ButtonComponent, // Register ButtonComponent
   },
   data() {
     return {
@@ -175,7 +181,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .search-fields {
