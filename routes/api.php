@@ -17,6 +17,7 @@ use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\API\TimelineController;
 use App\Http\Controllers\API\MailController;
 use App\Http\Controllers\API\PolicyController;
+use App\Http\Controllers\API\NoticeController;
 
 
 
@@ -132,3 +133,11 @@ Route::middleware('auth:sanctum')->post('/save-policies', [PolicyController::cla
 Route::get('/policies', [PolicyController::class, 'getPolicies']);
 Route::delete('/delete-policies/{id}', [PolicyController::class, 'deletePolicies']);
 Route::post('/update-policies/{id}', [PolicyController::class, 'updatePolicies']);
+
+// NOTICES API ROUTES
+Route::post('/store-notices', [NoticeController::class, 'storeNotices']);
+Route::get('/get-notices', [NoticeController::class, 'getNotices']);
+Route::delete('/delete-notice/{id}', [NoticeController::class, 'deleteNotice']);
+Route::put('/edit-notice/{id}', [NoticeController::class, 'updateNotice']);
+
+

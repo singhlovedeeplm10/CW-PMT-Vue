@@ -61,13 +61,14 @@
             :key="user.id" 
             class="leave-card-item text-center"
           >
-            <img 
-              :src="user.user_image" 
-              alt="Team Member" 
-              class="rounded-circle" 
-              width="50" 
-              height="50"
-            >
+          <img 
+  :src="user.user_image || 'img/CWlogo.jpeg'" 
+  alt="Team Member" 
+  class="rounded-circle" 
+  width="50" 
+  height="50"
+/>
+
             <p class="leave-card-description">{{ user.name }}</p>
           </div>
         </div>

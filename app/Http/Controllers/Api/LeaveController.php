@@ -541,25 +541,29 @@ public function updateTeamLeave(Request $request, Leave $leave)
    
 
     public function getUsersLeave(Request $request)
-{
-    $selectedDate = $request->input('date'); // Get the selected date from the request
-
-    $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
-        ->whereDate('start_date', '<=', $selectedDate) // Start date is before or equal to the selected date
-        ->whereDate('end_date', '>=', $selectedDate) // End date is after or equal to the selected date
-        ->with(['user:id,name', 'user.profile:user_id,user_image']) // Load user details and profile with user image
-        ->get()
-        ->map(function ($leave) {
-            return [
-                'id' => $leave->user->id,
-                'name' => $leave->user->name,
-                'status' => $leave->status, // Leave status
-                'user_image' => $leave->user->profile->user_image ?? null, // Fetch user image from user_profiles
-            ];
-        });
-
-    return response()->json($usersOnLeave);
-}
+    {
+        $selectedDate = $request->input('date'); // Get the selected date from the request
+    
+        $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
+            ->whereDate('start_date', '<=', $selectedDate) // Start date is before or equal to the selected date
+            ->whereDate('end_date', '>=', $selectedDate) // End date is after or equal to the selected date
+            ->with(['user:id,name', 'user.profile:user_id,user_image']) // Load user details and profile with user image
+            ->get()
+            ->map(function ($leave) {
+                $userImage = $leave->user->profile->user_image ?? null; // Fetch user image
+                $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate the full URL for the image
+    
+                return [
+                    'id' => $leave->user->id,
+                    'name' => $leave->user->name,
+                    'status' => $leave->status, // Leave status
+                    'user_image' => $userImageUrl, // Full URL for the user image
+                ];
+            });
+    
+        return response()->json($usersOnLeave);
+    }
+    
  
 
 public function getUsersOnLeave(Request $request)

@@ -7,46 +7,48 @@
           <button type="button" class="btn-close" @click="$emit('close')"></button>
         </div>
         <div class="modal-body">
+          <!-- Replace hardcoded input field with InputField -->
           <div class="mb-3">
-            <label for="name" class="form-label">Employee Name</label>
-            <input
-              type="text"
-              id="name"
-              v-model="employee.name"
-              class="form-control custom-input"
-              placeholder="Enter employee name"
-            />
+          <InputField
+            label="Employee Name"
+            id="name"
+            v-model="employee.name"
+            placeholder="Enter employee name"
+            error=""
+          />
+        </div>
+          <div class="mb-3">
+            <EmailInput
+  label="Employee Email"
+  id="email"
+  v-model="employee.email"
+  placeholder="Enter employee email"
+  :error="emailError"
+  @input-blur="(error) => emailError = error"
+/>
+
           </div>
           <div class="mb-3">
-            <label for="email" class="form-label">Employee Email</label>
-            <input
-              type="email"
-              id="email"
-              v-model="employee.email"
-              class="form-control custom-input"
-              placeholder="Enter employee email"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              id="password"
-              v-model="employee.password"
-              class="form-control custom-input"
-              placeholder="Enter password"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              v-model="employee.confirmPassword"
-              class="form-control custom-input"
-              placeholder="Confirm password"
-            />
-          </div>
+  <PasswordInput
+    label="Password"
+    id="password"
+    v-model="employee.password"
+    placeholder="Enter password"
+    :error="passwordError"
+    @input-blur="(error) => passwordError = error"
+  />
+</div>
+<div class="mb-3">
+  <PasswordInput
+    label="Confirm Password"
+    id="confirmPassword"
+    v-model="employee.confirmPassword"
+    placeholder="Confirm password"
+    :error="confirmPasswordError"
+    @input-blur="(error) => confirmPasswordError = error"
+  />
+</div>
+
         </div>
         <div class="modal-footer custom-modal-footer">
           <ButtonComponent
@@ -55,21 +57,19 @@
             :clickEvent="() => $emit('close')"
           />
           <ButtonComponent
-  label=""
-  :isDisabled="isLoading"
-  buttonClass="btn-primary custom-btn-submit"
-  :clickEvent="addEmployee"
->
-  <template v-if="isLoading">
-    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-    Loading...
-  </template>
-  <template v-else>
-    Add Employee
-  </template>
-</ButtonComponent>
-
-
+            label=""
+            :isDisabled="isLoading"
+            buttonClass="btn-primary custom-btn-submit"
+            :clickEvent="addEmployee"
+          >
+            <template v-if="isLoading">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Loading...
+            </template>
+            <template v-else>
+              Add Employee
+            </template>
+          </ButtonComponent>
         </div>
       </div>
     </div>
@@ -82,12 +82,18 @@ import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import ButtonComponent from "@/components/ButtonComponent.vue";
+import InputField from "@/components/InputField.vue"; // Import the InputField component
+import EmailInput from "@/components/EmailInput.vue"; // Import the reusable EmailInput component
+import PasswordInput from "@/components/PasswordInput.vue"; // Import the reusable PasswordInput component
 
 export default {
   name: "AddEmployeeModal",
   emits: ["close", "employee-added"],
   components: {
-    ButtonComponent
+    ButtonComponent,
+    InputField, // Register the InputField component
+    EmailInput, // Register the EmailInput component
+    PasswordInput, // Register the PasswordInput component
   },
   setup(_, { emit }) {
     const employee = ref({
@@ -96,9 +102,17 @@ export default {
       password: "",
       confirmPassword: "",
     });
+    const emailError = ref(""); // For email validation errors
+    const passwordError = ref(""); // For password validation errors
+    const confirmPasswordError = ref(""); // For confirm password validation errors
     const isLoading = ref(false);
 
     const addEmployee = async () => {
+      if (emailError.value || passwordError.value || confirmPasswordError.value) {
+        toast.error("Please fix all validation errors before submitting.", { position: "top-right" });
+        return;
+      }
+
       if (employee.value.password !== employee.value.confirmPassword) {
         toast.error("Passwords do not match.", { position: "top-right" });
         return;
@@ -119,12 +133,18 @@ export default {
 
     return {
       employee,
+      emailError,
+      passwordError,
+      confirmPasswordError,
       isLoading,
       addEmployee,
     };
   },
 };
 </script>
+
+
+
 
 
 <style scoped>

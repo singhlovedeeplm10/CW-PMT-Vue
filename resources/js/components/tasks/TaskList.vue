@@ -2,12 +2,13 @@
   <div class="task-card">
     <div class="task-card-header">
       <h4>Tasks List</h4>
-      <button 
-        class="btn btn-primary" 
-        @click="checkClockInStatus"
-      >
-        Tasks
-      </button>
+      <ButtonComponent
+        :label="'Tasks'"
+        :isLoading="buttonLoading"
+        :isDisabled="loading"
+        buttonClass="btn-primary"
+        :clickEvent="checkClockInStatus"
+      />
     </div>
     <table class="task-table">
       <thead>
@@ -47,17 +48,19 @@
 <script>
 import axios from "axios";
 import AddTaskModal from "@/components/modals/AddTaskModal.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import * as bootstrap from "bootstrap"; 
 
 export default {
   name: "TaskList",
-  components: { AddTaskModal },
+  components: { AddTaskModal, ButtonComponent },
   data() {
     return {
       tasks: [], // Array to store fetched tasks
       loading: true, // Track loading state
+      buttonLoading: false, // Track button loading state
       projects: []  // Array to store project list
     };
   },
@@ -94,6 +97,7 @@ export default {
     },
 
     async checkClockInStatus() {
+      this.buttonLoading = true; // Start button loading state
       try {
         const response = await axios.get("/api/check-clock-in-status", {
           headers: {
@@ -115,13 +119,13 @@ export default {
       } catch (error) {
         console.error("Error checking clock-in status:", error.response?.data || error.message);
         toast.error(error.response?.data?.message || "Something went wrong. Please try again!", { position: "top-right" });
+      } finally {
+        this.buttonLoading = false; // End button loading state
       }
     }
   },
 };
 </script>
-
-
 
   <style scoped>
   .task-card {
