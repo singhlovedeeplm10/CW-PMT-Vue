@@ -1,63 +1,130 @@
 <template>
-    <div class="modal-overlay">
-      <div class="modal-content">
-        <h2>Edit Notice</h2>
-        <form @submit.prevent="updateNotice">
-          <label for="title">Title</label>
-          <input v-model="form.title" id="title" class="input-field" required />
-  
-          <label for="description">Description</label>
-          <textarea v-model="form.description" id="description" class="textarea-field" required></textarea>
-  
-          <label for="start_date">Start Date</label>
-          <input type="date" v-model="form.start_date" id="start_date" class="input-field" required />
-  
-          <label for="end_date">End Date</label>
-          <input type="date" v-model="form.end_date" id="end_date" class="input-field" required />
-  
-          <div class="modal-actions">
-            <button type="submit" class="save-btn">Save</button>
-            <button type="button" class="cancel-btn" @click="$emit('close')">Cancel</button>
-          </div>
-        </form>
-      </div>
+  <div class="modal-overlay">
+    <div class="modal-content">
+      <h2>Edit Notice</h2>
+      <form @submit.prevent="updateNotice">
+        <label for="title">Title</label>
+        <input v-model="form.title" id="title" class="input-field" required />
+
+        <label for="description">Description</label>
+        <div id="description-editor"></div>
+
+        <label for="start_date">Start Date</label>
+        <input type="date" v-model="form.start_date" id="start_date" class="input-field" required />
+
+        <label for="end_date">End Date</label>
+        <input type="date" v-model="form.end_date" id="end_date" class="input-field" required />
+
+        <div class="modal-actions">
+          <ButtonComponent
+            :isLoading="isLoading"
+            :label="'Save'"
+            :loadingText="'Saving...'"
+            :buttonClass="'save-btn'"
+            @click="updateNotice"
+          />
+          <ButtonComponent 
+            :label="'Cancel'" 
+            :buttonClass="'cancel-btn'" 
+            @click="$emit('close')" 
+          />
+        </div>
+      </form>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "EditNoticeModal",
-    props: {
-      notice: {
-        type: Object,
-        required: true,
-      },
+  </div>
+</template>
+
+<script>
+import $ from "jquery";
+import "summernote/dist/summernote-lite.css";
+import "summernote/dist/summernote-lite.js";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import axios from "axios";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+
+export default {
+  name: "EditNoticeModal",
+  props: {
+    notice: {
+      type: Object,
+      required: true,
     },
-    data() {
-      return {
-        form: {
-          title: this.notice.title,
-          description: this.notice.description,
-          start_date: this.notice.start_date,
-          end_date: this.notice.end_date,
+  },
+  components: {
+    ButtonComponent,
+  },
+  data() {
+    return {
+      form: {
+        title: this.notice.title,
+        description: this.notice.description,
+        start_date: this.notice.start_date,
+        end_date: this.notice.end_date,
+      },
+      isLoading: false,
+    };
+  },
+  methods: {
+    async updateNotice() {
+      this.isLoading = true;
+      this.form.description = $("#description-editor").summernote("code");
+
+      try {
+        await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
+        toast.success("Notice updated successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        this.$emit("noticeupdated");
+        this.$emit("close");
+      } catch (error) {
+        toast.error("Failed to update notice. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        console.error("Error updating notice:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
+  mounted() {
+    $("#description-editor")
+      .summernote({
+        placeholder: "Enter a detailed description",
+        tabsize: 2,
+        height: 200,
+        dialogsInBody: true,
+        callbacks: {
+          onInit: function () {
+            $(".note-modal").appendTo("body");
+          },
         },
-      };
-    },
-    methods: {
-      async updateNotice() {
-        try {
-          await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
-          this.$emit("noticeupdated");
-          this.$emit("close");
-        } catch (error) {
-          console.error("Error updating notice:", error);
-        }
-      },
-    },
-  };
-  </script>
+      })
+      .summernote("code", this.form.description);
+  },
+};
+</script>
   
   <style scoped>
+  /* Ensure Summernote modals are always visible */
+.note-modal {
+  display: block !important;
+  z-index: 1055 !important;
+  background-color: #fff;
+}
+
+/* Remove or hide the backdrop from blocking user interaction */
+.modal-backdrop {
+  display: none !important;
+}
+
+/* Ensure Summernote dialogs are layered above other UI elements */
+.note-popover {
+  z-index: 1056 !important;
+}
+
   .modal-overlay {
     position: fixed;
     top: 0;

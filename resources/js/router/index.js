@@ -18,6 +18,7 @@ import TimeLine from '../components/TimeLine.vue';
 import UploadTimeline from '../components/UploadTimeline.vue';
 import Policies from '../components/Policies.vue';
 import Notices from '../components/Notices.vue';
+import ViewNotices from '../components/ViewNotices.vue';
 
 
 const routes = [
@@ -36,6 +37,7 @@ const routes = [
   { path: '/uploadtimeline', name: 'UploadTimeline', component: UploadTimeline },
   { path: '/policies', name: 'Policies', component: Policies },
   { path: '/notices', name: 'Notices', component: Notices },
+  { path: '/view-notices', name: 'ViewNotices', component: ViewNotices },
 ];
 
 const router = createRouter({

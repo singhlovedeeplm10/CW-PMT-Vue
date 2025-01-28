@@ -1,84 +1,78 @@
 <template>
-    <div class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <h2>Add New Notice</h2>
-        <form @submit.prevent="submitForm">
-          <!-- Title input field -->
-          <div class="form-group">
-            <InputField
-              label="Title"
-              :modelValue="form.title"
-              @update:modelValue="(value) => (form.title = value)"
-              placeholder="Enter notice title"
-              :isRequired="true"
-            />
-          </div>
-  
-          <!-- Description field -->
-          <div class="form-group">
-            <TextArea
-              label="Description"
-              :modelValue="form.description"
-              @update:modelValue="(value) => (form.description = value)"
-              placeholder="Enter a detailed description"
-              :isRequired="true"
-              rows="6" 
-            />
-          </div>
-  
-          <!-- Start Date -->
-          <div class="form-group">
-            <DateInput
-              label="Start Date"
-              id="start_date"
-              name="start_date"
-              :modelValue="form.start_date"
-              @update:modelValue="(value) => (form.start_date = value)"
-              :minDate="minDate"
-              :maxDate="maxDate"
-              :condition="true"
-            />
-          </div>
-  
-          <!-- End Date -->
-          <div class="form-group">
-            <DateInput
-              label="End Date"
-              id="end_date"
-              name="end_date"
-              :modelValue="form.end_date"
-              @update:modelValue="(value) => (form.end_date = value)"
-              :minDate="form.start_date"
-              :maxDate="maxDate"
-              :condition="true"
-            />
-          </div>
-  
-          <!-- Buttons -->
-          <div class="form-actions">
-            <button type="submit" class="submit-btn">Save</button>
-            <button type="button" class="cancel-btn" @click="closeModal">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+  <div class="modal-overlay" @click.self="closeModal">
+    <div class="modal-content">
+      <h2>Add New Notice</h2>
+      <form @submit.prevent="submitForm">
+        <!-- Title input field -->
+        <div class="form-group">
+          <InputField
+            label="Title"
+            :modelValue="form.title"
+            @update:modelValue="(value) => (form.title = value)"
+            placeholder="Enter notice title"
+            :isRequired="true"
+          />
+        </div>
+
+        <!-- Description field with Summernote -->
+        <div class="form-group">
+          <label for="description-editor">Description</label>
+          <div id="description-editor"></div>
+        </div>
+
+        <!-- Start Date -->
+        <div class="form-group">
+          <DateInput
+            label="Start Date"
+            id="start_date"
+            name="start_date"
+            :modelValue="form.start_date"
+            @update:modelValue="(value) => (form.start_date = value)"
+            :minDate="minDate"
+            :maxDate="maxDate"
+            :condition="true"
+          />
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group">
+          <DateInput
+            label="End Date"
+            id="end_date"
+            name="end_date"
+            :modelValue="form.end_date"
+            @update:modelValue="(value) => (form.end_date = value)"
+            :minDate="form.start_date"
+            :maxDate="maxDate"
+            :condition="true"
+          />
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">Save</button>
+          <button type="button" class="cancel-btn" @click="closeModal">
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
-  </template>
-  
-  
-  <script>
-import InputField from "@/components/InputField.vue"; // Adjust the import path if needed
-import TextArea from "@/components/TextArea.vue"; // Adjust the import path if needed
-import DateInput from "@/components/DateInput.vue"; // Import the DateInput component
+  </div>
+</template>
+
+<script>
+import InputField from "@/components/InputField.vue";
+import DateInput from "@/components/DateInput.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import $ from "jquery"; // Import jQuery for Summernote compatibility
+import "summernote/dist/summernote-lite.css";
+import "summernote/dist/summernote-lite.js";
 
 export default {
   name: "AddNoticeModal",
   components: {
     InputField,
-    TextArea,
     DateInput,
   },
   data() {
@@ -89,8 +83,8 @@ export default {
         start_date: "",
         end_date: "",
       },
-      minDate: new Date().toISOString().split("T")[0], // Set today's date as the minimum
-      maxDate: null, // Optional: define a maximum date, or leave as null
+      minDate: new Date().toISOString().split("T")[0],
+      maxDate: null,
     };
   },
   methods: {
@@ -98,7 +92,8 @@ export default {
       this.$emit("close");
     },
     async submitForm() {
-      // Validate form fields
+      this.form.description = $("#description-editor").summernote("code");
+
       if (
         !this.form.title ||
         !this.form.description ||
@@ -121,7 +116,6 @@ export default {
       }
 
       try {
-        // Send data to the backend API
         const response = await fetch("/api/store-notices", {
           method: "POST",
           headers: {
@@ -144,16 +138,13 @@ export default {
         }
 
         const data = await response.json();
-        console.log("Successfully saved:", data);
-
-        // Display success toast message
         toast.success("Notice created successfully!", {
           position: "top-right",
           autoClose: 3000,
         });
-        this.$emit("noticeadded");
 
-        this.closeModal(); // Close the modal after successful submission
+        this.$emit("noticeadded");
+        this.closeModal();
       } catch (error) {
         console.error("Error saving notice:", error);
         toast.error("An error occurred while saving the notice.", {
@@ -163,10 +154,35 @@ export default {
       }
     },
   },
+  mounted() {
+    $("#description-editor").summernote({
+  placeholder: "Enter a detailed description",
+  tabsize: 2,
+  height: 200,
+  dialogsInBody: true, // Attach dialogs outside modal to prevent backdrop issues
+  callbacks: {
+    onInit: function () {
+      $(".note-modal").appendTo("body"); // Ensure dialogs are outside of parent modal
+    },
+  },
+});
+
+  },
 };
 </script>
 
+
 <style scoped>
+.note-modal {
+  display: block !important;
+  z-index: 1050 !important;
+  background: #fff;
+}
+
+/* Remove unnecessary backdrop overlay */
+.modal-backdrop {
+  display: none !important;
+}
 .modal-overlay {
   position: fixed;
   top: 0;

@@ -21,6 +21,7 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
       </li>
+      
       <!-- <li class="sidebar-item">
         <router-link to="/send-email" class="sidebar-link" active-class="active-link">Mail</router-link>
       </li> -->

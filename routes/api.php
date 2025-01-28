@@ -139,5 +139,6 @@ Route::post('/store-notices', [NoticeController::class, 'storeNotices']);
 Route::get('/get-notices', [NoticeController::class, 'getNotices']);
 Route::delete('/delete-notice/{id}', [NoticeController::class, 'deleteNotice']);
 Route::put('/edit-notice/{id}', [NoticeController::class, 'updateNotice']);
+Route::get('/notices', [NoticeController::class, 'fetchNotices']);
 
 

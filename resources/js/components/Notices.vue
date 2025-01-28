@@ -22,7 +22,7 @@
             <tr v-for="(notice, index) in notices" :key="notice.id">
               <td>{{ index + 1 }}</td>
               <td>{{ notice.title }}</td>
-              <td>{{ notice.description }}</td>
+              <td v-html="notice.description"></td>
               <td>{{ formatDate(notice.start_date) }}</td>
               <td>{{ formatDate(notice.end_date) }}</td>
               <td>

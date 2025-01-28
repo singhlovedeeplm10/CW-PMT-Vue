@@ -167,6 +167,7 @@ body {
   border-radius: 50%;
   transition: border 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid #ffffff;
+  object-fit: cover;
 }
 
 .profile-container:hover .profile-image {
@@ -176,15 +177,15 @@ body {
 
 /* Dropdown Menu */
 .profile-dropdown {
-  display: none;
-  position: absolute;
-  top: 120%;
-  right: 0;
-  background-color: #2c3e50; /* Slightly lighter dark */
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 150px;
+  position: absolute; /* Positions the dropdown relative to the container */
+  top: 100%; /* Ensures the dropdown appears below the profile image */
+  right: 0; /* Aligns the dropdown to the right of the container */
+  z-index: 1000; /* High enough to ensure it appears above other elements */
+  background: white; /* Optional: Dropdown background */
+  border: 1px solid #ccc; /* Optional: Border for the dropdown */
+  border-radius: 4px; /* Optional: Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
+  display: none; /* Initially hidden */
 }
 
 .profile-container:hover .profile-dropdown {
@@ -194,11 +195,12 @@ body {
 .dropdown-item {
   display: block;
   padding: 8px 12px;
-  color: #ffffff;
+  color: black;
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.3s ease, color 0.3s ease;
   border-radius: 4px;
+  white-space: nowrap; 
 }
 
 .dropdown-item:hover {

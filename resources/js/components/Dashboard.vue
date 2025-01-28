@@ -5,6 +5,7 @@
       <h1>Welcome to the Dashboard</h1>
       <p>This is a protected page accessible only after login.</p>
 
+      <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
       <task-list ref = "userDailyTask" />
@@ -32,6 +33,7 @@
 <script>
 import { ref } from 'vue';
 import MasterComponent from './layouts/Master.vue';
+import ViewNotices from './ViewNotices.vue';
 import Clockin from './clockin/Clockin.vue';
 import TaskList from './tasks/TaskList.vue';
 import DailyTask from './DailyTask.vue';
@@ -52,6 +54,7 @@ export default {
   name: "Dashboard",
   components: {
     MasterComponent,
+    ViewNotices,
     Clockin,
     TaskList,
     DailyTask,
