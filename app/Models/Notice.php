@@ -15,5 +15,6 @@ class Notice extends Model
         'description',
         'start_date',
         'end_date',
+        'order', // Added 'order' to make it mass-assignable
     ];
 }

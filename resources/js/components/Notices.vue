@@ -6,23 +6,31 @@
         <button class="add-notice-btn" @click="showModal = true">Add New Notice</button>
       </div>
 
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Search by title..."
+          class="search-input"
+        />
+      </div>
+
       <div class="notices-section">
-        <table class="notices-table" v-if="notices.length > 0">
+        <table class="notices-table" v-if="filteredNotices.length > 0">
           <thead>
             <tr>
-              <th>#</th>
+              <th>Order</th>
               <th>Title</th>
-              <th>Description</th>
               <th>Start Date</th>
               <th>End Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(notice, index) in notices" :key="notice.id">
-              <td>{{ index + 1 }}</td>
+            <tr v-for="notice in filteredNotices" :key="notice.id">
+              <td>{{ notice.order }}</td>
               <td>{{ notice.title }}</td>
-              <td v-html="notice.description"></td>
               <td>{{ formatDate(notice.start_date) }}</td>
               <td>{{ formatDate(notice.end_date) }}</td>
               <td>
@@ -32,26 +40,34 @@
             </tr>
           </tbody>
         </table>
+
         <p v-else class="no-notices">No notices available.</p>
+
+        <!-- Pagination Component -->
+        <pagination
+          v-if="totalPages > 1"
+          :totalPages="totalPages"
+          :currentPage="currentPage"
+          @page-changed="fetchNotices"
+        />
       </div>
 
-      <add-notice-modal v-if="showModal" @noticeadded="fetchNotices" @close="showModal = false" @refresh="fetchNotices" />
-      <edit-notice-modal 
-        v-if="editModalVisible" 
-        :notice="selectedNotice" 
-        @noticeupdated="fetchNotices" 
-        @close="editModalVisible = false" 
+      <add-notice-modal v-if="showModal" @noticeadded="fetchNotices" @close="showModal = false" />
+      <edit-notice-modal
+        v-if="editModalVisible"
+        :notice="selectedNotice"
+        @noticeupdated="fetchNotices"
+        @close="editModalVisible = false"
       />
     </div>
   </master-component>
 </template>
 
-
 <script>
 import MasterComponent from "./layouts/Master.vue";
 import AddNoticeModal from "./modals/AddNoticeModal.vue";
 import EditNoticeModal from "./modals/EditNoticeModal.vue";
-
+import Pagination from "@/components/Pagination.vue";
 import axios from "axios";
 
 export default {
@@ -59,39 +75,53 @@ export default {
   components: {
     MasterComponent,
     AddNoticeModal,
-    EditNoticeModal
+    EditNoticeModal,
+    Pagination,
   },
   data() {
     return {
-      editModalVisible: false, // Controls Edit Modal visibility
-      selectedNotice: null, // Holds the selected notice to be edited
-      showModal: false, // Controls modal visibility
-      notices: [], // Holds the notices fetched from the database
+      editModalVisible: false,
+      selectedNotice: null,
+      showModal: false,
+      notices: [],
+      searchQuery: "",
+      currentPage: 1,
+      totalPages: 1,
     };
   },
+  computed: {
+    filteredNotices() {
+      if (!this.searchQuery) return this.notices;
+      const lowerCaseQuery = this.searchQuery.toLowerCase();
+      return this.notices.filter((notice) =>
+        notice.title.toLowerCase().includes(lowerCaseQuery)
+      );
+    },
+  },
   methods: {
-    async fetchNotices() {
+    async fetchNotices(page = 1) {
       try {
-        const response = await axios.get("/api/get-notices");
-        this.notices = response.data;
+        const response = await axios.get(`/api/get-notices?page=${page}`);
+        this.notices = response.data.data; // Extract paginated data
+        this.currentPage = response.data.current_page;
+        this.totalPages = response.data.last_page;
       } catch (error) {
         console.error("Error fetching notices:", error);
       }
     },
     openEditModal(notice) {
-      this.selectedNotice = { ...notice }; // Clone notice to avoid direct mutation
+      this.selectedNotice = { ...notice };
       this.editModalVisible = true;
     },
     formatDate(date) {
-      if (!date) return ""; // Handle empty or null dates
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Intl.DateTimeFormat("en-US", options).format(new Date(date));
+      if (!date) return "";
+      return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
     },
     async deleteNotice(id) {
       if (confirm("Are you sure you want to delete this notice?")) {
         try {
           await axios.delete(`/api/delete-notice/${id}`);
-          this.notices = this.notices.filter((notice) => notice.id !== id); // Update UI
+          this.fetchNotices(this.currentPage); // Refresh current page
         } catch (error) {
           console.error("Error deleting notice:", error);
         }
@@ -107,11 +137,21 @@ export default {
 
 
 <style scoped>
+.search-bar {
+  margin: 15px 23px;
+}
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 300px;
+}
 .notice-container {
   margin: 20px auto;
   padding: 20px;
-  max-width: 1200px;
-  text-align: center;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -137,7 +177,6 @@ export default {
 }
 
 .notices-section {
-  margin-top: 20px;
   overflow-x: auto;
   background: #ffffff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);

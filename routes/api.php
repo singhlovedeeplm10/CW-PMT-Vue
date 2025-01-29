@@ -140,5 +140,6 @@ Route::get('/get-notices', [NoticeController::class, 'getNotices']);
 Route::delete('/delete-notice/{id}', [NoticeController::class, 'deleteNotice']);
 Route::put('/edit-notice/{id}', [NoticeController::class, 'updateNotice']);
 Route::get('/notices', [NoticeController::class, 'fetchNotices']);
+Route::get('/upcoming-birthdays', [NoticeController::class, 'upcomingBirthdays']);
 
 

@@ -25,6 +25,7 @@
       <!-- <add-project-modal /> -->
       <!-- <EditPostModal/> -->
       <members-work-from-home v-if="userRole === 'Admin'" />
+      <upcoming-birthdays v-if="userRole === 'Admin'" />
 
     </div>
   </master-component>
@@ -41,6 +42,7 @@ import BreakEntries from './cards/BreakEntries.vue';
 import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
 import MembersWorkFromHome from './cards/MembersWorkFromHome.vue';
+import UpcomingBirthdays from './cards/UpcomingBirthdays.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import AddBreakModal from './modals/AddBreakModal.vue';
 import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
@@ -61,6 +63,7 @@ export default {
     BreakEntries,
     MissingMember,
     MembersWorkFromHome,
+    UpcomingBirthdays,
     AddTaskModal,
     AddBreakModal,
     UserBreakList,

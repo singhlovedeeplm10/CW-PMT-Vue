@@ -2,58 +2,82 @@
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
       <h2>Add New Notice</h2>
-      <form @submit.prevent="submitForm">
-        <!-- Title input field -->
-        <div class="form-group">
-          <InputField
-            label="Title"
-            :modelValue="form.title"
-            @update:modelValue="(value) => (form.title = value)"
-            placeholder="Enter notice title"
-            :isRequired="true"
-          />
+      <form @submit.prevent="submitForm" class="modal-form">
+        <div class="form-row">
+          <!-- Title input field -->
+          <div class="form-group">
+            <InputField
+              label="Title"
+              :modelValue="form.title"
+              @update:modelValue="(value) => (form.title = value)"
+              placeholder="Enter notice title"
+              :isRequired="true"
+            />
+          </div>
+
+          <!-- Order input field -->
+          <div class="form-group">
+            <InputField
+              label="Order"
+              type="number"
+              :modelValue="form.order"
+              @update:modelValue="(value) => (form.order = value)"
+              placeholder="Enter order number"
+              :isRequired="true"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Start Date -->
+          <div class="form-group">
+            <DateInput
+              label="Start Date"
+              id="start_date"
+              name="start_date"
+              :modelValue="form.start_date"
+              @update:modelValue="(value) => (form.start_date = value)"
+              :minDate="minDate"
+              :maxDate="maxDate"
+              :condition="true"
+            />
+          </div>
+
+          <!-- End Date -->
+          <div class="form-group">
+            <DateInput
+              label="End Date"
+              id="end_date"
+              name="end_date"
+              :modelValue="form.end_date"
+              @update:modelValue="(value) => (form.end_date = value)"
+              :minDate="form.start_date"
+              :maxDate="maxDate"
+              :condition="true"
+            />
+          </div>
         </div>
 
         <!-- Description field with Summernote -->
-        <div class="form-group">
+        <div class="form-group full-width">
           <label for="description-editor">Description</label>
           <div id="description-editor"></div>
         </div>
 
-        <!-- Start Date -->
-        <div class="form-group">
-          <DateInput
-            label="Start Date"
-            id="start_date"
-            name="start_date"
-            :modelValue="form.start_date"
-            @update:modelValue="(value) => (form.start_date = value)"
-            :minDate="minDate"
-            :maxDate="maxDate"
-            :condition="true"
-          />
-        </div>
-
-        <!-- End Date -->
-        <div class="form-group">
-          <DateInput
-            label="End Date"
-            id="end_date"
-            name="end_date"
-            :modelValue="form.end_date"
-            @update:modelValue="(value) => (form.end_date = value)"
-            :minDate="form.start_date"
-            :maxDate="maxDate"
-            :condition="true"
-          />
-        </div>
-
         <!-- Buttons -->
         <div class="form-actions">
-          <button type="submit" class="submit-btn">Save</button>
-          <button type="button" class="cancel-btn" @click="closeModal">
-            Cancel
-          </button>
+          <ButtonComponent
+            label="Save"
+            buttonClass="submit-btn"
+            :isLoading="isLoading"
+            loadingText="Saving..."
+            @click="submitForm"
+          />
+          <ButtonComponent
+            label="Cancel"
+            buttonClass="cancel-btn"
+            @click="closeModal"
+          />
         </div>
       </form>
     </div>
@@ -63,9 +87,10 @@
 <script>
 import InputField from "@/components/InputField.vue";
 import DateInput from "@/components/DateInput.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import $ from "jquery"; // Import jQuery for Summernote compatibility
+import $ from "jquery";
 import "summernote/dist/summernote-lite.css";
 import "summernote/dist/summernote-lite.js";
 
@@ -74,17 +99,20 @@ export default {
   components: {
     InputField,
     DateInput,
+    ButtonComponent,
   },
   data() {
     return {
       form: {
         title: "",
+        order: 0,
         description: "",
         start_date: "",
         end_date: "",
       },
       minDate: new Date().toISOString().split("T")[0],
       maxDate: null,
+      isLoading: false, // Loader state
     };
   },
   methods: {
@@ -92,10 +120,14 @@ export default {
       this.$emit("close");
     },
     async submitForm() {
+      if (this.isLoading) return; // Prevent duplicate requests
+      this.isLoading = true; // Show loader
+
       this.form.description = $("#description-editor").summernote("code");
 
       if (
         !this.form.title ||
+        (!this.form.order && this.form.order !== 0) ||
         !this.form.description ||
         !this.form.start_date ||
         !this.form.end_date
@@ -104,6 +136,7 @@ export default {
           position: "top-right",
           autoClose: 3000,
         });
+        this.isLoading = false; // Hide loader
         return;
       }
 
@@ -112,6 +145,7 @@ export default {
           position: "top-right",
           autoClose: 3000,
         });
+        this.isLoading = false; // Hide loader
         return;
       }
 
@@ -134,6 +168,7 @@ export default {
             position: "top-right",
             autoClose: 3000,
           });
+          this.isLoading = false; // Hide loader
           return;
         }
 
@@ -151,45 +186,37 @@ export default {
           position: "top-right",
           autoClose: 3000,
         });
+      } finally {
+        this.isLoading = false; // Hide loader
       }
     },
   },
   mounted() {
     $("#description-editor").summernote({
-  placeholder: "Enter a detailed description",
-  tabsize: 2,
-  height: 200,
-  dialogsInBody: true, // Attach dialogs outside modal to prevent backdrop issues
-  callbacks: {
-    onInit: function () {
-      $(".note-modal").appendTo("body"); // Ensure dialogs are outside of parent modal
-    },
-  },
-});
-
+      placeholder: "Enter a detailed description",
+      tabsize: 2,
+      height: 200,
+      dialogsInBody: true,
+      callbacks: {
+        onInit: function () {
+          $(".note-modal").appendTo("body");
+        },
+      },
+    });
   },
 };
 </script>
 
 
-<style scoped>
-.note-modal {
-  display: block !important;
-  z-index: 1050 !important;
-  background: #fff;
-}
 
-/* Remove unnecessary backdrop overlay */
-.modal-backdrop {
-  display: none !important;
-}
+<style scoped>
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Darker overlay */
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -198,54 +225,64 @@ export default {
 
 .modal-content {
   background: #ffffff;
-  padding: 30px; /* Increased padding */
-  border-radius: 12px; /* Softer corners */
-  width: 600px; /* Increased width */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* More prominent shadow */
+  padding: 30px;
+  border-radius: 12px;
+  width: 700px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
   margin-top: 0;
-  font-size: 1.8rem; /* Larger heading */
+  font-size: 1.8rem;
   color: #333333;
+  text-align: center;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .form-group {
-  margin-bottom: 20px; /* Increased spacing */
+  flex: 1;
+}
+
+.full-width {
+  width: 100%;
 }
 
 label {
   display: block;
   font-weight: 600;
-  margin-bottom: 8px; /* Slightly more spacing */
+  margin-bottom: 8px;
   color: #555555;
-}
-
-textarea {
-  width: 100%;
-  padding: 12px; /* Increased padding for better usability */
-  border: 1px solid #ccc;
-  border-radius: 6px; /* Softer corners */
-  font-size: 1rem;
-  resize: vertical; /* Allow resizing */
-  min-height: 120px; /* Increased size for the description */
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 15px; /* More space between buttons */
+  gap: 15px;
+}
+
+.submit-btn, .cancel-btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+  color: white;
 }
 
 .submit-btn {
   background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 12px 20px; /* Larger button */
-  font-size: 1rem;
-  border-radius: 6px; /* Softer corners */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .submit-btn:hover {
@@ -254,18 +291,12 @@ textarea {
 
 .cancel-btn {
   background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 12px 20px; /* Larger button */
-  font-size: 1rem;
-  border-radius: 6px; /* Softer corners */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .cancel-btn:hover {
   background-color: #e53935;
 }
 </style>
+
 
   
