@@ -187,36 +187,63 @@ public function getNotices(Request $request)
 
     
     public function fetchNotices()
-{
-    $today = Carbon::today(); // Get today's date
-
-    // Fetch notices as per the original logic
-    $notices = Notice::select('order', 'title', 'description')
-        ->where('start_date', '<=', $today)
-        ->where('end_date', '>=', $today)
-        ->orderBy('order', 'asc')
-        ->get();
-
-    // Fetch birthdays matching today's date (only month and day)
-    $birthdays = DB::table('user_profiles')
-        ->join('users', 'user_profiles.user_id', '=', 'users.id')
-        ->select('users.name', 'user_profiles.user_image')
-        ->whereMonth('user_DOB', $today->month)
-        ->whereDay('user_DOB', $today->day)
-        ->get();
-
-    // Append birthday notices
-    foreach ($birthdays as $birthday) {
-        $notices->push([
-            'order' => 0,
-            'title' => 'Happy Birthday ' . $birthday->name,
-            'description' => 'Happy birthday! Your life is just about to pick up speed and blast off into the stratosphere. Wear a seat belt and be sure to enjoy the journey. Happy birthday!',
-            'user_image' => $birthday->user_image,
-        ]);
+    {
+        $today = Carbon::today(); // Get today's date
+        
+        // Fetch notices as per the original logic
+        $notices = Notice::select('order', 'title', 'description')
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
+            ->orderBy('order', 'asc')
+            ->get();
+    
+        // Array of birthday wishes
+        $birthdayWishes = [
+            'Wishing you a fantastic birthday filled with laughter and joy!',
+            'May this year bring new happiness, goals, and achievements to your life!',
+            'Have a wonderful birthday and an amazing year ahead!',
+            'Cheers to another year of greatness and success! Happy Birthday!',
+            'Your life is about to pick up speed. Enjoy the ride! Happy Birthday!',
+            'Hope your birthday is as amazing as you are!',
+            'Wishing you a day filled with love, laughter, and endless fun!',
+            'Happy Birthday! Keep shining like the star that you are!',
+            'Enjoy your special day to the fullest!',
+            'Wishing you health, happiness, and prosperity today and always!',
+            'Let today be a reminder of how much you are loved!',
+            'Have an unforgettable birthday celebration!',
+            'Hope this year brings everything you’ve been wishing for!',
+            'Smile and celebrate because it’s your day!',
+            'May your birthday be filled with sweet moments and memories!',
+        ];
+    
+        // Fetch birthdays matching today's date (only month and day)
+        $birthdays = DB::table('user_profiles')
+            ->join('users', 'user_profiles.user_id', '=', 'users.id')
+            ->select('users.name', 'user_profiles.user_image')
+            ->whereMonth('user_DOB', $today->month)
+            ->whereDay('user_DOB', $today->day)
+            ->get();
+    
+        // Create an array of birthday notices
+        $birthdayNotices = collect();
+    
+        foreach ($birthdays as $birthday) {
+            $randomWish = $birthdayWishes[array_rand($birthdayWishes)];
+            $birthdayNotices->push([
+                'order' => 0,
+                'title' => 'Happy Birthday ' . $birthday->name,
+                'description' => $randomWish,
+                'user_image' => $birthday->user_image,
+            ]);
+        }
+    
+        // Merge birthday notices at the start
+        $allNotices = $birthdayNotices->merge($notices);
+    
+        return response()->json($allNotices);
     }
-
-    return response()->json($notices);
-}
+    
+    
 
 public function upcomingBirthdays(Request $request)
 {
@@ -225,18 +252,20 @@ public function upcomingBirthdays(Request $request)
 
     $birthdays = DB::table('users')
         ->join('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->where('users.status', '1') // Only fetch active users
         ->where(DB::raw('DATE_FORMAT(user_profiles.user_DOB, "%m-%d")'), $monthDay)
         ->select('users.id', 'users.name', 'user_profiles.user_image', 'user_profiles.user_DOB')
         ->get();
 
     // Add the full URL for the images
     $birthdays = $birthdays->map(function ($user) {
-        // Assuming your images are stored in the 'public/profile_images' directory
-        $user->user_image = Storage::url($user->user_image); // This generates the public URL
+        // Assuming images are stored in the 'public/profile_images' directory
+        $user->user_image = $user->user_image ? Storage::url($user->user_image) : null; // Generate public URL or set to null
         return $user;
     });
 
     return response()->json($birthdays);
 }
+
 
 }

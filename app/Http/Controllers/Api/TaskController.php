@@ -97,25 +97,30 @@ class TaskController extends Controller
     
 
     public function getUsersWithoutTasks()
-    {
-        $today = now()->toDateString(); // Get today's date in 'Y-m-d' format
-    
-        $usersWithoutTasks = DB::table('users')
-            ->leftJoin('daily_tasks', function ($join) use ($today) {
-                $join->on('users.id', '=', 'daily_tasks.user_id')
-                    ->whereDate('daily_tasks.created_at', $today);
-            })
-            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join user_profiles
-            ->whereNull('daily_tasks.user_id')
-            ->select(
-                'users.id',
-                'users.name',
-                'user_profiles.user_image' // Include the image path
-            )
-            ->get();
-    
-        return response()->json($usersWithoutTasks);
-    }
+{
+    $today = now()->toDateString(); // Get today's date in 'Y-m-d' format
+
+    $usersWithoutTasks = DB::table('users')
+        ->leftJoin('daily_tasks', function ($join) use ($today) {
+            $join->on('users.id', '=', 'daily_tasks.user_id')
+                ->whereDate('daily_tasks.created_at', $today);
+        })
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join user_profiles
+        ->whereNull('daily_tasks.user_id')
+        ->where(function ($query) {
+            $query->where('users.status', '1') // Include only users with status 1
+                  ->orWhereNull('users.status'); // Or users without a status (if applicable)
+        })
+        ->select(
+            'users.id',
+            DB::raw('CASE WHEN users.status = 0 THEN NULL ELSE users.name END AS name'), // Conditionally exclude name if status = 0
+            'user_profiles.user_image' // Include the image path
+        )
+        ->get();
+
+    return response()->json($usersWithoutTasks);
+}
+
     
     
     public function getDailyTasks(Request $request)

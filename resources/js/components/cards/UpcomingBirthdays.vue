@@ -1,55 +1,60 @@
 <template>
-    <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
+  <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
       <!-- Task List Card -->
       <div class="task-card flex-fill shadow-sm position-relative" id="card2">
-        <div class="task-card-header d-flex justify-content-between align-items-center">
-          <h4>Upcoming Birthdays</h4>
-          <Calendar 
-            :selectedDate="tomorrowDate" 
-            @dateSelected="fetchBirthdays" 
-          />
+          <div class="task-card-header d-flex justify-content-between align-items-center">
+              <h4>Upcoming Birthdays</h4>
+              <Calendar 
+                  :selectedDate="tomorrowDate" 
+                  @dateSelected="fetchBirthdays" 
+              />
+          </div>
+
+          <div class="birthday-card-body d-flex justify-content-center align-items-center">
+              <div v-if="isLoading" class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+              </div>
+
+              <div v-else-if="users.length" class="mt-3 w-100">
+                  <h5>Birthdays:</h5>
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th>Name</th>
+                              <th>Date of Birth</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr v-for="user in users" :key="user.id">
+                            <td class="align-middle">
+    <div class="d-flex flex-column">
+        <div class="d-flex align-items-center">
+            <img 
+                :src="user.user_image" 
+                alt="User Image" 
+                class="rounded-circle user-avatar me-2"
+            />
+            <span class="user-name"><strong>{{ user.name }}</strong></span>
         </div>
-  
-        <div class="birthday-card-body d-flex justify-content-center align-items-center">
-          <div v-if="isLoading" class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-  
-          <div v-else-if="users.length" class="mt-3 w-100">
-            <h5>Birthdays:</h5>
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Date of Birth</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="user in users" :key="user.id">
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <img 
-                        :src="user.user_image" 
-                        alt="User Image" 
-                        class="rounded-circle me-2" 
-                        style="width: 50px; height: 50px;"
-                      />
-                      <span><strong>{{ user.name }}</strong></span>
-                    </div>
-                  </td>
-                  <td>{{ user.user_DOB }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-  
-          <div v-else class="mt-3">
-            <p>No birthdays on this date.</p>
-          </div>
-        </div>
-      </div>
+        <!-- <span class="birthday-message">
+          Wishing you the happiest of birthdays, filled with love, laughter, and all your favorite things.
+        </span> -->
     </div>
-  </template>
+</td>
+
+                              <td class="align-middle">{{ user.user_DOB }}</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+
+              <div v-else class="mt-3">
+                  <p>No birthdays on this date.</p>
+              </div>
+          </div>
+      </div>
+  </div>
+</template>
   
   <script>
   import Calendar from "@/components/Calendar.vue";
@@ -89,9 +94,19 @@
   
   
 <style scoped>
+.birthday-message {
+    font-size: 14px;
+    color: #888; /* Light gray color */
+    margin-left: 50px; /* Align properly under the name */
+    font-style: italic;
+    display: block;
+    max-width: 300px; /* Limit width for better readability */
+    line-height: 1.4;
+}
+
 .spinner-border {
-  width: 3rem;
-  height: 3rem;
+    width: 3rem;
+    height: 3rem;
 }
 .task-card {
     display: flex;
@@ -111,9 +126,9 @@
 }
 
 .birthday-card-body {
-    overflow-y: auto; /* Enables vertical scrolling */
-    max-height: 300px; /* Restricts the content area height */
-    box-sizing: border-box; /* Ensures padding is included in width/height */
+    overflow-y: auto;
+    max-height: 300px;
+    box-sizing: border-box;
     width: 100%;
 }
 
@@ -141,16 +156,18 @@ thead th {
     text-align: left;
     padding: 10px;
     font-size: 14px;
-    background-color: #f8f8f8; /* Adds a subtle background */
+    background-color: #f8f8f8;
     border-bottom: 1px solid #ddd;
 }
 
 tbody td {
     padding: 10px;
     font-size: 14px;
-    border-bottom: 1px solid #f1f1f1; /* Adds spacing between rows */
-    word-break: break-word; /* Ensures long words break properly */
+    border-bottom: 1px solid #f1f1f1;
+    word-break: break-word;
+    vertical-align: middle; /* Ensure content is vertically aligned */
 }
+
 
 .profile {
     display: flex;
@@ -167,7 +184,7 @@ tbody td {
 /* Specific card border and header styles */
 #card2 {
     border: 1px solid rgb(112, 165, 245);
-    border-radius: 8px; /* Smooth border corners */
+    border-radius: 8px;
 }
 
 .task-card-header h4 {
@@ -191,5 +208,17 @@ tbody td {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 </style>

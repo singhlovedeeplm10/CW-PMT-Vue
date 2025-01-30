@@ -64,7 +64,6 @@ Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 
 Route::middleware('auth:sanctum')->post('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
 Route::get('/users/search', [LeaveController::class, 'search']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
-// Route::get('/users-on-leave', [LeaveController::class, 'getUsersOnLeave']);
 Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH']);
 
 

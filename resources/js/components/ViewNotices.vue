@@ -2,30 +2,31 @@
   <div class="notice-container">
     <!-- Notice Cards -->
     <div
-  v-for="(notice, index) in notices"
-  :key="index"
-  class="card mb-4 p-4 flex items-start shadow-lg transition-transform hover:scale-105"
-  :class="{'birthday-card': notice.user_image}" 
->
-  <!-- Happy Birthday Banner -->
-  <div v-if="notice.user_image" class="birthday-banner">
-    🎉 Happy Birthday! 🎈
-  </div>
+      v-for="(notice, index) in notices"
+      :key="index"
+      class="card mb-4 p-4 flex items-start shadow-lg transition-transform hover:scale-105"
+      :class="{'birthday-card': notice.user_image}" 
+    >
+      <!-- Happy Birthday Banner -->
+      <div v-if="notice.user_image" class="birthday-banner">
+        🎉 Happy Birthday! 🎈
+      </div>
+
       <!-- User Image for Birthday Notices -->
       <div class="flex items-center space-x-4">
-    <!-- User Image for Birthday Notices -->
-    <img
-  v-if="notice.user_image"
-  :src="`/storage/${notice.user_image}`"
-  alt="User Image"
-  class="birthday-avatar"
-/>
+        <!-- User Image for Birthday Notices -->
+        <img
+          v-if="notice.user_image"
+          :src="`/storage/${notice.user_image}`"
+          alt="User Image"
+          class="birthday-avatar"
+        />
 
-    <div class="content-container">
-      <h5 class="text-2xl font-bold">
-        <span>{{ notice.title }}</span>
-      </h5>
-      <p class="description" v-html="formatNoticeDescription(notice.description)"></p>
+        <div class="content-container">
+          <h5 class="text-2xl font-bold">
+            <span>{{ notice.title }}</span>
+          </h5>
+          <p class="description" v-html="formatNoticeDescription(notice.description)"></p>
         </div>
       </div>
     </div>
@@ -40,7 +41,6 @@ export default {
   data() {
     return {
       notices: [],
-      
     };
   },
   mounted() {
@@ -80,6 +80,12 @@ export default {
   
   
   <style scoped>
+  .flex.items-center {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: row;
+}
+
   .birthday-avatar {
   width: 80px;
   height: 80px;
@@ -160,6 +166,8 @@ export default {
   
   .content-container {
     flex: 1;
+    margin-left: 20px; /* Space between image and text */
+  max-width: calc(100% - 100px); /* Adjusts for image width and padding */
   }
   
   .title {

@@ -363,28 +363,30 @@ public function updateTeamLeave(Request $request, Leave $leave)
     
 
     
-    public function search(Request $request)
-    {
-        $searchTerm = $request->input('query', '');
-    
-        $users = User::leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-                    ->where('users.name', 'LIKE', "$searchTerm%")
-                    ->get([
-                        'users.id', 
-                        'users.name', 
-                        'user_profiles.user_image' // Include user image from user_profiles
-                    ]);
-    
-        // Format user image URL
-        $users->transform(function ($user) {
-            $user->user_image = $user->user_image 
-                ? asset('storage/' . $user->user_image) 
-                : asset('img/CWlogo.jpeg'); // Fallback image
-            return $user;
-        });
-    
-        return response()->json($users);
-    }
+public function search(Request $request)
+{
+    $searchTerm = $request->input('query', '');
+
+    $users = User::leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+                ->where('users.status', '1') // Only fetch active users
+                ->where('users.name', 'LIKE', "$searchTerm%")
+                ->get([
+                    'users.id', 
+                    'users.name', 
+                    'user_profiles.user_image' // Include user image from user_profiles
+                ]);
+
+    // Format user image URL
+    $users->transform(function ($user) {
+        $user->user_image = $user->user_image 
+            ? asset('storage/' . $user->user_image) 
+            : asset('img/CWlogo.jpeg'); // Fallback image
+        return $user;
+    });
+
+    return response()->json($users);
+}
+
     
 
     public function teamLeave(Request $request)
@@ -539,72 +541,82 @@ public function updateTeamLeave(Request $request, Leave $leave)
     }
     
    
-
     public function getUsersLeave(Request $request)
     {
         $selectedDate = $request->input('date'); // Get the selected date from the request
     
         $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
+            ->whereHas('user', function ($query) {
+                $query->where('status', '1'); // Fetch only users with status '1'
+            })
             ->whereDate('start_date', '<=', $selectedDate) // Start date is before or equal to the selected date
             ->whereDate('end_date', '>=', $selectedDate) // End date is after or equal to the selected date
-            ->with(['user:id,name', 'user.profile:user_id,user_image']) // Load user details and profile with user image
+            ->with(['user:id,name,status', 'user.profile:user_id,user_image']) // Load user details and profile
             ->get()
             ->map(function ($leave) {
-                $userImage = $leave->user->profile->user_image ?? null; // Fetch user image
-                $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate the full URL for the image
+                $user = $leave->user;
+    
+                // Ensure the user is active before including them
+                if ($user->status == '0') {
+                    return null;
+                }
+    
+                $userImage = $user->profile->user_image ?? null; // Fetch user image
+                $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate full image URL
     
                 return [
-                    'id' => $leave->user->id,
-                    'name' => $leave->user->name,
+                    'id' => $user->id,
+                    'name' => $user->name,
                     'status' => $leave->status, // Leave status
                     'user_image' => $userImageUrl, // Full URL for the user image
                 ];
-            });
+            })
+            ->filter(); // Remove null values (users with status 0)
     
         return response()->json($usersOnLeave);
-    }
+    }    
     
- 
 
-public function getUsersOnLeave(Request $request)
-{
-    $selectedDate = $request->query('date'); // Get the selected date from the request
+// public function getUsersOnLeave(Request $request)
+// {
+//     $selectedDate = $request->query('date'); // Get the selected date from the request
 
-    // Query users on leave where the selected date falls within the start_date and end_date range
-    $usersOnLeave = Leave::whereDate('start_date', '<=', $selectedDate)
-        ->whereDate('end_date', '>=', $selectedDate)
-        ->with(['user' => function ($query) {
-            $query->select('id', 'name')
-                  ->with('profile:id,user_id,user_image'); // Load user profile image
-        }])
-        ->get()
-        ->map(function ($leave) {
-            $user = $leave->user;
+//     // Query users on leave where the selected date falls within the start_date and end_date range
+//     $usersOnLeave = Leave::whereDate('start_date', '<=', $selectedDate)
+//         ->whereDate('end_date', '>=', $selectedDate)
+//         ->with(['user' => function ($query) {
+//             $query->select('id', 'name')
+//                   ->with('profile:id,user_id,user_image'); // Load user profile image
+//         }])
+//         ->get()
+//         ->map(function ($leave) {
+//             $user = $leave->user;
 
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'user_image' => $user->profile && $user->profile->user_image
-                    ? asset('storage/' . $user->profile->user_image)
-                    : asset('img/CWlogo.jpeg'), // Fallback image if user_image is null
-            ];
-        });
+//             return [
+//                 'id' => $user->id,
+//                 'name' => $user->name,
+//                 'user_image' => $user->profile && $user->profile->user_image
+//                     ? asset('storage/' . $user->profile->user_image)
+//                     : asset('img/CWlogo.jpeg'), // Fallback image if user_image is null
+//             ];
+//         });
 
-    return response()->json($usersOnLeave);
-}
+//     return response()->json($usersOnLeave);
+// }
 
 public function getMembersOnWFH(Request $request)
 {
     $selectedDate = $request->query('date'); // Get the selected date from the query parameters
     $date = \Carbon\Carbon::parse($selectedDate); // Parse the date
 
-    // Fetch approved WFH leaves with user details and user profile images
+    // Fetch approved WFH leaves with active users and profile images
     $leaves = Leave::where('leaves.type_of_leave', 'Work From Home')
         ->where('leaves.status', 'approved')
         ->whereDate('leaves.start_date', '<=', $date)
         ->whereDate('leaves.end_date', '>=', $date)
         ->join('users', 'leaves.user_id', '=', 'users.id')
         ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join with user_profiles
+        ->where('users.status', '1') // Only fetch active users (status = '1')
         ->select(
             'users.name as user_name',
             'leaves.start_date',
@@ -630,5 +642,6 @@ public function getMembersOnWFH(Request $request)
         'data' => $formattedLeaves,
     ]);
 }
+
 
 }
