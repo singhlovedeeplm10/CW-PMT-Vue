@@ -53,10 +53,12 @@
           </div>
         </div>
   
-        <!-- Loader or No Data -->
-        <div v-else class="loader">
-          Loading user information...
-        </div>
+        <!-- Loader Section with Spinner -->
+<div v-else class="loader">
+  <div class="spinner"></div>
+  Loading user information...
+</div>
+
       </div>
     </master-component>
   </template>
@@ -97,6 +99,38 @@
   
   
   <style scoped>
+  /* Loader Styles */
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #555;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background-color: #f7f7f7;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #293e60;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
   /* Global Container */
   .myaccount-container {
     font-family: "Roboto", sans-serif;

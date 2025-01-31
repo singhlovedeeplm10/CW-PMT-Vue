@@ -179,4 +179,15 @@ public function updateStatus(Request $request, $id)
     ]);
 }
 
+public function edit(User $user)
+{
+    // Retrieve user profile
+    $userProfile = $user->profile; // Assuming the relationship is defined as 'profile' in User model
+
+    return response()->json([
+        'userData' => $user,
+        'userProfile' => $userProfile,
+    ]);
+}
+
 }

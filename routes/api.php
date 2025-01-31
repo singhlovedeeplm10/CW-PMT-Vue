@@ -77,6 +77,7 @@ Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, '
 Route::post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 'getUserProfile']);
+Route::get('/users/{user}/edit', [UserController::class, 'edit']);
 
 
 // TECHNOLOGIES API ROUTE

@@ -14,7 +14,13 @@
           placeholder="Search by title..."
           class="search-input"
         />
+        <label for="sortOrder">Sort By:</label>
+        <select v-model="selectedSort" @change="sortNotices">
+          <option value="order_asc">Order (Ascending)</option>
+          <option value="created_at_desc">Created At (Descending)</option>
+        </select>
       </div>
+
 
       <div class="notices-section">
         <table class="notices-table" v-if="filteredNotices.length > 0">
@@ -87,13 +93,23 @@ export default {
       searchQuery: "",
       currentPage: 1,
       totalPages: 1,
+      selectedSort: "order_asc", // Default sorting option
     };
   },
   computed: {
     filteredNotices() {
-      if (!this.searchQuery) return this.notices;
+      let sortedNotices = [...this.notices];
+
+      // Apply sorting based on selectedSort value
+      if (this.selectedSort === "order_asc") {
+        sortedNotices.sort((a, b) => a.order - b.order);
+      } else if (this.selectedSort === "created_at_desc") {
+        sortedNotices.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      if (!this.searchQuery) return sortedNotices;
       const lowerCaseQuery = this.searchQuery.toLowerCase();
-      return this.notices.filter((notice) =>
+      return sortedNotices.filter((notice) =>
         notice.title.toLowerCase().includes(lowerCaseQuery)
       );
     },
@@ -127,6 +143,10 @@ export default {
         }
       }
     },
+    sortNotices() {
+      // Trigger sorting when sort option changes
+      this.filteredNotices;
+    },
   },
   mounted() {
     this.fetchNotices();
@@ -138,14 +158,43 @@ export default {
 
 <style scoped>
 .search-bar {
-  margin: 15px 23px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
+
 .search-input {
-  padding: 8px 12px;
+  padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 300px;
+  border-radius: 5px;
+  outline: none;
+  width: 200px;
 }
+
+.search-bar label {
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.search-bar select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.search-bar select:hover {
+  border-color: #888;
+}
+
+.search-bar select:focus {
+  border-color: #555;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
 .notice-container {
   margin: 20px auto;
   padding: 20px;

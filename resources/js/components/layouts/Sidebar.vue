@@ -22,67 +22,59 @@
         <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
       </li>
       
-      <!-- <li class="sidebar-item">
-        <router-link to="/send-email" class="sidebar-link" active-class="active-link">Mail</router-link>
-      </li> -->
+      <!-- Dropdown for TimeLine -->
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
-  <div class="permissions-header">
-    <h3 class="sidebar-subtitle">TimeLine</h3>
-    <!-- Dropdown Icon -->
-    <span :class="dropdowns.timelines ? 'icon-rotate' : ''">
-      ▼
-    </span>
-  </div>
-  <ul v-show="dropdowns.timelines" class="sidebar-submenu">
-    <li class="sidebar-subitem">
-      <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
-    </li>
-    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-      <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
-    </li>
-  </ul>
-</li>
-<li class="sidebar-item" @click="toggleDropdown('leaves')">
-  <div class="permissions-header">
-    <h3 class="sidebar-subtitle">Leaves</h3>
-    <!-- Dropdown Icon -->
-    <span :class="dropdowns.leaves ? 'icon-rotate' : ''">
-      ▼
-    </span>
-  </div>
-  <ul v-show="dropdowns.leaves" class="sidebar-submenu">
-    <li class="sidebar-subitem">
-      <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
-    </li>
-    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-      <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
-    </li>
-  </ul>
-</li>
-<li class="sidebar-item" @click="toggleDropdown('tasks')">
-  <div class="permissions-header">
-    <h3 class="sidebar-subtitle">Tasks</h3>
-    <!-- Dropdown Icon -->
-    <span :class="dropdowns.tasks ? 'icon-rotate' : ''">
-      ▼
-    </span>
-  </div>
-  <ul v-show="dropdowns.tasks" class="sidebar-submenu">
-    <li class="sidebar-subitem">
-      <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
-    </li>
-    <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-      <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
-    </li>
-  </ul>
-</li>
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">TimeLine</h3>
+          <span :class="dropdowns.timelines ? 'icon-rotate' : ''">▼</span>
+        </div>
+        <ul v-show="dropdowns.timelines" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
+          </li>
+        </ul>
+      </li>
 
+      <!-- Dropdown for Leaves -->
+      <li class="sidebar-item" @click="toggleDropdown('leaves')">
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">Leaves</h3>
+          <span :class="dropdowns.leaves ? 'icon-rotate' : ''">▼</span>
+        </div>
+        <ul v-show="dropdowns.leaves" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Dropdown for Tasks -->
+      <li class="sidebar-item" @click="toggleDropdown('tasks')">
+        <div class="permissions-header">
+          <h3 class="sidebar-subtitle">Tasks</h3>
+          <span :class="dropdowns.tasks ? 'icon-rotate' : ''">▼</span>
+        </div>
+        <ul v-show="dropdowns.tasks" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
+          </li>
+        </ul>
+      </li>
     </ul>
   </aside>
 </template>
 
 <script>
-import axios from "axios";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "SidebarComponent",
@@ -93,50 +85,40 @@ export default {
         tasks: false,
         timelines: false,
       },
-      userName: "Guest",
-      userRole: null,
-      userImage: null, // Add userImage property
     };
   },
+  computed: {
+    ...mapGetters(["getUserDetails", "getUserRole"]),
+    userName() {
+      return this.getUserDetails.name;
+    },
+    userImage() {
+      return this.getUserDetails.image;
+    },
+    userRole() {
+      return this.getUserRole;
+    },
+  },
   methods: {
+    ...mapActions(["fetchUserDetails", "fetchUserRole"]),
     toggleDropdown(dropdownName) {
       this.dropdowns = {
         ...this.dropdowns,
         [dropdownName]: !this.dropdowns[dropdownName],
       };
     },
-    async fetchUserDetails() {
-      try {
-        const response = await axios.get("/api/user-details", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        this.userName = response.data.user_name;
-        this.userImage = response.data.user_image;
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-      }
-    },
-    async fetchUserRole() {
-      try {
-        const response = await axios.get("/api/user-role", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        this.userRole = response.data.role;
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-      }
-    },
   },
   mounted() {
-    this.fetchUserDetails();
-    this.fetchUserRole();
+    // Only fetch the data once if not already fetched
+    if (!this.userName || !this.userRole) {
+      this.fetchUserDetails();
+      this.fetchUserRole();
+    }
   },
 };
 </script>
+
+
 <style scoped>
 .sidebar {
   width: 240px;

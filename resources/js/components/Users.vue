@@ -3,8 +3,6 @@
     <div class="users-page">
       <div class="header d-flex justify-content-between align-items-center" style="padding: 15px 37px 14px;">
         <h2 class="title">Employees</h2>
-        
-        <!-- Replace the original button with ButtonComponent -->
         <ButtonComponent
           label="Add Employee"
           :clickEvent="openAddEmployeeModal"
@@ -13,75 +11,79 @@
       </div>
 
       <!-- Search Filters -->
-      <div class="d-flex justify-content-between" style="padding: 15px 37px 14px;">
-        <div class="search-fields">
-          <input
-            v-model="searchName"
-            type="text"
-            class="form-control"
-            placeholder="Search by Name"
-            @input="fetchUsers"
-          />
-          <input
-            v-model="searchEmail"
-            type="text"
-            class="form-control"
-            placeholder="Search by Email"
-            @input="fetchUsers"
-          />
-          <select v-model="searchStatus" class="form-control" @change="fetchUsers">
-            <option value="">Select Status</option>
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
+      <div class="search-filters d-flex gap-3 mb-3 px-4">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search by Name"
+          v-model="filters.name"
+        />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search by Email"
+          v-model="filters.email"
+        />
+        <select class="form-control" v-model="filters.status">
+          <option value="">All Statuses</option>
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+      </div>
+
+      <!-- Loader Spinner -->
+      <div v-if="isLoading" class="loader-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
         </div>
-        <button class="btn btn-primary" @click="fetchUsers(currentPage)">Search</button>
       </div>
 
-      <div class="table-container">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users.data" :key="user.id">
-              <td>{{ user.id }}</td>
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>
-                <!-- Toggle Button for Status -->
-                <button
-                  :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
-                  @click="toggleStatus(user)"
-                >
-                  {{ user.status === '1' ? 'Active' : 'Inactive' }}
-                </button>
-              </td>
-              <td>
-                <button
-                  class="btn btn-sm btn-primary me-2"
-                  @click="editUser(user)"
-                >
-                  <i class="fas fa-edit"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Table & Pagination (Visible only when data is loaded) -->
+      <div v-if="!isLoading">
+        <div class="table-container">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <button
+                    :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
+                    @click="toggleStatus(user)"
+                  >
+                    {{ user.status === '1' ? 'Active' : 'Inactive' }}
+                  </button>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-primary me-2"
+                    @click="editUser(user)"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <!-- Pagination Component -->
-      <pagination
-        :totalPages="totalPages"
-        :currentPage="currentPage"
-        @page-changed="fetchUsers"
-      />
+        <!-- Pagination Component -->
+        <pagination
+          :totalPages="totalPages"
+          :currentPage="currentPage"
+          @page-changed="fetchUsers"
+        />
+      </div>
 
       <!-- Modals -->
       <add-employee-modal
@@ -105,8 +107,8 @@ import axios from "axios";
 import MasterComponent from "./layouts/Master.vue";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/modals/EditEmployeeModal.vue";
-import Pagination from "@/components/Pagination.vue"; // Importing Pagination component
-import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
+import Pagination from "@/components/Pagination.vue";
+import ButtonComponent from "@/components/ButtonComponent.vue";
 
 export default {
   name: "Users",
@@ -115,7 +117,7 @@ export default {
     AddEmployeeModal,
     EditEmployeeModal,
     Pagination,
-    ButtonComponent, // Register ButtonComponent
+    ButtonComponent,
   },
   data() {
     return {
@@ -125,29 +127,41 @@ export default {
       showAddEmployeeModal: false,
       showEditEmployeeModal: false,
       selectedUser: null,
-      searchName: '',
-      searchEmail: '',
-      searchStatus: '',
+      isLoading: false,
+      filters: {
+        name: "",
+        email: "",
+        status: "",
+      },
     };
   },
   mounted() {
     this.fetchUsers(this.currentPage);
   },
+  computed: {
+    filteredUsers() {
+      return this.users.data.filter((user) => {
+        const matchesName = user.name.toLowerCase().includes(this.filters.name.toLowerCase());
+        const matchesEmail = user.email.toLowerCase().includes(this.filters.email.toLowerCase());
+        const matchesStatus =
+          this.filters.status === "" || user.status === this.filters.status;
+
+        return matchesName && matchesEmail && matchesStatus;
+      });
+    },
+  },
   methods: {
     async fetchUsers(page = 1) {
+      this.isLoading = true;
       try {
-        const response = await axios.get('/api/users/' + page, {
-          params: {
-            name: this.searchName,
-            email: this.searchEmail,
-            status: this.searchStatus,
-          },
-        });
+        const response = await axios.get("/api/users/" + page);
         this.users = response.data;
         this.currentPage = response.data.current_page;
         this.totalPages = response.data.last_page;
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
+        this.isLoading = false;
       }
     },
     openAddEmployeeModal() {
@@ -156,21 +170,36 @@ export default {
     closeAddEmployeeModal() {
       this.showAddEmployeeModal = false;
     },
-    editUser(user) {
-      this.selectedUser = user;
-      this.showEditEmployeeModal = true;
-    },
+    async editUser(user) {
+  this.selectedUser = user;
+  try {
+    const response = await axios.get(`/api/users/${user.id}/edit`);
+    // Assuming the API returns both user and user profile data
+    const { userData, userProfile } = response.data;
+
+    // Combine user and user profile data and pass it to the modal
+    this.selectedUser = {
+      ...userData,
+      ...userProfile,
+    };
+
+    this.showEditEmployeeModal = true;
+  } catch (error) {
+    console.error("Error fetching user data for edit:", error);
+  }
+},
+
     closeEditEmployeeModal() {
       this.showEditEmployeeModal = false;
       this.selectedUser = null;
     },
     async toggleStatus(user) {
       try {
-        const newStatus = user.status === '1' ? '0' : '1'; // Toggle status
+        const newStatus = user.status === "1" ? "0" : "1";
         const response = await axios.put(`/api/users/${user.id}/status`, { status: newStatus });
 
         if (response.data.success) {
-          user.status = newStatus; // Update local state after success
+          user.status = newStatus;
         } else {
           console.error("Failed to update status.");
         }
@@ -182,7 +211,14 @@ export default {
 };
 </script>
 
+
 <style scoped>
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
 .search-fields {
   display: flex;
   gap: 10px;
