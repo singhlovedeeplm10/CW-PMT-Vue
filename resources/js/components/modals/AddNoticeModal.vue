@@ -5,7 +5,7 @@
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-row">
           <!-- Title input field -->
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': validationErrors.title }">
             <InputField
               label="Title"
               :modelValue="form.title"
@@ -13,10 +13,11 @@
               placeholder="Enter notice title"
               :isRequired="true"
             />
+            <p v-if="validationErrors.title" class="error-message">Title is required.</p>
           </div>
 
           <!-- Order input field -->
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': validationErrors.order }">
             <InputField
               label="Order"
               type="number"
@@ -25,12 +26,13 @@
               placeholder="Enter order number"
               :isRequired="true"
             />
+            <p v-if="validationErrors.order" class="error-message">Order is required.</p>
           </div>
         </div>
 
         <div class="form-row">
           <!-- Start Date -->
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': validationErrors.start_date }">
             <DateInput
               label="Start Date"
               id="start_date"
@@ -41,10 +43,11 @@
               :maxDate="maxDate"
               :condition="true"
             />
+            <p v-if="validationErrors.start_date" class="error-message">Start Date is required.</p>
           </div>
 
           <!-- End Date -->
-          <div class="form-group">
+          <div class="form-group" :class="{ 'error': validationErrors.end_date }">
             <DateInput
               label="End Date"
               id="end_date"
@@ -55,13 +58,15 @@
               :maxDate="maxDate"
               :condition="true"
             />
+            <p v-if="validationErrors.end_date" class="error-message">End Date is required.</p>
           </div>
         </div>
 
         <!-- Description field with Summernote -->
-        <div class="form-group full-width">
+        <div class="form-group full-width" :class="{ 'error': validationErrors.description }">
           <label for="description-editor">Description</label>
           <div id="description-editor"></div>
+          <p v-if="validationErrors.description" class="error-message">Description is required.</p>
         </div>
 
         <!-- Buttons -->
@@ -110,6 +115,7 @@ export default {
         start_date: "",
         end_date: "",
       },
+      validationErrors: {},
       minDate: new Date().toISOString().split("T")[0],
       maxDate: null,
       isLoading: false, // Loader state
@@ -125,14 +131,18 @@ export default {
 
       this.form.description = $("#description-editor").summernote("code");
 
-      if (
-        !this.form.title ||
-        (!this.form.order && this.form.order !== 0) ||
-        !this.form.description ||
-        !this.form.start_date ||
-        !this.form.end_date
-      ) {
-        toast.error("All fields are required!", {
+      // Reset validation errors
+      this.validationErrors = {};
+
+      // Validate fields
+      if (!this.form.title) this.validationErrors.title = true;
+      if (!this.form.order && this.form.order !== 0) this.validationErrors.order = true;
+      if (!this.form.description || this.form.description === "<p><br></p>") this.validationErrors.description = true;
+      if (!this.form.start_date) this.validationErrors.start_date = true;
+      if (!this.form.end_date) this.validationErrors.end_date = true;
+
+      if (Object.keys(this.validationErrors).length > 0) {
+        toast.error("Please fill in all required fields!", {
           position: "top-right",
           autoClose: 3000,
         });
@@ -207,9 +217,17 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
+/* .error {
+  border: 2px solid red !important;
+  border-radius: 5px;
+} */
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
 .modal-overlay {
   position: fixed;
   top: 0;

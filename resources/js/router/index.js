@@ -19,6 +19,7 @@ import UploadTimeline from '../components/UploadTimeline.vue';
 import Policies from '../components/Policies.vue';
 import Notices from '../components/Notices.vue';
 import ViewNotices from '../components/ViewNotices.vue';
+import SalarySlips from '../components/SalarySlips.vue';
 
 
 const routes = [
@@ -38,6 +39,7 @@ const routes = [
   { path: '/policies', name: 'Policies', component: Policies },
   { path: '/notices', name: 'Notices', component: Notices },
   { path: '/view-notices', name: 'ViewNotices', component: ViewNotices },
+  { path: '/salary-slips', name: 'SalarySlips', component: SalarySlips },
 ];
 
 const router = createRouter({

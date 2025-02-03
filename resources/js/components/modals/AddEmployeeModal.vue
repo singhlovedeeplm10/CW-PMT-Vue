@@ -7,49 +7,62 @@
           <button type="button" class="btn-close" @click="$emit('close')"></button>
         </div>
         <div class="modal-body">
-          <!-- Replace hardcoded input field with InputField -->
+          <!-- Employee Name -->
           <div class="mb-3">
-          <InputField
-            label="Employee Name"
-            id="name"
-            v-model="employee.name"
-            placeholder="Enter employee name"
-            error=""
-          />
-        </div>
+            <InputField
+              label="Employee Name"
+              id="name"
+              v-model="employee.name"
+              placeholder="Enter employee name"
+              :error="fieldErrors.name"
+              :class="{ 'input-error': fieldErrors.name }"
+            />
+            <p v-if="fieldErrors.name" class="error-message">{{ fieldErrors.name }}</p>
+          </div>
+
+          <!-- Employee Email -->
           <div class="mb-3">
             <EmailInput
-  label="Employee Email"
-  id="email"
-  v-model="employee.email"
-  placeholder="Enter employee email"
-  :error="emailError"
-  @input-blur="(error) => emailError = error"
-/>
-
+              label="Employee Email"
+              id="email"
+              v-model="employee.email"
+              placeholder="Enter employee email"
+              :error="fieldErrors.email || emailError"
+              :class="{ 'input-error': fieldErrors.email }"
+              @input-blur="(error) => emailError = error"
+            />
+            <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
           </div>
-          <div class="mb-3">
-  <PasswordInput
-    label="Password"
-    id="password"
-    v-model="employee.password"
-    placeholder="Enter password"
-    :error="passwordError"
-    @input-blur="(error) => passwordError = error"
-  />
-</div>
-<div class="mb-3">
-  <PasswordInput
-    label="Confirm Password"
-    id="confirmPassword"
-    v-model="employee.confirmPassword"
-    placeholder="Confirm password"
-    :error="confirmPasswordError"
-    @input-blur="(error) => confirmPasswordError = error"
-  />
-</div>
 
+          <!-- Password -->
+          <div class="mb-3">
+            <PasswordInput
+              label="Password"
+              id="password"
+              v-model="employee.password"
+              placeholder="Enter password"
+              :error="fieldErrors.password || passwordError"
+              :class="{ 'input-error': fieldErrors.password }"
+              @input-blur="(error) => passwordError = error"
+            />
+            <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="mb-3">
+            <PasswordInput
+              label="Confirm Password"
+              id="confirmPassword"
+              v-model="employee.confirmPassword"
+              placeholder="Confirm password"
+              :error="fieldErrors.confirmPassword || confirmPasswordError"
+              :class="{ 'input-error': fieldErrors.confirmPassword }"
+              @input-blur="(error) => confirmPasswordError = error"
+            />
+            <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
+          </div>
         </div>
+
         <div class="modal-footer custom-modal-footer">
           <ButtonComponent
             label="Close"
@@ -82,18 +95,18 @@ import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import ButtonComponent from "@/components/ButtonComponent.vue";
-import InputField from "@/components/InputField.vue"; // Import the InputField component
-import EmailInput from "@/components/EmailInput.vue"; // Import the reusable EmailInput component
-import PasswordInput from "@/components/PasswordInput.vue"; // Import the reusable PasswordInput component
+import InputField from "@/components/InputField.vue";
+import EmailInput from "@/components/EmailInput.vue";
+import PasswordInput from "@/components/PasswordInput.vue";
 
 export default {
   name: "AddEmployeeModal",
   emits: ["close", "employee-added"],
   components: {
     ButtonComponent,
-    InputField, // Register the InputField component
-    EmailInput, // Register the EmailInput component
-    PasswordInput, // Register the PasswordInput component
+    InputField,
+    EmailInput,
+    PasswordInput,
   },
   setup(_, { emit }) {
     const employee = ref({
@@ -102,18 +115,43 @@ export default {
       password: "",
       confirmPassword: "",
     });
-    const emailError = ref(""); // For email validation errors
-    const passwordError = ref(""); // For password validation errors
-    const confirmPasswordError = ref(""); // For confirm password validation errors
+
+    const fieldErrors = ref({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+    const emailError = ref("");
+    const passwordError = ref("");
+    const confirmPasswordError = ref("");
     const isLoading = ref(false);
 
+    const validateFields = () => {
+      let isValid = true;
+      fieldErrors.value = {
+        name: employee.value.name ? "" : "Employee name is required.",
+        email: employee.value.email ? "" : "Employee email is required.",
+        password: employee.value.password ? "" : "Password is required.",
+        confirmPassword: employee.value.confirmPassword ? "" : "Confirm password is required.",
+      };
+
+      if (!employee.value.name || !employee.value.email || !employee.value.password || !employee.value.confirmPassword) {
+        isValid = false;
+      }
+
+      return isValid;
+    };
+
     const addEmployee = async () => {
-      if (emailError.value || passwordError.value || confirmPasswordError.value) {
-        toast.error("Please fix all validation errors before submitting.", { position: "top-right" });
+      if (!validateFields()) {
+        toast.error("Please fill in all required fields.", { position: "top-right" });
         return;
       }
 
       if (employee.value.password !== employee.value.confirmPassword) {
+        fieldErrors.value.confirmPassword = "Passwords do not match.";
         toast.error("Passwords do not match.", { position: "top-right" });
         return;
       }
@@ -133,6 +171,7 @@ export default {
 
     return {
       employee,
+      fieldErrors,
       emailError,
       passwordError,
       confirmPasswordError,
@@ -143,11 +182,12 @@ export default {
 };
 </script>
 
-
-
-
-
 <style scoped>
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+}
 /* Modal background */
 .modal.fade.show {
   display: block;

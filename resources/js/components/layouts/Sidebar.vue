@@ -21,6 +21,9 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
       </li>
+      <li class="sidebar-item">
+        <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>
+      </li>
       
       <!-- Dropdown for TimeLine -->
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
