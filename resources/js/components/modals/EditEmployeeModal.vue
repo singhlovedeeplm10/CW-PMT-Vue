@@ -25,6 +25,7 @@
               v-model="formData.email"
               class="form-control custom-input"
               placeholder="Enter employee's email"
+              :readonly="true" 
             />
           </div>
           <div class="form-group">
@@ -76,15 +77,17 @@
             />
           </div>
           <div class="form-group">
-            <label for="employee_code" class="form-label">Employee Code</label>
-            <input
-              id="employee_code"
-              type="text"
-              v-model="formData.employee_code"
-              class="form-control custom-input"
-              placeholder="Enter employee code"
-            />
-          </div>
+  <label for="employee_code" class="form-label">Employee Code</label>
+  <input
+    id="employee_code"
+    type="text"
+    v-model="formData.employee_code"
+    class="form-control custom-input"
+    placeholder="Employee Code"
+    :readonly="true" 
+  />
+</div>
+
           <div class="form-group">
             <label for="user_DOB" class="form-label">Date of Birth</label>
             <input
@@ -130,8 +133,6 @@
 <script>
 import { toast } from 'vue3-toastify';
 import ButtonComponent from "@/components/ButtonComponent.vue";
-
-
 export default {
   components: {
     ButtonComponent
@@ -144,9 +145,17 @@ export default {
   },
   data() {
     return {
-      formData: { ...this.user, password: "", user_image: null },
+      formData: { ...this.user, password: "", user_image: null, employee_code: '' },
       loading: false, // Track loading state
     };
+  },
+  created() {
+    // Prefill the employee code with CW00 + user ID when the modal opens
+    if (this.userProfile && this.userProfile.employee_code) {
+      this.formData.employee_code = this.userProfile.employee_code;  // Use the profile's employee code if available
+    } else {
+      this.formData.employee_code = `CW00${this.user.id}`; // Default to CW00 + user ID if no profile exists
+    }
   },
   methods: {
     handleImageUpload(event) {
@@ -185,6 +194,7 @@ export default {
     },
   },
 };
+
 </script>
 
   <style scoped>

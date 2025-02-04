@@ -27,7 +27,7 @@
       
       <!-- Dropdown for TimeLine -->
       <li class="sidebar-item" @click="toggleDropdown('timelines')">
-        <div class="permissions-header">
+        <div class="timelines-header">
           <h3 class="sidebar-subtitle">TimeLine</h3>
           <span :class="dropdowns.timelines ? 'icon-rotate' : ''">▼</span>
         </div>
@@ -43,7 +43,7 @@
 
       <!-- Dropdown for Leaves -->
       <li class="sidebar-item" @click="toggleDropdown('leaves')">
-        <div class="permissions-header">
+        <div class="leaves-header">
           <h3 class="sidebar-subtitle">Leaves</h3>
           <span :class="dropdowns.leaves ? 'icon-rotate' : ''">▼</span>
         </div>
@@ -59,7 +59,7 @@
 
       <!-- Dropdown for Tasks -->
       <li class="sidebar-item" @click="toggleDropdown('tasks')">
-        <div class="permissions-header">
+        <div class="tasks-header">
           <h3 class="sidebar-subtitle">Tasks</h3>
           <span :class="dropdowns.tasks ? 'icon-rotate' : ''">▼</span>
         </div>
@@ -185,7 +185,25 @@ export default {
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 
-.permissions-header {
+.timelines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+.leaves-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+.tasks-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -195,7 +213,13 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.permissions-header:hover {
+.timelines-header:hover {
+  background-color: rgba(236, 240, 241, 0.2);
+}
+.leaves-header:hover {
+  background-color: rgba(236, 240, 241, 0.2);
+}
+.tasks-header:hover {
   background-color: rgba(236, 240, 241, 0.2);
 }
 

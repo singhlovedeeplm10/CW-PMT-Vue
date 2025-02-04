@@ -77,60 +77,66 @@ class UserController extends Controller
     }
 
     public function updateUser(Request $request, $id)
-    {
-        // Validate the request
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'status' => 'required|in:0,1',
-            'password' => 'nullable|min:6',
-            'address' => 'nullable|string|max:255',
-            'qualifications' => 'nullable|string|max:255',
-            'employee_code' => 'nullable|string|max:255',
-            'user_DOB' => 'nullable|date',
-            'user_image' => 'nullable|image|mimes:jpeg,png,jpg', // Image validation
-            'gender' => 'nullable|in:male,female', // Validation for gender
-            'contact' => 'nullable|digits:10', // Validation for contact
-        ]);
-    
-        $user = User::findOrFail($id);
-    
-        // Update User Table
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'status' => $validated['status'],
-            'password' => $request->filled('password') ? Hash::make($validated['password']) : $user->password,
-        ]);
-    
-        // Handle User Profile Update
-        $profileData = [
-            'address' => $validated['address'] ?? null,
-            'qualifications' => $validated['qualifications'] ?? null,
-            'employee_code' => $validated['employee_code'] ?? null,
-            'user_DOB' => $validated['user_DOB'] ?? null,
-            'gender' => $validated['gender'] ?? null,
-            'contact' => $validated['contact'] ?? null,
-        ];
-    
-        // Handle Image Upload
-        if ($request->hasFile('user_image')) {
-            $imagePath = $request->file('user_image')->store('profile_images', 'public');
-            $profileData['user_image'] = $imagePath;
-        }
-    
-        // Update or Create User Profile
-        $user->profile()->updateOrCreate(
-            ['user_id' => $user->id],
-            $profileData
-        );
-    
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully.',
-            'data' => $user->load('profile'),
-        ]);
+{
+    // Define the rule for email validation with the exception for the current user's email
+    $emailRule = 'required|email|unique:users,email,' . $id;
+
+    // Validate the request
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => $emailRule, // Use the rule with the exception for the current user's email
+        'status' => 'required|in:0,1',
+        'password' => 'nullable|min:6',
+        'address' => 'nullable|string|max:255',
+        'qualifications' => 'nullable|string|max:255',
+        'employee_code' => 'nullable|string|max:255',
+        'user_DOB' => 'nullable|date',
+        'user_image' => 'nullable|image|mimes:jpeg,png,jpg', // Image validation
+        'gender' => 'nullable|in:male,female', // Validation for gender
+        'contact' => 'nullable|digits:10', // Validation for contact
+    ]);
+
+    // Find the user by ID
+    $user = User::findOrFail($id);
+
+    // Update the user table
+    $user->update([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'status' => $validated['status'],
+        'password' => $request->filled('password') ? Hash::make($validated['password']) : $user->password,
+    ]);
+
+    // Prepare profile data
+    $profileData = [
+        'address' => $validated['address'] ?? null,
+        'qualifications' => $validated['qualifications'] ?? null,
+        'employee_code' => $validated['employee_code'] ?? null,
+        'user_DOB' => $validated['user_DOB'] ?? null,
+        'gender' => $validated['gender'] ?? null,
+        'contact' => $validated['contact'] ?? null,
+    ];
+
+    // Handle image upload
+    if ($request->hasFile('user_image')) {
+        $imagePath = $request->file('user_image')->store('profile_images', 'public');
+        $profileData['user_image'] = $imagePath;
     }
+
+    // Update or create the user's profile
+    $user->profile()->updateOrCreate(
+        ['user_id' => $user->id],
+        $profileData
+    );
+
+    // Return the response
+    return response()->json([
+        'success' => true,
+        'message' => 'User updated successfully.',
+        'data' => $user->load('profile'),
+    ]);
+}
+
     
 
 public function updateStatus(Request $request, $id)
@@ -181,13 +187,14 @@ public function updateStatus(Request $request, $id)
 
 public function edit(User $user)
 {
-    // Retrieve user profile
-    $userProfile = $user->profile; // Assuming the relationship is defined as 'profile' in User model
-
+    // Retrieve user profile and include employee_code
+    $userProfile = $user->profile; // Assuming the relationship is defined as 'profile' in the User model
+    
     return response()->json([
         'userData' => $user,
         'userProfile' => $userProfile,
     ]);
 }
+
 
 }

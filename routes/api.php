@@ -18,6 +18,7 @@ use App\Http\Controllers\API\TimelineController;
 use App\Http\Controllers\API\MailController;
 use App\Http\Controllers\API\PolicyController;
 use App\Http\Controllers\API\NoticeController;
+use App\Http\Controllers\API\SalarySlipController;
 
 
 
@@ -142,4 +143,6 @@ Route::put('/edit-notice/{id}', [NoticeController::class, 'updateNotice']);
 Route::get('/notices', [NoticeController::class, 'fetchNotices']);
 Route::get('/upcoming-birthdays', [NoticeController::class, 'upcomingBirthdays']);
 
+// SalarySlip ROUTES
+Route::post('/upload-salary-slip', [SalarySlipController::class, 'upload']);
 
