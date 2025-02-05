@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\SalarySlips;
 use App\Models\User;
 use App\Models\UserProfile;
+use Illuminate\Support\Facades\Auth;
 use League\Csv\Reader;
 
 
@@ -61,5 +62,59 @@ class SalarySlipController extends Controller
     }
 
     return response()->json(['message' => 'Salary slips processed successfully!']);
+}
+public function getSalary(Request $request)
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    // Initialize query for salary slips
+    $query = SalarySlips::select(
+        'id',
+        'employee_code',
+        'employee_name',
+        'total_salary',
+        'basic_salary',
+        'total_deductions',
+        'total_incentives',
+        'net_salary_credited',
+        'created_at'
+    );
+
+    // Check if the logged-in user is an admin
+    if (!$user->hasRole('Admin')) {
+        // Filter only the logged-in user's salary slips
+        $employeeCode = $user->profile->employee_code ?? null;
+
+        if (!$employeeCode) {
+            return response()->json(['error' => 'Employee code not found'], 404);
+        }
+
+        $query->where('employee_code', $employeeCode);
+    }
+
+    // Filter by month and year if provided
+    $month = $request->input('month', date('m'));
+    $year = $request->input('year', date('Y'));
+
+    $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
+
+    $salarySlips = $query->get();
+
+    return response()->json($salarySlips);
+}
+    public function viewSalarySlip($employeeCode)
+{
+    $salarySlip = SalarySlips::where('employee_code', $employeeCode)->first();
+
+    if (!$salarySlip) {
+        return response()->json(['message' => 'Salary slip not found'], 404);
+    }
+
+    return response()->json($salarySlip);
 }
 }

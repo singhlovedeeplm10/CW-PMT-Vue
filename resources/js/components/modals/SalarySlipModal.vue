@@ -1,97 +1,97 @@
 <template>
-    <div v-if="isVisible" class="modal-overlay">
-      <div class="modal-content">
-        <div class="logo-heading">
-          <img src="img/CWlogo.jpeg" alt="Contriwiz Logo" class="logo" />
-          <h2>Contriwiz</h2>
-        </div>
-  
-        <h3 class="modal-title">Salary Slip for the Month of December 2024</h3>
-  
-        <div class="modal-details">
-          <p><strong>Name:</strong> Manish Singh</p>
-          <p><strong>Total Salary:</strong> Rs. <span class="highlight">XXXX</span></p>
-          <p><strong>Total Leaves:</strong> 2 days</p>
-          <p><strong>Extra Working Days:</strong> 0</p>
-          <p><strong>Deduction %:</strong> 0.00</p>
-          <p><strong>Earned Leave:</strong> 2</p>
-          <p><strong>Eligibility:</strong> No</p>
-          <p><strong>Leave without Pay:</strong> 0</p>
-        </div>
-  
-        <!-- Tables Row -->
-        <div class="table-row">
-          <div class="table-container">
-            <div class="table-box">
-              <h4>Pay & Allowances</h4>
+  <div v-if="isVisible" class="modal-overlay">
+    <div class="modal-content">
+      <div class="logo-heading">
+        <img src="img/CWlogo.jpeg" alt="Contriwiz Logo" class="logo" />
+        <h2>Contriwiz</h2>
+      </div>
+
+      <h3 class="modal-title">Salary Slip for the Month of December 2024</h3>
+
+      <div class="modal-details">
+        <p><strong>Name:</strong> {{ selectedSalarySlip.employee_name }}</p>
+        <p><strong>Total Salary:</strong> Rs. <span class="font-bold">{{ selectedSalarySlip.total_salary }}</span></p>
+        <p><strong>Total Leaves:</strong> {{ selectedSalarySlip.total_leaves }} days</p>
+        <p><strong>Extra Working Days:</strong> {{ selectedSalarySlip.extra_working_days }}</p>
+        <p><strong>Deduction %:</strong> {{ (selectedSalarySlip.total_deductions / selectedSalarySlip.total_salary * 100).toFixed(2) }}%</p>
+        <p><strong>Earned Leave:</strong> {{ selectedSalarySlip.earned_leave }}</p>
+        <p><strong>Leave without Pay:</strong> {{ selectedSalarySlip.leaves_without_pay }}</p>
+      </div>
+
+      <!-- Tables Row -->
+      <div class="table-row">
+        <div class="table-container">
+          <div class="table-box">
+            <h4>Pay & Allowances</h4>
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Basic</td><td>{{ selectedSalarySlip.basic_salary }}</td></tr>
+                <tr><td>House Rent</td><td>{{ selectedSalarySlip.house_rent }}</td></tr>
+                <tr><td>Conveyance</td><td>{{ selectedSalarySlip.conveyance }}</td></tr>
+                <tr><td>Telephone</td><td>{{ selectedSalarySlip.telephone }}</td></tr>
+                <tr><td>Medical</td><td>{{ selectedSalarySlip.medical }}</td></tr>
+                <tr><td>Other</td><td>{{ selectedSalarySlip.other }}</td></tr>
+                <tr><td class="gross-total">Gross Total: </td><td class="font-bold">{{ selectedSalarySlip.total_salary }}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-box">
+            <h4>Deductions & Incentives</h4>
+            <div class="dual-tables-wrapper">
               <table class="styled-table">
                 <thead>
                   <tr>
-                    <th>Description</th>
+                    <th>Deductions</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Basic</td><td>XXXX</td></tr>
-                  <tr><td>House Rent</td><td>XXXX</td></tr>
-                  <tr><td>Conveyance</td><td>XXXX</td></tr>
-                  <tr><td>Telephone</td><td>XXXX</td></tr>
-                  <tr><td>Medical</td><td>XXXX</td></tr>
-                  <tr><td>Other</td><td>XXXX</td></tr>
-                  <tr><td class="gross-total">Gross Total: </td><td class="highlight">XXXX</td></tr>
+                  <tr><td>Tax</td><td>{{ selectedSalarySlip.tax }}</td></tr>
+                  <tr><td>Leaves</td><td>{{ selectedSalarySlip.unpaid_leaves_deduction }}</td></tr>
+                  <tr><td v-tooltip="'Provident Fund'">PF</td><td>{{ selectedSalarySlip.provident_fund }}</td></tr>
+                  <tr><td v-tooltip="'Employee State Insurance'">ESI</td><td>{{ selectedSalarySlip.employee_state_insurance }}</td></tr>
+                  <tr><td class="font-bold">Total DED</td><td class="font-bold">{{ selectedSalarySlip.total_deductions }}</td></tr>
+                </tbody>
+              </table>
+
+              <table class="styled-table">
+                <thead>
+                  <tr>
+                    <th>Incentives</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Extra Working</td><td>{{ selectedSalarySlip.extra_working_incentive }}</td></tr>
+                  <tr><td>Gratutiy</td><td>{{ selectedSalarySlip.gratuity }}</td></tr>
+                  <tr><td>Bonus</td><td>{{ selectedSalarySlip.bonus }}</td></tr>
+                  <tr><td class="font-bold">Total</td><td class="font-bold">{{ selectedSalarySlip.total_incentives }}</td></tr>
                 </tbody>
               </table>
             </div>
-  
-            <div class="table-box">
-              <h4>Deductions & Incentives</h4>
-              <div class="dual-tables-wrapper">
-                <table class="styled-table">
-                  <thead>
-                    <tr>
-                      <th>Deductions</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Tax</td><td>3000.00</td></tr>
-                    <tr><td>Leaves</td><td>0.00</td></tr>
-                    <tr><td v-tooltip="'Provident Fund'">PF</td><td>0.00</td></tr>
-                    <tr><td v-tooltip="'Employee State Insurance'">ESI</td><td>0.00</td></tr>
-                    <tr><td class="font-bold">Total DED</td><td class="font-bold">3000.00</td></tr>
-                  </tbody>
-                </table>
-  
-                <table class="styled-table">
-                  <thead>
-                    <tr>
-                      <th>Incentives</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Extra Working</td><td>0.00</td></tr>
-                    <tr><td>Random</td><td>0.00</td></tr>
-                    <tr><td class="font-bold">Total</td><td class="font-bold">0.00</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         </div>
-  
-        <h3 class="salary-credited">
-          Salary Credited To Your Account# :: Rs. <span class="highlight">XXXX</span>
-        </h3>
-  
-        <div class="button-container no-print">
-          <button @click="printSlip" class="print-button">Print</button>
-          <button @click="downloadPDF" class="download-button">Download PDF</button>
-          <button @click="$emit('close')" class="close-button">Close</button>
-        </div>
+      </div>
+
+      <h3 class="salary-credited">
+        Salary Credited To Your Account# :: Rs. <span class="font-bold">{{ selectedSalarySlip.net_salary_credited }}</span>
+      </h3>
+
+      <div class="button-container no-print">
+        <button @click="printSlip" class="print-button">Print</button>
+        <button @click="downloadPDF" class="download-button">Download PDF</button>
+        <button @click="$emit('close')" class="close-button">Close</button>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script>
   import jsPDF from "jspdf";
@@ -101,6 +101,7 @@
     name: "SalarySlipModal",
     props: {
       isVisible: Boolean,
+      selectedSalarySlip: Object,
     },
     methods: {
       printSlip() {
@@ -359,8 +360,6 @@
    font-weight: bold;
    font-size: 1rem;
  }
- .highlight{
-   color: #ef4444;
- }
+
  </style>
   

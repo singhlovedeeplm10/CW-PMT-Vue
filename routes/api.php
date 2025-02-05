@@ -145,4 +145,6 @@ Route::get('/upcoming-birthdays', [NoticeController::class, 'upcomingBirthdays']
 
 // SalarySlip ROUTES
 Route::post('/upload-salary-slip', [SalarySlipController::class, 'upload']);
+Route::middleware('auth:sanctum')->get('/get-salary', [SalarySlipController::class, 'getSalary']);
+Route::get('/view-salary-slip/{employeeCode}', [SalarySlipController::class, 'viewSalarySlip']);
 
