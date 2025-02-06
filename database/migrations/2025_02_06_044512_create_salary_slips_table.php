@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('employee_code')->unique();
             $table->string('employee_name');
+            $table->string('month_year');
             $table->integer('total_salary');
             $table->integer('basic_salary')->nullable();
             $table->integer('house_rent')->nullable();

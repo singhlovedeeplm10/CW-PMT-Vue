@@ -15,6 +15,7 @@ class SalarySlips extends Model
     protected $fillable = [
         'employee_code',
         'employee_name',
+        'month_year',
         'total_salary',
         'basic_salary',
         'house_rent',

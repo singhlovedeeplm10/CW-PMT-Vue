@@ -35,6 +35,7 @@ class SalarySlipController extends Controller
                 ['employee_code' => $employeeCode], // Condition to match existing record
                 [
                     'employee_name' => $user->name,
+                    'month_year' => $record['month_year'],
                     'total_salary' => $record['total_salary'],
                     'basic_salary' => $record['basic_salary'],
                     'house_rent' => $record['house_rent'],
@@ -82,6 +83,7 @@ public function getSalary(Request $request)
         'total_deductions',
         'total_incentives',
         'net_salary_credited',
+        'month_year',
         'created_at'
     );
 
@@ -97,11 +99,16 @@ public function getSalary(Request $request)
         $query->where('employee_code', $employeeCode);
     }
 
-    // Filter by month and year if provided
+    // Get the requested month and year or default to the current month-year
     $month = $request->input('month', date('m'));
     $year = $request->input('year', date('Y'));
+    
+    // Convert month number to short month name (e.g., 01 -> Jan)
+    $monthName = date('M', mktime(0, 0, 0, $month, 1));
+    $monthYear = "$monthName-" . substr($year, -2); // Format: Jan-25
 
-    $query->whereMonth('created_at', $month)->whereYear('created_at', $year);
+    // Filter by month_year column
+    $query->where('month_year', $monthYear);
 
     $salarySlips = $query->get();
 
@@ -117,4 +124,58 @@ public function getSalary(Request $request)
 
     return response()->json($salarySlip);
 }
+public function updateSalarySlip(Request $request, $id)
+    {
+        // Validate the incoming data
+        $validated = $request->validate([
+            'employee_name' => 'required|string|max:255',
+            'total_salary' => 'required|integer',
+            'basic_salary' => 'nullable|integer',
+            'house_rent' => 'nullable|integer',
+            'conveyance' => 'nullable|integer',
+            'telephone' => 'nullable|integer',
+            'medical' => 'nullable|integer',
+            'other' => 'nullable|integer',
+            'tax' => 'nullable|integer',
+            'unpaid_leaves_deduction' => 'nullable|integer',
+            'provident_fund' => 'nullable|integer',
+            'employee_state_insurance' => 'nullable|integer',
+            'total_deductions' => 'nullable|integer',
+            'extra_working_incentive' => 'nullable|integer',
+            'gratuity' => 'nullable|integer',
+            'bonus' => 'nullable|integer',
+            'total_incentives' => 'nullable|integer',
+            'total_leaves' => 'nullable|integer',
+            'extra_working_days' => 'nullable|integer',
+            'earned_leave' => 'nullable|integer',
+            'leaves_without_pay' => 'nullable|integer',
+            'net_salary_credited' => 'nullable|integer',
+        ]);
+
+        // Find the salary slip by ID
+        $salarySlip = SalarySlips::find($id);
+
+        // Check if the salary slip exists
+        if (!$salarySlip) {
+            return response()->json(['message' => 'Salary slip not found'], 404);
+        }
+
+        // Update the salary slip with the validated data
+        $salarySlip->update($validated);
+
+        // Return a response indicating success
+        return response()->json(['message' => 'Salary slip updated successfully', 'data' => $salarySlip], 200);
+    }
+    public function deleteSalarySlip($id)
+    {
+        $salarySlip = SalarySlips::find($id);
+
+        if (!$salarySlip) {
+            return response()->json(['message' => 'Salary slip not found'], 404);
+        }
+
+        $salarySlip->delete();
+
+        return response()->json(['message' => 'Salary slip deleted successfully'], 200);
+    }
 }

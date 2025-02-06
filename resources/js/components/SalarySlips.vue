@@ -14,7 +14,11 @@
             accept=".csv"
             class="file-input"
           />
-          <button class="btn-primary" @click="uploadFile">Upload CSV</button>
+          <button class="btn-primary" @click="uploadFile" :disabled="isUploading">
+  <span v-if="!isUploading">Upload CSV</span>
+  <span v-else><i class="fas fa-spinner fa-spin"></i> Uploading...</span>
+</button>
+
         </div>
       </div>
 
@@ -25,6 +29,7 @@
           v-model="searchQuery"
           placeholder="Search by Employee Name..."
           class="search-input"
+          v-if="userRole === 'Admin'"
         />
         <select v-model="selectedMonth">
           <option v-for="month in months" :key="month.value" :value="month.value">
@@ -36,7 +41,11 @@
           <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
         </select>
 
-        <button @click="filterSalarySlips" class="btn-primary">Filter</button>
+        <button @click="handleFilter" class="btn-primary" :disabled="isFiltering">
+  <span v-if="!isFiltering">Filter</span>
+  <span v-else><i class="fas fa-spinner fa-spin"></i></span>
+</button>
+
       </div>
 
       <!-- Loader -->
@@ -73,10 +82,13 @@
               <td>{{ slip.total_deductions }}</td>
               <td>{{ slip.total_incentives }}</td>
               <td>{{ slip.net_salary_credited }}</td>
-              <td>
+              <td class="action-buttons">
                 <button @click="viewSalarySlip(slip.employee_code)" class="view-button">
                   <i class="fas fa-eye"></i>
                 </button>
+                <button v-if="userRole === 'Admin'" @click="deleteSalarySlip(slip.id)" class="delete-button">
+    <i class="fas fa-trash-alt"></i>
+  </button>
               </td>
             </tr>
           </tbody>
@@ -85,6 +97,7 @@
     </div>
 
     <SalarySlipModal
+    @salaryupdated="filterSalarySlips"
       :isVisible="showModal"
       :selectedSalarySlip="selectedSalarySlip"
       @close="showModal = false"
@@ -119,6 +132,8 @@ export default {
       selectedMonth: new Date().getMonth() + 1,
       selectedYear: currentYear,
       loading: true, // Added loading state
+      isUploading: false, // New property for upload loader
+      isFiltering: false, // New state for the filter button
       months: [
         { name: "January", value: 1 },
         { name: "February", value: 2 },
@@ -158,40 +173,65 @@ export default {
       this.file = event.target.files[0];
     },
     async uploadFile() {
-      if (!this.file) {
-        toast.error('Please select a file to upload.', { position: "top-right" });
-        return;
-      }
+    if (!this.file) {
+      toast.error('Please select a file to upload.', { position: "top-right" });
+      return;
+    }
 
-      const formData = new FormData();
-      formData.append('file', this.file);
+    this.isUploading = true;
+    const formData = new FormData();
+    formData.append('file', this.file);
 
-      try {
-        await axios.post('/api/upload-salary-slip', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        toast.success('File uploaded successfully!', { position: "top-right" });
-        this.fetchSalarySlips();
-      } catch (error) {
-        toast.error('Failed to upload file.', { position: "top-right" });
-        console.error(error);
-      }
-    },
-    async filterSalarySlips() {
-  this.loading = true;
-  try {
-    const response = await axios.get("/api/get-salary", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-      params: { month: this.selectedMonth, year: this.selectedYear },
-    });
-    this.salarySlips = response.data;
-  } catch (error) {
-    toast.error("Failed to filter salary slips.", { position: "top-right" });
-    console.error(error);
-  } finally {
-    this.loading = false;
-  }
-},
+    try {
+      await axios.post('/api/upload-salary-slip', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success('File uploaded successfully!', { position: "top-right" });
+      this.fetchSalarySlips();
+    } catch (error) {
+      toast.error('Failed to upload file.', { position: "top-right" });
+      console.error(error);
+    } finally {
+      this.isUploading = false;
+    }
+  },
+    async deleteSalarySlip(id) {
+    if (!confirm("Are you sure you want to delete this salary slip?")) return;
+
+    try {
+      await axios.delete(`/api/delete-salary-slip/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+      });
+      this.salarySlips = this.salarySlips.filter(slip => slip.id !== id);
+      toast.success('Salary slip deleted successfully!', { position: "top-right" });
+    } catch (error) {
+      toast.error('Failed to delete salary slip.', { position: "top-right" });
+      console.error(error);
+    }
+  },
+  async handleFilter() {
+    this.isFiltering = true;
+    try {
+      await this.filterSalarySlips();
+    } finally {
+      this.isFiltering = false;
+    }
+  },
+  async filterSalarySlips() {
+    this.loading = true;
+    try {
+      const response = await axios.get("/api/get-salary", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+        params: { month: this.selectedMonth, year: this.selectedYear },
+      });
+      this.salarySlips = response.data;
+    } catch (error) {
+      toast.error("Failed to filter salary slips.", { position: "top-right" });
+      console.error(error);
+    } finally {
+      this.loading = false;
+    }
+  },
 
     async fetchSalarySlips() {
       await this.filterSalarySlips();
@@ -391,5 +431,19 @@ tr:hover {
 
 .view-button:hover {
   background: #0056b3;
+}
+.delete-button {
+  background: #f01818;
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  margin: 0px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.delete-button:hover {
+  background: #e10303;
 }
 </style>
