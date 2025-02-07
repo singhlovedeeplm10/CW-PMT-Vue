@@ -274,7 +274,7 @@ export default {
 .no-data {
   text-align: center;
   font-size: 18px;
-  color: #ff0000;
+  color: #666;
   margin-top: 20px;
 }
 

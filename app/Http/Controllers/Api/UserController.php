@@ -7,10 +7,15 @@ use Illuminate\Http\Request;
 use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Mail;
 use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\Leave;
+use Carbon\Carbon;
+use App\Models\Attendance;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -184,16 +189,89 @@ public function updateStatus(Request $request, $id)
         'employee_code' => $profile->employee_code,
     ]);
 }
-
 public function edit(User $user)
 {
-    // Retrieve user profile and include employee_code
-    $userProfile = $user->profile; // Assuming the relationship is defined as 'profile' in the User model
-    
+    // Ensure eager loading of the user profile
+    $user->load('profile');
+
     return response()->json([
         'userData' => $user,
-        'userProfile' => $userProfile,
+        'userProfile' => $user->profile,
     ]);
+}
+
+
+
+public function employeeAttendances(Request $request)
+{
+    // Set default previous month range if no date is provided
+    $startDate = Carbon::now()->subMonth()->startOfMonth()->toDateString();
+    $endDate = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+
+    // Apply date filters if provided
+    if ($request->has('month') && $request->has('year')) {
+        $startDate = Carbon::createFromDate($request->year, $request->month, 1)->startOfMonth()->toDateString();
+        $endDate = Carbon::createFromDate($request->year, $request->month, 1)->endOfMonth()->toDateString();
+    }
+
+    $query = User::with(['profile', 'attendances', 'leaves' => function ($query) {
+        $query->where('status', 'approved');
+    }])
+    ->whereHas('profile')
+    ->orderBy('name', 'asc');
+
+    // Apply search filters
+    if ($request->has('name')) {
+        $query->where('name', 'like', '%' . $request->name . '%');
+    }
+
+    // Apply status filter (default to active if not provided)
+    $status = $request->has('status') ? $request->status : '1';
+    $query->where('status', $status);
+
+    $employees = $query->get()->map(function ($user) use ($startDate, $endDate) {
+        $totalWFO = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate])
+            ->whereNull('leave_id')
+            ->count();
+
+        // Calculate total WFH days by computing the difference between start_date and end_date (inclusive)
+        $totalWFH = $user->leaves->where('type_of_leave', 'Work From Home')
+            ->filter(function ($leave) use ($startDate, $endDate) {
+                return ($leave->start_date >= $startDate && $leave->start_date <= $endDate) ||
+                       ($leave->end_date && $leave->end_date >= $startDate && $leave->end_date <= $endDate);
+            })
+            ->reduce(function ($sum, $leave) {
+                $days = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date)) + 1;
+                return $sum + $days;
+            }, 0);
+
+        $totalLeaves = $user->leaves
+            ->filter(function ($leave) use ($startDate, $endDate) {
+                return in_array($leave->type_of_leave, ['Full Day Leave', 'Half Day Leave']) &&
+                    (
+                        ($leave->start_date >= $startDate && $leave->start_date <= $endDate) ||
+                        ($leave->end_date && $leave->end_date >= $startDate && $leave->end_date <= $endDate)
+                    );
+            })
+            ->reduce(function ($sum, $leave) {
+                return $sum + ($leave->type_of_leave === 'Full Day Leave' ? 1 : 0.5);
+            }, 0);
+
+        $totalWorkingDays = $totalWFO + $totalWFH + $totalLeaves;
+
+        return [
+            'id' => $user->profile->employee_code ?? 'N/A',
+            'image' => $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : null,
+            'name' => $user->name,
+            'status' => $user->status,
+            'totalWFO' => $totalWFO,
+            'totalWFH' => $totalWFH,
+            'totalLeave' => $totalLeaves,
+            'totalWorkingDays' => $totalWorkingDays,
+        ];
+    });
+
+    return response()->json($employees);
 }
 
 

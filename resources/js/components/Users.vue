@@ -174,13 +174,12 @@ export default {
   this.selectedUser = user;
   try {
     const response = await axios.get(`/api/users/${user.id}/edit`);
-    // Assuming the API returns both user and user profile data
     const { userData, userProfile } = response.data;
 
-    // Combine user and user profile data and pass it to the modal
+    // Keep the separation of user and profile data clear
     this.selectedUser = {
       ...userData,
-      ...userProfile,
+      profile: { ...userProfile },
     };
 
     this.showEditEmployeeModal = true;
@@ -188,6 +187,7 @@ export default {
     console.error("Error fetching user data for edit:", error);
   }
 },
+
 
     closeEditEmployeeModal() {
       this.showEditEmployeeModal = false;

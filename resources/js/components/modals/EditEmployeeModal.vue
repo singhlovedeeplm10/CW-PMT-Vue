@@ -88,6 +88,7 @@
   />
 </div>
 
+
           <div class="form-group">
             <label for="user_DOB" class="form-label">Date of Birth</label>
             <input
@@ -150,13 +151,17 @@ export default {
     };
   },
   created() {
-    // Prefill the employee code with CW00 + user ID when the modal opens
-    if (this.userProfile && this.userProfile.employee_code) {
-      this.formData.employee_code = this.userProfile.employee_code;  // Use the profile's employee code if available
-    } else {
-      this.formData.employee_code = `CW00${this.user.id}`; // Default to CW00 + user ID if no profile exists
-    }
-  },
+  if (this.user.profile) {
+    this.formData = {
+      ...this.user,
+      ...this.user.profile, // Ensure profile fields are mapped to the form data
+      password: "", 
+      user_image: null 
+    };
+  }
+},
+
+
   methods: {
     handleImageUpload(event) {
       this.formData.user_image = event.target.files[0];

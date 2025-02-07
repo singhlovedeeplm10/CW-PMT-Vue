@@ -80,7 +80,8 @@ public function breaks()
     }
 
     public function profile()
-{
-    return $this->hasOne(UserProfile::class);
-}
+    {
+        return $this->hasOne(UserProfile::class, 'user_id', 'id');
+    }
+    
 }

@@ -21,6 +21,9 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
       </li>
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
+        <router-link to="/employees-attendances" class="sidebar-link" active-class="active-link">Employees Attendances</router-link>
+      </li>
       <li class="sidebar-item">
         <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>
       </li>

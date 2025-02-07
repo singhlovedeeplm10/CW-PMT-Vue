@@ -8,25 +8,23 @@
       <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
-      <task-list ref = "userDailyTask" />
+      <task-list ref="userDailyTask" />
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
-      <!-- <daily-task v-if="userRole === 'Admin'" /> -->
       <user-break-list ref="userBreakList" />
       <missing-member v-if="userRole === 'Admin'" />
 
-      <!-- Conditionally render break-entries -->
-      <break-entries v-if="userRole === 'Admin'"  />
+      <!-- Flexbox wrapper for the cards -->
+      <div class="card-container">
+        <break-entries v-if="userRole === 'Admin'" />
+        <members-work-from-home v-if="userRole === 'Admin'" />
+      </div>
 
       <apply-leave-modal />
       <apply-team-leave-modal />
       <update-leave-modal />
       <update-team-leave-modal />
-      <!-- <add-project-modal /> -->
-      <!-- <EditPostModal/> -->
-      <members-work-from-home v-if="userRole === 'Admin'" />
       <upcoming-birthdays v-if="userRole === 'Admin'" />
-
     </div>
   </master-component>
 </template>
@@ -138,5 +136,16 @@ export default {
 <style scoped>
 .dashboard {
   padding: 30px;
+}
+
+.card-container {
+  display: flex;
+  gap: 16px; /* Space between cards */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+}
+
+.card-container > * {
+  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
+  min-width: 300px; /* Ensures a reasonable width for smaller screens */
 }
 </style>
