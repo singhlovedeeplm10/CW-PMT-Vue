@@ -80,6 +80,7 @@ Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 'getUserProfile']);
 Route::get('/users/{user}/edit', [UserController::class, 'edit']);
 Route::get('/employee-attendances', [UserController::class, 'employeeAttendances']);
+Route::post('/users/{id}/assign-role', [UserController::class, 'assignUserRole']);
 
 
 // TECHNOLOGIES API ROUTE

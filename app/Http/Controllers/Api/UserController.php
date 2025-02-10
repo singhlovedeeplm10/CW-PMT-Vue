@@ -16,9 +16,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    public function assignUserRole(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $role = $request->input('role');
+    
+        if (!in_array($role, ['Admin', 'Employee'])) {
+            return response()->json(['success' => false, 'message' => 'Invalid role specified']);
+        }
+    
+        // Remove existing roles and assign the new one
+        $user->syncRoles([$role]);
+    
+        return response()->json(['success' => true, 'message' => 'Role updated successfully']);
+    }
+    
     public function testUser()
     {
         return view('test');
@@ -26,30 +42,33 @@ class UserController extends Controller
 
     public function index(Request $request, $page = 1)
     {
-        $query = User::query();
-    
+        $query = User::query()
+            ->select('users.*', 'user_profiles.user_image', 'roles.name as role_name') // Select user data, image, and role name
+            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join with user_profiles
+            ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id') // Join with model_has_roles
+            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id'); // Join with roles
+     
         // Filter by name
         if ($request->has('name') && $request->name != '') {
-            $query->where('name', 'like', '%' . $request->name . '%');
+            $query->where('users.name', 'like', '%' . $request->name . '%');
         }
-    
+     
         // Filter by email
         if ($request->has('email') && $request->email != '') {
-            $query->where('email', 'like', '%' . $request->email . '%');
+            $query->where('users.email', 'like', '%' . $request->email . '%');
         }
-    
+     
         // Filter by status
         if ($request->has('status') && $request->status != '') {
-            $query->where('status', $request->status);
+            $query->where('users.status', $request->status);
         }
-    
+     
         // Fetch paginated users
         $users = $query->paginate(5, ['*'], 'page', $page);
-    
+     
         // Return the filtered and paginated data as JSON
         return response()->json($users);
     }
-    
 
     public function addUser(Request $request)
     {

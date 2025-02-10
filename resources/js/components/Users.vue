@@ -10,21 +10,16 @@
         />
       </div>
 
-      <!-- Search Filters -->
+      <!-- Single Search Filter -->
       <div class="search-filters d-flex gap-3 mb-3 px-4">
         <input
           type="text"
           class="form-control"
-          placeholder="Search by Name"
-          v-model="filters.name"
+          placeholder="Search by Name or Email"
+          v-model="filters.query"
+          @input="fetchUsers()"
         />
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Search by Email"
-          v-model="filters.email"
-        />
-        <select class="form-control" v-model="filters.status">
+        <select class="form-control" v-model="filters.status" @change="fetchUsers()">
           <option value="">All Statuses</option>
           <option value="1">Active</option>
           <option value="0">Inactive</option>
@@ -43,37 +38,59 @@
         <div class="table-container">
           <table class="table table-striped">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in filteredUsers" :key="user.id">
-                <td>{{ user.id }}</td>
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>
-                  <button
-                    :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
-                    @click="toggleStatus(user)"
-                  >
-                    {{ user.status === '1' ? 'Active' : 'Inactive' }}
-                  </button>
-                </td>
-                <td>
-                  <button
-                    class="btn btn-sm btn-primary me-2"
-                    @click="editUser(user)"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody>
+    <tr v-for="user in filteredUsers" :key="user.id">
+        <td>{{ user.id }}</td>
+        <td>
+            <div class="d-flex align-items-center">
+                <img
+                    :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
+                    alt="User Image"
+                    class="img-thumbnail circular-image me-2"
+                    style="width: 50px; height: 50px;"
+                />
+                <div>
+                    <div class="fw-bold">{{ user.name }}</div>
+                    <div class="text-muted">CW00{{ user.id }}</div>
+                </div>
+            </div>
+        </td>
+        <td>{{ user.email }}</td>
+        <td>
+  <button
+    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
+    @click="toggleRole(user)"
+  >
+    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
+  </button>
+</td>
+        <td>
+            <button
+                :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
+                @click="toggleStatus(user)"
+            >
+                {{ user.status === '1' ? 'Active' : 'Inactive' }}
+            </button>
+        </td>
+        <td>
+            <button
+                class="btn btn-sm btn-primary me-2"
+                @click="editUser(user)"
+            >
+                <i class="fas fa-edit"></i>
+            </button>
+        </td>
+    </tr>
+</tbody>
           </table>
         </div>
 
@@ -129,9 +146,8 @@ export default {
       selectedUser: null,
       isLoading: false,
       filters: {
-        name: "",
-        email: "",
-        status: "",
+        query: "", // Combined search field
+        status: "1", // Set default to Active (1)
       },
     };
   },
@@ -141,29 +157,52 @@ export default {
   computed: {
     filteredUsers() {
       return this.users.data.filter((user) => {
-        const matchesName = user.name.toLowerCase().includes(this.filters.name.toLowerCase());
-        const matchesEmail = user.email.toLowerCase().includes(this.filters.email.toLowerCase());
+        const query = this.filters.query.toLowerCase();
+        const matchesName = user.name.toLowerCase().includes(query);
+        const matchesEmail = user.email.toLowerCase().includes(query);
         const matchesStatus =
           this.filters.status === "" || user.status === this.filters.status;
 
-        return matchesName && matchesEmail && matchesStatus;
+        return (matchesName || matchesEmail) && matchesStatus;
       });
     },
   },
   methods: {
-    async fetchUsers(page = 1) {
-      this.isLoading = true;
+    async toggleRole(user) {
       try {
-        const response = await axios.get("/api/users/" + page);
-        this.users = response.data;
-        this.currentPage = response.data.current_page;
-        this.totalPages = response.data.last_page;
+        const newRole = user.role_name === "Admin" ? "Employee" : "Admin";
+        const response = await axios.post(`/api/users/${user.id}/assign-role`, { role: newRole });
+
+        if (response.data.success) {
+          user.role_name = newRole;
+        } else {
+          console.error("Failed to update role.");
+        }
       } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        this.isLoading = false;
+        console.error("Error toggling role:", error);
       }
     },
+    async fetchUsers(page = 1) {
+    this.isLoading = true;
+    try {
+        const response = await axios.get('/api/users', {
+            params: {
+                page: page,
+                name: this.filters.query,
+                email: this.filters.query,
+                status: this.filters.status
+            }
+        });
+        this.users.data = response.data.data;  // Update users directly
+        this.totalPages = response.data.last_page;
+        this.currentPage = response.data.current_page;
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    } finally {
+        this.isLoading = false;
+    }
+},
+
     openAddEmployeeModal() {
       this.showAddEmployeeModal = true;
     },
@@ -171,23 +210,21 @@ export default {
       this.showAddEmployeeModal = false;
     },
     async editUser(user) {
-  this.selectedUser = user;
-  try {
-    const response = await axios.get(`/api/users/${user.id}/edit`);
-    const { userData, userProfile } = response.data;
+      this.selectedUser = user;
+      try {
+        const response = await axios.get(`/api/users/${user.id}/edit`);
+        const { userData, userProfile } = response.data;
 
-    // Keep the separation of user and profile data clear
-    this.selectedUser = {
-      ...userData,
-      profile: { ...userProfile },
-    };
+        this.selectedUser = {
+          ...userData,
+          profile: { ...userProfile },
+        };
 
-    this.showEditEmployeeModal = true;
-  } catch (error) {
-    console.error("Error fetching user data for edit:", error);
-  }
-},
-
+        this.showEditEmployeeModal = true;
+      } catch (error) {
+        console.error("Error fetching user data for edit:", error);
+      }
+    },
 
     closeEditEmployeeModal() {
       this.showEditEmployeeModal = false;
@@ -211,8 +248,13 @@ export default {
 };
 </script>
 
-
 <style scoped>
+.circular-image {
+  border: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .loader-container {
   display: flex;
   justify-content: center;
@@ -288,10 +330,6 @@ export default {
   color: #fff;
 }
 
-/* .table tbody tr td button:hover {
-  background-color: #0056b3;
-} */
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -312,5 +350,4 @@ export default {
 .pagination button:hover {
   background-color: #0056b3;
 }
-
 </style>
