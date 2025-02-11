@@ -55,23 +55,6 @@
           </select>
         </div>
 
-        <!-- Developer Assign List -->
-        <div class="form-group">
-          <label>Assigned Developers</label>
-          <ul class="developer-list">
-            <li v-for="(developer, index) in editedProject.developer_assign_list" :key="index">
-              {{ developer }}
-              <button
-                type="button"
-                class="btn btn-danger btn-sm"
-                @click="removeDeveloper(index)"
-              >
-                <i class="fas fa-times"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-
         <!-- Autocomplete Input for User -->
         <div class="mb-3" style="position: relative;">
           <label for="userSearch">Select Users</label>
@@ -208,32 +191,46 @@ export default {
     },
 
     async submitForm() {
-      this.loading = true; // Enable loading state
-      try {
+    this.loading = true; // Enable loading state
+    try {
+        // Prepare the payload
+        const payload = {
+            name: this.editedProject.name,
+            description: this.editedProject.description,
+            type: this.editedProject.type,
+            status: this.editedProject.status,
+            comment: this.editedProject.comment,
+        };
+
+        // Only include developer_assign_list if new users are selected
+        if (this.selectedUsers.length > 0) {
+            payload.developer_assign_list = this.editedProject.developer_assign_list;
+        }
+
         const response = await axios.put(
-          `/api/update-projects/${this.editedProject.id}`,
-          this.editedProject,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          }
+            `/api/update-projects/${this.editedProject.id}`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+            }
         );
 
         if (response.status === 200) {
-          toast.success("Project updated successfully!");
-          this.$emit("project-updated");
-          this.close();
+            toast.success("Project updated successfully!");
+            this.$emit("project-updated");
+            this.close();
         } else {
-          toast.error("Failed to update project. Please try again.");
+            toast.error("Failed to update project. Please try again.");
         }
-      } catch (error) {
+    } catch (error) {
         console.error("Failed to update project:", error);
         toast.error("An error occurred while updating the project.");
-      } finally {
+    } finally {
         this.loading = false; // Disable loading state
-      }
-    },
+    }
+},
   },
 };
 </script>

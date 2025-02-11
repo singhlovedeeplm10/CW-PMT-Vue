@@ -49,23 +49,22 @@
             />
           </div>
           <div class="form-group">
-  <label for="gender" class="form-label">Gender</label>
-  <select id="gender" v-model="formData.gender" class="form-control custom-input">
-    <option value="male">Male</option>
-    <option value="female">Female</option>
-  </select>
-</div>
-<div class="form-group">
-  <label for="contact" class="form-label">Contact</label>
-  <input
-    id="contact"
-    type="text"
-    v-model="formData.contact"
-    class="form-control custom-input"
-    placeholder="Enter contact number"
-  />
-</div>
-
+            <label for="gender" class="form-label">Gender</label>
+            <select id="gender" v-model="formData.gender" class="form-control custom-input">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contact" class="form-label">Contact</label>
+            <input
+              id="contact"
+              type="text"
+              v-model="formData.contact"
+              class="form-control custom-input"
+              placeholder="Enter contact number"
+            />
+          </div>
           <div class="form-group">
             <label for="qualifications" class="form-label">Qualifications</label>
             <input
@@ -77,18 +76,16 @@
             />
           </div>
           <div class="form-group">
-  <label for="employee_code" class="form-label">Employee Code</label>
-  <input
-    id="employee_code"
-    type="text"
-    v-model="formData.employee_code"
-    class="form-control custom-input"
-    placeholder="Employee Code"
-    :readonly="true" 
-  />
-</div>
-
-
+            <label for="employee_code" class="form-label">Employee Code</label>
+            <input
+              id="employee_code"
+              type="text"
+              v-model="formData.employee_code"
+              class="form-control custom-input"
+              placeholder="Employee Code"
+              :readonly="true" 
+            />
+          </div>
           <div class="form-group">
             <label for="user_DOB" class="form-label">Date of Birth</label>
             <input
@@ -156,7 +153,15 @@ export default {
       ...this.user,
       ...this.user.profile, // Ensure profile fields are mapped to the form data
       password: "", 
-      user_image: null 
+      user_image: null,
+      employee_code: `CW00${this.user.id}` // Set the employee_code based on the user ID
+    };
+  } else {
+    this.formData = {
+      ...this.user,
+      password: "", 
+      user_image: null,
+      employee_code: `CW00${this.user.id}` // Set the employee_code based on the user ID
     };
   }
 },

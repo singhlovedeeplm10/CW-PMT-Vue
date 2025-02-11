@@ -90,10 +90,13 @@ class TaskController extends Controller
     }
 
     public function fetchProjects()
-    {
-        $projects = Project::all(['id', 'name']); // Adjust fields as needed
-        return response()->json(['projects' => $projects]);
-    }    
+{
+    // Fetch projects with 'Started' status only
+    $projects = Project::where('status', 'Started')->get(['id', 'name']);
+    
+    return response()->json(['projects' => $projects]);
+}
+   
     
 
     public function getUsersWithoutTasks()

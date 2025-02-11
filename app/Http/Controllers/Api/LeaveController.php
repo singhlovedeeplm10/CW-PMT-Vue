@@ -456,89 +456,95 @@ public function search(Request $request)
     }
 
     public function showteamLeaves(Request $request)
-    {
-        // Get the authenticated user
-        $user = Auth::user();
-    
-        // Initialize the query
-        $query = Leave::query();
-    
-        // Apply search filters if provided
-        if ($request->filled('type')) {
-            $query->where('type_of_leave', 'like', '%' . $request->type . '%');
-        }
-    
-        if ($request->filled('duration')) {
-            // Implement your logic for filtering by duration
-        }
-    
-        if ($request->filled('status')) {
-            $query->where('leaves.status', $request->status); // Explicitly use the 'leaves' table
-        }
-    
-        if ($request->filled('created_date')) {
-            $query->whereDate('leaves.created_at', $request->created_date); // Explicitly use the 'leaves' table
-        }
-    
-        // Join with users table to get employee name
-        $query->join('users', 'leaves.user_id', '=', 'users.id')
-            ->select(
-                'leaves.*',
-                'users.name as employee_name', // Assuming 'name' is the column for user's name
-                'leaves.last_updated_by' // Include last_updated_by from the leaves table
-            );
-    
-        // Fetch the leaves
-        $leaves = $query->orderBy('leaves.created_at', 'asc')->get(); // Explicitly use the 'leaves' table
-    
-        // Transform the data to match the desired format
-        $formattedLeaves = $leaves->map(function ($leave) {
-            // Calculate duration
-            $duration = $this->calculateDuration($leave);
-    
-            // Determine icon based on reason
-            $reasonIcons = [
-                'Birthday' => '<i class="fas fa-gift" style="color: #ff69b4;"></i>',
-                'Festival' => '<i class="fas fa-gift" style="color: #ff4500;"></i>',
-                'Party' => '<i class="fas fa-gift" style="color: #ffa500;"></i>',
-                'Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
-                'Wedding Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
-            ];
-            $icon = $reasonIcons[$leave->reason] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
-    
-            // Format the Type field with the icon
-            $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
-    
-            // Format the week of the day (e.g., "Monday to Friday")
-            $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l'); // Day of the week for start_date
-            $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek; // Day of the week for end_date
-    
-            // Append the week range to the formatted type
-            $typeFormatted .= ' (' . $startDayOfWeek . ' to ' . $endDayOfWeek . ')';
-    
-            // Append the time range in IST if start_time and end_time exist
-            if ($leave->start_time && $leave->end_time) {
-                $startTimeIST = \Carbon\Carbon::parse($leave->start_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
-                $endTimeIST = \Carbon\Carbon::parse($leave->end_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
-                $typeFormatted .= " (from $startTimeIST to $endTimeIST)";
-            }
-    
-            return [
-                'id' => $leave->id,
-                'employee_name' => $leave->employee_name, // Employee name from the joined table
-                'type' => $typeFormatted,
-                'duration' => $duration,
-                'status' => ucfirst($leave->status),
-                'created_at' => $leave->created_at->format('F d, Y'),
-                'updated_by' => $leave->last_updated_by, // Now using 'last_updated_by' from the leaves table
-            ];
-        });
-    
-        return response()->json([
-            'success' => true,
-            'data' => $formattedLeaves,
-        ]);
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    // Initialize the query
+    $query = Leave::query();
+
+    // Apply search filters if provided
+    if ($request->filled('type')) {
+        $query->where('type_of_leave', 'like', '%' . $request->type . '%');
     }
+
+    if ($request->filled('duration')) {
+        // Implement your logic for filtering by duration
+    }
+
+    if ($request->filled('status')) {
+        $query->where('leaves.status', $request->status); // Explicitly use the 'leaves' table
+    }
+
+    if ($request->filled('created_date')) {
+        $query->whereDate('leaves.created_at', $request->created_date); // Explicitly use the 'leaves' table
+    }
+
+    // Join with users table to get employee name and user_profiles table to get user image
+    $query->join('users', 'leaves.user_id', '=', 'users.id')
+          ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Left join to include users without profiles
+          ->select(
+              'leaves.*',
+              'users.name as employee_name', // Assuming 'name' is the column for user's name
+              'leaves.last_updated_by', // Include last_updated_by from the leaves table
+              'user_profiles.user_image' // Include user image from the user_profiles table
+          );
+
+    // Fetch the leaves
+    $leaves = $query->orderBy('leaves.created_at', 'asc')->get(); // Explicitly use the 'leaves' table
+
+    // Transform the data to match the desired format
+    $formattedLeaves = $leaves->map(function ($leave) {
+        // Calculate duration
+        $duration = $this->calculateDuration($leave);
+
+        // Determine icon based on reason
+        $reasonIcons = [
+            'Birthday' => '<i class="fas fa-gift" style="color: #ff69b4;"></i>',
+            'Festival' => '<i class="fas fa-gift" style="color: #ff4500;"></i>',
+            'Party' => '<i class="fas fa-gift" style="color: #ffa500;"></i>',
+            'Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
+            'Wedding Function' => '<i class="fas fa-gift" style="color: #ff6347;"></i>',
+        ];
+        $icon = $reasonIcons[$leave->reason] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
+
+        // Format the Type field with the icon
+        $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
+
+        // Format the week of the day (e.g., "Monday to Friday")
+        $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l'); // Day of the week for start_date
+        $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek; // Day of the week for end_date
+
+        // Append the week range to the formatted type
+        $typeFormatted .= ' (' . $startDayOfWeek . ' to ' . $endDayOfWeek . ')';
+
+        // Append the time range in IST if start_time and end_time exist
+        if ($leave->start_time && $leave->end_time) {
+            $startTimeIST = \Carbon\Carbon::parse($leave->start_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
+            $endTimeIST = \Carbon\Carbon::parse($leave->end_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
+            $typeFormatted .= " (from $startTimeIST to $endTimeIST)";
+        }
+
+        // Get the full URL for the user image
+        $userImageUrl = $leave->user_image ? asset('storage/' . $leave->user_image) : null;
+
+        return [
+            'id' => $leave->id,
+            'employee_name' => $leave->employee_name, // Employee name from the joined table
+            'employee_image' => $userImageUrl, // User image URL
+            'type' => $typeFormatted,
+            'duration' => $duration,
+            'status' => ucfirst($leave->status),
+            'created_at' => $leave->created_at->format('F d, Y'),
+            'updated_by' => $leave->last_updated_by, // Now using 'last_updated_by' from the leaves table
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $formattedLeaves,
+    ]);
+}
     
    
     public function getUsersLeave(Request $request)

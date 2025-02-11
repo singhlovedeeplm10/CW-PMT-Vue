@@ -38,59 +38,60 @@
         <div class="table-container">
           <table class="table table-striped">
             <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-<tbody>
-    <tr v-for="user in filteredUsers" :key="user.id">
-        <td>{{ user.id }}</td>
-        <td>
-            <div class="d-flex align-items-center">
-                <img
-                    :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
-                    alt="User Image"
-                    class="img-thumbnail circular-image me-2"
-                    style="width: 50px; height: 50px;"
-                />
-                <div>
-                    <div class="fw-bold">{{ user.name }}</div>
-                    <div class="text-muted">CW00{{ user.id }}</div>
-                </div>
-            </div>
-        </td>
-        <td>{{ user.email }}</td>
-        <td>
-  <button
-    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
-    @click="toggleRole(user)"
-  >
-    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
-  </button>
-</td>
-        <td>
-            <button
-                :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
-                @click="toggleStatus(user)"
-            >
-                {{ user.status === '1' ? 'Active' : 'Inactive' }}
-            </button>
-        </td>
-        <td>
-            <button
-                class="btn btn-sm btn-primary me-2"
-                @click="editUser(user)"
-            >
-                <i class="fas fa-edit"></i>
-            </button>
-        </td>
-    </tr>
-</tbody>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in filteredUsers" :key="user.id">
+                <td>{{ user.id }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img
+                      :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
+                      alt="User Image"
+                      class="img-thumbnail circular-image me-2"
+                      style="width: 50px; height: 50px;"
+                    />
+                    <div>
+                      <div class="fw-bold">{{ user.name }}</div>
+                      <div class="text-muted">CW00{{ user.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <button
+                    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
+                    @click="toggleRole(user)"
+                  >
+                    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
+                  </button>
+                </td>
+                <td>
+                  <button
+                    :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
+                    @click="toggleStatus(user)"
+                    :disabled="user.role_name === 'Admin'"
+                  >
+                    {{ user.status === '1' ? 'Active' : 'Inactive' }}
+                  </button>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-sm btn-primary me-2"
+                    @click="editUser(user)"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
 
@@ -210,40 +211,47 @@ export default {
       this.showAddEmployeeModal = false;
     },
     async editUser(user) {
-      this.selectedUser = user;
-      try {
-        const response = await axios.get(`/api/users/${user.id}/edit`);
-        const { userData, userProfile } = response.data;
+  this.selectedUser = user;
+  try {
+    const response = await axios.get(`/api/users/${user.id}/edit`);
+    const { userData, userProfile } = response.data;
 
-        this.selectedUser = {
-          ...userData,
-          profile: { ...userProfile },
-        };
+    // Generate the employee_code
+    const employeeCode = `CW00${userData.id}`;
 
-        this.showEditEmployeeModal = true;
-      } catch (error) {
-        console.error("Error fetching user data for edit:", error);
-      }
-    },
+    this.selectedUser = {
+      ...userData,
+      profile: { ...userProfile },
+      employee_code: employeeCode, // Add the generated employee_code
+    };
+
+    this.showEditEmployeeModal = true;
+  } catch (error) {
+    console.error("Error fetching user data for edit:", error);
+  }
+},
 
     closeEditEmployeeModal() {
       this.showEditEmployeeModal = false;
       this.selectedUser = null;
     },
     async toggleStatus(user) {
-      try {
-        const newStatus = user.status === "1" ? "0" : "1";
-        const response = await axios.put(`/api/users/${user.id}/status`, { status: newStatus });
+  if (user.role_name === 'Admin') {
+    return; // Do nothing if the user is an admin
+  }
+  try {
+    const newStatus = user.status === "1" ? "0" : "1";
+    const response = await axios.put(`/api/users/${user.id}/status`, { status: newStatus });
 
-        if (response.data.success) {
-          user.status = newStatus;
-        } else {
-          console.error("Failed to update status.");
-        }
-      } catch (error) {
-        console.error("Error toggling status:", error);
-      }
-    },
+    if (response.data.success) {
+      user.status = newStatus;
+    } else {
+      console.error("Failed to update status.");
+    }
+  } catch (error) {
+    console.error("Error toggling status:", error);
+  }
+},
   },
 };
 </script>

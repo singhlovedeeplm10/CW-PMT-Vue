@@ -79,39 +79,44 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(leave, index) in leaves" :key="leave.id">
-            <td>{{ leave.id }}</td>
-            <td>{{ leave.employee_name }}</td>
-            <td v-html="leave.type"></td>
-            <td>{{ leave.duration }}</td>
-            <td>
-              <span
+    <tr v-for="(leave, index) in leaves" :key="leave.id">
+        <td>{{ leave.id }}</td>
+        <td>
+            <div class="d-flex align-items-center">
+                <img v-if="leave.employee_image" :src="leave.employee_image" alt="Employee Image" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                <span>{{ leave.employee_name }}</span>
+            </div>
+        </td>
+        <td v-html="leave.type"></td>
+        <td>{{ leave.duration }}</td>
+        <td>
+            <span
                 :class="{
-                  'text-warning': leave.status === 'Pending',
-                  'text-success': leave.status === 'Approved',
-                  'text-danger': leave.status === 'Disapproved',
-                  'text-secondary': leave.status === 'Hold',
-                  'text-danger': leave.status === 'Canceled'
+                    'text-warning': leave.status === 'Pending',
+                    'text-success': leave.status === 'Approved',
+                    'text-danger': leave.status === 'Disapproved',
+                    'text-secondary': leave.status === 'Hold',
+                    'text-danger': leave.status === 'Canceled'
                 }"
-              >
+            >
                 {{ leave.status }}
-              </span>
-            </td>
-            <td>{{ leave.created_at }}</td>
-            <td>{{ leave.updated_by }}</td>
-            <td>
-              <ButtonComponent
+            </span>
+        </td>
+        <td>{{ leave.created_at }}</td>
+        <td>{{ leave.updated_by }}</td>
+        <td>
+            <ButtonComponent
                 label=""
                 iconClass="fas fa-eye"
                 buttonClass="btn-info"
                 :clickEvent="() => viewLeaveDetails(leave)"
-              />
-            </td>
-          </tr>
-          <tr v-if="leaves.length === 0">
-            <td colspan="7" class="text-center">No leaves found.</td>
-          </tr>
-        </tbody>
+            />
+        </td>
+    </tr>
+    <tr v-if="leaves.length === 0">
+        <td colspan="8" class="text-center">No leaves found.</td>
+    </tr>
+</tbody>
       </table>
     </div>
 
