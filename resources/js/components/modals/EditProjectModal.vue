@@ -22,7 +22,7 @@
             :isRequired="true"
             placeholder="Enter project description"
             textareaClass="form-control"
-            rows="4"
+            :rows="4" 
           />
         </div>
         <div class="form-group">
@@ -90,6 +90,7 @@
                 style="width: 40px; height: 40px;"
               />
               <span>{{ user.name }}</span>
+              
             </li>
           </ul>
           <span v-if="userError" class="text-danger">{{ userError }}</span>
@@ -139,21 +140,17 @@ export default {
   data() {
     return {
       editedProject: { ...this.project },
-      loading: false, // Loading state
-      userSearchQuery: "", // Search query for autocomplete
-      userSuggestions: [], // Suggested users
-      selectedUsers: [], // Selected users
-      userError: null, // Error message for user search
+      loading: false,
+      userSearchQuery: "",
+      userSuggestions: [],
+      selectedUsers: this.project.developer_assign_list || [], // Prefill selected users
+      userError: null,
     };
   },
 
   methods: {
     close() {
       this.$emit("close");
-    },
-
-    removeDeveloper(index) {
-      this.editedProject.developer_assign_list.splice(index, 1);
     },
 
     async fetchUsers() {
@@ -180,7 +177,6 @@ export default {
       this.userSuggestions = [];
       this.userSearchQuery = "";
     },
-
     removeUser(index) {
       const user = this.selectedUsers[index];
       this.selectedUsers.splice(index, 1);
@@ -191,52 +187,48 @@ export default {
     },
 
     async submitForm() {
-    this.loading = true; // Enable loading state
-    try {
-        // Prepare the payload
+      this.loading = true;
+      try {
+        // Combine old users (preloaded ones) and new users without duplication
+        const uniqueUsers = new Set(this.selectedUsers.map(user => user.id));
+        const validUserIds = [...uniqueUsers].filter(id => Number.isInteger(id));
+
+        console.log("Final User IDs being sent:", validUserIds);
+
         const payload = {
-            name: this.editedProject.name,
-            description: this.editedProject.description,
-            type: this.editedProject.type,
-            status: this.editedProject.status,
-            comment: this.editedProject.comment,
+          name: this.editedProject.name,
+          description: this.editedProject.description,
+          type: this.editedProject.type,
+          status: this.editedProject.status,
+          comment: this.editedProject.comment,
+          developer_assign_list: validUserIds, // Ensuring valid IDs
         };
 
-        // Only include developer_assign_list if new users are selected
-        if (this.selectedUsers.length > 0) {
-            payload.developer_assign_list = this.editedProject.developer_assign_list;
-        }
-
-        const response = await axios.put(
-            `/api/update-projects/${this.editedProject.id}`,
-            payload,
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-            }
-        );
+        const response = await axios.put(`/api/update-projects/${this.editedProject.id}`, payload, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+        });
 
         if (response.status === 200) {
-            toast.success("Project updated successfully!");
-            this.$emit("project-updated");
-            this.close();
+          toast.success("Project updated successfully!");
+          this.$emit("project-updated");
+          this.close();
         } else {
-            toast.error("Failed to update project. Please try again.");
+          toast.error("Failed to update project. Please try again.");
         }
-    } catch (error) {
-        console.error("Failed to update project:", error);
+      } catch (error) {
+        console.error("Failed to update project:", error.response ? error.response.data : error);
         toast.error("An error occurred while updating the project.");
-    } finally {
-        this.loading = false; // Disable loading state
-    }
-},
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 };
 </script>
 
   
 <style scoped>
+
 .autocomplete-suggestions {
   position: absolute;
   background: #fff;

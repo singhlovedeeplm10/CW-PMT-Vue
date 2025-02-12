@@ -157,9 +157,15 @@ export default {
       }
     },
     openEditProjectModal(project) {
-      this.selectedProject = { ...project };
-      this.showEditProjectModal = true;
-    },
+  // Ensure developer_assign_list contains full user objects
+  const developers = project.developer_assign_list.map(dev => 
+    typeof dev === "object" ? dev : { id: dev, name: `User ${dev}` } // Assuming dev is an ID, replace with actual user data
+  );
+
+  this.selectedProject = { ...project, developer_assign_list: developers };
+  this.showEditProjectModal = true;
+},
+
     closeEditProjectModal() {
       this.showEditProjectModal = false;
       this.selectedProject = null;

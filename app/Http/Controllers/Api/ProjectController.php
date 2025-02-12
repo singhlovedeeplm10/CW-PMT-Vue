@@ -166,17 +166,17 @@ class ProjectController extends Controller
             return response()->json(['error' => 'Failed to fetch projects'], 500);
         }
     }
-
     public function updateProject(Request $request, $id)
     {
-        // Validate the incoming request data with enum values for type and status
+        // Validate request data
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'required|string|in:Long,Medium,Short', // Validate against enum values
-            'status' => 'required|string|in:Awaiting,Started,Paused,Completed', // Validate against enum values
+            'type' => 'required|string|in:Long,Medium,Short',
+            'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
             'comment' => 'nullable|string',
-            'developer_assign_list' => 'nullable|array', // Validate developer_assign_list as an array
+            'developer_assign_list' => 'nullable|array',
+            'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
         ]);
     
         // Find the project by ID
@@ -186,19 +186,21 @@ class ProjectController extends Controller
             return response()->json(['error' => 'Project not found'], 404);
         }
     
-        // Update the project with the validated data
+        // Decode the existing developer list from JSON
+        $existingDevelopers = json_decode($project->developer_assign_list, true) ?? [];
+    
+        // Merge existing and new developer lists without duplicates
+        $updatedDevelopers = array_unique(array_merge($existingDevelopers, $validatedData['developer_assign_list'] ?? []));
+    
+        // Update project attributes
         $project->name = $validatedData['name'];
         $project->description = $validatedData['description'] ?? $project->description;
         $project->type = $validatedData['type'];
         $project->status = $validatedData['status'];
         $project->comment = $validatedData['comment'] ?? $project->comment;
+        $project->developer_assign_list = json_encode($updatedDevelopers); // Store merged list
     
-        // Only update developer_assign_list if it is provided in the request
-        if (isset($validatedData['developer_assign_list'])) {
-            $project->developer_assign_list = json_encode($validatedData['developer_assign_list']);
-        }
-    
-        // Save the changes
+        // Save the project
         $project->save();
     
         return response()->json([
@@ -206,5 +208,5 @@ class ProjectController extends Controller
             'project' => $project,
         ], 200);
     }
-        
+
 }
