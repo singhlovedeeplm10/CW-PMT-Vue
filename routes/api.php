@@ -115,11 +115,11 @@ Route::middleware('auth:sanctum')->get('/get-breakin-token', [BreakController::c
 
 
 // PROJECTS API ROUTE
-Route::middleware('auth:sanctum')->post('/project', [ProjectController::class, 'storeProjectWithDetails']);
+Route::middleware('auth:sanctum')->post('/add-project', [ProjectController::class, 'storeProjectWithDetails']);
 Route::middleware('auth:sanctum')->post('/add-projects', [ProjectController::class, 'storeProjects']);
 Route::get('/projects', [ProjectController::class, 'getAllProjects']);
 Route::middleware('auth:sanctum')->put('/update-projects/{id}', [ProjectController::class, 'updateProject']);
-
+Route::put('/projects/{project}/remove-developer', [ProjectController::class, 'removeDeveloper']);
 
 // TIMELINE API ROUTES
 Route::middleware('auth:sanctum')->post('/upload-timeline', [TimelineController::class, 'uploadTimeline']);

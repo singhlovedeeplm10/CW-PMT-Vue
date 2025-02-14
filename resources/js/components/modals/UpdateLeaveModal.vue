@@ -333,8 +333,8 @@ export default {
       type_of_leave: this.leave.type_of_leave,
       start_date: this.leave.start_date || null,
       end_date:
-        this.leave.type_of_leave === "Short Leave"
-          ? null
+        this.leave.type_of_leave === "Short Leave" || this.leave.type_of_leave === "Half Day Leave"
+          ? null // Set end_date to null for Short Leave or Half Day Leave
           : this.leave.end_date || null,
       reason: this.leave.reason,
       contact_during_leave: this.leave.contact_during_leave,
@@ -385,7 +385,6 @@ export default {
     this.loading = false;
   }
 },
-
 
   },
 };

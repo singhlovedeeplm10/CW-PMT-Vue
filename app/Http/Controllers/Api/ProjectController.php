@@ -147,66 +147,96 @@ class ProjectController extends Controller
             ], 500);
         }
     }
-    
     public function getAllProjects()
-    {
-        try {
-            $projects = Project::all();
-    
-            // Decode developer_assign_list and fetch user names
-            $projects = $projects->map(function ($project) {
-                $developerIds = json_decode($project->developer_assign_list, true) ?? [];
-                $developerNames = User::whereIn('id', $developerIds)->pluck('name')->toArray();
-                $project->developer_assign_list = $developerNames; // Replace IDs with names
-                return $project;
-            });
-    
-            return response()->json($projects);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch projects'], 500);
-        }
+{
+    try {
+        $projects = Project::all()->map(function ($project) {
+            $developerIds = json_decode($project->developer_assign_list, true);
+            $developers = User::whereIn('id', $developerIds)->get(['id', 'name']);
+            $project->assigned_developers = $developers; // Include both ID and name
+            return $project;
+        });
+
+        return response()->json($projects);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to fetch projects'], 500);
     }
-    public function updateProject(Request $request, $id)
-    {
-        // Validate request data
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'type' => 'required|string|in:Long,Medium,Short',
-            'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
-            'comment' => 'nullable|string',
-            'developer_assign_list' => 'nullable|array',
-            'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
-        ]);
-    
-        // Find the project by ID
-        $project = Project::find($id);
-    
-        if (!$project) {
-            return response()->json(['error' => 'Project not found'], 404);
-        }
-    
-        // Decode the existing developer list from JSON
-        $existingDevelopers = json_decode($project->developer_assign_list, true) ?? [];
-    
-        // Merge existing and new developer lists without duplicates
-        $updatedDevelopers = array_unique(array_merge($existingDevelopers, $validatedData['developer_assign_list'] ?? []));
-    
-        // Update project attributes
-        $project->name = $validatedData['name'];
-        $project->description = $validatedData['description'] ?? $project->description;
-        $project->type = $validatedData['type'];
-        $project->status = $validatedData['status'];
-        $project->comment = $validatedData['comment'] ?? $project->comment;
-        $project->developer_assign_list = json_encode($updatedDevelopers); // Store merged list
-    
-        // Save the project
-        $project->save();
-    
-        return response()->json([
-            'message' => 'Project updated successfully',
-            'project' => $project,
-        ], 200);
+}
+
+    public function removeDeveloper(Request $request, $projectId)
+{
+    $project = Project::findOrFail($projectId);
+    $developerId = $request->input('developer_id');
+
+    // Decode JSON to array safely
+    $developerAssignList = json_decode($project->developer_assign_list, true) ?? [];
+
+    // Debugging - Check if the data is retrieved correctly
+    if (!is_array($developerAssignList)) {
+        $developerAssignList = [];
     }
+
+    // Debugging - Print before removal
+    \Log::info("Before removal: ", $developerAssignList);
+
+    // Remove the developer ID from the list
+    $developerAssignList = array_filter($developerAssignList, function ($id) use ($developerId) {
+        return $id != $developerId;
+    });
+
+    // Debugging - Print after removal
+    \Log::info("After removal: ", $developerAssignList);
+
+    // Update the developer_assign_list in the database
+    $project->developer_assign_list = json_encode(array_values($developerAssignList));
+
+    // Debugging - Print before saving
+    \Log::info("Saving to database: ", [$project->developer_assign_list]);
+
+    $project->save();
+
+    return response()->json(['message' => 'Developer removed successfully', 'updated_list' => $developerAssignList], 200);
+}
+
+
+public function updateProject(Request $request, $id)
+{
+    // Validate request data
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'type' => 'required|string|in:Long,Medium,Short',
+        'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
+        'comment' => 'nullable|string',
+        'developer_assign_list' => 'nullable|array',
+        'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+    ]);
+
+    // Find the project by ID
+    $project = Project::find($id);
+
+    if (!$project) {
+        return response()->json(['error' => 'Project not found'], 404);
+    }
+
+    // Update project attributes
+    $project->name = $validatedData['name'];
+    $project->description = $validatedData['description'] ?? $project->description;
+    $project->type = $validatedData['type'];
+    $project->status = $validatedData['status'];
+    $project->comment = $validatedData['comment'] ?? $project->comment;
+    
+    // Replace the developer list with the updated list from the frontend
+    $project->developer_assign_list = json_encode($validatedData['developer_assign_list'] ?? []); // Store the new list
+
+    // Save the project
+    $project->save();
+
+    return response()->json([
+        'message' => 'Project updated successfully',
+        'project' => $project,
+    ], 200);
+}
+
 
 }

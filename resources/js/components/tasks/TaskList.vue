@@ -70,21 +70,24 @@ export default {
   },
   methods: {
     async fetchTasks() {
-      this.loading = true;
-      try {
-        const response = await axios.get("/api/user-tasks", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-        });
-        this.tasks = response.data;
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-        toast.error("Failed to fetch tasks. Please try again.");
-      } finally {
-        this.loading = false;
-      }
-    },
+  this.loading = true;
+  try {
+    const response = await axios.get("/api/user-tasks", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+    this.tasks = response.data.map(task => ({
+      ...task,
+      project_name: task.project_name || 'N/A' // Ensure project_name is always present
+    }));
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    toast.error("Failed to fetch tasks. Please try again.");
+  } finally {
+    this.loading = false;
+  }
+},
     
     async fetchProjects() {
       try {

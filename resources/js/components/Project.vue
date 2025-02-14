@@ -40,7 +40,7 @@
             <th>Project Type</th>
             <th>Status</th>
             <th>Comments</th>
-            <th>Developer Assign List</th>
+            <th>Assigned Developers</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -51,13 +51,7 @@
             <td>{{ project.type }}</td>
             <td>{{ project.status }}</td>
             <td>{{ project.comment || "N/A" }}</td>
-            <td>
-              <ul>
-                <li v-for="developer in project.developer_assign_list" :key="developer">
-                  {{ developer }}
-                </li>
-              </ul>
-            </td>
+            <td>{{ getDeveloperNames(project.assigned_developers) }}</td>
             <td>
               <button class="btn btn-secondary" @click="openEditProjectModal(project)">
                 <i class="fas fa-edit"></i>
@@ -65,7 +59,7 @@
             </td>
           </tr>
           <tr v-if="filteredProjects.length === 0">
-            <td colspan="7" class="text-center">No projects available</td>
+            <td colspan="6" class="text-center">No projects available</td>
           </tr>
         </tbody>
       </table>
@@ -88,12 +82,11 @@
   </master-component>
 </template>
 
-
 <script>
 import MasterComponent from './layouts/Master.vue';
 import AddProjectModal from './modals/AddProjectModal.vue';
 import EditProjectModal from './modals/EditProjectModal.vue';
-import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
+import ButtonComponent from "@/components/ButtonComponent.vue";
 import axios from 'axios';
 
 export default {
@@ -142,33 +135,24 @@ export default {
         });
 
         if (Array.isArray(response.data)) {
-          this.projects = response.data.map((project) => ({
-            ...project,
-            developer_assign_list: project.developer_assign_list || [],
-          }));
+          this.projects = response.data;
         } else {
           console.error("Unexpected response format:", response.data);
         }
       } catch (error) {
-        console.error(
-          "Failed to fetch projects:",
-          error.response?.data || error.message
-        );
+        console.error("Failed to fetch projects:", error.response?.data || error.message);
       }
     },
     openEditProjectModal(project) {
-  // Ensure developer_assign_list contains full user objects
-  const developers = project.developer_assign_list.map(dev => 
-    typeof dev === "object" ? dev : { id: dev, name: `User ${dev}` } // Assuming dev is an ID, replace with actual user data
-  );
-
-  this.selectedProject = { ...project, developer_assign_list: developers };
-  this.showEditProjectModal = true;
-},
-
+      this.selectedProject = project;
+      this.showEditProjectModal = true;
+    },
     closeEditProjectModal() {
       this.showEditProjectModal = false;
       this.selectedProject = null;
+    },
+    getDeveloperNames(developers) {
+      return developers.map(dev => dev.name).join(', ') || "N/A";
     }
   },
   mounted() {
@@ -176,6 +160,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .project-page {
