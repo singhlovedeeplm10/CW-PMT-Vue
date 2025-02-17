@@ -183,23 +183,22 @@
               <span v-if="contactError" class="text-danger">{{ contactError }}</span>
             </div>
 
-            <div class="modal-footer">
-              <ButtonComponent
-  :label="'Apply'"
-  :buttonClass="'btn-success'"
-  :isDisabled="loading"
-  :isLoading="loading"
-  :loadingText="'Applying...'"
-  @click="validateAndSubmit"
-/>
-<ButtonComponent
-  :label="'Cancel'"
-  :buttonClass="'btn-secondary'"
-  :customAttributes="{ 'data-bs-dismiss': 'modal' }"
-/>
+            <div class="modal-footer d-flex justify-content-end gap-2">
+  <ButtonComponent
+    :label="'Cancel'"
+    :buttonClass="'btn-secondary'"
+    :customAttributes="{ 'data-bs-dismiss': 'modal' }"
+  />
+  <ButtonComponent
+    :label="'Apply'"
+    :buttonClass="'btn-success'"
+    :isDisabled="loading"
+    :isLoading="loading"
+    :loadingText="'Applying...'"
+    @click="validateAndSubmit"
+  />
+</div>
 
-
-            </div>
           </form>
         </div>
       </div>

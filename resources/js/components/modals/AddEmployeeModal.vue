@@ -45,7 +45,7 @@
               :class="{ 'input-error': fieldErrors.password }"
               @input-blur="(error) => passwordError = error"
             />
-            <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
+            <!-- <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p> -->
           </div>
 
           <!-- Confirm Password -->
@@ -59,7 +59,7 @@
               :class="{ 'input-error': fieldErrors.confirmPassword }"
               @input-blur="(error) => confirmPasswordError = error"
             />
-            <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
+            <!-- <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p> -->
           </div>
         </div>
 
@@ -133,11 +133,11 @@ export default {
       fieldErrors.value = {
         name: employee.value.name ? "" : "Employee name is required.",
         email: employee.value.email ? "" : "Employee email is required.",
-        password: employee.value.password ? "" : "Password is required.",
+        password: employee.value.password ? (employee.value.password.length >= 8 ? "" : "Password must be at least 8 characters long.") : "Password is required.",
         confirmPassword: employee.value.confirmPassword ? "" : "Confirm password is required.",
       };
 
-      if (!employee.value.name || !employee.value.email || !employee.value.password || !employee.value.confirmPassword) {
+      if (!employee.value.name || !employee.value.email || !employee.value.password || !employee.value.confirmPassword || employee.value.password.length < 8) {
         isValid = false;
       }
 

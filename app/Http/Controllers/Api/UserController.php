@@ -253,16 +253,9 @@ public function employeeAttendances(Request $request)
             ->whereNull('leave_id')
             ->count();
 
-        // Calculate total WFH days by computing the difference between start_date and end_date (inclusive)
         $totalWFH = $user->leaves->where('type_of_leave', 'Work From Home')
-            ->filter(function ($leave) use ($startDate, $endDate) {
-                return ($leave->start_date >= $startDate && $leave->start_date <= $endDate) ||
-                       ($leave->end_date && $leave->end_date >= $startDate && $leave->end_date <= $endDate);
-            })
-            ->reduce(function ($sum, $leave) {
-                $days = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date)) + 1;
-                return $sum + $days;
-            }, 0);
+            ->whereBetween('start_date', [$startDate, $endDate])
+            ->count();
 
         $totalLeaves = $user->leaves
             ->filter(function ($leave) use ($startDate, $endDate) {
@@ -276,7 +269,8 @@ public function employeeAttendances(Request $request)
                 return $sum + ($leave->type_of_leave === 'Full Day Leave' ? 1 : 0.5);
             }, 0);
 
-        $totalWorkingDays = $totalWFO + $totalWFH + $totalLeaves;
+        // $totalWorkingDays = $totalWFO + $totalWFH + $totalLeaves;
+        $totalWorkingDays = $totalWFO + $totalWFH;
 
         return [
             'id' => $user->profile->employee_code ?? 'N/A',
@@ -292,6 +286,8 @@ public function employeeAttendances(Request $request)
 
     return response()->json($employees);
 }
+
+
 
 
 }

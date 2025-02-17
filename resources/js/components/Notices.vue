@@ -21,8 +21,13 @@
         </select>
       </div>
 
+      <!-- Loader -->
+      <div v-if="loading" class="loader-container">
+        <div class="spinner"></div>
+      </div>
 
-      <div class="notices-section">
+      <!-- Notices Section -->
+      <div class="notices-section" v-if="!loading">
         <table class="notices-table" v-if="filteredNotices.length > 0">
           <thead>
             <tr>
@@ -94,6 +99,7 @@ export default {
       currentPage: 1,
       totalPages: 1,
       selectedSort: "order_asc", // Default sorting option
+      loading: false, // Add loading state
     };
   },
   computed: {
@@ -116,6 +122,7 @@ export default {
   },
   methods: {
     async fetchNotices(page = 1) {
+      this.loading = true; // Set loading to true when fetching data
       try {
         const response = await axios.get(`/api/get-notices?page=${page}`);
         this.notices = response.data.data; // Extract paginated data
@@ -123,6 +130,8 @@ export default {
         this.totalPages = response.data.last_page;
       } catch (error) {
         console.error("Error fetching notices:", error);
+      } finally {
+        this.loading = false; // Set loading to false once data has been fetched
       }
     },
     openEditModal(notice) {
@@ -154,9 +163,28 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .search-bar {
   display: flex;
   align-items: center;

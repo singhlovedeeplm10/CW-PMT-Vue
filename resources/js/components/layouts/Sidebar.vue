@@ -114,8 +114,13 @@ export default {
       };
     },
   },
+  watch: {
+    // Watch for route changes and scroll to the top
+    $route() {
+      window.scrollTo(0, 0);
+    },
+  },
   mounted() {
-    // Only fetch the data once if not already fetched
     if (!this.userName || !this.userRole) {
       this.fetchUserDetails();
       this.fetchUserRole();
@@ -123,6 +128,7 @@ export default {
   },
 };
 </script>
+
 
 
 <style scoped>

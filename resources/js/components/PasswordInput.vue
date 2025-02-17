@@ -63,7 +63,7 @@
         if (this.required && !this.value) {
           this.errorMessage = "Password is required.";
         } else if (this.value.length < 6) {
-          this.errorMessage = "Password must be at least 6 characters long.";
+          this.errorMessage = "Password must be at least 8 characters long.";
         } else {
           this.errorMessage = "";
         }

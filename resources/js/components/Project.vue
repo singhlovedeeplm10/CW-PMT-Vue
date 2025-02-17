@@ -31,8 +31,14 @@
         </select>
       </div>
 
+      <!-- Loader/Spinner -->
+      <div v-if="isLoading" class="loader">
+        <div class="spinner"></div>
+        <!-- <p>Loading projects...</p> -->
+      </div>
+
       <!-- Project Table -->
-      <table class="project-table">
+      <table v-else class="project-table">
         <thead>
           <tr>
             <th>Project Name</th>
@@ -49,7 +55,9 @@
             <td>{{ project.name }}</td>
             <td>{{ project.description }}</td>
             <td>{{ project.type }}</td>
-            <td>{{ project.status }}</td>
+            <td :class="getStatusClass(project.status)">
+              {{ project.status }}
+            </td>
             <td>{{ project.comment || "N/A" }}</td>
             <td>{{ getDeveloperNames(project.assigned_developers) }}</td>
             <td>
@@ -59,7 +67,7 @@
             </td>
           </tr>
           <tr v-if="filteredProjects.length === 0">
-            <td colspan="6" class="text-center">No projects available</td>
+            <td colspan="7" class="text-center">No projects available</td>
           </tr>
         </tbody>
       </table>
@@ -105,16 +113,14 @@ export default {
       selectedProject: null,
       searchName: "",
       searchStatus: "",
+      isLoading: true,
     };
   },
   computed: {
     filteredProjects() {
       return this.projects.filter((project) => {
-        const matchesName = project.name
-          .toLowerCase()
-          .includes(this.searchName.toLowerCase());
-        const matchesStatus =
-          this.searchStatus === "" || project.status === this.searchStatus;
+        const matchesName = project.name.toLowerCase().includes(this.searchName.toLowerCase());
+        const matchesStatus = this.searchStatus === "" || project.status === this.searchStatus;
         return matchesName && matchesStatus;
       });
     },
@@ -127,6 +133,7 @@ export default {
       this.showAddProjectModal = false;
     },
     async fetchProjects() {
+      this.isLoading = true;
       try {
         const response = await axios.get("/api/projects", {
           headers: {
@@ -141,6 +148,8 @@ export default {
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error.response?.data || error.message);
+      } finally {
+        this.isLoading = false;
       }
     },
     openEditProjectModal(project) {
@@ -153,6 +162,15 @@ export default {
     },
     getDeveloperNames(developers) {
       return developers.map(dev => dev.name).join(', ') || "N/A";
+    },
+    getStatusClass(status) {
+      switch (status) {
+        case 'Started': return 'text-success';
+        case 'Awaiting': return 'text-warning';
+        case 'Completed': return 'text-primary';
+        case 'Paused': return 'text-danger';
+        default: return '';
+      }
     }
   },
   mounted() {
@@ -161,11 +179,48 @@ export default {
 };
 </script>
 
-
 <style scoped>
+.text-success {
+  color: green;
+  font-weight: bold;
+}
+.text-warning {
+  color: orange;
+  font-weight: bold;
+}
+.text-primary {
+  color: blue;
+  font-weight: bold;
+}
+.text-danger {
+  color: red;
+  font-weight: bold;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 .project-page {
   padding: 20px;
-  background-color: #f8f9fa;
   position: relative;
 }
 

@@ -36,8 +36,15 @@
         <iframe :src="currentDocument.url" class="document-iframe" frameborder="0"></iframe>
       </div>
 
+      <!-- Loader Spinner -->
+      <div v-if="isLoading" class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
       <!-- Policies Table -->
-      <div v-if="!currentDocument" class="table-container mt-4">
+      <div v-if="!isLoading && !currentDocument" class="table-container mt-4">
         <table class="table">
           <thead>
             <tr>
@@ -111,6 +118,7 @@
     </div>
   </master-component>
 </template>
+
 <script>
 import MasterComponent from './layouts/Master.vue';
 import AddPolicyModal from './modals/AddPolicyModal.vue';
@@ -141,6 +149,7 @@ export default {
         document_path: null,
       },
       currentDocument: null, // Add a property to store the document data
+      isLoading: true, // Add a loading state
     };
   },
 
@@ -163,23 +172,25 @@ export default {
         .get('/api/policies')
         .then((response) => {
           this.policies = response.data;
+          this.isLoading = false; // Set loading to false after data is fetched
         })
         .catch((error) => {
           console.error('Error fetching policies:', error);
+          this.isLoading = false; // Set loading to false even if there's an error
         });
     },
     // Open the document in the same window and show the last updated date
     openDocument(policy) {
-  if (policy.document_url) {
-    this.currentDocument = {
-      url: policy.document_url, // Ensure the URL is up-to-date
-      title: policy.policy_title,
-      last_updated_at: policy.last_updated_at,
-    };
-  } else {
-    console.error("Document URL is invalid or missing.");
-  }
-},
+      if (policy.document_url) {
+        this.currentDocument = {
+          url: policy.document_url, // Ensure the URL is up-to-date
+          title: policy.policy_title,
+          last_updated_at: policy.last_updated_at,
+        };
+      } else {
+        console.error("Document URL is invalid or missing.");
+      }
+    },
 
     // Format date to a readable format
     formatDate(date) {
@@ -198,27 +209,27 @@ export default {
     },
     // Update the policy after editing
     updatePolicy(updatedPolicyData) {
-  axios
-    .post(`/api/update-policies/${this.editPolicyData.id}`, updatedPolicyData, {
-      headers: { "Content-Type": "multipart/form-data" }, // Set content type
-    })
-    .then((response) => {
-      const updatedPolicy = response.data;
-      const index = this.policies.findIndex(
-        (policy) => policy.id === updatedPolicy.id
-      );
-      if (index !== -1) {
-        this.policies[index] = updatedPolicy; // Update policy in the list
-      }
-      toast.success("Changes saved successfully!");
-      this.fetchPolicies(); // Re-fetch policies to ensure updated data
-      this.closeEditModal(); // Close modal
-    })
-    .catch((error) => {
-      console.error("Error updating policy:", error);
-      toast.error("Failed to save changes. Please try again.");
-    });
-},
+      axios
+        .post(`/api/update-policies/${this.editPolicyData.id}`, updatedPolicyData, {
+          headers: { "Content-Type": "multipart/form-data" }, // Set content type
+        })
+        .then((response) => {
+          const updatedPolicy = response.data;
+          const index = this.policies.findIndex(
+            (policy) => policy.id === updatedPolicy.id
+          );
+          if (index !== -1) {
+            this.policies[index] = updatedPolicy; // Update policy in the list
+          }
+          toast.success("Changes saved successfully!");
+          this.fetchPolicies(); // Re-fetch policies to ensure updated data
+          this.closeEditModal(); // Close modal
+        })
+        .catch((error) => {
+          console.error("Error updating policy:", error);
+          toast.error("Failed to save changes. Please try again.");
+        });
+    },
     // Delete policy from both frontend and backend
     deletePolicy(policyId) {
       if (confirm('Are you sure you want to delete this policy?')) {
@@ -255,6 +266,11 @@ export default {
 
 
 <style scoped>
+/* Add custom styles for the spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
 .last-updated {
   position: absolute;
   top: 45px; /* Adjust vertical position */
@@ -312,7 +328,6 @@ export default {
 /* Page Container */
 .policies-page {
   padding: 20px;
-  background-color: #f9f9f9;
   position: relative;
 }
 

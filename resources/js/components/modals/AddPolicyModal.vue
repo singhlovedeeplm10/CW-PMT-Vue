@@ -27,20 +27,21 @@
       </div>
 
       <!-- Buttons -->
-      <div class="modal-footer">
-        <ButtonComponent
-          label="Cancel"
-          buttonClass="btn-secondary"
-          @click="closeModal"
-        />
-        <ButtonComponent
-          label="Save Policy"
-          buttonClass="btn-primary"
-          :isDisabled="loading"
-          :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
-          @click="submitPolicy"
-        />
-      </div>
+      <div class="modal-footer d-flex justify-content-end gap-2">
+  <ButtonComponent
+    label="Cancel"
+    buttonClass="btn-secondary"
+    @click="closeModal"
+  />
+  <ButtonComponent
+    label="Save Policy"
+    buttonClass="btn-primary"
+    :isDisabled="loading"
+    :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
+    @click="submitPolicy"
+  />
+</div>
+
     </div>
   </div>
 </template>

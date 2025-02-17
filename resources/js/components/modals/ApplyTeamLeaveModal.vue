@@ -323,46 +323,52 @@ export default {
     this.userSearchQuery = user.name;
   },
   validateAndSubmit() {
-    // Clear previous errors
-    this.clearErrors();
+  // Clear previous errors
+  this.clearErrors();
 
-    // Validate fields
-    if (!this.form.selected_user) {
-      this.userError = "User is required.";
+  // Validate fields
+  if (!this.form.selected_user) {
+    this.userError = "User is required.";
+  }
+  if (!this.form.type_of_leave) {
+    this.leaveTypeError = "Leave type is required.";
+  }
+  if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
+    if (!this.form.end_date) {
+      this.endDateError = "End date is required.";
     }
-    if (!this.form.type_of_leave) {
-      this.leaveTypeError = "Leave type is required.";
-    }
-    if (!this.form.reason) {
-      this.reasonError = "Reason is required.";
-    }
-    if (!this.form.contact_during_leave) {
-      this.contactError = "Contact during leave is required.";
-    }
-    if (this.form.type_of_leave === "Short Leave") {
-      if (!this.form.start_time || !this.form.end_time) {
-        if (!this.form.start_time) {
-          this.startTimeError = "Start time is required.";
-        }
-        if (!this.form.end_time) {
-          this.endTimeError = "End time is required.";
-        }
-      } else {
-        const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
-        const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
-        const timeDiff = (endTime - startTime) / 1000 / 60 / 60; // Difference in hours
-        if (timeDiff > 2) {
-          this.endTimeError = "The time difference should not be more than 2 hours.";
-        }
+  }
+  if (!this.form.reason) {
+    this.reasonError = "Reason is required.";
+  }
+  if (!this.form.contact_during_leave) {
+    this.contactError = "Contact during leave is required.";
+  }
+  if (this.form.type_of_leave === "Short Leave") {
+    if (!this.form.start_time || !this.form.end_time) {
+      if (!this.form.start_time) {
+        this.startTimeError = "Start time is required.";
+      }
+      if (!this.form.end_time) {
+        this.endTimeError = "End time is required.";
+      }
+    } else {
+      const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
+      const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
+      const timeDiff = (endTime - startTime) / 1000 / 60 / 60; // Difference in hours
+      if (timeDiff > 2) {
+        this.endTimeError = "The time difference should not be more than 2 hours.";
       }
     }
+  }
 
-    if (this.userError || this.leaveTypeError || this.startDateError || this.endDateError || this.startTimeError || this.endTimeError || this.reasonError || this.contactError) {
-      return;
-    }
+  if (this.userError || this.leaveTypeError || this.startDateError || this.endDateError || this.startTimeError || this.endTimeError || this.reasonError || this.contactError) {
+    return;
+  }
 
-    this.submitForm();
-  },
+  this.submitForm();
+},
+
   clearErrors() {
     this.userError = null;
     this.leaveTypeError = null;

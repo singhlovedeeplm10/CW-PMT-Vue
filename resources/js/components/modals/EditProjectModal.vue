@@ -85,10 +85,11 @@
       </div>
 
       <!-- Save and Close Buttons -->
-      <div class="modal-footer">
-        <button @click="updateProject" class="btn btn-primary">Save Changes</button>
-        <button @click="close" class="btn btn-secondary">Close</button>
-      </div>
+      <div class="modal-footer d-flex justify-content-end gap-2">
+  <button @click="close" class="btn btn-secondary">Close</button>
+  <button @click="updateProject" class="btn btn-primary">Save Changes</button>
+</div>
+
     </div>
   </div>
 </template>

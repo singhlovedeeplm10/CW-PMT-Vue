@@ -30,20 +30,29 @@
                 class="form-control"
               />
             </div>
-
-            <!-- Use ButtonComponent here -->
-            <ButtonComponent
-              :label="isLoading ? 'Saving...' : 'Save Changes'"
-              :isDisabled="isLoading"
-              :iconClass="isLoading ? 'spinner-border spinner-border-sm' : null"
-              :clickEvent="saveChanges"
-            />
           </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer d-flex justify-content-end gap-2">
+          <ButtonComponent
+            label="Close"
+            buttonClass="btn-secondary"
+            @click="closeModal"
+          />
+          <ButtonComponent
+            :label="isLoading ? 'Saving...' : 'Save Changes'"
+            buttonClass="btn-primary"
+            :isDisabled="isLoading"
+            :iconClass="isLoading ? 'spinner-border spinner-border-sm' : null"
+            @click="saveChanges"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import ButtonComponent from "@/components/ButtonComponent.vue";
