@@ -319,6 +319,12 @@ export default {
     ? null
     : "Contact during leave is required.";
 
+  if (this.form.type_of_leave === "Half Day Leave") {
+    this.halfDayError = this.form.half_day
+      ? null
+      : "Please select which half of the day.";
+  }
+
   if (this.form.type_of_leave === "Short Leave") {
     this.startTimeError = this.form.start_time
       ? null
@@ -328,7 +334,7 @@ export default {
       : "End time is required.";
   }
 
-  if (this.form.type_of_leave === "Full Day Leave") {
+  if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
     this.endDateError = this.form.end_date ? null : "End date is required.";
   }
 
@@ -337,6 +343,7 @@ export default {
     this.startDateError ||
     this.reasonError ||
     this.contactError ||
+    this.halfDayError ||
     this.startTimeError ||
     this.endTimeError ||
     this.endDateError
@@ -358,7 +365,7 @@ export default {
 
     // Find the modal element
     const modalElement = document.getElementById("applyleavemodal");
-    
+
     // Trigger Bootstrap's modal dismissal using data-bs-dismiss
     const dismissButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
     if (dismissButton) {
@@ -373,8 +380,6 @@ export default {
     this.loading = false;
   }
 },
-
-
 
     resetForm() {
       this.form = {

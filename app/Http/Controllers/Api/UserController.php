@@ -161,7 +161,7 @@ class UserController extends Controller
     ]);
 }
 
-    
+
 
 public function updateStatus(Request $request, $id)
     {
@@ -233,9 +233,13 @@ public function employeeAttendances(Request $request)
         $endDate = Carbon::createFromDate($request->year, $request->month, 1)->endOfMonth()->toDateString();
     }
 
-    $query = User::with(['profile', 'attendances', 'leaves' => function ($query) {
-        $query->where('status', 'approved');
-    }])
+    $query = User::with([
+        'profile', 
+        'attendances', 
+        'leaves' => function ($query) {
+            $query->where('status', 'approved');
+        }
+    ])
     ->whereHas('profile')
     ->orderBy('name', 'asc');
 
@@ -249,31 +253,46 @@ public function employeeAttendances(Request $request)
     $query->where('status', $status);
 
     $employees = $query->get()->map(function ($user) use ($startDate, $endDate) {
-        $totalWFO = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate])
-            ->whereNull('leave_id')
-            ->count();
+        // Fetch attendance records for the given month
+        $attendances = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate]);
 
-        $totalWFH = $user->leaves->where('type_of_leave', 'Work From Home')
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->count();
+        // Fetch work-from-home leaves with approved status for the given month
+        $wfhLeaves = $user->leaves->where('type_of_leave', 'Work From Home')
+            ->filter(function ($leave) use ($startDate, $endDate) {
+                return ($leave->start_date <= $endDate && (!$leave->end_date || $leave->end_date >= $startDate));
+            });
 
+        // Count days where the user has both an approved WFH leave and an attendance record
+        $totalWFH = $wfhLeaves->reduce(function ($count, $leave) use ($attendances) {
+            $daysInLeaveRange = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date ?: $leave->start_date)) + 1;
+
+            $daysWithAttendance = $attendances->filter(function ($attendance) use ($leave) {
+                return Carbon::parse($attendance->clockin_time)->between($leave->start_date, $leave->end_date ?: $leave->start_date);
+            })->count();
+
+            return $count + min($daysInLeaveRange, $daysWithAttendance);
+        }, 0);
+
+        // Count WFO days excluding those counted in WFH
+        $totalWFO = $attendances->count() - $totalWFH;
+
+        // Count total leave days (Full Day and Half Day)
         $totalLeaves = $user->leaves
             ->filter(function ($leave) use ($startDate, $endDate) {
                 return in_array($leave->type_of_leave, ['Full Day Leave', 'Half Day Leave']) &&
-                    (
-                        ($leave->start_date >= $startDate && $leave->start_date <= $endDate) ||
-                        ($leave->end_date && $leave->end_date >= $startDate && $leave->end_date <= $endDate)
-                    );
+                    ($leave->start_date <= $endDate && (!$leave->end_date || $leave->end_date >= $startDate));
             })
             ->reduce(function ($sum, $leave) {
                 return $sum + ($leave->type_of_leave === 'Full Day Leave' ? 1 : 0.5);
             }, 0);
 
-        // $totalWorkingDays = $totalWFO + $totalWFH + $totalLeaves;
         $totalWorkingDays = $totalWFO + $totalWFH;
 
+        // Generate employee code based on user ID
+        $employeeCode = sprintf("CW%03d", $user->id);
+
         return [
-            'id' => $user->profile->employee_code ?? 'N/A',
+            'id' => $employeeCode,
             'image' => $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : null,
             'name' => $user->name,
             'status' => $user->status,
@@ -286,8 +305,5 @@ public function employeeAttendances(Request $request)
 
     return response()->json($employees);
 }
-
-
-
 
 }

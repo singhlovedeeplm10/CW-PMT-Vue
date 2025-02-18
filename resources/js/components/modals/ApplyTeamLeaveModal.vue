@@ -62,7 +62,7 @@
                 :error="leaveTypeError"
                 @change="handleLeaveTypeChange"
               />
-              <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span>
+              <!-- <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span> -->
             </div>
 
             <!-- Dynamic Fields for Half Day -->
@@ -76,7 +76,7 @@
     placeholder="Select Half"
     :error="halfDayError"
   />
-  <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span>
+  <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
 </div>
 
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
@@ -89,7 +89,7 @@
                   :minDate="minDate"
                   :error="startDateError"
                 />
-                <span v-if="startDateError" class="text-danger">{{ startDateError }}</span>
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
 
@@ -104,7 +104,7 @@
                   :minDate="minDate"
                   :error="startDateError"
                 />
-                <span v-if="startDateError" class="text-danger">{{ startDateError }}</span>
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
@@ -118,7 +118,7 @@
                   :maxTime="'18:00'"
                   :error="startTimeError"
                 />
-                <span v-if="startTimeError" class="text-danger">{{ startTimeError }}</span>
+                <!-- <span v-if="startTimeError" class="text-danger">{{ startTimeError }}</span> -->
               </div>
               <div class="col">
                 <TimeInput
@@ -144,7 +144,7 @@
                   :minDate="minDate"
                   :error="startDateError"
                 />
-                <span v-if="startDateError" class="text-danger">{{ startDateError }}</span>
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
                 <DateInput
@@ -155,7 +155,7 @@
                   :minDate="form.start_date"
                   :error="endDateError"
                 />
-                <span v-if="endDateError" class="text-danger">{{ endDateError }}</span>
+                <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
             
@@ -170,7 +170,7 @@
                   :minDate="minDate"
                   :error="startDateError"
                 />
-                <span v-if="startDateError" class="text-danger">{{ startDateError }}</span>
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
                 <DateInput
@@ -181,7 +181,7 @@
                   :minDate="form.start_date"
                   :error="endDateError"
                 />
-                <span v-if="endDateError" class="text-danger">{{ endDateError }}</span>
+                <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
 
@@ -296,7 +296,7 @@ export default {
   },
   methods: {
   handleLeaveTypeChange() {
-    this.form.half_day = "";
+    this.form.half = "";
     this.form.start_time = "";
     this.form.end_time = "";
     this.form.start_date = "";
@@ -323,52 +323,67 @@ export default {
     this.userSearchQuery = user.name;
   },
   validateAndSubmit() {
-  // Clear previous errors
-  this.clearErrors();
+    // Clear previous errors
+    this.clearErrors();
 
-  // Validate fields
-  if (!this.form.selected_user) {
-    this.userError = "User is required.";
-  }
-  if (!this.form.type_of_leave) {
-    this.leaveTypeError = "Leave type is required.";
-  }
-  if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
-    if (!this.form.end_date) {
-      this.endDateError = "End date is required.";
+    // Validate fields based on leave type
+    if (!this.form.selected_user) {
+      this.userError = "User is required.";
     }
-  }
-  if (!this.form.reason) {
-    this.reasonError = "Reason is required.";
-  }
-  if (!this.form.contact_during_leave) {
-    this.contactError = "Contact during leave is required.";
-  }
-  if (this.form.type_of_leave === "Short Leave") {
-    if (!this.form.start_time || !this.form.end_time) {
-      if (!this.form.start_time) {
-        this.startTimeError = "Start time is required.";
-      }
-      if (!this.form.end_time) {
-        this.endTimeError = "End time is required.";
-      }
-    } else {
-      const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
-      const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
-      const timeDiff = (endTime - startTime) / 1000 / 60 / 60; // Difference in hours
-      if (timeDiff > 2) {
-        this.endTimeError = "The time difference should not be more than 2 hours.";
-      }
+    if (!this.form.type_of_leave) {
+      this.leaveTypeError = "Leave type is required.";
     }
-  }
+    if (!this.form.reason) {
+      this.reasonError = "Reason is required.";
+    }
+    if (!this.form.contact_during_leave) {
+      this.contactError = "Contact during leave is required.";
+    }
 
-  if (this.userError || this.leaveTypeError || this.startDateError || this.endDateError || this.startTimeError || this.endTimeError || this.reasonError || this.contactError) {
-    return;
-  }
+    switch (this.form.type_of_leave) {
+      case "Full Day Leave":
+      case "Work From Home":
+        if (!this.form.start_date) {
+          this.startDateError = "Start date is required.";
+        }
+        if (!this.form.end_date) {
+          this.endDateError = "End date is required.";
+        }
+        break;
+      case "Half Day Leave":
+        if (!this.form.half) {
+          this.halfDayError = "Please select which half of the day.";
+        }
+        if (!this.form.start_date) {
+          this.startDateError = "Start date is required.";
+        }
+        break;
+      case "Short Leave":
+        if (!this.form.start_date) {
+          this.startDateError = "Start date is required.";
+        }
+        if (!this.form.start_time) {
+          this.startTimeError = "Start time is required.";
+        }
+        if (!this.form.end_time) {
+          this.endTimeError = "End time is required.";
+        } else {
+          const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
+          const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
+          const timeDiff = (endTime - startTime) / 1000 / 60 / 60; // Difference in hours
+          if (timeDiff > 2) {
+            this.endTimeError = "The time difference should not be more than 2 hours.";
+          }
+        }
+        break;
+    }
 
-  this.submitForm();
-},
+    if (this.userError || this.leaveTypeError || this.startDateError || this.endDateError || this.startTimeError || this.endTimeError || this.reasonError || this.contactError || this.halfDayError) {
+      return;
+    }
 
+    this.submitForm();
+  },
   clearErrors() {
     this.userError = null;
     this.leaveTypeError = null;
@@ -378,59 +393,59 @@ export default {
     this.endTimeError = null;
     this.reasonError = null;
     this.contactError = null;
+    this.halfDayError = null;
   },
   async submitForm() {
-  this.isSubmitting = true;
+    this.isSubmitting = true;
 
-  try {
-    // Send a request to apply the leave
-    const response = await axios.post("/api/apply-team-leave", this.form, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
+    try {
+      // Send a request to apply the leave
+      const response = await axios.post("/api/apply-team-leave", this.form, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
 
-    // Show success toast
-    toast.success("Leave Applied Successfully!");
+      // Show success toast
+      toast.success("Leave Applied Successfully!");
 
-    // Emit the event to notify the parent component
-    this.$emit("leaveApplied");
+      // Emit the event to notify the parent component
+      this.$emit("leaveApplied");
 
-    // Find the modal element
-    const modalDismissButton = document.querySelector('[data-bs-dismiss="modal"]');
+      // Find the modal element
+      const modalDismissButton = document.querySelector('[data-bs-dismiss="modal"]');
 
-    // If the modal dismiss button exists, trigger its click event
-    if (modalDismissButton) {
-      modalDismissButton.click(); // This closes the modal
+      // If the modal dismiss button exists, trigger its click event
+      if (modalDismissButton) {
+        modalDismissButton.click(); // This closes the modal
+      }
+
+      // Reset the form
+      this.resetForm();
+    } catch (error) {
+      // Handle error and show a toast with the error message
+      toast.error(
+        error.response?.data?.error || "An error occurred while applying for leave."
+      );
+    } finally {
+      this.isSubmitting = false;
     }
-
-    // Reset the form
-    this.resetForm();
-  } catch (error) {
-    // Handle error and show a toast with the error message
-    toast.error(
-      error.response?.data?.error || "An error occurred while applying for leave."
-    );
-  } finally {
-    this.isSubmitting = false;
-  }
-},
-resetForm() {
-  this.form = {
-    type_of_leave: "",
-    start_date: "",
-    end_date: "",
-    half: "",
-    start_time: "",
-    end_time: "",
-    reason: "",
-    contact_during_leave: "",
-    selected_user: null,
-  };
-  this.userSuggestions = [];
-  this.userSearchQuery = "";
-},
-
+  },
+  resetForm() {
+    this.form = {
+      type_of_leave: "",
+      start_date: "",
+      end_date: "",
+      half: "",
+      start_time: "",
+      end_time: "",
+      reason: "",
+      contact_during_leave: "",
+      selected_user: null,
+    };
+    this.userSuggestions = [];
+    this.userSearchQuery = "";
+  },
 },
 };
 </script>

@@ -81,7 +81,7 @@ export default {
   
   <style scoped>
   .flex.items-center {
-  display: flex;
+  display: contents;
   align-items: flex-start;
   flex-direction: row;
 }

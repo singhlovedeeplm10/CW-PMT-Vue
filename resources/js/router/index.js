@@ -5,12 +5,10 @@ import Login from '../components/Login.vue';
 import Project from '../components/Project.vue';
 import Listings from '../components/Listings.vue';
 import Users from '../components/Users.vue';
-// import Dashboard from '../components/ui/dashboard/Dashboard.vue'; 
 import Dashboard from '../components/Dashboard.vue'; 
 import Tasks from '../components/Tasks.vue'; 
 import Leaves from '../components/Leaves.vue'; 
 import TeamLeaves from '../components/TeamLeaves.vue'; 
-// import DailyTask from '../components/tasks/DailyTask.vue'; 
 import DailyTask from '../components/DailyTask.vue'; 
 import MyTaskList from '../components/MyTaskList.vue'; 
 import MyAccount from '../components/MyAccount.vue'; 
@@ -21,7 +19,6 @@ import Notices from '../components/Notices.vue';
 import ViewNotices from '../components/ViewNotices.vue';
 import SalarySlips from '../components/SalarySlips.vue';
 import EmployeesAttendances from '../components/EmployeesAttendances.vue';
-
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -47,6 +44,10 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // Always scroll to the top when navigating to a new route
+    return { top: 0 };
+  },
 });
 
 export default router;
