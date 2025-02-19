@@ -232,5 +232,39 @@ export default {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+.autocomplete-suggestions {
+  position: absolute;
+  z-index: 1050; /* Ensure it appears above other elements */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%; /* Match the input width */
+  max-height: 200px; /* Set a max height with scrolling */
+  overflow-y: auto;
+  background-color: #ffffff; /* Background for suggestions */
+  border: 1px solid #ddd; /* Border for the dropdown */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  border-radius: 5px; /* Rounded corners */
+}
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.suggestion-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Suggestion Item Text */
+.suggestion-item span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Suggestion Item Avatar */
+.suggestion-item img {
+  border: 1px solid #ddd;
+}
 </style>
 

@@ -146,16 +146,17 @@
 </div>
 
 <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-  <label for="endTime" class="form-label">End Time</label>
-  <input
-    type="time"
-    v-model="leave.end_time"
-    id="endTime"
-    class="form-control"
-    required
-    pattern="[0-9]{2}:[0-9]{2}" 
-  />
-</div>
+              <label for="endTime" class="form-label">End Time</label>
+              <input
+                type="time"
+                v-model="leave.end_time"
+                id="endTime"
+                class="form-control"
+                required
+                @change="validateShortLeaveTime"
+              />
+              <div v-if="timeError" class="text-danger mt-1">{{ timeError }}</div>
+            </div>
 
 <div v-if="leave.type_of_leave === 'Half Day Leave' || leave.type_of_leave === 'Short Leave'" class="mb-3">
   <label for="startDate" class="form-label">Start Date</label>
@@ -207,7 +208,7 @@
 
 <script>
 import axios from "axios";
-import * as bootstrap from 'bootstrap';
+import * as bootstrap from "bootstrap";
 import { toast } from "vue3-toastify";
 
 export default {
@@ -220,75 +221,82 @@ export default {
   },
   data() {
     return {
-      isLoading: false, // Loader state
+      isLoading: false,
+      timeError: "", // Store validation error message
     };
   },
   methods: {
-    
+    // Validate Short Leave Time Difference
+    validateShortLeaveTime() {
+      if (this.leave.type_of_leave === "Short Leave" && this.leave.start_time && this.leave.end_time) {
+        const startTime = this.convertToMinutes(this.leave.start_time);
+        const endTime = this.convertToMinutes(this.leave.end_time);
+        if (endTime - startTime > 120) {
+          this.timeError = "Short Leave duration cannot exceed 2 hours.";
+        } else {
+          this.timeError = "";
+        }
+      }
+    },
 
-  // Submit the updated leave data
-async submitLeaveUpdate() {
-    try {
+    // Convert time (HH:MM) to total minutes
+    convertToMinutes(time) {
+      const [hours, minutes] = time.split(":").map(Number);
+      return hours * 60 + minutes;
+    },
+
+    // Submit the updated leave data
+    async submitLeaveUpdate() {
+      if (this.timeError) return; // Prevent submission if validation fails
+
+      try {
         this.isLoading = true;
         const token = localStorage.getItem("authToken");
         if (!token) {
-            alert("User is not authenticated.");
-            return;
+          alert("User is not authenticated.");
+          return;
         }
 
         const leaveData = {
-            type_of_leave: this.leave.type_of_leave,
-            start_date: this.leave.start_date,
-            end_date: ["Full Day Leave", "Work From Home"].includes(this.leave.type_of_leave) 
-        ? this.leave.end_date 
-        : null,
-            reason: this.leave.reason,
-            contact_during_leave: this.leave.contact_during_leave,
-            status: this.leave.status,
+          type_of_leave: this.leave.type_of_leave,
+          start_date: this.leave.start_date,
+          end_date: ["Full Day Leave", "Work From Home"].includes(this.leave.type_of_leave) ? this.leave.end_date : null,
+          reason: this.leave.reason,
+          contact_during_leave: this.leave.contact_during_leave,
+          status: this.leave.status,
         };
 
         if (this.leave.type_of_leave === "Half Day Leave") {
-    leaveData.half = this.leave.half;
-} else {
-    leaveData.half = null;
-}
-
-
-        if (this.leave.type_of_leave === "Short Leave") {
-            leaveData.start_time = this.leave.start_time?.substring(0, 5); // Format as H:i
-            leaveData.end_time = this.leave.end_time?.substring(0, 5); // Format as H:i
+          leaveData.half = this.leave.half;
         } else {
-            leaveData.start_time = null;
-            leaveData.end_time = null;
+          leaveData.half = null;
         }
 
-        const response = await axios.post(
-            `/api/update-team-leaves/${this.leave.id}`,
-            leaveData,
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
+        if (this.leave.type_of_leave === "Short Leave") {
+          leaveData.start_time = this.leave.start_time;
+          leaveData.end_time = this.leave.end_time;
+        } else {
+          leaveData.start_time = null;
+          leaveData.end_time = null;
+        }
+
+        await axios.post(`/api/update-team-leaves/${this.leave.id}`, leaveData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         toast.success("Leave updated successfully!");
         this.$emit("leaveApplied");
 
-        
-    // Close the modal after successful submission
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("updateTeamLeavemodal")
-    );
-    if (modal) {
-      modal.hide();
-    }
-    } catch (error) {
+        // Close the modal after successful submission
+        const modal = bootstrap.Modal.getInstance(document.getElementById("updateTeamLeavemodal"));
+        if (modal) modal.hide();
+      } catch (error) {
         console.error("Error updating leave:", error);
         toast.error("Failed to update leave. Please try again.");
-    } finally {
+      } finally {
         this.isLoading = false;
-    }
-},
-
+      }
+    },
   },
 };
 </script>

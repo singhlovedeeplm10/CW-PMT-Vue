@@ -18,69 +18,103 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    public function clockIn(Request $request)
+    public function autoClockOut()
     {
-        $user = Auth::user();
-    
-        // Create attendance record with IST timezone
-        $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
-        $attendance = Attendance::create([
-            'user_id' => $user->id,
-            'clockin_time' => $clockinTime,
-        ]);
-    
-        // Check for approved leave on the same day
-        $today = Carbon::now()->setTimezone('Asia/Kolkata')->toDateString();
-        $leave = Leave::where('user_id', $user->id)
-            ->where('status', 'approved')
-            ->where('start_date', $today)
-            ->first();
-    
-        if ($leave) {
-            // Check if a daily task for the leave already exists
-            $existingTask = DailyTask::where('user_id', $user->id)
-                ->where('leave_id', $leave->id)
-                ->whereDate('created_at', $today) // Ensure it's for the same day
-                ->exists();
-    
-            if (!$existingTask) {
-                // Calculate hours based on leave type
-                $hours = 0;
-                switch ($leave->type_of_leave) {
-                    case 'Full Day Leave':
-                        $hours = 8; // Example: 8 hours for full-day leave
-                        break;
-                    case 'Half Day Leave':
-                        $hours = 4; // Example: 4 hours for half-day leave
-                        break;
-                    case 'Short Leave':
-                        $hours = 2; // Example: 2 hours for short leave
-                        break;
-                }
-    
-                // Create a task for the leave
-                DailyTask::create([
-                    'user_id' => $leave->user_id,
-                    'attendance_id' => $attendance->id,
-                    'project_id' => null,
-                    'project_name' => $leave->type_of_leave, // Leave type
-                    'leave_id' => $leave->id,
-                    'task_description' => $leave->reason, // Reason as description
-                    'hours' => $hours,
-                    'task_status' => 'pending', // Default status
-                ]);
+        // Get current time in Indian Standard Time (IST)
+        $currentTime = Carbon::now('Asia/Kolkata');
+
+        // Find users with null clockout_time and productive_hours
+        $users = DB::table('attendances')
+            ->whereNull('clockout_time')
+            ->whereNull('productive_hours')
+            ->get();
+
+        if ($users->isEmpty()) {
+            return response()->json(['message' => 'No users found to clock out.']);
+        }
+
+        // Update the records
+        foreach ($users as $user) {
+            // Get the corresponding token
+            $token = DB::table('personal_access_tokens')
+                ->where('tokenable_id', $user->user_id)
+                ->where('name', 'ClockinToken')
+                ->first();
+
+            if ($token) {
+                // Update attendance
+                DB::table('attendances')
+                    ->where('id', $user->id)
+                    ->update([
+                        'clockout_time' => $user->clockin_time,  // Same as clock-in time
+                        'productive_hours' => '00:00:00',
+                        'updated_at' => $currentTime,
+                    ]);
+
+                // Remove the ClockinToken
+                DB::table('personal_access_tokens')
+                    ->where('id', $token->id)
+                    ->delete();
             }
         }
-    
-        // Generate ClockinToken
-        $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
-    
-        return response()->json([
-            'status' => 'Clocked in successfully',
-            'attendance' => $attendance,
-            'token' => $clockinToken, // Return the token
-        ]);
+
+        return response()->json(['message' => 'Auto clock-out completed successfully.']);
     }
+    
+    public function clockIn(Request $request)
+{
+    $user = Auth::user();
+
+    // Create attendance record with IST timezone
+    $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
+    $attendance = Attendance::create([
+        'user_id' => $user->id,
+        'clockin_time' => $clockinTime,
+    ]);
+
+    // Check for approved leave on the same day
+    $today = Carbon::now()->setTimezone('Asia/Kolkata')->toDateString();
+    $leave = Leave::where('user_id', $user->id)
+        ->where('status', 'approved')
+        ->where('start_date', $today)
+        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave']) // Only consider these two types
+        ->first();
+
+    if ($leave) {
+        // Check if a daily task for the leave already exists
+        $existingTask = DailyTask::where('user_id', $user->id)
+            ->where('leave_id', $leave->id)
+            ->whereDate('created_at', $today)
+            ->exists();
+
+        if (!$existingTask) {
+            // Assign hours based on leave type
+            $hours = ($leave->type_of_leave == 'Half Day Leave') ? 4 : 2;
+
+            // Create a task for the leave
+            DailyTask::create([
+                'user_id' => $leave->user_id,
+                'attendance_id' => $attendance->id,
+                'project_id' => null,
+                'project_name' => $leave->type_of_leave, // Leave type
+                'leave_id' => $leave->id,
+                'task_description' => $leave->reason, // Reason as description
+                'hours' => $hours,
+                'task_status' => 'pending', // Default status
+            ]);
+        }
+    }
+
+    // Generate ClockinToken
+    $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
+
+    return response()->json([
+        'status' => 'Clocked in successfully',
+        'attendance' => $attendance,
+        'token' => $clockinToken,
+    ]);
+}
+
     
     
     public function clockOut(Request $request)

@@ -71,7 +71,7 @@ Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH'
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
 Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
-Route::get('/users/{page?}', [UserController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/users/{page?}', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
 Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::c
 Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 Route::middleware('auth:sanctum')->get('/get-clockin-token', [AttendanceController::class, 'getClockinToken']);
+Route::get('/auto-clockout', [AttendanceController::class, 'autoClockOut']);
 
 
 // BREAKS API ROUTE

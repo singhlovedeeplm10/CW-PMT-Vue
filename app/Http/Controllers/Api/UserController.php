@@ -42,33 +42,40 @@ class UserController extends Controller
 
     public function index(Request $request, $page = 1)
     {
+        $loggedInUserId = auth()->id(); // Get the ID of the logged-in user
+    
         $query = User::query()
-            ->select('users.*', 'user_profiles.user_image', 'roles.name as role_name') // Select user data, image, and role name
-            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join with user_profiles
-            ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id') // Join with model_has_roles
-            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id'); // Join with roles
-     
-        // Filter by name
+            ->select(
+                'users.*',
+                'user_profiles.user_image',
+                'roles.name as role_name',
+                DB::raw("CASE WHEN users.id = $loggedInUserId THEN 1 ELSE 0 END as logged_in_status"),
+                DB::raw("CASE WHEN roles.name = 'Admin' THEN 'inherit' ELSE 'inherit' END as name_color"),
+                DB::raw("CASE WHEN users.id = $loggedInUserId THEN 'none' ELSE 'none' END as border_color")
+            )
+            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+            ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id');
+    
+        // Apply filters
         if ($request->has('name') && $request->name != '') {
             $query->where('users.name', 'like', '%' . $request->name . '%');
         }
-     
-        // Filter by email
+    
         if ($request->has('email') && $request->email != '') {
             $query->where('users.email', 'like', '%' . $request->email . '%');
         }
-     
-        // Filter by status
+    
         if ($request->has('status') && $request->status != '') {
             $query->where('users.status', $request->status);
         }
-     
+    
         // Fetch paginated users
         $users = $query->paginate(5, ['*'], 'page', $page);
-     
-        // Return the filtered and paginated data as JSON
+    
         return response()->json($users);
     }
+    
 
     public function addUser(Request $request)
     {

@@ -315,7 +315,7 @@ public function updateTeamLeave(Request $request, Leave $leave)
         ]);
 
         // If status is approved, handle daily_tasks logic
-        if ($validatedData['status'] === 'approved' && in_array($validatedData['type_of_leave'], ['Short Leave', 'Half Day Leave', 'Work From Home'])) {
+        if ($validatedData['status'] === 'approved' && in_array($validatedData['type_of_leave'], ['Short Leave', 'Half Day Leave'])) {
             $attendance = Attendance::where('user_id', $leave->user_id)
                 ->whereDate('clockin_time', $validatedData['start_date'])
                 ->first();

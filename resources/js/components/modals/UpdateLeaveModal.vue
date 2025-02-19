@@ -182,30 +182,31 @@
               />
             </div>
             <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-                <label for="startTime" class="form-label">Start Time</label>
-                <input
-                    type="time"
-                    v-model="leave.start_time"
-                    id="startTime"
-                    class="form-control"
-                    :disabled="!leave.isEditable"
-                    required
-                />
-            </div>
+  <label for="startTime" class="form-label">Start Time</label>
+  <input
+    type="time"
+    v-model="leave.start_time"
+    id="startTime"
+    class="form-control"
+    :disabled="!leave.isEditable"
+    required
+    @change="validateShortLeaveTime"
+  />
+</div>
 
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-                <label for="endTime" class="form-label">End Time</label>
-                <input
-                    type="time"
-                    v-model="leave.end_time"
-                    id="endTime"
-                    class="form-control"
-                    :disabled="!leave.isEditable"
-                    required
-                />
-                <!-- Error message -->
-                <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
-            </div>
+<div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
+  <label for="endTime" class="form-label">End Time</label>
+  <input
+    type="time"
+    v-model="leave.end_time"
+    id="endTime"
+    class="form-control"
+    :disabled="!leave.isEditable"
+    required
+    @change="validateShortLeaveTime"
+  />
+  <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
+</div>
 
             <div class="mb-3">
               <label for="status" class="form-label">Leave Status</label>
@@ -293,6 +294,20 @@ export default {
         this.endDateError = "End date cannot be before the start date.";
       }
     },
+
+    validateShortLeaveTime() {
+    this.timeError = ""; // Reset the error message
+
+    if (this.leave.start_time && this.leave.end_time) {
+      const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
+      const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
+      const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+
+      if (timeDiff > 2) {
+        this.timeError = "Short leave duration cannot exceed 2 hours.";
+      }
+    }
+  },
 
     async submitLeaveUpdate() {
   this.timeError = ""; // Reset the time error message on form submission

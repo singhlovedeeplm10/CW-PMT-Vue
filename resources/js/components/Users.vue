@@ -51,34 +51,45 @@
   <tr v-for="user in filteredUsers" :key="user.id">
     <td>{{ user.id }}</td>
     <td>
-      <div class="d-flex align-items-center">
-        <img
-          :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
-          alt="User Image"
-          class="img-thumbnail circular-image me-2"
-          style="width: 50px; height: 50px;"
-        />
-        <div>
-          <div class="fw-bold">{{ user.name }}</div>
-          <!-- Generate employee code with leading zeros -->
-          <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
-        </div>
-      </div>
-    </td>
+  <div class="d-flex align-items-center">
+    <img
+  :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
+  alt="User Image"
+  class="img-thumbnail circular-image me-2"
+  :style="{
+    width: '50px',
+    height: '50px',
+    border: user.border_color
+  }"
+/>
+<div>
+  <div class="fw-bold" :style="{ color: user.name_color }">
+    {{ user.name }}
+  </div>
+  <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
+</div>
+
+  </div>
+</td>
+
+
+
     <td>{{ user.email }}</td>
     <td>
-      <button
-        :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
-        @click="toggleRole(user)"
-      >
-        {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
-      </button>
-    </td>
+  <button
+    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
+    @click="toggleRole(user)"
+    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
+  >
+    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
+  </button>
+</td>
+
     <td>
       <button
         :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
         @click="toggleStatus(user)"
-        :disabled="user.role_name === 'Admin'"
+        :disabled="user.role_name === 'Admin' && user.logged_in_status" 
       >
         {{ user.status === '1' ? 'Active' : 'Inactive' }}
       </button>
@@ -190,10 +201,13 @@ export default {
         console.error("Error toggling role:", error);
       }
     },
-    async fetchUsers(page = 1) {
+   async fetchUsers(page = 1) {
     this.isLoading = true;
     try {
         const response = await axios.get('/api/users', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            },
             params: {
                 page: page,
                 name: this.filters.query,
@@ -210,7 +224,6 @@ export default {
         this.isLoading = false;
     }
 },
-
     openAddEmployeeModal() {
       this.showAddEmployeeModal = true;
     },
@@ -243,9 +256,6 @@ export default {
       this.selectedUser = null;
     },
     async toggleStatus(user) {
-  if (user.role_name === 'Admin') {
-    return; // Do nothing if the user is an admin
-  }
   try {
     const newStatus = user.status === "1" ? "0" : "1";
     const response = await axios.put(`/api/users/${user.id}/status`, { status: newStatus });
