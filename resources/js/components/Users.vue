@@ -201,29 +201,31 @@ export default {
         console.error("Error toggling role:", error);
       }
     },
-   async fetchUsers(page = 1) {
-    this.isLoading = true;
-    try {
-        const response = await axios.get('/api/users', {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-            },
-            params: {
-                page: page,
-                name: this.filters.query,
-                email: this.filters.query,
-                status: this.filters.status
-            }
-        });
-        this.users.data = response.data.data;  // Update users directly
-        this.totalPages = response.data.last_page;
-        this.currentPage = response.data.current_page;
-    } catch (error) {
-        console.error('Error fetching users:', error);
-    } finally {
-        this.isLoading = false;
-    }
+    async fetchUsers(page = 1) {
+  this.isLoading = true;
+  try {
+    const response = await axios.get('/api/users', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      params: {
+        page: page,  // Ensure page is passed correctly
+        name: this.filters.query,
+        email: this.filters.query,
+        status: this.filters.status
+      }
+    });
+
+    this.users.data = response.data.data;  // Correct assignment
+    this.totalPages = response.data.last_page;
+    this.currentPage = response.data.current_page;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+  } finally {
+    this.isLoading = false;
+  }
 },
+
     openAddEmployeeModal() {
       this.showAddEmployeeModal = true;
     },

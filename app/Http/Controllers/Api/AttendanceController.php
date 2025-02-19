@@ -58,7 +58,7 @@ class AttendanceController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Auto clock-out completed successfully.']);
+        return response()->json(['message' => 'User clock-out successfully.']);
     }
     
     public function clockIn(Request $request)

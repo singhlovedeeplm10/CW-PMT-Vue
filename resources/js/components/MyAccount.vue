@@ -39,7 +39,7 @@
             <div class="info-row">
               <div class="info-item">
                 <strong>Mobile Number:</strong>
-                <span>{{ user.mobile }}</span>
+                <span>{{ user.contact }}</span>
               </div>
               <div class="info-item">
                 <strong>Address:</strong>

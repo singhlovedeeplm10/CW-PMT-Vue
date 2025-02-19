@@ -31,7 +31,7 @@
               :class="{ 'input-error': fieldErrors.email }"
               @input-blur="(error) => emailError = error"
             />
-            <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
+            <!-- <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p> -->
           </div>
 
           <!-- Password -->

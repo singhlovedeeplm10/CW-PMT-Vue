@@ -38,8 +38,9 @@
             <tr v-for="employee in employees" :key="employee.id" class="table-row">
               <td>{{ employee.id }}</td>
               <td>
-                <img :src="employee.image" alt="Employee Image" class="employee-image" v-if="employee.image" />
-              </td>
+  <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="employee-image" />
+</td>
+
               <td>{{ employee.name }}</td>
               <td>
                 <span :class="{'status-active': employee.status === '1', 'status-inactive': employee.status === '0'}">

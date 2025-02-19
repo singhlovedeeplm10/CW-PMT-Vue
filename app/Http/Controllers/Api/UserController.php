@@ -71,7 +71,7 @@ class UserController extends Controller
         }
     
         // Fetch paginated users
-        $users = $query->paginate(5, ['*'], 'page', $page);
+        $users = $query->paginate(5);
     
         return response()->json($users);
     }
@@ -210,6 +210,7 @@ public function updateStatus(Request $request, $id)
         'email' => $user->email,
         'status' => $user->status,
         'dob' => $profile->user_DOB,
+        'contact' => $profile->contact,
         'address' => $profile->address,
         'user_image' => $profile->user_image,
         'employee_code' => $profile->employee_code,

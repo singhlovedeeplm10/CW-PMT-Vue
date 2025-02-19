@@ -4,7 +4,6 @@
       <!-- Header with Heading and Apply Leave Button -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="page-heading">My Team Leaves</h1>
-        <!-- Use the ButtonComponent here -->
         <ButtonComponent
           label="Apply Team Leave"
           buttonClass="btn-primary add-leave-btn"
@@ -79,48 +78,59 @@
           </tr>
         </thead>
         <tbody>
-    <tr v-for="(leave, index) in leaves" :key="leave.id">
-        <td>{{ leave.id }}</td>
-        <td>
-            <div class="d-flex align-items-center">
-                <img v-if="leave.employee_image" :src="leave.employee_image" alt="Employee Image" class="rounded-circle me-2" style="width: 40px; height: 40px;">
-                <span>{{ leave.employee_name }}</span>
-            </div>
-        </td>
-        <td v-html="leave.type"></td>
-        <td>{{ leave.duration }}</td>
-        <td>
-            <span
+          <!-- Loader while data is being fetched -->
+          <tr v-if="loading">
+            <td colspan="8" class="text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </td>
+          </tr>
+
+          <tr v-for="(leave, index) in leaves" :key="leave.id">
+            <td>{{ leave.id }}</td>
+            <td>
+              <div class="d-flex align-items-center">
+  <img :src="leave.employee_image ? leave.employee_image : 'img/CWlogo.jpeg'" alt="Employee Image" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+  <span>{{ leave.employee_name }}</span>
+</div>
+
+            </td>
+            <td v-html="leave.type"></td>
+            <td>{{ leave.duration }}</td>
+            <td>
+              <span
                 :class="{
-                    'text-warning': leave.status === 'Pending',
-                    'text-success': leave.status === 'Approved',
-                    'text-danger': leave.status === 'Disapproved',
-                    'text-secondary': leave.status === 'Hold',
-                    'text-danger': leave.status === 'Canceled'
+                  'text-warning': leave.status === 'Pending',
+                  'text-success': leave.status === 'Approved',
+                  'text-danger': leave.status === 'Disapproved',
+                  'text-secondary': leave.status === 'Hold',
+                  'text-danger': leave.status === 'Canceled'
                 }"
-            >
+              >
                 {{ leave.status }}
-            </span>
-        </td>
-        <td>{{ leave.created_at }}</td>
-        <td>{{ leave.updated_by }}</td>
-        <td>
-            <ButtonComponent
+              </span>
+            </td>
+            <td>{{ leave.created_at }}</td>
+            <td>{{ leave.updated_by }}</td>
+            <td>
+              <ButtonComponent
                 label=""
                 iconClass="fas fa-eye"
                 buttonClass="btn-info"
                 :clickEvent="() => viewLeaveDetails(leave)"
-            />
-        </td>
-    </tr>
-    <tr v-if="leaves.length === 0">
-        <td colspan="8" class="text-center">No leaves found.</td>
-    </tr>
-</tbody>
+              />
+            </td>
+          </tr>
+
+          <!-- Show "No leaves found" message only if there is no data and loading is false -->
+          <tr v-if="!loading && leaves.length === 0">
+            <td colspan="8" class="text-center">No leaves found.</td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
-    <!-- Include the ApplyLeaveModal component -->
     <apply-team-leave-modal @leaveApplied="fetchLeaves"></apply-team-leave-modal>
     <update-team-leave-modal
       v-if="showModal"
@@ -150,6 +160,7 @@ export default {
   data() {
     return {
       leaves: [],
+      loading: false, // New state for loading
       search: {
         type: "",
         duration: "",
@@ -163,39 +174,39 @@ export default {
   },
   methods: {
     async fetchLeaves() {
-      try {
-        const params = {
-          type: this.search.type || null,
-          duration: this.search.duration || null,
-          status: this.search.status || null,
-          created_date: this.search.created_date || null,
-          employee_name: this.search.employee_name || null,
-        };
+  this.loading = true; // Show loader before fetching data
+  try {
+    const params = {
+      type: this.search.type || "",
+      duration: this.search.duration || "",
+      status: this.search.status || "",
+      created_date: this.search.created_date || "",
+      employee_name: this.search.employee_name || "",
+    };
 
-        const response = await axios.get("/api/team-leaves", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-          params,
-        });
+    const response = await axios.get("/api/team-leaves", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+      params,
+    });
 
-        if (response.data.success) {
-          this.leaves = response.data.data;
-        } else {
-          this.leaves = [];
-          alert("Failed to fetch leaves.");
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching leaves:",
-          error.response?.data || error.message
-        );
-        alert(
-          error.response?.data?.error ||
-            "An error occurred while fetching leaves."
-        );
-      }
-    },
+    if (response.data.success) {
+      this.leaves = response.data.data.filter(leave => 
+        leave.employee_name.toLowerCase().includes(this.search.employee_name.toLowerCase())
+      );
+    } else {
+      this.leaves = [];
+      alert("Failed to fetch leaves.");
+    }
+  } catch (error) {
+    console.error("Error fetching leaves:", error.response?.data || error.message);
+    alert(error.response?.data?.error || "An error occurred while fetching leaves.");
+  } finally {
+    this.loading = false; // Hide loader after fetching data
+  }
+},
+
     async fetchLeaveDetails(id) {
       try {
         const response = await axios.get(`/api/leaves/${id}`, {
@@ -206,7 +217,7 @@ export default {
 
         if (response.data.success) {
           this.selectedLeave = response.data.data;
-          this.selectedLeave.isEditable = true; // Always editable
+          this.selectedLeave.isEditable = true;
           this.showModal = true;
         } else {
           alert("Failed to fetch leave details.");
@@ -250,8 +261,6 @@ export default {
   },
 };
 </script>
-
-  
   
   <style scoped>
   .leaves-page {

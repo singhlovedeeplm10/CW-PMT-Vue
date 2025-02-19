@@ -144,28 +144,31 @@ export default {
   data() {
     return {
       formData: { ...this.user, password: "", user_image: null, employee_code: '' },
-      loading: false, // Track loading state
+      loading: false, // Track loading state 
     };
   },
   created() {
+  const formatEmployeeCode = (id) => {
+    return `CW${String(id).padStart(3, '0')}`;
+  };
+
   if (this.user.profile) {
     this.formData = {
       ...this.user,
-      ...this.user.profile, // Ensure profile fields are mapped to the form data
+      ...this.user.profile,
       password: "", 
       user_image: null,
-      employee_code: `CW00${this.user.id}` // Set the employee_code based on the user ID
+      employee_code: formatEmployeeCode(this.user.id) // Format employee_code based on ID
     };
   } else {
     this.formData = {
       ...this.user,
       password: "", 
       user_image: null,
-      employee_code: `CW00${this.user.id}` // Set the employee_code based on the user ID
+      employee_code: formatEmployeeCode(this.user.id) // Format employee_code based on ID
     };
   }
 },
-
 
   methods: {
     handleImageUpload(event) {

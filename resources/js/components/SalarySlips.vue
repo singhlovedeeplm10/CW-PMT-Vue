@@ -50,7 +50,9 @@
 
       <!-- Loader -->
       <div v-if="loading" class="loader-container">
-        <i class="fas fa-spinner fa-spin loader"></i> Loading salary slips...
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
 
       <!-- No Data Message -->

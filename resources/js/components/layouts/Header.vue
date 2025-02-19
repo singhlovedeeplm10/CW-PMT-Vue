@@ -2,7 +2,6 @@
   <header class="header">
     <nav class="nav">
       <div class="header-left">
-        <!-- Wrap image and heading in a link to navigate to home.blade.php -->
         <router-link to="/dashboard" class="sidebar-link header-logo">
           <img src="img/CWlogo.jpeg" alt="Contriwhiz Logo" class="logo-image" />
           <h1 class="logo-title">Contriwhiz</h1>
@@ -14,7 +13,10 @@
           <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
           <div class="profile-dropdown">
             <a href="javascript:void(0)" @click="goToAccount" class="dropdown-item">My Account</a>
-            <a href="javascript:void(0)" @click="logout" class="dropdown-item">Logout</a>
+            <a href="javascript:void(0)" @click="logout" class="dropdown-item" :disabled="isLoggingOut">
+              <span v-if="!isLoggingOut">Logout</span>
+              <span v-if="isLoggingOut" class="spinner-border spinner-border-sm"></span>
+            </a>
           </div>
         </div>
       </div>
@@ -32,6 +34,7 @@ export default {
   setup() {
     const router = useRouter();
     const userImage = ref(null);
+    const isLoggingOut = ref(false);
 
     const fetchUserDetails = async () => {
       try {
@@ -50,22 +53,23 @@ export default {
     };
 
     const logout = async () => {
+      if (isLoggingOut.value) return; // Prevent multiple clicks
+      isLoggingOut.value = true;
+
       try {
-        // Call the logout API endpoint
         await axios.post('/api/logout', {}, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
         });
 
-        // Remove token from local storage
         localStorage.removeItem('authToken');
-
-        // Redirect to login page
         router.push('/');
       } catch (error) {
         console.error('Logout failed:', error);
         alert('An error occurred during logout.');
+      } finally {
+        isLoggingOut.value = false;
       }
     };
 
@@ -81,10 +85,12 @@ export default {
       logout,
       goToAccount,
       userImage,
+      isLoggingOut
     };
   },
 };
 </script>
+
 
 <style scoped>
 /* General Reset */
