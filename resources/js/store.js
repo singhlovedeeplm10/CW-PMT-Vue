@@ -1,4 +1,4 @@
-import { createStore } from "vuex"; // Correct
+import { createStore } from "vuex";
 import axios from "axios";
 
 const store = createStore({
@@ -26,9 +26,10 @@ const store = createStore({
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
+
         commit("setUserDetails", {
-          name: response.data.user_name,
-          image: response.data.user_image,
+          name: response.data.user_name, // Correctly mapped from API response
+          image: response.data.user_image, // Correctly mapped from API response
         });
       } catch (error) {
         console.error("Error fetching user details:", error);

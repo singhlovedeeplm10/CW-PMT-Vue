@@ -302,19 +302,19 @@ label {
 }
 
 .submit-btn {
-  background-color: #4CAF50;
+  background-color: #0056b3;
 }
 
 .submit-btn:hover {
-  background-color: #45a049;
+  background-color: #0056b3;
 }
 
 .cancel-btn {
-  background-color: #f44336;
+  background-color: grey;
 }
 
 .cancel-btn:hover {
-  background-color: #e53935;
+  background-color: grey;
 }
 </style>
 

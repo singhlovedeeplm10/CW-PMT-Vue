@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Leave;
 use App\Mail\LeaveApplicationMail;
 use App\Models\User;
-use App\Models\DailyTask; // Import the DailyTask model
+use App\Models\DailyTask; 
 use App\Models\Attendance;
 use Illuminate\Support\Facades\DB;
 use App\Mail\LeaveStatusMail;

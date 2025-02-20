@@ -33,8 +33,9 @@
 
       <!-- Loader/Spinner -->
       <div v-if="isLoading" class="loader">
-        <div class="spinner"></div>
-        <!-- <p>Loading projects...</p> -->
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
 
       <!-- Project Table -->

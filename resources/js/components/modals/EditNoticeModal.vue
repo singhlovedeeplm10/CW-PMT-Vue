@@ -210,7 +210,7 @@ label {
 
 /* Save Button */
 .save-btn {
-  background-color: #4caf50;
+  background-color: #0056b3;
   color: white;
   padding: 12px 20px;
   border-radius: 6px;
@@ -220,12 +220,12 @@ label {
 }
 
 .save-btn:hover {
-  background-color: #45a049;
+  background-color: #0056b3;
 }
 
 /* Cancel Button */
 .cancel-btn {
-  background-color: #f44336;
+  background-color: grey;
   color: white;
   padding: 12px 20px;
   border-radius: 6px;
@@ -235,7 +235,7 @@ label {
 }
 
 .cancel-btn:hover {
-  background-color: #e53935;
+  background-color: grey;
 }
 
 /* Ensure Summernote modals are always visible */

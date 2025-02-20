@@ -18,7 +18,9 @@
   
         <!-- Loader Spinner -->
         <div v-if="loading && employees.length === 0" class="loader-container">
-          <div class="loader-spinner"></div>
+          <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
         </div>
   
         <table v-if="!loading && employees.length > 0" class="attendance-table">

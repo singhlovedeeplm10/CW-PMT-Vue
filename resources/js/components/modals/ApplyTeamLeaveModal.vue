@@ -491,13 +491,13 @@ export default {
 
 /* Buttons */
 .btn-success {
-  background-color: #28a745;
+  background-color: #0056b3;
   border: none;
   transition: background-color 0.3s ease;
 }
 
 .btn-success:hover {
-  background-color: #218838;
+  background-color: #0056b3;
 }
 
 .btn-secondary {

@@ -1,67 +1,68 @@
 <template>
-    <master-component>
-      <div class="myaccount-container">
-        <!-- Header Section -->
-        <div class="header" v-if="user">
-          <div class="profile-image">
-            <img :src="'/storage/' + user.user_image" alt="Profile Picture" />
-          </div>
-          <div class="profile-info">
-            <h1>{{ user.name }}</h1>
-            <p>{{ user.role }}</p>
-          </div>
+  <master-component>
+    <div class="myaccount-container">
+      <!-- Header Section -->
+      <div class="header" v-if="user">
+        <div class="profile-image">
+          <img :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'" alt="Profile Picture" />
         </div>
-  
-        <!-- User Details Section -->
-        <div class="details-container" v-if="user">
-          <!-- Basic Information -->
-          <div class="details-section" data-aos="fade-up">
-            <h2>Basic Information</h2>
-            <div class="info-row">
-              <div class="info-item">
-                <strong>Date of Birth:</strong>
-                <span>{{ user.dob }}</span>
-              </div>
-              <div class="info-item">
-                <strong>Status:</strong>
-                <span>{{ user.status === '1' ? 'Active' : 'Inactive' }}</span>
-              </div>
-              <div class="info-item">
-                <strong>Employee Code:</strong>
-                <span>{{ user.employee_code }}</span>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Contact Information -->
-          <div class="details-section" data-aos="fade-up" data-aos-delay="400">
-            <h2>Contact Information</h2>
-            <div class="info-row">
-              <div class="info-item">
-                <strong>Mobile Number:</strong>
-                <span>{{ user.contact }}</span>
-              </div>
-              <div class="info-item">
-                <strong>Address:</strong>
-                <span>{{ user.address }}</span>
-              </div>
-              <div class="info-item">
-                <strong>Email:</strong>
-                <span>{{ user.email }}</span>
-              </div>
-            </div>
-          </div>
+        <div class="profile-info">
+          <h1>{{ user.name }}</h1>
+          <p>{{ user.role }}</p>
         </div>
-  
-        <!-- Loader Section with Spinner -->
-<div v-else class="loader">
-  <div class="spinner"></div>
-  Loading user information...
-</div>
-
       </div>
-    </master-component>
-  </template>
+
+      <!-- User Details Section -->
+      <div class="details-container" v-if="user">
+        <!-- Basic Information -->
+        <div class="details-section" data-aos="fade-up">
+          <h2>Basic Information</h2>
+          <div class="info-row">
+            <div class="info-item">
+              <strong>Date of Birth:</strong>
+              <span>{{ user.dob }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Status:</strong>
+              <span>{{ user.status === '1' ? 'Active' : 'Inactive' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Employee Code:</strong>
+              <span>{{ user.employee_code }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="details-section" data-aos="fade-up" data-aos-delay="400">
+          <h2>Contact Information</h2>
+          <div class="info-row">
+            <div class="info-item">
+              <strong>Mobile Number:</strong>
+              <span>{{ user.contact }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Address:</strong>
+              <span>{{ user.address }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Email:</strong>
+              <span>{{ user.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loader Section with Spinner -->
+      <div v-else class="loader">
+        <div class="spinner"></div>
+        Loading user information...
+      </div>
+
+    </div>
+  </master-component>
+</template>
+
   
   <script>
   import MasterComponent from "./layouts/Master.vue";

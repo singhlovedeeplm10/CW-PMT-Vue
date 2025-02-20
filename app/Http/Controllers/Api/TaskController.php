@@ -294,5 +294,16 @@ public function getUserDailyTasks()
         ], 500);
     }
 }
+public function getMyDailyTasks(Request $request)
+{
+    $user = Auth::user(); // Get authenticated user
+
+    $dailyTasks = DailyTask::where('user_id', $user->id)
+        ->select('id', 'project_name', 'hours', 'task_description', 'created_at')
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json($dailyTasks);
+}
 
 }

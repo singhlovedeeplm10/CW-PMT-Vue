@@ -10,7 +10,7 @@
       <div class="header-right">
         <!-- User Profile with Hover Dropdown -->
         <div class="profile-container">
-          <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
+          <img :src="userImage || '/img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
           <div class="profile-dropdown">
             <a href="javascript:void(0)" @click="goToAccount" class="dropdown-item">My Account</a>
             <a href="javascript:void(0)" @click="logout" class="dropdown-item" :disabled="isLoggingOut">
@@ -25,71 +25,62 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { mapGetters, mapActions } from "vuex";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
-  name: 'HeaderComponent',
+  name: "HeaderComponent",
+  computed: {
+    ...mapGetters(["getUserDetails"]),
+    userImage() {
+      return this.getUserDetails.image; // Get user image from Vuex store
+    },
+  },
   setup() {
     const router = useRouter();
-    const userImage = ref(null);
     const isLoggingOut = ref(false);
 
-    const fetchUserDetails = async () => {
-      try {
-        const response = await axios.get('/api/user-details', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-        });
-
-        if (response.data.user_image) {
-          userImage.value = response.data.user_image;
-        }
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-      }
-    };
-
     const logout = async () => {
-      if (isLoggingOut.value) return; // Prevent multiple clicks
+      if (isLoggingOut.value) return;
       isLoggingOut.value = true;
 
       try {
-        await axios.post('/api/logout', {}, {
+        await axios.post("/api/logout", {}, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
 
-        localStorage.removeItem('authToken');
-        router.push('/');
+        localStorage.removeItem("authToken");
+        router.push("/");
       } catch (error) {
-        console.error('Logout failed:', error);
-        alert('An error occurred during logout.');
+        console.error("Logout failed:", error);
+        alert("An error occurred during logout.");
       } finally {
         isLoggingOut.value = false;
       }
     };
 
     const goToAccount = () => {
-      router.push('/myaccount');
+      router.push("/myaccount");
     };
-
-    onMounted(() => {
-      fetchUserDetails();
-    });
 
     return {
       logout,
       goToAccount,
-      userImage,
-      isLoggingOut
+      isLoggingOut,
     };
+  },
+  methods: {
+    ...mapActions(["fetchUserDetails"]),
+  },
+  mounted() {
+    this.fetchUserDetails(); // Fetch user details on component mount
   },
 };
 </script>
+
 
 
 <style scoped>

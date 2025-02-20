@@ -43,7 +43,7 @@
                   <td>{{ formatDate(row.created_at) }}</td>
                   <td>
                     <span class="badge badge-red">{{ row.hours }}</span>
-                    {{ row.project.name }}({{ row.task_description }})
+                    {{ row.project_name }}({{ row.task_description }})
                   </td>
                 </tr>
               </tbody>
@@ -117,23 +117,24 @@ export default {
       return new Date(date).toLocaleDateString('en-US', options);
     },
     fetchData() {
-      this.isLoading = true; // Start loader
-      axios
-        .get('/api/my-daily-tasks', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
-          },
-        })
-        .then(response => {
-          this.data = response.data;
-        })
-        .catch(error => {
-          console.error('There was an error fetching the data:', error);
-        })
-        .finally(() => {
-          this.isLoading = false; // Stop loader
-        });
-    },
+  this.isLoading = true; // Start loader
+  axios
+    .get('/api/my-daily-tasks', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Add the token to the headers
+      },
+    })
+    .then(response => {
+      this.data = response.data;
+    })
+    .catch(error => {
+      console.error('Error fetching daily tasks:', error);
+    })
+    .finally(() => {
+      this.isLoading = false; // Stop loader
+    });
+},
+
     onDateSelected(selectedDate) {
       // Format the selected date to 'YYYY-MM-DD' and update filterDate
       this.filterDate = selectedDate.toISOString().split('T')[0];

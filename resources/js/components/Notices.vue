@@ -23,7 +23,9 @@
 
       <!-- Loader -->
       <div v-if="loading" class="loader-container">
-        <div class="spinner"></div>
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
 
       <!-- Notices Section -->
@@ -164,6 +166,10 @@ export default {
 </script>
 
 <style scoped>
+h1 {
+  font-size: 2em;
+  margin-bottom: 15px;
+}
 .loader-container {
   display: flex;
   justify-content: center;
@@ -224,7 +230,7 @@ export default {
 }
 
 .notice-container {
-  margin: 20px auto;
+  margin: 0px auto;
   padding: 20px;
   max-width: 100%;
   display: flex;
@@ -239,18 +245,20 @@ export default {
 }
 
 .add-notice-btn {
-  background-color: #4caf50;
-  color: white;
+  position: absolute;
+  top: 88px;
+  right: 20px;
+  padding: 10px 16px;
+  font-size: 1em;
+  background-color: #007bff;
   border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  color: white;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
 }
 
 .add-notice-btn:hover {
-  background-color: #45a049;
+  background-color: #007bff;
 }
 
 .notices-section {
@@ -279,7 +287,7 @@ export default {
 }
 
 .notices-table th {
-  background-color: #4caf50;
+  background-color: #007bff;
   color: white;
   text-transform: uppercase;
   font-weight: 600;

@@ -49,16 +49,18 @@ class AuthController extends Controller
     }
 
     public function getUserDetails()
-{
-    $user = Auth::user();
-
-    $userProfile = $user->profile; // Assuming `profile()` is the relationship in the `User` model.
-
-    return response()->json([
-        'user_name' => $user->name,
-        'user_image' => $userProfile ? asset('storage/' . $userProfile->user_image) : null, // Return full URL for the image.
-    ]);
-}
+    {
+        $user = Auth::user();
+        $userProfile = $user->profile; // Ensure `profile()` is correctly defined in User model
+    
+        return response()->json([
+            'user_name' => $user->name,
+            'user_image' => $userProfile && $userProfile->user_image 
+                ? asset('storage/' . $userProfile->user_image) 
+                : null, // Return full URL for the image
+        ]);
+    }
+    
 
     public function getUserRole(Request $request)
     {

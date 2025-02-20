@@ -37,7 +37,7 @@
       </div>
 
       <!-- Loader Spinner -->
-      <div v-if="isLoading" class="text-center mt-5">
+      <div v-if="isLoading" class="loader-container">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -266,10 +266,15 @@ export default {
 
 
 <style scoped>
-/* Add custom styles for the spinner */
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
+h1 {
+  font-size: 2em;
+  margin-bottom: 15px;
+}
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
 }
 .last-updated {
   position: absolute;

@@ -264,6 +264,11 @@ public function employeeAttendances(Request $request)
         // Fetch attendance records for the given month
         $attendances = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate]);
 
+        // Group attendance records by date to ensure multiple clicks are counted only once per day
+        $uniqueAttendances = $attendances->groupBy(function ($attendance) {
+            return Carbon::parse($attendance->clockin_time)->toDateString();
+        });
+
         // Fetch work-from-home leaves with approved status for the given month
         $wfhLeaves = $user->leaves->where('type_of_leave', 'Work From Home')
             ->filter(function ($leave) use ($startDate, $endDate) {
@@ -271,18 +276,18 @@ public function employeeAttendances(Request $request)
             });
 
         // Count days where the user has both an approved WFH leave and an attendance record
-        $totalWFH = $wfhLeaves->reduce(function ($count, $leave) use ($attendances) {
+        $totalWFH = $wfhLeaves->reduce(function ($count, $leave) use ($uniqueAttendances) {
             $daysInLeaveRange = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date ?: $leave->start_date)) + 1;
 
-            $daysWithAttendance = $attendances->filter(function ($attendance) use ($leave) {
-                return Carbon::parse($attendance->clockin_time)->between($leave->start_date, $leave->end_date ?: $leave->start_date);
+            $daysWithAttendance = $uniqueAttendances->filter(function ($attendance, $date) use ($leave) {
+                return Carbon::parse($date)->between($leave->start_date, $leave->end_date ?: $leave->start_date);
             })->count();
 
             return $count + min($daysInLeaveRange, $daysWithAttendance);
         }, 0);
 
         // Count WFO days excluding those counted in WFH
-        $totalWFO = $attendances->count() - $totalWFH;
+        $totalWFO = $uniqueAttendances->count() - $totalWFH;
 
         // Count total leave days (Full Day and Half Day)
         $totalLeaves = $user->leaves
