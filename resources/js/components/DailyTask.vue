@@ -9,7 +9,7 @@
       :selectedDate="selectedDate"
       @dateSelected="handleDateSelected"
     />
-          <button @click="fetchDailyTasks" class="btn btn-success ms-2">Search</button>
+          <!-- <button @click="fetchDailyTasks" class="btn btn-success ms-2">Search</button> -->
         </div>
       </div>
       <table class="task-table">
@@ -22,6 +22,15 @@
           </tr>
         </thead>
         <tbody>
+          <tr v-if="loading">
+    <td colspan="4" class="text-center">
+      <div class="loader-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </td>
+  </tr>
           <tr
   v-for="(task, index) in tasks"
   :key="index"
@@ -197,23 +206,24 @@ export default {
     Calendar, // Register Calendar component
   },
   data() {
-    return {
-      tasks: [],
-      selectedDate: new Date(), // Default to today as a Date object
-      currentTasks: [],
-      currentTask: {
-        id: null,
-        project_name: '',
-        hours: null,
-        task_description: '',
-        task_status: 'pending',
-        project_id: null,
-        userName: '',
-      },
-      projects: [],
-      isLoading: false,
-    };
-  },
+  return {
+    tasks: [],
+    selectedDate: new Date(), // Default to today as a Date object
+    currentTasks: [],
+    currentTask: {
+      id: null,
+      project_name: '',
+      hours: null,
+      task_description: '',
+      task_status: 'pending',
+      project_id: null,
+      userName: '',
+    },
+    projects: [],
+    isLoading: false,
+    loading: false, // Add this line
+  };
+},
 
   mounted() {
     this.fetchDailyTasks();
@@ -222,16 +232,19 @@ export default {
 
   methods: {
     async fetchDailyTasks() {
-      try {
-        const response = await axios.get('/api/daily-tasks', {
-          params: { date: this.selectedDate.toISOString().slice(0, 10) }, // Format the selected date
-        });
-        this.tasks = response.data;
-      } catch (error) {
-        console.error('Error fetching daily tasks:', error);
-        toast.error('Failed to fetch tasks. Please try again.');
-      }
-    },
+  this.loading = true; // Set loading to true before the API call
+  try {
+    const response = await axios.get('/api/daily-tasks', {
+      params: { date: this.selectedDate.toISOString().slice(0, 10) }, // Format the selected date
+    });
+    this.tasks = response.data;
+  } catch (error) {
+    console.error('Error fetching daily tasks:', error);
+    toast.error('Failed to fetch tasks. Please try again.');
+  } finally {
+    this.loading = false; // Set loading to false after the API call is completed
+  }
+},
 
     async fetchProjects() {
       try {

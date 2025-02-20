@@ -36,6 +36,12 @@
         </div>
 
         <div class="modal-actions">
+          <ButtonComponent 
+            :label="'Cancel'" 
+            :buttonClass="'cancel-btn'" 
+            @click="$emit('close')" 
+          />
+          
           <ButtonComponent
             :isLoading="isLoading"
             :label="'Save'"
@@ -43,11 +49,7 @@
             :buttonClass="'save-btn'"
             @click="updateNotice"
           />
-          <ButtonComponent 
-            :label="'Cancel'" 
-            :buttonClass="'cancel-btn'" 
-            @click="$emit('close')" 
-          />
+         
         </div>
       </form>
     </div>

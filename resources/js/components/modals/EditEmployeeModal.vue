@@ -108,6 +108,12 @@
 
         <div class="modal-footer custom-modal-footer">
           <ButtonComponent
+            label="Cancel"
+            buttonClass="custom-btn-close"
+            :clickEvent="() => $emit('close')"
+          />
+          
+          <ButtonComponent
             :label="loading ? '' : 'Save Changes'"
             :iconClass="loading ? 'spinner-border spinner-border-sm' : null"
             :buttonClass="'custom-btn-submit'"
@@ -117,11 +123,7 @@
             <span v-if="loading">Loading...</span>
           </ButtonComponent>
 
-          <ButtonComponent
-            label="Cancel"
-            buttonClass="custom-btn-close"
-            :clickEvent="() => $emit('close')"
-          />
+         
         </div>
       </form>
     </div>

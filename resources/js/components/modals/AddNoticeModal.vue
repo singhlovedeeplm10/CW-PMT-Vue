@@ -72,17 +72,19 @@
         <!-- Buttons -->
         <div class="form-actions">
           <ButtonComponent
+            label="Cancel"
+            buttonClass="cancel-btn"
+            @click="closeModal"
+          />
+          
+          <ButtonComponent
             label="Save"
             buttonClass="submit-btn"
             :isLoading="isLoading"
             loadingText="Saving..."
             @click="submitForm"
           />
-          <ButtonComponent
-            label="Cancel"
-            buttonClass="cancel-btn"
-            @click="closeModal"
-          />
+          
         </div>
       </form>
     </div>

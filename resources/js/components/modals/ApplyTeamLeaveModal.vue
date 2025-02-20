@@ -515,11 +515,11 @@ export default {
   padding: 20px;
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-}
+.modal-footer .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+  }
 
 /* Text Area and Inputs */
 textarea.form-control {

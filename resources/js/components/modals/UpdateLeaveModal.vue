@@ -224,6 +224,14 @@
 
             <div class="modal-footer">
               <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal" 
+              >
+                Close
+              </button>
+              
+              <button
                 type="submit"
                 class="btn btn-success"
                 :disabled="!leave.isEditable || loading"
@@ -232,13 +240,7 @@
                 Update
               </button>
               <!-- Close Button with data-bs-dismiss -->
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal" 
-              >
-                Close
-              </button>
+              
             </div>
           </form>
         </div>

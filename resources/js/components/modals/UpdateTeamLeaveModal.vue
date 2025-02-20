@@ -187,6 +187,10 @@
             </div>
 
             <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              
               <button
                 type="submit"
                 class="btn btn-success"
@@ -195,9 +199,7 @@
                 <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 <span v-if="!isLoading">Update</span>
               </button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                Close
-              </button>
+              
             </div>
           </form>
         </div>
