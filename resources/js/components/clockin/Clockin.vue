@@ -35,13 +35,15 @@
     </div>
     
     <div class="box clock-in-box">
-      <ButtonComponent
-        :label="clockInOutText"
-        :iconClass="'fas fa-clock'"
-        :buttonClass="clockInOutButtonClass"
-        :clickEvent="handleClockInOut"
-      />
-    </div>
+  <ButtonComponent
+    :label="clockInOutText"
+    :iconClass="'fas fa-clock'"
+    :buttonClass="clockInOutButtonClass"
+    :clickEvent="handleClockInOut"
+    :isLoading="isPageLoading"
+    :loadingText="'Loading...'"
+  />
+</div>
 
      <!-- AddBreakModal -->
      <AddBreakModal
@@ -82,6 +84,7 @@ export default {
     const breakStartTime = ref(null);
     const breakInterval = ref(null);
     const totalBreakTime = ref(0); // Total break time in seconds
+    const isPageLoading = ref(true); // Add this line to track if the page is still loading
 
     let interval = null;
 
@@ -398,6 +401,9 @@ const startBreakTimer = () => {
     toast.error("Failed to fetch status", { position: "top-right",
     autoClose: 1000 });
   }
+  finally {
+    isPageLoading.value = false; // Set loading to false after all data is fetched
+  }
 });
 
 
@@ -420,7 +426,8 @@ const startBreakTimer = () => {
       fetchWeeklyBreakHours,
       loadingWeeklyHours,
       loadingDailyHours,
-      loadingBreakTime
+      loadingBreakTime,
+      isPageLoading, // Return isPageLoading
     };
   },
 };

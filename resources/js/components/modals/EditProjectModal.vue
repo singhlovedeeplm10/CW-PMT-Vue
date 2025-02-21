@@ -86,9 +86,15 @@
 
       <!-- Save and Close Buttons -->
       <div class="modal-footer d-flex justify-content-end gap-2">
-  <button @click="close" class="btn btn-secondary">Close</button>
-  <button @click="updateProject" class="btn btn-primary">Save Changes</button>
-</div>
+        <button @click="close" class="btn btn-secondary">Close</button>
+        <button @click="updateProject" class="btn btn-primary" :disabled="loading">
+  <span v-if="loading">
+    <span class="spinner-border spinner-border-sm"></span> Saving...
+  </span>
+  <span v-else>Save Changes</span>
+</button>
+
+      </div>
 
     </div>
   </div>
@@ -96,6 +102,8 @@
 
 <script>
 import axios from 'axios';
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 export default {
   props: {
@@ -107,6 +115,7 @@ export default {
       userSearchQuery: "",
       userSuggestions: [],
       selectedUsers: [...this.project.assigned_developers], // Keep initially assigned developers
+      loading: false, // Loader state
     };
   },
   methods: {
@@ -114,6 +123,7 @@ export default {
       this.$emit("close");
     },
     async updateProject() {
+      this.loading = true; // Start loader
       try {
         const response = await axios.put(
           `/api/update-projects/${this.localProject.id}`,
@@ -131,11 +141,21 @@ export default {
         );
 
         if (response.status === 200) {
+          toast.success("Project updated successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
           this.$emit("project-updated", this.localProject);
           this.close();
         }
       } catch (error) {
+        toast.error("Failed to update project. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         console.error("Error updating project", error);
+      } finally {
+        this.loading = false; // Stop loader
       }
     },
     async fetchUsers() {
@@ -168,6 +188,13 @@ export default {
 
 
 <style scoped>
+/* Spinner styling */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

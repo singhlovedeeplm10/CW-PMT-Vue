@@ -8,59 +8,60 @@
         </div>
         <div class="modal-body">
           <!-- Employee Name -->
-          <div class="mb-3">
-            <InputField
-              label="Employee Name"
-              id="name"
-              v-model="employee.name"
-              placeholder="Enter employee name"
-              :error="fieldErrors.name"
-              :class="{ 'input-error': fieldErrors.name }"
-            />
-            <p v-if="fieldErrors.name" class="error-message">{{ fieldErrors.name }}</p>
-          </div>
+<div class="mb-3">
+  <InputField
+    label="Employee Name"
+    id="name"
+    v-model="employee.name"
+    placeholder="Enter employee name"
+    :error="fieldErrors.name"
+    :class="{ 'input-error': fieldErrors.name }"
+    @input="clearNameError"
+  />
+  <p v-if="fieldErrors.name" class="error-message">{{ fieldErrors.name }}</p>
+</div>
 
-          <!-- Employee Email -->
-          <div class="mb-3">
-            <EmailInput
-              label="Employee Email"
-              id="email"
-              v-model="employee.email"
-              placeholder="Enter employee email"
-              
-              :class="{ 'input-error': fieldErrors.email }"
-              @input-blur="(error) => emailError = error"
-            />
-            <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
-          </div>
+<!-- Employee Email -->
+<div class="mb-3">
+  <EmailInput
+    label="Employee Email"
+    id="email"
+    v-model="employee.email"
+    placeholder="Enter employee email"
+    :class="{ 'input-error': fieldErrors.email }"
+    @input-blur="(error) => emailError = error"
+    @input="clearEmailError"
+  />
+  <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
+</div>
 
           <!-- Password -->
-          <div class="mb-3">
-            <PasswordInput
-              label="Password"
-              id="password"
-              v-model="employee.password"
-              placeholder="Enter password"
-              
-              :class="{ 'input-error': fieldErrors.password }"
-              @input-blur="(error) => passwordError = error"
-            />
-            <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
-          </div>
+<div class="mb-3">
+  <PasswordInput
+    label="Password"
+    id="password"
+    v-model="employee.password"
+    placeholder="Enter password"
+    :class="{ 'input-error': fieldErrors.password }"
+    @input-blur="(error) => passwordError = error"
+    @input="clearPasswordError"
+  />
+  <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
+</div>
 
-          <!-- Confirm Password -->
-          <div class="mb-3">
-            <PasswordInput
-              label="Confirm Password"
-              id="confirmPassword"
-              v-model="employee.confirmPassword"
-              placeholder="Confirm password"
-              
-              :class="{ 'input-error': fieldErrors.confirmPassword }"
-              @input-blur="(error) => confirmPasswordError = error"
-            />
-            <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
-          </div>
+<!-- Confirm Password -->
+<div class="mb-3">
+  <PasswordInput
+    label="Confirm Password"
+    id="confirmPassword"
+    v-model="employee.confirmPassword"
+    placeholder="Confirm password"
+    :class="{ 'input-error': fieldErrors.confirmPassword }"
+    @input-blur="(error) => confirmPasswordError = error"
+    @input="clearConfirmPasswordError"
+  />
+  <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
+</div>
         </div>
 
         <div class="modal-footer custom-modal-footer">
@@ -128,13 +129,47 @@ export default {
     const confirmPasswordError = ref("");
     const isLoading = ref(false);
 
+    // Helper function to validate email format
+    const isValidEmail = (email) => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    };
+
+    // Clear name error when user starts typing
+    const clearNameError = () => {
+      if (employee.value.name) {
+        fieldErrors.value.name = "";
+      }
+    };
+
+    // Clear email error when user inputs a valid email
+    const clearEmailError = () => {
+      if (employee.value.email && isValidEmail(employee.value.email)) {
+        fieldErrors.value.email = "";
+      }
+    };
+
+    // Clear password error when user starts typing
+    const clearPasswordError = () => {
+      if (employee.value.password && employee.value.password.length >= 8) {
+        fieldErrors.value.password = "";
+      }
+    };
+
+    // Clear confirm password error when user starts typing
+    const clearConfirmPasswordError = () => {
+      if (employee.value.confirmPassword && employee.value.confirmPassword === employee.value.password) {
+        fieldErrors.value.confirmPassword = "";
+      }
+    };
+
     const validateFields = () => {
       let isValid = true;
       fieldErrors.value = {
         name: employee.value.name ? "" : "Employee name is required.",
-        email: employee.value.email ? "" : "Employee email is required.",
-        password: employee.value.password ? (employee.value.password.length >= 8 ? "" : "Password must be at least 8 characters long.") : "Password is required.",
-        confirmPassword: employee.value.confirmPassword ? "" : "Confirm password is required.",
+        email: employee.value.email ? (isValidEmail(employee.value.email) ? "" : "Invalid email format.") : "Employee email is required.",
+        password: employee.value.password ? (employee.value.password.length >= 8 ? "" : "Password must be at least 8 characters long.") : "Password is required and must be at least 8 characters long.",
+        confirmPassword: employee.value.confirmPassword ? (employee.value.confirmPassword === employee.value.password ? "" : "Passwords do not match.") : "Confirm password is required.",
       };
 
       // Check if passwords match
@@ -187,6 +222,10 @@ export default {
       confirmPasswordError,
       isLoading,
       addEmployee,
+      clearNameError,
+      clearEmailError,
+      clearPasswordError,
+      clearConfirmPasswordError,
     };
   },
 };
@@ -198,20 +237,17 @@ export default {
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
-/* Modal background */
 .modal.fade.show {
   display: block;
   background: rgba(0, 0, 0, 0.5);
 }
 
-/* Centering the modal */
 .modal-dialog-centered {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Modal content */
 .custom-modal {
   border-radius: 10px;
   overflow: hidden;
@@ -219,7 +255,6 @@ export default {
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-/* Modal Header */
 .custom-modal-header {
   background-color: #4e73df;
   color: white;
@@ -237,7 +272,6 @@ export default {
   transition: background 0.3s ease;
 }
 
-/* Modal Body */
 .modal-body {
   padding: 20px;
   background-color: #f9f9f9;
@@ -262,7 +296,6 @@ export default {
   box-shadow: 0 0 5px rgba(78, 115, 223, 0.5);
 }
 
-/* Modal Footer */
 .custom-modal-footer {
   background-color: #f9f9f9;
   padding: 15px;
@@ -270,7 +303,6 @@ export default {
   border-top: 1px solid #ddd;
 }
 
-/* Close Button */
 .custom-btn-close {
   background-color: #6c757d;
   color: white;
@@ -283,7 +315,6 @@ export default {
   background-color: #5a6268;
 }
 
-/* Submit Button */
 .custom-btn-submit {
   background-color: #4e73df;
   color: white;
@@ -302,7 +333,6 @@ export default {
   cursor: not-allowed;
 }
 
-/* Spinner for loading state */
 .spinner-border {
   margin-right: 10px;
 }
