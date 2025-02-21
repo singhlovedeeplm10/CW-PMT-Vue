@@ -90,27 +90,27 @@ export default {
   },
   methods: {
     async updateNotice() {
-      this.isLoading = true;
-      this.form.description = $("#description-editor").summernote("code");
+    this.isLoading = true;
+    this.form.description = $("#description-editor").summernote("code");
 
-      try {
-        await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
-        toast.success("Notice updated successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        this.$emit("noticeupdated");
-        this.$emit("close");
-      } catch (error) {
-        toast.error("Failed to update notice. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        console.error("Error updating notice:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    try {
+      await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
+      toast.success("Notice updated successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
+      this.$emit("noticeupdated");
+      this.$emit("close");
+    } catch (error) {
+      toast.error("Failed to update notice. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
+      console.error("Error updating notice:", error);
+    } finally {
+      this.isLoading = false;
+    }
+  },
   },
   mounted() {
     $("#description-editor")

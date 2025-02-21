@@ -161,7 +161,10 @@ export default {
         projects.value = response.data.projects;
       } catch (error) {
         console.error("Error fetching projects:", error);
-        toast.error('Error loading projects.');
+        toast.error('Error loading projects.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     };
 
@@ -188,7 +191,10 @@ export default {
       });
 
       if (!valid) {
-        toast.error("Please correct errors in the form.");
+        toast.error("Please correct errors in the form.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         return;
       }
 
@@ -199,15 +205,24 @@ export default {
           }
         });
         if (response.status === 200) {
-          toast.success('Tasks saved/updated successfully!');
+          toast.success('Tasks saved/updated successfully!', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
           emit('taskAdded');
           closeModal();
         } else {
-          toast.error('Unexpected response. Please try again.');
+          toast.error('Unexpected response. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         }
       } catch (error) {
         console.error("Error saving tasks:", error);
-        toast.error('Error saving tasks.');
+        toast.error('Error saving tasks.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     };
 
@@ -245,14 +260,23 @@ export default {
           }
         });
         if (response.status === 200) {
-          toast.success('Task deleted successfully!');
+          toast.success('Task deleted successfully!', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
           tasks.value.splice(index, 1);
         } else {
-          toast.error('Unexpected response. Please try again.');
+          toast.error('Unexpected response. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         }
       } catch (error) {
         console.error('Error deleting task:', error);
-        toast.error('Failed to delete the task.');
+        toast.error('Failed to delete the task.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     };
 

@@ -113,10 +113,16 @@ export default {
           },
         });
 
-        toast.success("Timeline uploaded successfully!");
+        toast.success("Timeline uploaded successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         this.$router.push({ name: "TimeLine" });
       } catch (error) {
-        toast.error("Failed to upload timeline.");
+        toast.error("Failed to upload timeline.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         console.error(error.response.data);
       } finally {
         this.isLoading = false;

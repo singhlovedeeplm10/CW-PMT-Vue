@@ -380,7 +380,10 @@ export default {
       }
     );
 
-    toast.success(response.data.message);
+    toast.success(response.data.message, {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
     this.$emit("leaveApplied");
 
     // Close the modal after successful submission
@@ -396,7 +399,10 @@ export default {
         "Validation error: " + JSON.stringify(error.response.data.error)
       );
     } else {
-      toast.error("Failed to update leave. Please try again.");
+      toast.error("Failed to update leave. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
     }
   } finally {
     this.loading = false;
@@ -465,8 +471,7 @@ export default {
   }
   
   .btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
+    background-color: #0056b3;
   }
   
   .btn-secondary {
@@ -474,15 +479,5 @@ export default {
     border-color: #6c757d;
   }
   
-  /* Modal Buttons Hover Effects */
-  .btn-success:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-  }
   </style>
   

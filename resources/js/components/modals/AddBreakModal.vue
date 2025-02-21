@@ -95,6 +95,7 @@ export default {
       modal.hide();
       toast.success("Break started successfully.", {
         position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
       });
 
       // Emit event with break data
@@ -107,8 +108,9 @@ export default {
     }
   } catch (error) {
     toast.error("Failed to start break. Please try again.", {
-      position: "top-right",
-    });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   } finally {
     isLoading.value = false;
   }

@@ -27,11 +27,11 @@
               id="email"
               v-model="employee.email"
               placeholder="Enter employee email"
-              :error="fieldErrors.email || emailError"
+              
               :class="{ 'input-error': fieldErrors.email }"
               @input-blur="(error) => emailError = error"
             />
-            <!-- <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p> -->
+            <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
           </div>
 
           <!-- Password -->
@@ -41,11 +41,11 @@
               id="password"
               v-model="employee.password"
               placeholder="Enter password"
-              :error="fieldErrors.password || passwordError"
+              
               :class="{ 'input-error': fieldErrors.password }"
               @input-blur="(error) => passwordError = error"
             />
-            <!-- <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p> -->
+            <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
           </div>
 
           <!-- Confirm Password -->
@@ -55,11 +55,11 @@
               id="confirmPassword"
               v-model="employee.confirmPassword"
               placeholder="Confirm password"
-              :error="fieldErrors.confirmPassword || confirmPasswordError"
+              
               :class="{ 'input-error': fieldErrors.confirmPassword }"
               @input-blur="(error) => confirmPasswordError = error"
             />
-            <!-- <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p> -->
+            <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
           </div>
         </div>
 
@@ -137,6 +137,13 @@ export default {
         confirmPassword: employee.value.confirmPassword ? "" : "Confirm password is required.",
       };
 
+      // Check if passwords match
+      if (employee.value.password !== employee.value.confirmPassword) {
+        fieldErrors.value.password = "Passwords do not match.";
+        fieldErrors.value.confirmPassword = "Passwords do not match.";
+        isValid = false;
+      }
+
       if (!employee.value.name || !employee.value.email || !employee.value.password || !employee.value.confirmPassword || employee.value.password.length < 8) {
         isValid = false;
       }
@@ -146,24 +153,27 @@ export default {
 
     const addEmployee = async () => {
       if (!validateFields()) {
-        toast.error("Please fill in all required fields.", { position: "top-right" });
-        return;
-      }
-
-      if (employee.value.password !== employee.value.confirmPassword) {
-        fieldErrors.value.confirmPassword = "Passwords do not match.";
-        toast.error("Passwords do not match.", { position: "top-right" });
         return;
       }
 
       isLoading.value = true;
       try {
-        await axios.post("/api/users", employee.value);
-        toast.success("Employee added successfully.", { position: "top-right" });
+        const response = await axios.post("/api/users", employee.value);
+        toast.success("Employee added successfully.", {
+          position: "top-right",
+          autoClose: 1000,
+        });
         emit("employee-added");
         emit("close");
       } catch (error) {
-        toast.error("Failed to add employee. Please try again.", { position: "top-right" });
+        if (error.response && error.response.data && error.response.data.email) {
+          fieldErrors.value.email = error.response.data.email;
+        } else {
+          toast.error("Failed to add employee. Please try again.", {
+            position: "top-right",
+            autoClose: 1000,
+          });
+        }
       } finally {
         isLoading.value = false;
       }
@@ -183,10 +193,10 @@ export default {
 </script>
 
 <style scoped>
-
 .error-message {
   color: red;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 /* Modal background */
 .modal.fade.show {

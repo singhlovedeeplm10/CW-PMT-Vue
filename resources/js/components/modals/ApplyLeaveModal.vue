@@ -360,7 +360,10 @@ export default {
       },
     });
 
-    toast.success("Leave Applied Successfully!");
+    toast.success("Leave Applied Successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
     this.$emit("leaveApplied");
 
     // Find the modal element
@@ -375,7 +378,10 @@ export default {
     this.resetForm();
   } catch (error) {
     console.error(error);
-    toast.error("Failed to apply leave. Please try again.");
+    toast.error("Failed to apply leave. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   } finally {
     this.loading = false;
   }

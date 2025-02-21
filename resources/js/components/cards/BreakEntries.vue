@@ -83,24 +83,13 @@ export default {
 
         // Format break time in the desired format
         formatBreakTime(breakTime) {
-            if (!breakTime) return "-"; // Return "-" if no break time is provided
+    if (!breakTime) return "00:00:00"; // Return default format if no break time is provided
 
-            const [hours, minutes, seconds] = breakTime.split(":").map(Number);
+    const [hours, minutes, seconds] = breakTime.split(":").map(Number);
 
-            let formattedTime = "";
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+},
 
-            if (hours > 0) {
-                formattedTime += `${String(hours).padStart(2, '0')} hrs `;
-            }
-
-            if (minutes > 0 || hours > 0) {
-                formattedTime += `${String(minutes).padStart(2, '0')} min `;
-            }
-
-            formattedTime += `${String(seconds).padStart(2, '0')} sec`;
-
-            return formattedTime;
-        },
 
         // Update the selected date and fetch entries for the new date
         onDateSelected(newDate) {

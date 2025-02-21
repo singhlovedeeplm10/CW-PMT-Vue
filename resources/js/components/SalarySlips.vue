@@ -188,10 +188,10 @@ export default {
       await axios.post('/api/upload-salary-slip', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      toast.success('File uploaded successfully!', { position: "top-right" });
+      toast.success('File uploaded successfully!', { position: "top-right", autoClose: 1000, });
       this.fetchSalarySlips();
     } catch (error) {
-      toast.error('Failed to upload file.', { position: "top-right" });
+      toast.error('Failed to upload file.', { position: "top-right", autoClose: 1000, });
       console.error(error);
     } finally {
       this.isUploading = false;

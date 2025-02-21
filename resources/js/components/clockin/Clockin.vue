@@ -124,7 +124,8 @@ export default {
     breakStartTime.value = null;
   } catch (error) {
     console.error("Error fetching total break time:", error);
-    toast.error("Failed to fetch total break time", { position: "top-right" });
+    toast.error("Failed to fetch total break time", { position: "top-right",
+    autoClose: 1000 });
   } finally {
     loadingBreakTime.value = false;
   }
@@ -155,7 +156,8 @@ export default {
     // toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
   } catch (error) {
     console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
-    toast.error("Failed to fetch weekly hours or break time", { position: "top-right" });
+    toast.error("Failed to fetch weekly hours or break time", { position: "top-right",
+    autoClose: 1000 });
   }
   finally {
     loadingWeeklyHours.value = false;
@@ -175,7 +177,8 @@ export default {
         }
       } catch (error) {
         console.error("Error fetching daily hours:", error);
-        toast.error("Failed to fetch daily hours", { position: "top-right" });
+        toast.error("Failed to fetch daily hours", { position: "top-right",
+        autoClose: 1000 });
       }
       finally {
         loadingDailyHours.value = false;
@@ -193,9 +196,8 @@ export default {
     // toast.success("Weekly break time fetched successfully", { position: "top-right" });
   } catch (error) {
     console.error("Error fetching weekly break time:", error.response?.data || error.message);
-    toast.error(error.response?.data?.error || "Failed to fetch weekly break time", {
-      position: "top-right",
-    });
+    toast.error(error.response?.data?.error || "Failed to fetch weekly break time", { position: "top-right",
+    autoClose: 1000 });
   }
 };
 
@@ -216,6 +218,12 @@ export default {
     };
     const handleClockInOut = async () => {
   try {
+    if (isOnBreak.value) {
+      toast.error("Please end your break first", { position: "top-right",
+      autoClose: 1000, });
+      return;
+    }
+
     const url = isClockedIn.value ? "/api/clock-out" : "/api/clock-in";
     const response = await axios.post(
       url,
@@ -229,13 +237,15 @@ export default {
       isClockedIn.value = true;
       pausedTime.value = dailyHours.value;
       startTimer();
-      toast.success("User Clocked In", { position: "top-right" });
+      toast.success("User Clocked In", { position: "top-right",
+      autoClose: 1000 });
       emit("clockedIn");
     } else {
       // Clock Out logic
       isClockedIn.value = false;
       stopTimer();
-      toast.info("User Clocked Out", { position: "top-right" });
+      toast.info("User Clocked Out", { position: "top-right",
+      autoClose: 1000 });
 
       // Fetch the updated daily hours from the server
       await fetchDailyHours();
@@ -246,15 +256,14 @@ export default {
       // Update the UI with the adjusted time
       await fetchWeeklyHours(); // Update weekly hours
       await fetchTotalBreakTime(); // Fetch the latest break time
-
-      // Optionally, update the daily break time as well
-      // await fetchWeeklyBreakHours(); 
     }
   } catch (error) {
     console.error("Error:", error.response?.data || error.message);
-    toast.error(error.response?.data?.message || "An error occurred", { position: "top-right" });
+    toast.error(error.response?.data?.message || "An error occurred", { position: "top-right",
+    autoClose: 1000 });
   }
 };
+
 
 
 const onBreakStarted = ({ reason, startTime }) => {
@@ -308,9 +317,8 @@ const startBreakTimer = () => {
         localStorage.removeItem("breakStartTime");
         localStorage.removeItem("totalBreakTime");
 
-        toast.success(response.data.message || "Break ended successfully.", {
-          position: "top-right",
-        });
+        toast.success(response.data.message || "Break ended successfully.", { position: "top-right",
+        autoClose: 1000 });
 
         // Emit an event to notify the parent component
         emit("breakEnded");
@@ -318,15 +326,15 @@ const startBreakTimer = () => {
         
       } catch (error) {
         console.error("Failed to end break:", error.response?.data || error.message);
-        toast.error("Failed to end break. Please try again.", {
-          position: "top-right",
-        });
+        toast.error("Failed to end break. Please try again.", { position: "top-right",
+        autoClose: 1000 });
   }
 };
 
     const handleAddBreak = () => {
       if (!isClockedIn.value) {
-        toast.error("Please clock in first to add the break", { position: "top-right" });
+        toast.error("Please clock in first to add the break", { position: "top-right",
+        autoClose: 1000 });
         return;
       }
 
@@ -387,7 +395,8 @@ const startBreakTimer = () => {
 
   } catch (error) {
     console.error("Error fetching status:", error.response?.data || error.message);
-    toast.error("Failed to fetch status", { position: "top-right" });
+    toast.error("Failed to fetch status", { position: "top-right",
+    autoClose: 1000 });
   }
 });
 

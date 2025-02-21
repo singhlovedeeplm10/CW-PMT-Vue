@@ -221,13 +221,17 @@ export default {
           if (index !== -1) {
             this.policies[index] = updatedPolicy; // Update policy in the list
           }
-          toast.success("Changes saved successfully!");
+          toast.success("Changes saved successfully!", {
+        autoClose: 1000, // Set to 2 seconds
+      });
           this.fetchPolicies(); // Re-fetch policies to ensure updated data
           this.closeEditModal(); // Close modal
         })
         .catch((error) => {
           console.error("Error updating policy:", error);
-          toast.error("Failed to save changes. Please try again.");
+          toast.error("Failed to save changes. Please try again.", {
+        autoClose: 1000, // Set to 2 seconds
+      });
         });
     },
     // Delete policy from both frontend and backend

@@ -189,8 +189,9 @@ export default {
         !project.value.status
       ) {
         toast.error("Please fill in all required fields.", {
-          position: "top-right",
-        });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         return;
       }
 
@@ -202,14 +203,16 @@ export default {
           },
         });
         toast.success("Project added successfully.", {
-          position: "top-right",
-        });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         emit("project-added");
         emit("close");
       } catch (error) {
         toast.error("Failed to add project. Please try again.", {
-          position: "top-right",
-        });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       } finally {
         isLoading.value = false;
       }

@@ -210,7 +210,10 @@ export default {
         this.tasks = response.data;
       } catch (error) {
         console.error('Error fetching daily tasks:', error);
-        toast.error('Failed to fetch tasks. Please try again.');
+        toast.error('Failed to fetch tasks. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     },
     async fetchProjects() {
@@ -219,7 +222,10 @@ export default {
         this.projects = response.data.projects;
       } catch (error) {
         console.error('Error fetching projects:', error);
-        toast.error('Failed to fetch projects. Please try again.');
+        toast.error('Failed to fetch projects. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     },
     async openModal(task) {
@@ -254,7 +260,10 @@ export default {
     }
   } catch (error) {
     console.error('Error fetching user tasks:', error);
-    toast.error('Failed to fetch user tasks. Please try again.');
+    toast.error('Failed to fetch user tasks. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   }
 },
 
@@ -272,12 +281,18 @@ async updateTask(task) {
     // You can also update the main tasks array if required
     // Example: Update the task in this.tasks if necessary.
 
-    toast.success('Task updated successfully!');
+    toast.success('Task updated successfully!', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
     this.isLoading = false;
   } catch (error) {
     console.error('Error updating task:', error);
     this.isLoading = false;
-    toast.error('Error updating task. Please try again.');
+    toast.error('Error updating task. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   }
 },
 async deleteTask(task) {
@@ -291,7 +306,10 @@ async deleteTask(task) {
     // You can also update the main tasks array if required
     // Example: Remove the task from this.tasks if necessary.
 
-    toast.success('Task deleted successfully!');
+    toast.success('Task deleted successfully!', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
     this.isLoading = false;
 
     // Hide the modal after deletion
@@ -300,7 +318,10 @@ async deleteTask(task) {
   } catch (error) {
     console.error('Error deleting task:', error);
     this.isLoading = false;
-    toast.error('Error deleting task. Please try again.');
+    toast.error('Error deleting task. Please try again.', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   }
 },
 

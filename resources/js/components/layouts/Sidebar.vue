@@ -127,14 +127,16 @@ export default {
 
 <style scoped>
 .sidebar {
-  width: 240px;
-  min-height: 100vh; /* Full viewport height */
-  background: #24292e; /* Gradient for a sleek look */
+  width: 190px;
+  min-height: 100vh;
+  background: #24292e;
   color: #ecf0f1;
   padding: 20px 10px;
   font-family: 'Roboto', sans-serif;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0; /* Prevents resizing */
 }
+
 
 .sidebar-header {
   display: flex;

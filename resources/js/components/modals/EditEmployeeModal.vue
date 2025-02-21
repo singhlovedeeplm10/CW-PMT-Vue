@@ -63,7 +63,9 @@
               v-model="formData.contact"
               class="form-control custom-input"
               placeholder="Enter contact number"
+              @input="validateContact"
             />
+            <small v-if="contactError" class="text-danger">{{ contactError }}</small>
           </div>
           <div class="form-group">
             <label for="qualifications" class="form-label">Qualifications</label>
@@ -146,6 +148,7 @@ export default {
   data() {
     return {
       formData: { ...this.user, password: "", user_image: null, employee_code: '' },
+      contactError: "", // Store contact validation error
       loading: false, // Track loading state 
     };
   },
@@ -173,6 +176,18 @@ export default {
 },
 
   methods: {
+    validateContact() {
+      const contact = this.formData.contact;
+      if (!/^\d*$/.test(contact)) {
+        this.contactError = "Contact number should contain only digits.";
+      } else if (contact.length < 10) {
+        this.contactError = "Contact number must be exactly 10 digits.";
+      } else if (contact.length > 10) {
+        this.contactError = "Contact number cannot exceed 10 digits.";
+      } else {
+        this.contactError = "";
+      }
+    },
     handleImageUpload(event) {
       this.formData.user_image = event.target.files[0];
     },
@@ -194,7 +209,10 @@ export default {
         });
 
         // Show a success toast notification
-        toast.success("Employee updated successfully!");
+        toast.success("Employee updated successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
 
         this.$emit("employee-updated");
         this.$emit("close");

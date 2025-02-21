@@ -71,7 +71,10 @@ export default {
     },
     async submitPolicy() {
       if (!this.policyTitle || !this.document) {
-        toast.error("Please fill in all fields and upload a document.");
+        toast.error("Please fill in all fields and upload a document.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         return;
       }
 
@@ -88,12 +91,18 @@ export default {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        toast.success("Policy added successfully!");
+        toast.success("Policy added successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         this.$emit("policyadded");
         this.$emit("close");
       } catch (error) {
         console.error("Error saving policy:", error);
-        toast.error("Failed to save policy. Please try again.");
+        toast.error("Failed to save policy. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       } finally {
         this.loading = false; // Stop loading
       }

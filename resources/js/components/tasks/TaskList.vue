@@ -83,7 +83,10 @@ export default {
     }));
   } catch (error) {
     console.error("Error fetching tasks:", error);
-    toast.error("Failed to fetch tasks. Please try again.");
+    toast.error("Failed to fetch tasks. Please try again.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
   } finally {
     this.loading = false;
   }
@@ -95,7 +98,10 @@ export default {
         this.projects = response.data.projects;
       } catch (error) {
         console.error("Error fetching projects:", error);
-        toast.error("Failed to fetch projects.");
+        toast.error("Failed to fetch projects.", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     },
 
@@ -114,14 +120,20 @@ export default {
             const modalInstance = new bootstrap.Modal(modalElement);
             modalInstance.show();
           } else {
-            toast.error("Modal not found!", { position: "top-right" });
+            toast.error("Modal not found!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
           }
         } else {
           toast.warning("You need to clock in to add tasks!", { position: "top-right" });
         }
       } catch (error) {
         console.error("Error checking clock-in status:", error.response?.data || error.message);
-        toast.error(error.response?.data?.message || "Something went wrong. Please try again!", { position: "top-right" });
+        toast.error(error.response?.data?.message || "Something went wrong. Please try again!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
       } finally {
         this.buttonLoading = false; // End button loading state
       }

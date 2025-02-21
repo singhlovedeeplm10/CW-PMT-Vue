@@ -145,18 +145,18 @@ export default {
 
       if (Object.keys(this.validationErrors).length > 0) {
         toast.error("Please fill in all required fields!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         this.isLoading = false; // Hide loader
         return;
       }
 
       if (new Date(this.form.start_date) > new Date(this.form.end_date)) {
         toast.error("End Date must be greater than or equal to Start Date!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         this.isLoading = false; // Hide loader
         return;
       }
@@ -178,7 +178,7 @@ export default {
             : errorData.message;
           toast.error(`Error: ${errorMessage}`, {
             position: "top-right",
-            autoClose: 3000,
+            autoClose: 1000,
           });
           this.isLoading = false; // Hide loader
           return;
@@ -187,7 +187,7 @@ export default {
         const data = await response.json();
         toast.success("Notice created successfully!", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 1000,
         });
 
         this.$emit("noticeadded");
@@ -196,7 +196,7 @@ export default {
         console.error("Error saving notice:", error);
         toast.error("An error occurred while saving the notice.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 1000,
         });
       } finally {
         this.isLoading = false; // Hide loader

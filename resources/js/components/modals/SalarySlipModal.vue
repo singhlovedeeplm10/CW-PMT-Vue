@@ -229,11 +229,17 @@ export default {
         // If the user is saving, send the updated data to the backend
         try {
           const response = await axios.put(`/api/update-salary-slip/${this.selectedSalarySlip.id}`, this.selectedSalarySlip);
-          toast.success('Salary Slip updated successfully');
+          toast.success('Salary Slip updated successfully', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
           this.$emit("salaryupdated");
         } catch (error) {
           console.error(error);
-          toast.error('Failed to update Salary Slip');
+          toast.error('Failed to update Salary Slip', {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
         }
       }
       this.isEditing = !this.isEditing;

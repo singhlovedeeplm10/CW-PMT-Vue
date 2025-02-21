@@ -289,7 +289,9 @@ export default {
       try {
         this.isLoading = true;
         const response = await axios.put(`/api/update-tasks/${task.id}`, task);
-        toast.success('Task updated successfully!');
+        toast.success('Task updated successfully!', {
+        autoClose: 1000, // Set to 2 seconds
+      });
         await this.fetchDailyTasks();
         const modal = bootstrap.Modal.getInstance(document.getElementById('dailytaskmodal'));
         modal.hide();
@@ -297,7 +299,9 @@ export default {
       } catch (error) {
         console.error('Error updating task:', error);
         this.isLoading = false;
-        toast.error('Error updating task. Please try again.');
+        toast.error('Error updating task. Please try again.', {
+        autoClose: 1000, // Set to 2 seconds
+      });
       }
     },
 

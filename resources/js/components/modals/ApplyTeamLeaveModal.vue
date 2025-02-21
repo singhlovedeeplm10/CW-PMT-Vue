@@ -213,12 +213,6 @@
             </div>
 
             <div class="modal-footer">
-              <button type="submit" class="btn btn-success" :disabled="isSubmitting">
-                <span v-if="isSubmitting">
-                  <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i> Applying...
-                </span>
-                <span v-else>Apply</span>
-              </button>
               <button
                 type="button"
                 class="btn btn-secondary"
@@ -226,6 +220,13 @@
               >
                 Cancel
               </button>
+              <button type="submit" class="btn btn-success" :disabled="isSubmitting">
+                <span v-if="isSubmitting">
+                  <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i> Applying...
+                </span>
+                <span v-else>Apply</span>
+              </button>
+             
             </div>
           </form>
         </div>
@@ -407,7 +408,10 @@ export default {
       });
 
       // Show success toast
-      toast.success("Leave Applied Successfully!");
+      toast.success("Leave Applied Successfully!", {
+        position: "top-right",
+        autoClose: 1000, // Set to 2 seconds
+      });
 
       // Emit the event to notify the parent component
       this.$emit("leaveApplied");
