@@ -11,6 +11,7 @@ use App\Models\UserProfile;
 use App\Models\Leave;
 use Carbon\Carbon;
 use App\Models\Attendance;
+use App\Models\Breaks;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -322,6 +323,96 @@ public function employeeAttendances(Request $request)
     });
 
     return response()->json($employees);
+}
+
+public function getEmployeeTimeLogs(Request $request)
+{
+    $selectedMonth = $request->input('month', date('Y-m'));
+    $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
+    $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
+
+    $users = User::with(['profile', 'attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+        $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
+              ->with('breaks');
+    }])->get();
+
+    $timeLogs = [];
+
+    foreach ($users as $user) {
+        $groupedAttendances = [];
+
+        foreach ($user->attendances as $attendance) {
+            $date = Carbon::parse($attendance->clockin_time)->format('Y-m-d');
+
+            if (!isset($groupedAttendances[$date])) {
+                $groupedAttendances[$date] = [
+                    'clockin_time' => $attendance->clockin_time,
+                    'clockout_time' => $attendance->clockout_time,
+                    'total_hours' => $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0,
+                    'total_break_time' => 0,
+                ];
+            } else {
+                // Update clock-in to the earliest time
+                $groupedAttendances[$date]['clockin_time'] = min($groupedAttendances[$date]['clockin_time'], $attendance->clockin_time);
+                // Update clock-out to the latest time
+                $groupedAttendances[$date]['clockout_time'] = max($groupedAttendances[$date]['clockout_time'], $attendance->clockout_time);
+                // Sum productive hours
+                $groupedAttendances[$date]['total_hours'] += $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0;
+            }
+
+            // Sum total break time
+            $groupedAttendances[$date]['total_break_time'] += $attendance->breaks->sum(function ($break) {
+                return Carbon::parse($break->break_time)->secondsSinceMidnight();
+            });
+        }
+
+        foreach ($groupedAttendances as $date => $data) {
+            $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('H:i:s') : 'N/A';
+            $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('H:i:s') : 'N/A';
+
+            $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
+            $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
+
+            $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
+            $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
+
+            $imagePath = $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : asset('default-profile.png');
+
+            $timeLogs[] = [
+                'employee_code' => $user->profile->employee_code,
+                'image' => $imagePath,
+                'name' => $user->name,
+                'status' => $user->status,
+                'date' => $date,
+                'clock_in_out' => $clockInTime . ' / ' . $clockOutTime,
+                'total_break' => $totalBreakFormatted,
+                'total_hours' => $totalHoursFormatted,
+                'total_productive_hours' => $totalProductiveHoursFormatted,
+            ];
+        }
+    }
+
+    return response()->json($timeLogs);
+}
+public function getDetailedTimeLogs(Request $request)
+{
+    $employeeCode = $request->query('employee_code');
+    $date = $request->query('date');
+
+    // Fetch user ID from employee code
+    $userProfile = UserProfile::where('employee_code', $employeeCode)->first();
+    if (!$userProfile) {
+        return response()->json([]);
+    }
+
+    $userId = $userProfile->user_id;
+
+    // Fetch detailed time logs
+    $detailedLogs = Attendance::where('user_id', $userId)
+        ->whereDate('clockin_time', $date)
+        ->get(['clockin_time', 'clockout_time', 'productive_hours']);
+
+    return response()->json($detailedLogs);
 }
 
 }
