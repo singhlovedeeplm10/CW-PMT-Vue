@@ -276,6 +276,12 @@ export default {
 </script>
 
 <style scoped>
+.search-filters{
+  width: 42%;
+}
+.header{
+  border: none;
+}
 .circular-image {
   border: none;
   border-radius: 50%;
