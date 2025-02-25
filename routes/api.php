@@ -80,8 +80,9 @@ Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 
 Route::get('/users/{user}/edit', [UserController::class, 'edit']);
 Route::get('/employee-attendances', [UserController::class, 'employeeAttendances']);
 Route::post('/users/{id}/assign-role', [UserController::class, 'assignUserRole']);
-Route::get('/employee-time-logs', [UserController::class, 'getEmployeeTimeLogs']);
+Route::middleware('auth:sanctum')->get('/employee-time-logs', [UserController::class, 'getEmployeeTimeLogs']);
 Route::get('/employee-detailed-time-logs', [UserController::class, 'getDetailedTimeLogs']);
+Route::get('/employee-breaks', [UserController::class, 'getEmployeeBreaks']);
 
 
 // TECHNOLOGIES API ROUTE

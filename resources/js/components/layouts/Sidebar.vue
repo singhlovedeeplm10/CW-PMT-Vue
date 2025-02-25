@@ -25,7 +25,7 @@
         <router-link to="/employees-attendances" class="sidebar-link" active-class="active-link">Employees Attendances</router-link>
       </li>
       <li class="sidebar-item">
-        <router-link to="/employees-timelogs" class="sidebar-link" active-class="active-link">Employees Time Logs</router-link>
+        <router-link to="/employees-timelogs" class="sidebar-link" active-class="active-link">Time Logs</router-link>
       </li>
       <li class="sidebar-item">
         <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>

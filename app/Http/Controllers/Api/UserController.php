@@ -327,14 +327,42 @@ public function employeeAttendances(Request $request)
 
 public function getEmployeeTimeLogs(Request $request)
 {
+    $user = Auth::user(); // Get the logged-in user
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401); // Handle unauthorized access
+    }
+
     $selectedMonth = $request->input('month', date('Y-m'));
+    $searchQuery = $request->input('search', '');
     $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
     $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
 
-    $users = User::with(['profile', 'attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+    $query = User::with(['profile', 'attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
         $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
               ->with('breaks');
-    }])->get();
+    }]);
+
+    // Check if the logged-in user is not an admin
+    if (!$user->hasRole('Admin')) {
+        // Filter only the logged-in user's data
+        $employeeCode = $user->profile->employee_code ?? null;
+
+        if (!$employeeCode) {
+            return response()->json(['error' => 'Employee code not found'], 404);
+        }
+
+        $query->whereHas('profile', function ($query) use ($employeeCode) {
+            $query->where('employee_code', $employeeCode);
+        });
+    }
+
+    // Apply name filter if the user is an admin
+    if ($user->hasRole('Admin') && $searchQuery) {
+        $query->where('name', 'like', '%' . $searchQuery . '%');
+    }
+
+    $users = $query->get();  // Get the users with their time logs and breaks
 
     $timeLogs = [];
 
@@ -352,15 +380,11 @@ public function getEmployeeTimeLogs(Request $request)
                     'total_break_time' => 0,
                 ];
             } else {
-                // Update clock-in to the earliest time
                 $groupedAttendances[$date]['clockin_time'] = min($groupedAttendances[$date]['clockin_time'], $attendance->clockin_time);
-                // Update clock-out to the latest time
                 $groupedAttendances[$date]['clockout_time'] = max($groupedAttendances[$date]['clockout_time'], $attendance->clockout_time);
-                // Sum productive hours
                 $groupedAttendances[$date]['total_hours'] += $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0;
             }
 
-            // Sum total break time
             $groupedAttendances[$date]['total_break_time'] += $attendance->breaks->sum(function ($break) {
                 return Carbon::parse($break->break_time)->secondsSinceMidnight();
             });
@@ -369,13 +393,10 @@ public function getEmployeeTimeLogs(Request $request)
         foreach ($groupedAttendances as $date => $data) {
             $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('H:i:s') : 'N/A';
             $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('H:i:s') : 'N/A';
-
             $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
             $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
-
             $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
             $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-
             $imagePath = $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : asset('default-profile.png');
 
             $timeLogs[] = [
@@ -394,6 +415,8 @@ public function getEmployeeTimeLogs(Request $request)
 
     return response()->json($timeLogs);
 }
+
+
 public function getDetailedTimeLogs(Request $request)
 {
     $employeeCode = $request->query('employee_code');
@@ -413,6 +436,32 @@ public function getDetailedTimeLogs(Request $request)
         ->get(['clockin_time', 'clockout_time', 'productive_hours']);
 
     return response()->json($detailedLogs);
+}
+public function getEmployeeBreaks(Request $request)
+{
+    $employeeCode = $request->query('employee_code');
+    $date = $request->query('date');
+
+    // Fetch user ID from employee code
+    $userProfile = UserProfile::where('employee_code', $employeeCode)->first();
+    if (!$userProfile) {
+        return response()->json([]);
+    }
+
+    $userId = $userProfile->user_id;
+
+    // Fetch break details
+    $breakLogs = Breaks::where('user_id', $userId)
+        ->whereDate('end_time', $date)
+        ->get(['end_time', 'break_time', 'reason'])
+        ->map(function ($break) {
+            $break->start_time = $break->end_time 
+                ? \Carbon\Carbon::parse($break->end_time)->subSeconds(\Carbon\Carbon::parse($break->break_time)->secondsSinceMidnight())->toDateTimeString() 
+                : null;
+            return $break;
+        });
+
+    return response()->json($breakLogs);
 }
 
 }

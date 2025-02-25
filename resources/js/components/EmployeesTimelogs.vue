@@ -1,10 +1,10 @@
 <template>
     <master-component>
       <div class="attendance-container">
-        <h2 class="title">Employee Time Logs</h2>
+        <h2 class="title">Time Logs</h2>
   
         <div class="filters">
-          <input type="text" placeholder="Search by Name" class="filter-input" v-model="searchQuery" />
+          <input type="text" placeholder="Search by Name" class="filter-input" v-model="searchQuery"  v-if="userRole === 'Admin'"/>
           <input type="month" class="filter-input" v-model="selectedMonth" />
           <button class="search-btn" @click="fetchTimeLogs">
             <span v-if="loading">Searching...</span>
@@ -23,15 +23,25 @@
         <div v-if="!loading && timeLogs.length === 0" class="no-data-message">
           No data available for the selected filters.
         </div>
-  
+
+<!-- Display employee details after search -->
+<div v-if="employeeDetails" class="employee-details">
+  <div class="employee-info">
+    <img :src="employeeDetails.image" alt="Employee Image" class="employee-image" />
+    <h3>{{ employeeDetails.name }}</h3>
+  </div>
+</div>
+
+
+
         <!-- Table -->
         <table v-if="!loading && timeLogs.length > 0" class="time-logs-table">
           <thead>
             <tr>
 
-              <th>Name</th>
+              <!-- <th>Name</th> -->
               <th>Date</th>
-              <th>Clock In/Clock Out</th>
+              <th>Clock In/Out</th>
               <th>Total Break</th>
               <th>Total Hours</th>
               <th>Total Productive Hours</th>
@@ -43,12 +53,15 @@
     :key="log.employee_code + log.date"
     :class="getRowClass(log.total_productive_hours)"
   >
-    <td>{{ log.name }}</td>
+    <!-- <td>{{ log.name }}</td> -->
     <td>{{ formatDate(log.date) }}</td>
     <td @click="openModal(log.employee_code, log.date)" class="clickable-time">
       {{ log.clock_in_out }}
     </td>
-    <td>{{ log.total_break }}</td>
+    <td @click="openBreakModal(log.employee_code, log.date)" class="clickable-time">
+  {{ log.total_break }}
+</td>
+
     <td>{{ log.total_hours }}</td>
     <td>{{ log.total_productive_hours }}</td>
   </tr>
@@ -59,21 +72,21 @@
 <div v-if="showModal" class="modal-overlay">
   <div class="modal-content">
     <!-- Close button at the top -->
+     <span>{{ formatDate(selectedDate) }}</span>
     <!-- <h3>Detailed Time Logs for {{ selectedEmployeeCode }} on {{ formatDate(selectedDate) }}</h3> -->
     
     <div class="modal-body">
       <table class="detailed-logs-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Clock In Time</th>
-            <th>Clock Out Time</th>
-            <th>Productive Hours</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Total Hours</th>
           </tr>
         </thead>
         <tbody>
   <tr v-for="entry in detailedLogs" :key="entry.id">
-    <td>{{ formatDate(selectedDate) }}</td>
+    
     <td>{{ formatTime(entry.clockin_time) }}</td>
     <td>{{ formatTime(entry.clockout_time) }}</td>
     <td>{{ entry.productive_hours }}</td>
@@ -90,6 +103,39 @@
   </div>
 </div>
 
+<!-- Breaks Modal -->
+<div v-if="showBreakModal" class="modal-overlay">
+  <div class="modal-content">
+    <span>{{ formatDate(selectedDate) }}</span>
+
+    <div class="modal-body">
+      <table class="detailed-logs-table">
+        <thead>
+          <tr>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Break Time</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="breakEntry in breakLogs" :key="breakEntry.id">
+            <td>{{ formatTime(breakEntry.start_time) }}</td>
+            <td>{{ formatTime(breakEntry.end_time) || 'N/A' }}</td>
+            <td>{{ breakEntry.break_time || 'N/A' }}</td>
+            <td>{{ breakEntry.reason }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-footer">
+      <button class="close-modal-btn" @click="closeBreakModal">Close</button>
+    </div>
+  </div>
+</div>
+
+
       </div>
     </master-component>
   </template>
@@ -103,18 +149,22 @@
       MasterComponent,
     },
     data() {
-      return {
-        searchQuery: '',
-        statusFilter: '1',
-        selectedMonth: new Date().toISOString().slice(0, 7),
-        timeLogs: [],
-        loading: false,
-        showModal: false,
-        detailedLogs: [],
-        selectedEmployeeCode: '',
-        selectedDate: '',
-      };
-    },
+    return {
+      userRole: null,
+      searchQuery: '',
+      statusFilter: '1',
+      selectedMonth: new Date().toISOString().slice(0, 7),
+      timeLogs: [],
+      loading: false,
+      employeeDetails: null,  // New property to store employee details
+      showModal: false,
+      detailedLogs: [],
+      selectedEmployeeCode: '',
+      selectedDate: '',
+      showBreakModal: false,
+      breakLogs: [],
+    };
+  },
     computed: {
       filteredTimeLogs() {
         return this.timeLogs.filter(log => {
@@ -125,6 +175,39 @@
       },
     },
     methods: {
+      async fetchUserRole() {
+      try {
+        const response = await axios.get("/api/user-role", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.userRole = response.data.role;
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    },
+      async openBreakModal(employeeCode, date) {
+    this.selectedEmployeeCode = employeeCode;
+    this.selectedDate = date;
+    this.showBreakModal = true;
+    this.loading = true;
+
+    try {
+      const response = await fetch(`/api/employee-breaks?employee_code=${employeeCode}&date=${date}`);
+      const data = await response.json();
+      this.breakLogs = data;
+    } catch (error) {
+      console.error('Error fetching break details:', error);
+    } finally {
+      this.loading = false;
+    }
+  },
+
+  closeBreakModal() {
+    this.showBreakModal = false;
+    this.breakLogs = [];
+  },
         formatTime(datetime) {
     if (!datetime) return 'N/A';
     return new Date(datetime).toLocaleTimeString('en-US', {
@@ -159,22 +242,33 @@
         return 'bg-red';
       },
       async fetchTimeLogs() {
-    if (!this.searchQuery && !this.selectedMonth) {
-        alert("Please enter a name or select a month before searching.");
-        return;
-    }
+  this.loading = true;
+  try {
+    const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchQuery}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
+    const data = await response.json();
 
-    this.loading = true;
-    try {
-        const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchQuery}`);
-        const data = await response.json();
-        this.timeLogs = data;
-    } catch (error) {
-        console.error('Error fetching time logs:', error);
-    } finally {
-        this.loading = false;
+    // Assuming the data returns the logged-in user's details
+    if (data.length > 0) {
+      // If the user is logged in, set their details and filter data
+      this.employeeDetails = {
+        name: data[0].name,
+        image: data[0].image,
+      };
+
+      // Filter the logs to show only those for the logged-in user
+      this.timeLogs = data.filter(log => log.name === this.employeeDetails.name);
     }
+  } catch (error) {
+    console.error('Error fetching time logs:', error);
+  } finally {
+    this.loading = false;
+  }
 },
+
 
       async openModal(employeeCode, date) {
         this.selectedEmployeeCode = employeeCode;
@@ -199,14 +293,49 @@
     },
     mounted() {
       this.fetchTimeLogs();
+      this.fetchUserRole();
     },
   };
   </script>
   
   <style scoped>
+  .employee-details {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+}
+
+.employee-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.employee-details h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+  .clickable-time {
+    cursor: pointer;
+    text-decoration: underline; /* Underline effect */
+}
+
   .clickable-time {
   cursor: pointer;
-  text-decoration: none; /* Underline effect */
+  text-decoration: underline; /* Underline effect */
 }
 .modal-footer {
   text-align: right;
