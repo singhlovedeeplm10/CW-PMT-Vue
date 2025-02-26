@@ -38,6 +38,12 @@
         </div>
       </div>
 
+
+<!-- No Data Message -->
+<div v-else-if="filteredProjects.length === 0" class="text-center">
+  <p>No projects available</p>
+</div>
+
       <!-- Project Table -->
       <table v-else class="project-table">
         <thead>

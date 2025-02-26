@@ -41,10 +41,17 @@
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
+        <p class="text-center mt-2"></p>
       </div>
+      
+      <div v-else-if="policies.length === 0 && !currentDocument" class="no-data-container text-center">
+        <p class="text-muted">No policies available.</p>
+      </div>
+      
 
       <!-- Policies Table -->
-      <div v-if="!isLoading && !currentDocument" class="table-container mt-4">
+      <div v-else-if="!currentDocument" class="table-container mt-4">
+
         <table class="table">
           <thead>
             <tr>
@@ -270,6 +277,12 @@ export default {
 
 
 <style scoped>
+.text-muted{
+  margin-top: 60px;
+  font-size: 18px;
+  color: #555;
+  text-align: center;
+}
 h1 {
   font-size: 2em;
   margin-bottom: 15px;

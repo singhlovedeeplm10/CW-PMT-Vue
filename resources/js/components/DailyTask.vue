@@ -22,7 +22,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-if="loading">
+  <tr v-if="loading">
     <td colspan="4" class="text-center">
       <div class="loader-container">
         <div class="spinner-border text-primary" role="status">
@@ -31,41 +31,42 @@
       </div>
     </td>
   </tr>
-          <tr
-  v-for="(task, index) in tasks"
-  :key="index"
-  :class="{ 'bg-light-gray': task.leave_id !== null }"
->
-  <td>{{ task.user.name }}</td>
-  <td>{{ task.user.team_lead_name || "N/A" }}</td>
-  <td>
-    <ul>
-      <li
-        v-for="(project, projectIndex) in task.projects"
-        :key="projectIndex"
-        :class="{
-          'bg-light-red': project.hours !== 8 && task.leave_id === null,
-          'bg-light-green': project.hours == 8 && task.leave_id === null,
-          'bg-light-gray': task.leave_id !== null,
-        }"
-      >
-        <strong>(<em>{{ project.hours }}</em>)</strong>
-        {{ project.project_name }} {{ project.task_description }}
-      </li>
-    </ul>
-  </td>
-  <td>
-    <button
-  class="btn btn-primary btn-sm"
-  @click="openModal(task)"
->
-  <i class="fas fa-eye"></i>
-</button>
+  <tr v-else-if="tasks.length === 0">
+    <td colspan="4" class="text-center text-muted">
+      No tasks available for the selected date.
+    </td>
+  </tr>
+  <tr
+    v-for="(task, index) in tasks"
+    :key="index"
+    :class="{ 'bg-light-gray': task.leave_id !== null }"
+  >
+    <td>{{ task.user.name }}</td>
+    <td>{{ task.user.team_lead_name || "N/A" }}</td>
+    <td>
+      <ul>
+        <li
+          v-for="(project, projectIndex) in task.projects"
+          :key="projectIndex"
+          :class="{
+            'bg-light-red': project.hours !== 8 && task.leave_id === null,
+            'bg-light-green': project.hours == 8 && task.leave_id === null,
+            'bg-light-gray': task.leave_id !== null,
+          }"
+        >
+          <strong>(<em>{{ project.hours }}</em>)</strong>
+          {{ project.project_name }} {{ project.task_description }}
+        </li>
+      </ul>
+    </td>
+    <td>
+      <button class="btn btn-primary btn-sm" @click="openModal(task)">
+        <i class="fas fa-eye"></i>
+      </button>
+    </td>
+  </tr>
+</tbody>
 
-  </td>
-</tr>
-
-        </tbody>
       </table>
 
 <!-- Modal -->

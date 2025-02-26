@@ -4,13 +4,26 @@
         <h2 class="title">Time Logs</h2>
   
         <div class="filters">
-          <input type="text" placeholder="Search by Name" class="filter-input" v-model="searchQuery"  v-if="userRole === 'Admin'"/>
-          <input type="month" class="filter-input" v-model="selectedMonth" />
-          <button class="search-btn" @click="fetchTimeLogs">
-            <span v-if="loading">Searching...</span>
-            <span v-else>Search</span>
-          </button>
-        </div>
+  <input 
+    type="text" 
+    placeholder="Search by Name" 
+    class="filter-input" 
+    v-model="searchQuery"  
+    v-if="userRole === 'Admin'"
+  />
+
+  <input 
+    type="month" 
+    class="filter-input" 
+    v-model="selectedMonth"
+  />
+
+  <button class="search-btn" @click="fetchTimeLogs">
+    <span v-if="loading">Searching...</span>
+    <span v-else>Search</span>
+  </button>
+</div>
+
   
         <!-- Loader Spinner -->
         <div v-if="loading" class="loader-container">
@@ -21,7 +34,7 @@
   
         <!-- Message if no data is available -->
         <div v-if="!loading && timeLogs.length === 0" class="no-data-message">
-          No data available for the selected filters.
+          {{ noDataMessage }}
         </div>
 
 <!-- Display employee details after search -->
@@ -109,7 +122,7 @@
     <span>{{ formatDate(selectedDate) }}</span>
 
     <div class="modal-body">
-      <table class="detailed-logs-table">
+      <table v-if="breakLogs.length > 0" class="detailed-logs-table">
         <thead>
           <tr>
             <th>Start Time</th>
@@ -127,6 +140,7 @@
           </tr>
         </tbody>
       </table>
+      <p v-if="noBreakDataMessage" class="no-data-message">{{ noBreakDataMessage }}</p>
     </div>
 
     <div class="modal-footer">
@@ -134,6 +148,7 @@
     </div>
   </div>
 </div>
+
 
 
       </div>
@@ -152,7 +167,7 @@
     return {
       userRole: null,
       searchQuery: '',
-      statusFilter: '1',
+      searchTerm: '',
       selectedMonth: new Date().toISOString().slice(0, 7),
       timeLogs: [],
       loading: false,
@@ -163,17 +178,18 @@
       selectedDate: '',
       showBreakModal: false,
       breakLogs: [],
+      noBreakDataMessage: "",
     };
   },
-    computed: {
-      filteredTimeLogs() {
-        return this.timeLogs.filter(log => {
-          const matchesSearch = log.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-          const matchesStatus = log.status === this.statusFilter;
-          return matchesSearch && matchesStatus;
-        });
-      },
-    },
+  computed: {
+  filteredTimeLogs() {
+    return this.timeLogs.filter(log => {
+      const matchesSearch = log.name.toLowerCase().includes(this.searchTerm.toLowerCase()); // Use searchTerm instead of searchQuery
+      return matchesSearch;
+    });
+  }
+},
+
     methods: {
       async fetchUserRole() {
       try {
@@ -187,22 +203,26 @@
         console.error("Error fetching user role:", error);
       }
     },
-      async openBreakModal(employeeCode, date) {
-    this.selectedEmployeeCode = employeeCode;
-    this.selectedDate = date;
-    this.showBreakModal = true;
-    this.loading = true;
+    async openBreakModal(employeeCode, date) {
+  this.selectedEmployeeCode = employeeCode;
+  this.selectedDate = date;
+  this.showBreakModal = true;
+  this.noBreakDataMessage = ""; // Reset message before fetching
 
-    try {
-      const response = await fetch(`/api/employee-breaks?employee_code=${employeeCode}&date=${date}`);
-      const data = await response.json();
-      this.breakLogs = data;
-    } catch (error) {
-      console.error('Error fetching break details:', error);
-    } finally {
-      this.loading = false;
+  try {
+    const response = await fetch(`/api/employee-breaks?employee_code=${employeeCode}&date=${date}`);
+    const data = await response.json();
+    this.breakLogs = data;
+
+    if (this.breakLogs.length === 0) {
+      this.noBreakDataMessage = "No break records available for this date.";
     }
-  },
+  } catch (error) {
+    console.error('Error fetching break details:', error);
+    this.noBreakDataMessage = "Failed to fetch break details.";
+  }
+},
+
 
   closeBreakModal() {
     this.showBreakModal = false;
@@ -242,39 +262,53 @@
         return 'bg-red';
       },
       async fetchTimeLogs() {
+  this.searchTerm = this.searchQuery; // Update searchTerm only when search is clicked
+
+  if (!this.searchTerm && !this.selectedMonth) {
+    this.timeLogs = [];
+    this.employeeDetails = null;
+    this.noDataMessage = "Please enter an employee name or select a month.";
+    return;
+  }
+
   this.loading = true;
+  this.timeLogs = [];
+  this.employeeDetails = null;
+  this.noDataMessage = "";
+
   try {
-    const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchQuery}`, {
+    const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchTerm}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("authToken")}`,
       },
     });
+
     const data = await response.json();
 
-    // Assuming the data returns the logged-in user's details
     if (data.length > 0) {
-      // If the user is logged in, set their details and filter data
       this.employeeDetails = {
         name: data[0].name,
         image: data[0].image,
       };
 
-      // Filter the logs to show only those for the logged-in user
       this.timeLogs = data.filter(log => log.name === this.employeeDetails.name);
     }
   } catch (error) {
     console.error('Error fetching time logs:', error);
   } finally {
     this.loading = false;
+
+    if (this.timeLogs.length === 0) {
+      this.noDataMessage = "No data available for the selected month or employee.";
+    }
   }
 },
-
 
       async openModal(employeeCode, date) {
         this.selectedEmployeeCode = employeeCode;
         this.selectedDate = date;
         this.showModal = true;
-        this.loading = true;
+        // this.loading = true;
   
         try {
           const response = await fetch(`/api/employee-detailed-time-logs?employee_code=${employeeCode}&date=${date}`);
@@ -283,7 +317,7 @@
         } catch (error) {
           console.error('Error fetching detailed time logs:', error);
         } finally {
-          this.loading = false;
+          // this.loading = false;
         }
       },
       closeModal() {
