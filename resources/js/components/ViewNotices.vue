@@ -13,7 +13,10 @@
       </div>
 
       <!-- User Image for Birthday Notices -->
-      <div class="flex items-center space-x-4">
+      <div 
+        class="flex items-center space-x-4"
+        :class="{'birthday-layout': notice.user_image, 'default-layout': !notice.user_image}"
+      >
         <!-- User Image for Birthday Notices -->
         <img
           v-if="notice.user_image"
@@ -80,11 +83,22 @@ export default {
   
   
   <style scoped>
-  .flex.items-center {
+  .birthday-layout {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: row;
+}
+
+.default-layout {
   display: contents;
   align-items: flex-start;
   flex-direction: row;
 }
+  /* .flex.items-center {
+  display: contents;
+  align-items: flex-start;
+  flex-direction: row;
+} */
 
   .birthday-avatar {
   width: 80px;

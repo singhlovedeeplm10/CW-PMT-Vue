@@ -498,4 +498,190 @@
       color: #333;
   }
     </style>
+  {{-- <template>
+    <div
+      class="modal fade"
+      id="addbreakmodal"
+      tabindex="-1"
+      aria-labelledby="addbreakmodallabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content add-break-modal">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addbreakmodallabel">Add Break</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-4" v-if="!isOnBreak">
+              <InputField
+                label="Break Reason"
+                inputType="text"
+                placeholder="Enter your break reason"
+                :isRequired="true"
+                inputClass="input-break-reason"
+                v-model="breakReason"
+              />
+            </div>
+            <ButtonComponent
+              v-if="!isLoading"
+              label="Take Break"
+              iconClass="fas fa-clock"
+              buttonClass="btn-success w-100"
+              @click="startBreak"
+            />
+            <div v-else class="text-center">
+              <span class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
   
+  <script>
+  import InputField from "@/components/InputField.vue";
+  import ButtonComponent from "@/components/ButtonComponent.vue";
+  import { ref, onMounted, onUnmounted } from "vue";
+  import { toast } from "vue3-toastify";
+  import "vue3-toastify/dist/index.css";
+  import axios from "axios";
+  import * as bootstrap from "bootstrap";
+  
+  export default {
+    name: "AddBreakModal",
+    components: {
+      InputField,
+      ButtonComponent,
+    },
+    props: {
+      isOnBreak: Boolean,
+    },
+    emits: ["breakStarted"],
+    setup(_, { emit }) {
+      const breakReason = ref("");
+      const isLoading = ref(false);
+  
+      const startBreak = async () => {
+        if (!breakReason.value.trim()) {
+          toast.error("Break reason is required.", { position: "top-right" });
+          return;
+        }
+  
+        isLoading.value = true;
+  
+        try {
+          const response = await axios.post(
+            "/api/start-break",
+            { reason: breakReason.value },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
+  
+          if (response.status === 201) {
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("addbreakmodal")
+            );
+            modal.hide();
+            toast.success("Break started successfully.", {
+              position: "top-right",
+              autoClose: 1000, // Set to 2 seconds
+            });
+  
+            // Emit event with break data
+            emit("breakStarted", { reason: breakReason.value, startTime: Date.now() });
+  
+            // Store the break state in localStorage
+            localStorage.setItem("isOnBreak", "true");
+            localStorage.setItem("breakStartTime", Date.now());  // Save break start time
+            localStorage.setItem("totalBreakTime", 0);  // Initialize break time to 0
+          }
+        } catch (error) {
+          toast.error("Failed to start break. Please try again.", {
+              position: "top-right",
+              autoClose: 1000, // Set to 2 seconds
+            });
+        } finally {
+          isLoading.value = false;
+        }
+      };
+  
+      const resetBreakReason = () => {
+        breakReason.value = "";
+      };
+  
+      // Attach event listener to reset the field when modal is closed
+      onMounted(() => {
+        const modalElement = document.getElementById("addbreakmodal");
+        modalElement.addEventListener("hidden.bs.modal", resetBreakReason);
+      });
+  
+      // Clean up the event listener when the component is unmounted
+      onUnmounted(() => {
+        const modalElement = document.getElementById("addbreakmodal");
+        modalElement.removeEventListener("hidden.bs.modal", resetBreakReason);
+      });
+  
+      return {
+        breakReason,
+        startBreak,
+        isLoading,
+      };
+    },
+  };
+  </script>
+  
+    
+    <style scoped>
+    .add-break-modal {
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      background: #f9f9f9;
+      overflow: hidden;
+    }
+    
+    .modal-header {
+      background: #007bff;
+      color: #fff;
+      border-bottom: 1px solid #007bff;
+    }
+    
+    .modal-header .btn-close {
+      color: #fff;
+      opacity: 1;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      background: #ffffff;
+    }
+    
+    .input-break-reason {
+      border: 1px solid #ced4da;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .btn-success {
+      background: #28a745;
+      border: none;
+      font-size: 16px;
+      padding: 10px 15px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+    }
+    </style> --}}
+    

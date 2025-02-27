@@ -1,111 +1,150 @@
 <template>
-  <div class="modal-overlay">
-    <div class="modal-content">
-      <h3 class="modal-title">Edit Project</h3>
-      <div class="modal-body">
-        <div class="left-panel">
-          <div class="form-group">
-            <label for="name">Project Name</label>
-            <input v-model="localProject.name" type="text" class="form-control" id="name" placeholder="Enter Project Name" />
-          </div>
-          <div class="form-group">
-            <label for="description">Project Description</label>
-            <textarea v-model="localProject.description" class="form-control" id="description" placeholder="Enter Project Description"></textarea>
-          </div>
+  <div class="modal fade show" style="display: block; background: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog custom-modal-dialog">
+      <div class="modal-content custom-modal">
+        <!-- Modal Header -->
+        <div class="modal-header custom-modal-header">
+          <h5 class="modal-title">Edit Project</h5>
+          <button type="button" class="btn-close" @click="close"></button>
         </div>
-
-        <div class="right-panel">
-          <div class="form-group">
-            <label for="type">Project Type</label>
-            <select v-model="localProject.type" class="form-control" id="type">
+        <!-- Modal Body -->
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Project Name</label>
+            <input
+              type="text"
+              id="name"
+              v-model="localProject.name"
+              class="form-control custom-input"
+              placeholder="Enter Project Name"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Project Description</label>
+            <textarea
+              v-model="localProject.description"
+              class="form-control custom-input"
+              id="description"
+              placeholder="Enter Project Description"
+              rows="4"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="type" class="form-label">Project Type</label>
+            <select v-model="localProject.type" class="form-control custom-input" id="type">
               <option value="Long">Long</option>
               <option value="Medium">Medium</option>
               <option value="Short">Short</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="status">Status</label>
-            <select v-model="localProject.status" class="form-control" id="status">
+          <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select v-model="localProject.status" class="form-control custom-input" id="status">
               <option value="Awaiting">Awaiting</option>
               <option value="Started">Started</option>
               <option value="Completed">Completed</option>
               <option value="Paused">Paused</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="comment">Comments</label>
-            <textarea v-model="localProject.comment" class="form-control" id="comment" placeholder="Enter Comments"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Assigned Developers Section -->
-      <div class="form-group">
-        <label for="assigned_developers">Assigned Developers</label>
-        <div v-if="selectedUsers.length">
-          <div v-for="(developer, index) in selectedUsers" :key="developer.id" class="assigned-developer">
-            <span>{{ developer.name }}</span>
-            <button @click="removeUser(index)" class="btn btn-danger btn-sm">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-        <div v-else>
-          <p>No developers assigned yet.</p>
-        </div>
-      </div>
-
-      <!-- Select Users Field -->
-      <div class="form-group" style="position: relative;">
-        <label for="userSearch">Select Users</label>
-        <input
-          type="text"
-          class="form-control"
-          id="userSearch"
-          v-model="userSearchQuery"
-          @input="fetchUsers"
-          placeholder="Search users by name"
-        />
-        <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
-          <li
-            v-for="user in userSuggestions"
-            :key="user.id"
-            @click="selectUser(user)"
-            class="suggestion-item d-flex align-items-center"
-          >
-            <img
-              :src="user.user_image"
-              alt="User Avatar"
-              class="rounded-circle me-2"
-              style="width: 40px; height: 40px;"
+          <div class="mb-3">
+            <label for="comment" class="form-label">Comments</label>
+            <textarea
+              v-model="localProject.comment"
+              class="form-control custom-input"
+              id="comment"
+              placeholder="Enter Comments"
+              rows="3"
             />
-            <span>{{ user.name }}</span>
-          </li>
-        </ul>
+          </div>
+
+          <!-- Assigned Developers Section -->
+          <div class="form-group">
+            <label for="assigned_developers" class="form-label">Assigned Developers</label>
+            <div v-if="selectedUsers.length">
+              <div v-for="(developer, index) in selectedUsers" :key="developer.id" class="assigned-developer">
+                <span>{{ developer.name }}</span>
+                <button @click="removeUser(index)" class="btn-close ms-2" aria-label="Remove user"></button>
+              </div>
+            </div>
+            <div v-else>
+              <p>No developers assigned yet.</p>
+            </div>
+          </div>
+
+          <!-- Select Users Field -->
+          <div class="mb-3" style="position: relative;">
+            <label for="userSearch" class="form-label">Select Users</label>
+            <input
+              type="text"
+              class="form-control custom-input"
+              id="userSearch"
+              v-model="userSearchQuery"
+              @input="fetchUsers"
+              placeholder="Search users by name"
+            />
+            <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
+              <li
+                v-for="user in userSuggestions"
+                :key="user.id"
+                @click="selectUser(user)"
+                class="suggestion-item d-flex align-items-center"
+              >
+                <img
+                  :src="user.user_image"
+                  alt="User Avatar"
+                  class="rounded-circle me-2"
+                  style="width: 40px; height: 40px;"
+                />
+                <span>{{ user.name }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- Modal Footer -->
+        <div class="modal-footer custom-modal-footer">
+          <ButtonComponent
+            label="Close"
+            buttonClass="btn-secondary custom-btn-close"
+            @click="close"
+          />
+          <ButtonComponent
+            label="Save Changes"
+            buttonClass="btn-primary custom-btn-submit"
+            :isDisabled="loading"
+            :clickEvent="updateProject"
+          >
+            <template #default>
+              <span v-if="loading">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Saving...
+              </span>
+              <span v-else>
+                Save Changes
+              </span>
+            </template>
+          </ButtonComponent>
+        </div>
       </div>
-
-      <!-- Save and Close Buttons -->
-      <div class="modal-footer d-flex justify-content-end gap-2">
-        <button @click="close" class="btn btn-secondary">Close</button>
-        <button @click="updateProject" class="btn btn-primary" :disabled="loading">
-  <span v-if="loading">
-    <span class="spinner-border spinner-border-sm"></span> Saving...
-  </span>
-  <span v-else>Save Changes</span>
-</button>
-
-      </div>
-
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import ButtonComponent from "@/components/ButtonComponent.vue";
+import TextArea from "@/components/TextArea.vue"; // Import the TextArea component
+import SelectInput from "@/components/SelectInput.vue"; // Import SelectInput
+
 
 export default {
+  components: {
+    ButtonComponent,
+    TextArea,
+    SelectInput
+  },
   props: {
     project: Object, // Original project data
   },
@@ -188,110 +227,170 @@ export default {
 
 
 <style scoped>
-/* Spinner styling */
-.spinner-border {
-  width: 1rem;
-  height: 1rem;
-  vertical-align: middle;
-}
+  /* General Modal Styling */
+  .modal.fade.show {
+    display: block;
+    background: rgba(0, 0, 0, 0.5);
+  }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.3s ease-in-out;
-}
+  .custom-modal-dialog {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%; /* Adjusted width */
+    max-width: 800px;
+    margin: 50px auto;
+  }
 
-.modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 600px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
+  .custom-modal {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    transition: all 0.3s ease-in-out;
+  }
 
-.modal-title {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
+  /* Modal Header */
+  .custom-modal-header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-align: center;
+  }
 
-.modal-body {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
+  .custom-modal-header .btn-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
 
-.left-panel, .right-panel {
-  width: 50%;
-}
+  .custom-modal-header .btn-close:hover {
+    color: #ccc;
+  }
 
-.form-group {
-  margin-bottom: 10px;
-}
+  /* Modal Body */
+  .modal-body {
+    padding: 25px;
+    background-color: #f8f9fa;
+    color: #333;
+  }
 
-.assigned-developer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f1f1f1;
-  padding: 5px 10px;
-  border-radius: 5px;
-  margin-bottom: 5px;
-}
+  .form-label {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
 
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-}
+  .custom-input {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    transition: border-color 0.3s ease-in-out;
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.autocomplete-suggestions {
-  position: absolute;
-  z-index: 1050; /* Ensure it appears above other elements */
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 100%; /* Match the input width */
-  max-height: 200px; /* Set a max height with scrolling */
-  overflow-y: auto;
-  background-color: #ffffff; /* Background for suggestions */
-  border: 1px solid #ddd; /* Border for the dropdown */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  border-radius: 5px; /* Rounded corners */
-}
-.suggestion-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
+  .custom-input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+  }
 
-.suggestion-item:hover {
-  background-color: #f5f5f5;
-}
+  textarea.custom-input {
+    resize: none;
+  }
 
-/* Suggestion Item Text */
-.suggestion-item span {
-  font-size: 14px;
-  color: #333;
-}
+  /* User Autocomplete Suggestions */
+  .autocomplete-suggestions {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    z-index: 10;
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 
-/* Suggestion Item Avatar */
-.suggestion-item img {
-  border: 1px solid #ddd;
-}
+  .suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .suggestion-item:hover {
+    background: #f1f1f1;
+  }
+
+  .suggestion-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+
+  /* Modal Footer */
+  .custom-modal-footer {
+    background-color: #f8f9fa;
+    padding: 15px;
+    text-align: right;
+    border-top: 1px solid #ddd;
+  }
+
+  .custom-btn-close {
+    background-color: #6c757d;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .custom-btn-close:hover {
+    background-color: #5a6268;
+  }
+
+  .custom-btn-submit {
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .custom-btn-submit:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+
+  .custom-btn-submit:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* Spinner for loading state */
+  .spinner-border {
+    margin-right: 10px;
+  }
+
+  .assigned-developer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f1f1;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+  }
 </style>
 

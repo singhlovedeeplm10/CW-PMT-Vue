@@ -4,13 +4,30 @@
         <h2 class="title">Time Logs</h2>
   
         <div class="filters">
+          <div class="filter-container">
   <input 
     type="text" 
     placeholder="Search by Name" 
     class="filter-input" 
     v-model="searchQuery"  
     v-if="userRole === 'Admin'"
+    @input="fetchUserSuggestions"
   />
+
+  <!-- Suggestions Dropdown (Appears Below the Input) -->
+  <ul v-if="searchResults.length > 0" class="suggestions-list">
+    <li 
+      v-for="user in searchResults" 
+      :key="user.id" 
+      @click="selectUser(user)"
+    >
+      <img :src="user.user_image" class="user-avatar" alt="User Image">
+      {{ user.name }}
+    </li>
+  </ul>
+</div>
+
+
 
   <input 
     type="month" 
@@ -168,6 +185,7 @@
       userRole: null,
       searchQuery: '',
       searchTerm: '',
+      searchResults: [],
       selectedMonth: new Date().toISOString().slice(0, 7),
       timeLogs: [],
       loading: false,
@@ -191,6 +209,29 @@
 },
 
     methods: {
+      async fetchUserSuggestions() {
+    if (this.searchQuery.length < 2) {
+      this.searchResults = [];
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/search?query=${this.searchQuery}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      const data = await response.json();
+      this.searchResults = data;
+    } catch (error) {
+      console.error('Error fetching user suggestions:', error);
+    }
+  },
+
+  selectUser(user) {
+    this.searchQuery = user.name;
+    this.searchResults = [];
+  },
       async fetchUserRole() {
       try {
         const response = await axios.get("/api/user-role", {
@@ -333,6 +374,51 @@
   </script>
   
   <style scoped>
+  .suggestions-list {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  width: 100%; /* Match input width */
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 5px 0;
+}
+
+.suggestions-list li {
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s ease-in-out;
+}
+
+.suggestions-list li:hover {
+  background-color: #f8f9fa;
+}
+
+.user-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 1px solid #ddd;
+}
+
+.filter-container {
+  position: relative;
+  width: 250px; /* Adjust width based on your layout */
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
   .employee-details {
   margin-top: 20px;
   padding: 10px;

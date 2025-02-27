@@ -261,12 +261,12 @@ export default {
         type_of_leave: "",
         start_date: "",
         end_date: "",
-        half: "", // Update the field name from half_day to half
+        half: "",
         start_time: "",
         end_time: "",
         reason: "",
         contact_during_leave: "",
-        selected_user: null,  // To store the selected user
+        selected_user: null, 
       },
       leaveTypeOptions: [
         { label: "Select Leave Type", value: "" },
@@ -282,8 +282,8 @@ export default {
       ],
       minDate: new Date().toISOString().split("T")[0],
       userSearchQuery: "",
-      userSuggestions: [],  // To store the search results
-      isSubmitting: false, // Loader state
+      userSuggestions: [],
+      isSubmitting: false,
       userError: null,
       leaveTypeError: null,
       startDateError: null,
@@ -293,164 +293,176 @@ export default {
       reasonError: null,
       contactError: null,
       halfDayError: null,
+      hasChanges: false, // Track if there are changes
     };
   },
   methods: {
-  handleLeaveTypeChange() {
-    this.form.half = "";
-    this.form.start_time = "";
-    this.form.end_time = "";
-    this.form.start_date = "";
-    this.form.end_date = "";
-  },
-  async fetchUsers() {
-    if (this.userSearchQuery.length > 0) {
-      try {
-        const response = await axios.get("/api/users/search", {
-          params: { query: this.userSearchQuery },
-        });
-        this.userSuggestions = response.data;
-        this.userError = null;
-      } catch (error) {
-        this.userError = "Error fetching users.";
+    handleLeaveTypeChange() {
+      this.form.half = "";
+      this.form.start_time = "";
+      this.form.end_time = "";
+      this.form.start_date = "";
+      this.form.end_date = "";
+      this.hasChanges = true; // Set flag when changes are made
+    },
+    async fetchUsers() {
+      if (this.userSearchQuery.length > 0) {
+        try {
+          const response = await axios.get("/api/users/search", {
+            params: { query: this.userSearchQuery },
+          });
+          this.userSuggestions = response.data;
+          this.userError = null;
+          this.hasChanges = true; // Set flag when changes are made
+        } catch (error) {
+          this.userError = "Error fetching users.";
+        }
+      } else {
+        this.userSuggestions = [];
       }
-    } else {
+    },
+    selectUser(user) {
+      this.form.selected_user = user.id;
       this.userSuggestions = [];
-    }
-  },
-  selectUser(user) {
-    this.form.selected_user = user.id;
-    this.userSuggestions = [];
-    this.userSearchQuery = user.name;
-  },
-  validateAndSubmit() {
-    // Clear previous errors
-    this.clearErrors();
-
-    // Validate fields based on leave type
-    if (!this.form.selected_user) {
-      this.userError = "User is required.";
-    }
-    if (!this.form.type_of_leave) {
-      this.leaveTypeError = "Leave type is required.";
-    }
-    if (!this.form.reason) {
-      this.reasonError = "Reason is required.";
-    }
-    if (!this.form.contact_during_leave) {
-      this.contactError = "Contact during leave is required.";
-    }
-
-    switch (this.form.type_of_leave) {
-      case "Full Day Leave":
-      case "Work From Home":
-        if (!this.form.start_date) {
-          this.startDateError = "Start date is required.";
-        }
-        if (!this.form.end_date) {
-          this.endDateError = "End date is required.";
-        }
-        break;
-      case "Half Day Leave":
-        if (!this.form.half) {
-          this.halfDayError = "Please select which half of the day.";
-        }
-        if (!this.form.start_date) {
-          this.startDateError = "Start date is required.";
-        }
-        break;
-      case "Short Leave":
-        if (!this.form.start_date) {
-          this.startDateError = "Start date is required.";
-        }
-        if (!this.form.start_time) {
-          this.startTimeError = "Start time is required.";
-        }
-        if (!this.form.end_time) {
-          this.endTimeError = "End time is required.";
-        } else {
-          const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
-          const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
-          const timeDiff = (endTime - startTime) / 1000 / 60 / 60; // Difference in hours
-          if (timeDiff > 2) {
-            this.endTimeError = "The time difference should not be more than 2 hours.";
-          }
-        }
-        break;
-    }
-
-    if (this.userError || this.leaveTypeError || this.startDateError || this.endDateError || this.startTimeError || this.endTimeError || this.reasonError || this.contactError || this.halfDayError) {
-      return;
-    }
-
-    this.submitForm();
-  },
-  clearErrors() {
-    this.userError = null;
-    this.leaveTypeError = null;
-    this.startDateError = null;
-    this.endDateError = null;
-    this.startTimeError = null;
-    this.endTimeError = null;
-    this.reasonError = null;
-    this.contactError = null;
-    this.halfDayError = null;
-  },
-  async submitForm() {
-    this.isSubmitting = true;
-
-    try {
-      // Send a request to apply the leave
-      const response = await axios.post("/api/apply-team-leave", this.form, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-
-      // Show success toast
-      toast.success("Leave Applied Successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-
-      // Emit the event to notify the parent component
-      this.$emit("leaveApplied");
-
-      // Find the modal element
-      const modalDismissButton = document.querySelector('[data-bs-dismiss="modal"]');
-
-      // If the modal dismiss button exists, trigger its click event
-      if (modalDismissButton) {
-        modalDismissButton.click(); // This closes the modal
+      this.userSearchQuery = user.name;
+      this.hasChanges = true; // Set flag when changes are made
+    },
+    validateAndSubmit() {
+      this.clearErrors();
+      if (!this.form.selected_user) {
+        this.userError = "User is required.";
+      }
+      if (!this.form.type_of_leave) {
+        this.leaveTypeError = "Leave type is required.";
+      }
+      if (!this.form.reason) {
+        this.reasonError = "Reason is required.";
+      }
+      if (!this.form.contact_during_leave) {
+        this.contactError = "Contact during leave is required.";
       }
 
-      // Reset the form
-      this.resetForm();
-    } catch (error) {
-      // Handle error and show a toast with the error message
-      toast.error(
-        error.response?.data?.error || "An error occurred while applying for leave."
-      );
-    } finally {
-      this.isSubmitting = false;
-    }
+      switch (this.form.type_of_leave) {
+        case "Full Day Leave":
+        case "Work From Home":
+          if (!this.form.start_date) {
+            this.startDateError = "Start date is required.";
+          }
+          if (!this.form.end_date) {
+            this.endDateError = "End date is required.";
+          }
+          break;
+        case "Half Day Leave":
+          if (!this.form.half) {
+            this.halfDayError = "Please select which half of the day.";
+          }
+          if (!this.form.start_date) {
+            this.startDateError = "Start date is required.";
+          }
+          break;
+        case "Short Leave":
+          if (!this.form.start_date) {
+            this.startDateError = "Start date is required.";
+          }
+          if (!this.form.start_time) {
+            this.startTimeError = "Start time is required.";
+          }
+          if (!this.form.end_time) {
+            this.endTimeError = "End time is required.";
+          } else {
+            const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
+            const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
+            const timeDiff = (endTime - startTime) / 1000 / 60 / 60; 
+            if (timeDiff > 2) {
+              this.endTimeError = "The time difference should not be more than 2 hours.";
+            }
+          }
+          break;
+      }
+
+      if (
+        this.userError ||
+        this.leaveTypeError ||
+        this.startDateError ||
+        this.endDateError ||
+        this.startTimeError ||
+        this.endTimeError ||
+        this.reasonError ||
+        this.contactError ||
+        this.halfDayError
+      ) {
+        return;
+      }
+
+      this.submitForm();
+    },
+    clearErrors() {
+      this.userError = null;
+      this.leaveTypeError = null;
+      this.startDateError = null;
+      this.endDateError = null;
+      this.startTimeError = null;
+      this.endTimeError = null;
+      this.reasonError = null;
+      this.contactError = null;
+      this.halfDayError = null;
+    },
+    async submitForm() {
+      this.isSubmitting = true;
+      try {
+        const response = await axios.post("/api/apply-team-leave", this.form, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        toast.success("Leave Applied Successfully!", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        this.$emit("leaveApplied");
+        const modalDismissButton = document.querySelector('[data-bs-dismiss="modal"]');
+        if (modalDismissButton) {
+          modalDismissButton.click(); 
+        }
+        this.resetForm();
+      } catch (error) {
+        toast.error(error.response?.data?.error || "An error occurred.");
+      } finally {
+        this.isSubmitting = false;
+      }
+    },
+    resetForm() {
+      this.form = {
+        type_of_leave: "",
+        start_date: "",
+        end_date: "",
+        half: "",
+        start_time: "",
+        end_time: "",
+        reason: "",
+        contact_during_leave: "",
+        selected_user: null,
+      };
+      this.userSuggestions = [];
+      this.userSearchQuery = "";
+      this.hasChanges = false; // Reset changes flag
+    },
+    closeModal() {
+      if (this.hasChanges) {
+        this.resetForm();
+      }
+    },
   },
-  resetForm() {
-    this.form = {
-      type_of_leave: "",
-      start_date: "",
-      end_date: "",
-      half: "",
-      start_time: "",
-      end_time: "",
-      reason: "",
-      contact_during_leave: "",
-      selected_user: null,
-    };
-    this.userSuggestions = [];
-    this.userSearchQuery = "";
+  mounted() {
+    // Listen to the Bootstrap modal 'hidden' event to reset if the modal is closed
+    const modalElement = document.getElementById("applyteamleavemodal");
+    modalElement.addEventListener("hidden.bs.modal", this.closeModal);
   },
-},
+  beforeDestroy() {
+    // Remove event listener when component is destroyed
+    const modalElement = document.getElementById("applyteamleavemodal");
+    modalElement.removeEventListener("hidden.bs.modal", this.closeModal);
+  },
 };
 </script>
 

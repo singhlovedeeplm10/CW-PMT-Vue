@@ -37,10 +37,11 @@
       </tbody>
     </table>
 
-    <AddTaskModal 
-      :tasks="tasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : tasks" 
-      :projects="projects"  
-      @taskAdded="fetchTasks" 
+    <AddTaskModal
+      :tasks="modalTasks" 
+      :projects="projects"
+      @taskAdded="fetchTasks"
+      @closeModal="resetModalTasks" 
     />
   </div>
 </template>
@@ -51,7 +52,7 @@ import AddTaskModal from "@/components/modals/AddTaskModal.vue";
 import ButtonComponent from "@/components/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import * as bootstrap from "bootstrap"; 
+import * as bootstrap from "bootstrap";
 
 export default {
   name: "TaskList",
@@ -61,7 +62,8 @@ export default {
       tasks: [], // Array to store fetched tasks
       loading: true, // Track loading state
       buttonLoading: false, // Track button loading state
-      projects: []  // Array to store project list
+      projects: [], // Array to store project list
+      modalTasks: [] // Temporary storage for tasks in the modal
     };
   },
   mounted() {
@@ -70,28 +72,28 @@ export default {
   },
   methods: {
     async fetchTasks() {
-  this.loading = true;
-  try {
-    const response = await axios.get("/api/user-tasks", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-      },
-    });
-    this.tasks = response.data.map(task => ({
-      ...task,
-      project_name: task.project_name || 'N/A' // Ensure project_name is always present
-    }));
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    toast.error("Failed to fetch tasks. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-  } finally {
-    this.loading = false;
-  }
-},
-    
+      this.loading = true;
+      try {
+        const response = await axios.get("/api/user-tasks", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        this.tasks = response.data.map(task => ({
+          ...task,
+          project_name: task.project_name || 'N/A' // Ensure project_name is always present
+        }));
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        toast.error("Failed to fetch tasks. Please try again.", {
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async fetchProjects() {
       try {
         const response = await axios.get("/api/user-projects");
@@ -99,9 +101,9 @@ export default {
       } catch (error) {
         console.error("Error fetching projects:", error);
         toast.error("Failed to fetch projects.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
       }
     },
 
@@ -115,15 +117,20 @@ export default {
         });
 
         if (response.data.clocked_in) {
+          // Make a copy of the tasks and pass to the modal
+          this.modalTasks = JSON.parse(JSON.stringify(this.tasks)); // Deep copy of tasks
+          
           const modalElement = document.getElementById("addtaskmodal");
           if (modalElement) {
             const modalInstance = new bootstrap.Modal(modalElement);
             modalInstance.show();
+            // Ensure tasks are updated when opening the modal again
+            this.fetchTasks();  // Re-fetch tasks when opening the modal again
           } else {
             toast.error("Modal not found!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+              position: "top-right",
+              autoClose: 1000, // Set to 2 seconds
+            });
           }
         } else {
           toast.warning("You need to clock in to add tasks!", { position: "top-right" });
@@ -131,16 +138,22 @@ export default {
       } catch (error) {
         console.error("Error checking clock-in status:", error.response?.data || error.message);
         toast.error(error.response?.data?.message || "Something went wrong. Please try again!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
       } finally {
         this.buttonLoading = false; // End button loading state
       }
-    }
+    },
+
+    // Reset the modalTasks when the modal is closed without saving
+    resetModalTasks() {
+      this.modalTasks = [];
+    },
   },
 };
 </script>
+
 
   <style scoped>
   .task-card {

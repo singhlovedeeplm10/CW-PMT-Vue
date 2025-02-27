@@ -167,22 +167,62 @@ public function endBreak(Request $request)
 
 public function getBreakEntries(Request $request)
 {
-    // If 'date' is not provided, use today's date based on the 'created_at' field
     $date = $request->query('date', now()->toDateString());
 
-    // Fetch break entries along with user data and their profile images
     $breakEntries = Breaks::with(['user' => function ($query) {
         $query->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
             ->select('users.id', 'users.name', 'user_profiles.user_image');
     }])
-    ->whereDate('created_at', $date)  // Use 'created_at' to filter today's entries
+    ->whereDate('created_at', $date)
+    ->selectRaw('user_id, COUNT(id) as total_breaks, SEC_TO_TIME(SUM(TIME_TO_SEC(break_time))) as total_break_time')
+    ->groupBy('user_id')
     ->get();
+
+    foreach ($breakEntries as $break) {
+        $break->user_name = $break->user->name ?? 'Unknown User';
+        $break->user_image = $break->user->user_image 
+            ? asset('storage/' . $break->user->user_image) 
+            : asset('img/CWlogo.jpeg'); // Default image
+    }
 
     return response()->json($breakEntries);
 }
 
 
+// Fetch detailed break records for a user
+public function getUserBreakDetails(Request $request)
+{
+    $userId = $request->query('user_id');
+    $date = $request->query('date', now()->toDateString());
 
+    $userBreaks = Breaks::where('user_id', $userId)
+        ->whereDate('created_at', $date)
+        ->orderBy('end_time', 'asc')
+        ->get()
+        ->map(function ($break) {
+            // Calculate start_time by subtracting break_time from end_time
+            $startTime = $break->end_time ? Carbon::parse($break->end_time)->subSeconds($this->convertTimeToSeconds($break->break_time)) : null;
+
+            return [
+                'start_time' => $startTime ? $startTime->toDateTimeString() : null,
+                'end_time' => $break->end_time,
+                'break_time' => $break->break_time,
+                'reason' => $break->reason,
+            ];
+        });
+
+    return response()->json($userBreaks);
+}
+
+/**
+ * Convert break_time (HH:MM:SS) to total seconds.
+ */
+private function convertTimeToSeconds($time)
+{
+    if (!$time) return 0;
+    list($hours, $minutes, $seconds) = explode(':', $time);
+    return ($hours * 3600) + ($minutes * 60) + $seconds;
+}
 public function getUserBreaks(Request $request)
 {
     try {

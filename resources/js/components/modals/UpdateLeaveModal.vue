@@ -53,65 +53,37 @@
             </div>
 
             <!-- Conditionally show start date and end date based on leave type -->
-            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input
-                type="date"
-                v-model="leave.start_date"
-                id="startDate"
-                class="form-control"
-                :disabled="!leave.isEditable"
-                required
-                :min="minDate"
-                @change="validateStartDate"
-              />
-              <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
-            </div>
+            <div v-if="leave.type_of_leave === 'Full Day Leave' || leave.type_of_leave === 'Work From Home'" class="date-time-row">
+  <div class="form-group">
+    <label for="startDate" class="form-label">Start Date</label>
+    <input
+      type="date"
+      v-model="leave.start_date"
+      id="startDate"
+      class="form-control"
+      :disabled="!leave.isEditable"
+      required
+      :min="minDate"
+      @change="validateStartDate"
+    />
+    <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
+  </div>
 
-            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input
-                type="date"
-                v-model="leave.end_date"
-                id="endDate"
-                class="form-control"
-                :disabled="!leave.isEditable"
-                required
-                :min="leave.start_date"
-                @change="validateEndDate"
-              />
-              <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
-            </div>
-            <!-- Conditionally show start date and end date based on leave type -->
-            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input
-                type="date"
-                v-model="leave.start_date"
-                id="startDate"
-                class="form-control"
-                :disabled="!leave.isEditable"
-                required
-                :min="minDate"
-                @change="validateStartDate"
-              />
-              <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
-            </div>
-
-            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input
-                type="date"
-                v-model="leave.end_date"
-                id="endDate"
-                class="form-control"
-                :disabled="!leave.isEditable"
-                required
-                :min="leave.start_date"
-                @change="validateEndDate"
-              />
-              <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
-            </div>
+  <div class="form-group">
+    <label for="endDate" class="form-label">End Date</label>
+    <input
+      type="date"
+      v-model="leave.end_date"
+      id="endDate"
+      class="form-control"
+      :disabled="!leave.isEditable"
+      required
+      :min="leave.start_date"
+      @change="validateEndDate"
+    />
+    <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
+  </div>
+</div>
 
             <!-- Reason and Contact fields -->
             <div class="mb-3">
@@ -181,31 +153,33 @@
                 @change="validateStartDate"
               />
             </div>
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-  <label for="startTime" class="form-label">Start Time</label>
-  <input
-    type="time"
-    v-model="leave.start_time"
-    id="startTime"
-    class="form-control"
-    :disabled="!leave.isEditable"
-    required
-    @change="validateShortLeaveTime"
-  />
-</div>
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="time-row">
+  <div class="form-group">
+    <label for="startTime" class="form-label">Start Time</label>
+    <input
+      type="time"
+      v-model="leave.start_time"
+      id="startTime"
+      class="form-control"
+      :disabled="!leave.isEditable"
+      required
+      @change="validateShortLeaveTime"
+    />
+  </div>
 
-<div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-  <label for="endTime" class="form-label">End Time</label>
-  <input
-    type="time"
-    v-model="leave.end_time"
-    id="endTime"
-    class="form-control"
-    :disabled="!leave.isEditable"
-    required
-    @change="validateShortLeaveTime"
-  />
-  <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
+  <div class="form-group">
+    <label for="endTime" class="form-label">End Time</label>
+    <input
+      type="time"
+      v-model="leave.end_time"
+      id="endTime"
+      class="form-control"
+      :disabled="!leave.isEditable"
+      required
+      @change="validateShortLeaveTime"
+    />
+    <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
+  </div>
 </div>
 
             <div class="mb-3">
@@ -413,71 +387,91 @@ export default {
 };
 </script>
 
-  <style scoped>
-  /* Modal Content Styling */
-  .custom-modal {
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
-    font-family: 'Arial', sans-serif;
-  }
-  
-  .custom-header {
-    background-color: #343a40;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .modal-title {
-    font-weight: 600;
-  }
-  
-  .status-box {
-    position: absolute;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: #ffffff;
-    right: 50px;
-    font-weight: bold;
-  }
-  
-  .modal-body {
-    padding: 20px;
-    background-color: #f9f9f9;
-  }
-  
-  /* Input Fields */
-  .form-control {
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    padding: 10px;
-    font-size: 14px;
-    margin-bottom: 15px;
-  }
-  
-  .form-control:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
-  }
-  
-  /* Buttons */
-  .modal-footer .btn {
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 5px;
-  }
-  
-  .btn-success {
-    background-color: #0056b3;
-  }
-  
-  .btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-  }
-  
-  </style>
+<style scoped>
+/* Modal Content Styling */
+.custom-modal {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  font-family: 'Arial', sans-serif;
+}
+
+.custom-header {
+  background-color: #343a40;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.status-box {
+  position: absolute;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #ffffff;
+  right: 50px;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+/* Input Fields */
+.form-control {
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.form-control:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+/* Display start_date and end_date in a single row */
+.date-time-row {
+  display: flex;
+  gap: 15px;
+}
+
+.date-time-row .form-group {
+  flex: 1;
+}
+
+/* Display start_time and end_time in a single row */
+.time-row {
+  display: flex;
+  gap: 15px;
+}
+
+.time-row .form-group {
+  flex: 1;
+}
+
+/* Buttons */
+.modal-footer .btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.btn-success {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+</style>
+
   

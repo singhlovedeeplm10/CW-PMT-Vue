@@ -191,10 +191,10 @@ export default {
       });
 
       if (!valid) {
-        toast.error("Please correct errors in the form.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+      //   toast.error("Please correct errors in the form.", {
+      //   position: "top-right",
+      //   autoClose: 1000, // Set to 2 seconds
+      // });
         return;
       }
 
@@ -227,12 +227,14 @@ export default {
     };
 
     const closeModal = () => {
-      tasks.value = [{ project_id: '', hours: '', task_description: '' }];
-      taskErrors.value = [{ project_id: false, hours: false, task_description: false }];
-      const modalElement = document.getElementById('addtaskmodal');
-      const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
-      modalInstance.hide();
-    };
+  // Reset tasks state to a fresh state when closing the modal
+  tasks.value = [{ project_id: '', hours: '', task_description: '' }];
+  taskErrors.value = [{ project_id: false, hours: false, task_description: false }];
+  const modalElement = document.getElementById('addtaskmodal');
+  const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
+  modalInstance.hide();
+};
+
 
     const validateTask = (task, index) => {
       taskErrors.value[index] = {
@@ -281,8 +283,8 @@ export default {
     };
 
     watch(() => props.tasks, (newTasks) => {
-      tasks.value = newTasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : newTasks;
-    }, { deep: true });
+  tasks.value = newTasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : newTasks;
+}, { deep: true });
 
     onMounted(fetchProjects);
 

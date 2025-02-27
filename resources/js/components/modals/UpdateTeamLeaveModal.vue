@@ -52,50 +52,29 @@
             </div>
 
             <!-- Conditionally show start date and end date based on leave type -->
-            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input
-                type="date"
-                v-model="leave.start_date"
-                id="startDate"
-                class="form-control"
-                required
-              />
-            </div>
+            <div v-if="leave.type_of_leave === 'Full Day Leave' || leave.type_of_leave === 'Work From Home'" class="date-fields">
+  <div class="mb-3">
+    <label for="startDate" class="form-label">Start Date</label>
+    <input
+      type="date"
+      v-model="leave.start_date"
+      id="startDate"
+      class="form-control"
+      required
+    />
+  </div>
 
-            <div v-if="leave.type_of_leave === 'Full Day Leave'" class="mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input
-                type="date"
-                v-model="leave.end_date"
-                id="endDate"
-                class="form-control"
-                required
-              />
-            </div>
-            
-            <!-- Conditionally show start date and end date based on leave type -->
-            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input
-                type="date"
-                v-model="leave.start_date"
-                id="startDate"
-                class="form-control"
-                required
-              />
-            </div>
-
-            <div v-if="leave.type_of_leave === 'Work From Home'" class="mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input
-                type="date"
-                v-model="leave.end_date"
-                id="endDate"
-                class="form-control"
-                required
-              />
-            </div>
+  <div class="mb-3">
+    <label for="endDate" class="form-label">End Date</label>
+    <input
+      type="date"
+      v-model="leave.end_date"
+      id="endDate"
+      class="form-control"
+      required
+    />
+  </div>
+</div>
 
             <!-- Reason and Contact fields -->
             <div class="mb-3">
@@ -133,30 +112,32 @@
 
 
             <!-- Conditionally show "Short Leave" specific fields -->
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-  <label for="startTime" class="form-label">Start Time</label>
-  <input
-    type="time"
-    v-model="leave.start_time"
-    id="startTime"
-    class="form-control"
-    required
-    pattern="[0-9]{2}:[0-9]{2}" 
-  />
-</div>
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="time-fields">
+  <div class="mb-3">
+    <label for="startTime" class="form-label">Start Time</label>
+    <input
+      type="time"
+      v-model="leave.start_time"
+      id="startTime"
+      class="form-control"
+      required
+      pattern="[0-9]{2}:[0-9]{2}" 
+    />
+  </div>
 
-<div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-              <label for="endTime" class="form-label">End Time</label>
-              <input
-                type="time"
-                v-model="leave.end_time"
-                id="endTime"
-                class="form-control"
-                required
-                @change="validateShortLeaveTime"
-              />
-              <div v-if="timeError" class="text-danger mt-1">{{ timeError }}</div>
-            </div>
+  <div class="mb-3">
+    <label for="endTime" class="form-label">End Time</label>
+    <input
+      type="time"
+      v-model="leave.end_time"
+      id="endTime"
+      class="form-control"
+      required
+      @change="validateShortLeaveTime"
+    />
+    <div v-if="timeError" class="text-danger mt-1">{{ timeError }}</div>
+  </div>
+</div>
 
 <div v-if="leave.type_of_leave === 'Half Day Leave' || leave.type_of_leave === 'Short Leave'" class="mb-3">
   <label for="startDate" class="form-label">Start Date</label>
@@ -309,7 +290,7 @@ export default {
 };
 </script>
 
-  <style scoped>
+<style scoped>
   /* Modal Content Styling */
   .custom-modal {
     border-radius: 8px;
@@ -374,7 +355,17 @@ export default {
     background-color: #6c757d;
     border-color: #6c757d;
   }
-  
 
-  </style>
+  /* Custom Flexbox Layout for Date and Time Fields */
+  .date-fields,
+  .time-fields {
+    display: flex;
+    gap: 15px; /* Adjust the gap between fields as needed */
+  }
+
+  .date-fields .mb-3,
+  .time-fields .mb-3 {
+    flex: 1; /* Ensure fields take equal width */
+  }
+</style>
   

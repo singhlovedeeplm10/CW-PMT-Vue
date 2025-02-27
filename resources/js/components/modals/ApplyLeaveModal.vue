@@ -261,10 +261,12 @@ export default {
       contactError: null,
       minDate: new Date().toISOString().split("T")[0],
       loading: false,
+      formModified: false, // Track if form is modified
     };
   },
   methods: {
     handleLeaveTypeChange() {
+      this.formModified = true; // Mark form as modified
       this.form.half_day = "";
       this.form.start_time = "";
       this.form.end_time = "";
@@ -272,6 +274,7 @@ export default {
       this.form.end_date = "";
     },
     validateShortLeaveTime() {
+      this.formModified = true; // Mark form as modified
       if (this.form.start_time && this.form.end_time) {
         const startTime = new Date(`1970-01-01T${this.form.start_time}:00`);
         const endTime = new Date(`1970-01-01T${this.form.end_time}:00`);
@@ -286,6 +289,7 @@ export default {
       }
     },
     validateStartAndEndDate() {
+      this.formModified = true; // Mark form as modified
       const today = new Date().toISOString().split("T")[0];
 
       if (this.form.start_date && this.form.start_date < today) {
@@ -307,86 +311,85 @@ export default {
       }
     },
     async validateAndSubmit() {
-  // Reset errors
-  this.leaveTypeError = this.form.type_of_leave
-    ? null
-    : "Leave type is required.";
-  this.startDateError = this.form.start_date
-    ? null
-    : "Start date is required.";
-  this.reasonError = this.form.reason ? null : "Reason is required.";
-  this.contactError = this.form.contact_during_leave
-    ? null
-    : "Contact during leave is required.";
+      // Reset errors
+      this.leaveTypeError = this.form.type_of_leave
+        ? null
+        : "Leave type is required.";
+      this.startDateError = this.form.start_date
+        ? null
+        : "Start date is required.";
+      this.reasonError = this.form.reason ? null : "Reason is required.";
+      this.contactError = this.form.contact_during_leave
+        ? null
+        : "Contact during leave is required.";
 
-  if (this.form.type_of_leave === "Half Day Leave") {
-    this.halfDayError = this.form.half_day
-      ? null
-      : "Please select which half of the day.";
-  }
+      if (this.form.type_of_leave === "Half Day Leave") {
+        this.halfDayError = this.form.half_day
+          ? null
+          : "Please select which half of the day.";
+      }
 
-  if (this.form.type_of_leave === "Short Leave") {
-    this.startTimeError = this.form.start_time
-      ? null
-      : "Start time is required.";
-    this.endTimeError = this.form.end_time
-      ? null
-      : "End time is required.";
-  }
+      if (this.form.type_of_leave === "Short Leave") {
+        this.startTimeError = this.form.start_time
+          ? null
+          : "Start time is required.";
+        this.endTimeError = this.form.end_time
+          ? null
+          : "End time is required.";
+      }
 
-  if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
-    this.endDateError = this.form.end_date ? null : "End date is required.";
-  }
+      if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
+        this.endDateError = this.form.end_date ? null : "End date is required.";
+      }
 
-  if (
-    this.leaveTypeError ||
-    this.startDateError ||
-    this.reasonError ||
-    this.contactError ||
-    this.halfDayError ||
-    this.startTimeError ||
-    this.endTimeError ||
-    this.endDateError
-  ) {
-    // Prevent form submission if there are validation errors
-    return;
-  }
+      if (
+        this.leaveTypeError ||
+        this.startDateError ||
+        this.reasonError ||
+        this.contactError ||
+        this.halfDayError ||
+        this.startTimeError ||
+        this.endTimeError ||
+        this.endDateError
+      ) {
+        // Prevent form submission if there are validation errors
+        return;
+      }
 
-  this.loading = true;
-  try {
-    const response = await axios.post("/api/apply-leave", this.form, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
+      this.loading = true;
+      try {
+        const response = await axios.post("/api/apply-leave", this.form, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
 
-    toast.success("Leave Applied Successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-    this.$emit("leaveApplied");
+        toast.success("Leave Applied Successfully!", {
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
+        this.$emit("leaveApplied");
 
-    // Find the modal element
-    const modalElement = document.getElementById("applyleavemodal");
+        // Find the modal element
+        const modalElement = document.getElementById("applyleavemodal");
 
-    // Trigger Bootstrap's modal dismissal using data-bs-dismiss
-    const dismissButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
-    if (dismissButton) {
-      dismissButton.click();  // This will close the modal
-    }
+        // Trigger Bootstrap's modal dismissal using data-bs-dismiss
+        const dismissButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
+        if (dismissButton) {
+          dismissButton.click();  // This will close the modal
+        }
 
-    this.resetForm();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to apply leave. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-  } finally {
-    this.loading = false;
-  }
-},
-
+        this.resetForm();
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to apply leave. Please try again.", {
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
     resetForm() {
       this.form = {
         type_of_leave: "",
@@ -406,10 +409,22 @@ export default {
       this.halfDayError = null;
       this.reasonError = null;
       this.contactError = null;
+      this.formModified = false; // Reset form modification flag
     },
+  },
+  mounted() {
+    // Listen for modal close event
+    const modalElement = document.getElementById("applyleavemodal");
+    modalElement.addEventListener("hidden.bs.modal", () => {
+      // Reset the form if there were changes and the modal is closed
+      if (this.formModified) {
+        this.resetForm();
+      }
+    });
   },
 };
 </script>
+
 
   
 <style scoped>

@@ -1,50 +1,73 @@
 <template>
-    <!-- CARDS (BREAK ENTRIES) -->
-    <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
-        <!-- 1st Task List Card -->
-        <div class="task-card flex-fill shadow-sm" id="card2">
+    <div class="d-flex justify-content-between task-card-container" style="width: 650px; height: 450px;">
+        <!-- Task List Card -->
+        <div class="task-card flex-fill shadow-sm">
             <div class="task-card-header d-flex justify-content-between align-items-center">
                 <h4>Break Entries</h4>
-                <!-- Add Calendar Component -->
-                <Calendar 
-                    :selectedDate="selectedDate" 
-                    @dateSelected="onDateSelected"
-                />
+                <Calendar :selectedDate="selectedDate" @dateSelected="onDateSelected" />
             </div>
             <div class="task-card-body mt-3">
-                <!-- Loader Spinner -->
                 <div v-if="loading" class="loader"></div>
-                
-                <!-- Table Data -->
+
+                <!-- Break Entries Table -->
                 <table v-else>
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Break</th>
+                            <th>Total Breaks</th>
+                            <th>Break Time</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.id">
+                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id" >
                             <td>
                                 <div class="profile">
                                     <img 
-                                        :src="breakEntry.user.user_image 
-                                            ? `/storage/${breakEntry.user.user_image}` 
-                                            : 'img/CWlogo.jpeg'" 
-                                        alt="User Image"
-                                        class="rounded-circle"
-                                        width="50"
-                                        height="50"
+                                        :src="breakEntry.user_image" 
+                                        alt="User Image" 
+                                        class="rounded-circle" width="50" height="50"
                                     >
-                                    <span>{{ breakEntry.user.name }}</span>
+                                    <span>{{ breakEntry.user_name }}</span>
                                 </div>
                             </td>
-                            <td>{{ formatBreakTime(breakEntry.break_time) }}</td>
+                            <td>{{ breakEntry.total_breaks }}</td>
+                            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <!-- Break Details Modal -->
+        <div v-if="showModal" class="modal-overlay">
+            <div class="modal-content">
+                <!-- <span class="close-button" @click="closeBreakDetailsModal">&times;</span> -->
+                <h4>Break Details</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Break Time</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="breakDetail in userBreakDetails" :key="breakDetail.id">
+                            <td>{{ formatDateTime(breakDetail.start_time) }}</td>
+                            <td>{{ formatDateTime(breakDetail.end_time) }}</td>
+                            <td>{{ formatBreakTime(breakDetail.break_time) }}</td>
+                            <td>{{ breakDetail.reason }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="modal-footer">
+      <button class="close-modal-btn" @click="closeBreakDetailsModal">Close</button>
+    </div>
+            </div>
+    
         </div>
+        </div>
+
+        
     </div>
 </template>
 
@@ -54,56 +77,125 @@ import Calendar from "@/components/Calendar.vue";
 
 export default {
     name: "BreakEntries",
-    components: {
-        Calendar,
-    },
+    components: { Calendar },
     data() {
         return {
-            breakEntries: [], // Data from the breaks table
-            selectedDate: new Date(), // Default selected date is today
-            loading: false, // Loading state for fetching data
+            breakEntries: [],
+            selectedDate: new Date(),
+            loading: false,
+            showModal: false,
+            userBreakDetails: [],
+            selectedUserId: null,
         };
     },
     methods: {
         async fetchBreakEntries() {
-            this.loading = true; // Show loader
+            this.loading = true;
             try {
                 const response = await axios.get("/api/break-entries", {
-                    params: {
-                        date: this.selectedDate.toISOString().slice(0, 10), // Get selected date in YYYY-MM-DD format
-                    },
+                    params: { date: this.selectedDate.toISOString().slice(0, 10) },
                 });
                 this.breakEntries = response.data;
             } catch (error) {
                 console.error("Error fetching break entries:", error);
             } finally {
-                this.loading = false; // Hide loader after data is fetched
+                this.loading = false;
             }
         },
 
-        // Format break time in the desired format
+        async openBreakDetailsModal(userId) {
+            this.selectedUserId = userId;
+            this.showModal = true;
+            this.userBreakDetails = [];
+
+            try {
+                const response = await axios.get("/api/user-break-details", {
+                    params: { user_id: userId, date: this.selectedDate.toISOString().slice(0, 10) },
+                });
+                this.userBreakDetails = response.data;
+            } catch (error) {
+                console.error("Error fetching user break details:", error);
+            }
+        },
+
+        closeBreakDetailsModal() {
+            this.showModal = false;
+            this.userBreakDetails = [];
+        },
+
         formatBreakTime(breakTime) {
-    if (!breakTime) return "00:00:00"; // Return default format if no break time is provided
+            if (!breakTime) return "00:00:00";
+            const [hours, minutes, seconds] = breakTime.split(":").map(Number);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        },
 
-    const [hours, minutes, seconds] = breakTime.split(":").map(Number);
+        formatDateTime(dateTime) {
+            if (!dateTime) return "N/A";
+            return new Date(dateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+        },
 
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-},
-
-
-        // Update the selected date and fetch entries for the new date
         onDateSelected(newDate) {
             this.selectedDate = newDate;
-            this.fetchBreakEntries(); // Fetch break entries for the selected date
+            this.fetchBreakEntries();
         },
     },
     mounted() {
-        this.fetchBreakEntries(); // Fetch entries for the default date on mount
+        this.fetchBreakEntries();
     },
 };
 </script>
 
 <style scoped>
+  .clickable-time {
+    cursor: pointer;
+    text-decoration: underline; /* Underline effect */
+}
+.modal-footer {
+  text-align: right;
+}
+.close-modal-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.close-modal-btn:hover {
+  background-color: #c82333;
+}
+ .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 60%;
+  max-width: 700px;
+  max-height: 80vh; /* Limit height */
+  overflow-y: auto; /* Scrollable content */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.close-button {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
 .task-card {
     display: flex;
     flex-direction: column;

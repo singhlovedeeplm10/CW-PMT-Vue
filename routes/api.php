@@ -113,6 +113,7 @@ Route::middleware('auth:sanctum')->post('/end-break', [BreakController::class, '
 Route::middleware('auth:sanctum')->get('/daily-breaks', [BreakController::class, 'getDailyBreaks']);
 Route::middleware('auth:sanctum')->get('/weekly-break-time', [BreakController::class, 'getWeeklyBreakTime']);
 Route::get('/break-entries', [BreakController::class, 'getBreakEntries']);
+Route::get('/user-break-details', [BreakController::class, 'getUserBreakDetails']);
 Route::middleware('auth:sanctum')->get('/user-breaks', [BreakController::class, 'getUserBreaks']);
 Route::middleware('auth:sanctum')->get('/get-breakin-token', [BreakController::class, 'getBreakinToken']);
 
