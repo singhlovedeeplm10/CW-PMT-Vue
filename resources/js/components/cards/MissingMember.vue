@@ -38,46 +38,48 @@
 
     <!-- 2nd Task List Card (Team Members on Leave) -->
     <div class="card flex-fill me-3 shadow-sm" id="card2">
-      <div class="task-card-header d-flex justify-content-between align-items-center">
-        <h4>Team Members on Leave</h4>
-        <Calendar
-          :selectedDate="date"
-          @dateSelected="onDateSelected" 
-          :showHeader="true"
-          :highlightToday="true"
-        />
-      </div>
-      <div class="task-card-body">
-  <!-- Loader for Team Members on Leave -->
-  <div v-if="loadingUsersOnLeave" class="loader-container">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
+  <div class="task-card-header d-flex justify-content-between align-items-center">
+    <h4>Team Members on Leave</h4>
+    <Calendar
+      :selectedDate="date"
+      @dateSelected="onDateSelected" 
+      :showHeader="true"
+      :highlightToday="true"
+    />
   </div>
-  <!-- Display users when data is loaded -->
-  <div v-else class="employee-row">
-    <div 
-      v-for="user in usersOnLeave" 
-      :key="user.id" 
-      class="employee-card"
-    >
-      <div class="employee-avatar">
-        <img 
-          :src="user.user_image || 'img/CWlogo.jpeg'" 
-          alt="Team Member" 
-          class="user-image"
-        >
+  <div class="task-card-body">
+    <!-- Loader for Team Members on Leave -->
+    <div v-if="loadingUsersOnLeave" class="loader-container">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
-      <div class="employee-details">
-        <p class="employee-name">
-          {{ user.name }} <span class="leave-type">{{ user.type_of_leave }}</span>
-        </p>
-      </div>
+    </div>
+    <!-- Table to display users when data is loaded -->
+    <div v-else>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Leave</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in usersOnLeave" :key="user.id">
+            <td class="d-flex align-items-center">
+              <img 
+                :src="user.user_image || 'img/CWlogo.jpeg'" 
+                alt="Team Member" 
+                class="user-image me-2"
+              >
+              {{ user.name }}
+            </td>
+            <td>{{ user.type_of_leave }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
-
-    </div>
 
   </div>
 </template>
@@ -149,8 +151,34 @@ export default {
 };
 </script>
 <style scoped>
+/* Table styling */
+.table {
+  width: 130%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
 /* Card container styling */
-#card1, #card2 {
+#card1{
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+#card2 {
   max-height: 350px;
   overflow-y: auto;
   padding: 20px;
@@ -197,12 +225,11 @@ export default {
 }
 
 .user-image {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 3px solid #ddd;
+  border: 2px solid #ddd;
   object-fit: cover;
-  transition: transform 0.3s, border-color 0.3s;
 }
 
 /* Employee details styling */
