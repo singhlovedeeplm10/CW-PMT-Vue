@@ -57,9 +57,10 @@ export default {
     };
 
     const updateSelectedDate = (newDate) => {
-      date.value = new Date(newDate);
-      emit("dateSelected", date.value);
-    };
+  const formattedDate = new Date(newDate); // Convert to Date object
+  date.value = formattedDate;
+  emit("dateSelected", formattedDate); // Emit the Date object
+};
 
     return {
       today,

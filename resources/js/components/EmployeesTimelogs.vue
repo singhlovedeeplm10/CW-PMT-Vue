@@ -4,7 +4,7 @@
         <h2 class="title">Time Logs</h2>
   
         <div class="filters">
-          <div class="filter-container">
+          <div class="filter-container" v-if="userRole === 'Admin'">
   <input 
     type="text" 
     placeholder="Search by Name" 
@@ -548,19 +548,19 @@
 }
 
   .bg-green {
-  background-color: rgb(90, 245, 90); /* Light green */
+  background-color: forestgreen; /* Light green */
   color: white;
   font-weight: bold;
 }
 
 .bg-red {
-  background-color: rgb(236, 84, 84); /* Light red */
+  background-color: rgb(229, 86, 86); /* Light red */
   color: white;
   font-weight: bold;
 }
 
 .bg-orange {
-  background-color: rgb(223, 173, 81); /* Light orange */
+  background-color: rgb(184, 141, 61); /* Light orange */
   color: white;
   font-weight: bold;
 }

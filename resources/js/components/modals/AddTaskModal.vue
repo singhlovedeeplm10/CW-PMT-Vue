@@ -44,7 +44,7 @@
                     errorMessage="Please enter a valid number for hours."
                     placeholder="Enter Hours"
                     isRequired
-                    step="0.01"
+                    step="1"
                     inputClass="form-control-hours"
                     :isReadonly="!!task.leave_id" 
                   />

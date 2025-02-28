@@ -282,7 +282,6 @@ export default {
 
         if (differenceInHours > 2) {
           this.endTimeError = "Short leave duration cannot exceed 2 hours.";
-          toast.error(this.endTimeError);
         } else {
           this.endTimeError = null;
         }

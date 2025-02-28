@@ -157,27 +157,28 @@
   <div class="form-group">
     <label for="startTime" class="form-label">Start Time</label>
     <input
-      type="time"
-      v-model="leave.start_time"
-      id="startTime"
-      class="form-control"
-      :disabled="!leave.isEditable"
-      required
-      @change="validateShortLeaveTime"
-    />
+  type="time"
+  v-model="leave.start_time"
+  id="startTime"
+  class="form-control"
+  :disabled="!leave.isEditable"
+  required
+  @change="validateShortLeaveTime"
+/>
   </div>
 
   <div class="form-group">
     <label for="endTime" class="form-label">End Time</label>
-    <input
-      type="time"
-      v-model="leave.end_time"
-      id="endTime"
-      class="form-control"
-      :disabled="!leave.isEditable"
-      required
-      @change="validateShortLeaveTime"
-    />
+    
+<input
+  type="time"
+  v-model="leave.end_time"
+  id="endTime"
+  class="form-control"
+  :disabled="!leave.isEditable"
+  required
+  @change="validateShortLeaveTime"
+/>
     <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
   </div>
 </div>
@@ -272,46 +273,33 @@ export default {
     },
 
     validateShortLeaveTime() {
-    this.timeError = ""; // Reset the error message
+  this.timeError = ""; // Reset the error message
 
-    if (this.leave.start_time && this.leave.end_time) {
-      const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
-      const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
-      const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+  if (this.leave.start_time && this.leave.end_time) {
+    const [startHours, startMinutes] = this.leave.start_time.split(":").map(Number);
+    const [endHours, endMinutes] = this.leave.end_time.split(":").map(Number);
 
-      if (timeDiff > 2) {
-        this.timeError = "Short leave duration cannot exceed 2 hours.";
-      }
-    }
-  },
+    const startTimeInMinutes = startHours * 60 + startMinutes;
+    const endTimeInMinutes = endHours * 60 + endMinutes;
+    const timeDiff = (endTimeInMinutes - startTimeInMinutes) / 60; // Convert to hours
 
-    async submitLeaveUpdate() {
-  this.timeError = ""; // Reset the time error message on form submission
-
-  // Check if both startTime and endTime are provided for Short Leave
-  if (
-    this.leave.type_of_leave === "Short Leave" &&
-    this.leave.start_time &&
-    this.leave.end_time
-  ) {
-    const startTime = new Date(`1970-01-01T${this.leave.start_time}:00`);
-    const endTime = new Date(`1970-01-01T${this.leave.end_time}:00`);
-    const timeDiff = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
-
-    // Validate that the time difference is not more than 2 hours
-    if (timeDiff > 2) {
+    if (timeDiff <= 0) {
+      this.timeError = "End time must be after start time.";
+    } else if (timeDiff > 2) {
       this.timeError = "Short leave duration cannot exceed 2 hours.";
-      return; // Prevent form submission if validation fails
     }
   }
+},
 
-  // Skip submission if there are any date errors
-  if (this.startDateError || this.endDateError) {
-    return;
+
+async submitLeaveUpdate() {
+  this.validateShortLeaveTime(); // Ensure validation runs before submitting
+
+  if (this.timeError) {
+    return; // Stop submission if there's an error
   }
 
   this.loading = true;
-
   try {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -319,7 +307,6 @@ export default {
       return;
     }
 
-    // Prepare data for the API request
     const leaveData = {
       type_of_leave: this.leave.type_of_leave,
       start_date: this.leave.start_date || null,
@@ -332,10 +319,8 @@ export default {
       status: this.leave.status,
     };
 
-    // Map Half Day to backend values (ensure it matches the field name in the migration)
     if (this.leave.type_of_leave === "Half Day Leave") {
-      leaveData.half =
-        this.leave.half === "First Half" ? "First Half" : "Second Half";
+      leaveData.half = this.leave.half;
     }
 
     if (this.leave.type_of_leave === "Short Leave") {
@@ -343,7 +328,6 @@ export default {
       leaveData.end_time = this.leave.end_time;
     }
 
-    // Make API request
     const response = await axios.put(
       `/api/update-leaves/${this.leave.id}`,
       leaveData,
@@ -355,12 +339,12 @@ export default {
     );
 
     toast.success(response.data.message, {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+      position: "top-right",
+      autoClose: 1000,
+    });
+
     this.$emit("leaveApplied");
 
-    // Close the modal after successful submission
     const modal = bootstrap.Modal.getInstance(
       document.getElementById("updateleavemodal")
     );
@@ -369,13 +353,11 @@ export default {
     }
   } catch (error) {
     if (error.response && error.response.status === 422) {
-      toast.error(
-        "Validation error: " + JSON.stringify(error.response.data.error)
-      );
+      toast.error("Validation error: " + JSON.stringify(error.response.data.error));
     } else {
       toast.error("Failed to update leave. Please try again.", {
         position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
+        autoClose: 1000,
       });
     }
   } finally {
@@ -390,18 +372,27 @@ export default {
 <style scoped>
 /* Modal Content Styling */
 .custom-modal {
-  border-radius: 8px;
-  border: none;
-  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
-  font-family: 'Arial', sans-serif;
+  border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #f5f7fa, #e2e8f0);
+  padding: 15px;
 }
 
 .custom-header {
-  background-color: #343a40;
+  background: linear-gradient(135deg, #4a90e2, #007aff);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.custom-header .btn-close {
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.custom-header .btn-close:hover {
+  opacity: 1;
 }
 
 .modal-title {
@@ -414,7 +405,7 @@ export default {
   padding: 4px 8px;
   border-radius: 4px;
   color: #ffffff;
-  right: 50px;
+  right: 65px;
   font-weight: bold;
 }
 

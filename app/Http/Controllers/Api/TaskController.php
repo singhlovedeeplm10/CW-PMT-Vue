@@ -35,28 +35,28 @@ class TaskController extends Controller
     $request->merge(['tasks' => $tasks->toArray()]);
     $request->validate([
         'tasks.*.project_id' => 'required|exists:projects,id',
-        'tasks.*.hours' => 'required|integer|min:0', // Changed to integer
+        'tasks.*.hours' => 'required|numeric|min:0',
         'tasks.*.task_description' => 'required|string',
         'tasks.*.id' => 'nullable|exists:daily_tasks,id',
     ], [
         'tasks.*.project_id.required' => 'Each task must have a project selected.',
         'tasks.*.project_id.exists' => 'Selected project does not exist.',
         'tasks.*.hours.required' => 'Each task must have hours specified.',
-        'tasks.*.hours.integer' => 'Hours must be a whole number.', // Updated error message
+        'tasks.*.hours.numeric' => 'Hours must be a number.',
         'tasks.*.task_description.required' => 'Each task must have a description.',
     ]);
 
     foreach ($tasks as $task) {
         $project = Project::find($task['project_id']);
         $projectName = $project->name;
-
+    
         if (isset($task['id'])) {
             $existingTask = DailyTask::where('id', $task['id'])->where('user_id', $user->id)->first();
             if ($existingTask) {
                 $existingTask->update([
                     'project_id' => $task['project_id'],
                     'project_name' => $projectName,
-                    'hours' => (int)$task['hours'], // Cast to integer
+                    'hours' => (float) $task['hours'], // Cast to float to store exact value
                     'task_description' => $task['task_description'],
                     'task_status' => 'pending',
                 ]);
@@ -67,12 +67,13 @@ class TaskController extends Controller
                 'attendance_id' => $attendance->id,
                 'project_id' => $task['project_id'],
                 'project_name' => $projectName,
-                'hours' => (int)$task['hours'], // Cast to integer
+                'hours' => (float) $task['hours'], // Cast to float to store exact value
                 'task_description' => $task['task_description'],
                 'task_status' => 'pending',
             ]);
         }
     }
+    
 
     return response()->json(['message' => 'Tasks saved/updated successfully.'], 200);
 }

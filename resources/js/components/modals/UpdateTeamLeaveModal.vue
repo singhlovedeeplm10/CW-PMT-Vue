@@ -293,19 +293,28 @@ export default {
 <style scoped>
   /* Modal Content Styling */
   .custom-modal {
-    border-radius: 8px;
-    border: none;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
-    font-family: 'Arial', sans-serif;
+    border-radius: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #f5f7fa, #e2e8f0);
+  padding: 15px;
   }
   
   .custom-header {
-    background-color: #343a40;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: linear-gradient(135deg, #4a90e2, #007aff);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   }
+  .custom-header .btn-close {
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.custom-header .btn-close:hover {
+  opacity: 1;
+}
   
   .modal-title {
     font-weight: 600;
@@ -317,7 +326,7 @@ export default {
     padding: 4px 8px;
     border-radius: 4px;
     color: #ffffff;
-    right: 50px;
+    right: 65px;
     font-weight: bold;
   }
   

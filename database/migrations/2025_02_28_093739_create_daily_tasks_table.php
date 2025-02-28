@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('project_id')->nullable();
             $table->string('project_name'); // New column
             $table->unsignedBigInteger('leave_id')->nullable(); // New column
-            $table->unsignedInteger('hours'); // Changed from decimal to integer
+            $table->decimal('hours', 8, 2);
             $table->text('task_description');
             $table->enum('task_status', ['pending', 'in_progress', 'completed']);
             $table->timestamps();

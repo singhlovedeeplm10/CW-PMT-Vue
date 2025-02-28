@@ -15,18 +15,22 @@
           </div>
         </div>
         <!-- Display users when data is loaded -->
-        <div v-else class="d-flex flex-wrap">
+        <div v-else class="employee-row">
           <div 
             v-for="user in usersWithoutTasks" 
             :key="user.id" 
-            class="task-card-item text-center"
+            class="employee-card"
           >
-            <img 
-              :src="user.user_image ? `/storage/${user.user_image}` : 'img/CWlogo.jpeg'" 
-              alt="Team Member" 
-              class="user-image"
-            >
-            <p class="task-card-description">{{ user.name }}</p>
+            <div class="employee-avatar">
+              <img 
+                :src="user.user_image ? `/storage/${user.user_image}` : 'img/CWlogo.jpeg'" 
+                alt="Team Member" 
+                class="user-image"
+              >
+            </div>
+            <div class="employee-details">
+              <p class="employee-name">{{ user.name }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -44,28 +48,35 @@
         />
       </div>
       <div class="task-card-body">
-        <!-- Loader for Team Members on Leave -->
-        <div v-if="loadingUsersOnLeave" class="loader-container">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-        <!-- Display users when data is loaded -->
-        <div v-else class="d-flex flex-wrap">
-          <div 
-            v-for="user in usersOnLeave" 
-            :key="user.id" 
-            class="task-card-item text-center"
-          >
-            <img 
-              :src="user.user_image || 'img/CWlogo.jpeg'" 
-              alt="Team Member" 
-              class="user-image"
-            >
-            <p class="task-card-description">{{ user.name }}</p>
-          </div>
-        </div>
+  <!-- Loader for Team Members on Leave -->
+  <div v-if="loadingUsersOnLeave" class="loader-container">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <!-- Display users when data is loaded -->
+  <div v-else class="employee-row">
+    <div 
+      v-for="user in usersOnLeave" 
+      :key="user.id" 
+      class="employee-card"
+    >
+      <div class="employee-avatar">
+        <img 
+          :src="user.user_image || 'img/CWlogo.jpeg'" 
+          alt="Team Member" 
+          class="user-image"
+        >
       </div>
+      <div class="employee-details">
+        <p class="employee-name">
+          {{ user.name }} <span class="leave-type">{{ user.type_of_leave }}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
     </div>
 
   </div>
@@ -89,8 +100,9 @@ export default {
     // Fetch users on leave based on the selected date
     const fetchUsersOnLeave = async (selectedDate) => {
   try {
+    const formattedDate = selectedDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
     const response = await axios.get("/api/users-on-leave", {
-      params: { date: selectedDate }, // Pass the selected date as a query parameter
+      params: { date: formattedDate }, // Pass the formatted date as a query parameter
     });
     usersOnLeave.value = response.data;
   } catch (error) {
@@ -136,8 +148,6 @@ export default {
   },
 };
 </script>
-
-
 <style scoped>
 /* Card container styling */
 #card1, #card2 {
@@ -152,11 +162,6 @@ export default {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
-#card1:hover, #card2:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.15);
-}
-
 /* Header styling */
 .task-card-header h4 {
   font-size: 18px;
@@ -167,55 +172,56 @@ export default {
   padding-bottom: 10px;
 }
 
-/* Flex container for team members */
-.d-flex.flex-wrap {
+/* Employee row layout */
+.employee-row {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: flex-start;
+  padding: 10px;
 }
-
-/* Individual task card item */
-.task-card-item {
-  flex: 0 1 calc(33.33% - 20px);
+.leave-type{
+  font-size: small;
+}
+/* Employee card styling */
+.employee-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
-  border-radius: 10px;
-  background: #f8f9fa;
-  transition: box-shadow 0.3s, background-color 0.3s;
-  cursor: pointer;
+  padding: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  width: calc(25% - 20px); /* Adjust width for 4 cards per row */
+}
+/* Employee avatar styling */
+.employee-avatar {
+  margin-bottom: 10px;
 }
 
-.task-card-item:hover {
-  background: #e9f3ff;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Avatar styling */
 .user-image {
-  margin-bottom: 15px;
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   border: 3px solid #ddd;
   object-fit: cover;
   transition: transform 0.3s, border-color 0.3s;
 }
 
-.task-card-item:hover .user-image {
-  transform: scale(1.1);
-  border-color: #4a90e2;
+/* Employee details styling */
+.employee-details {
+  text-align: center;
 }
 
-/* Description styling */
-.task-card-description {
+.employee-name {
   font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.employee-status {
+  font-size: 14px;
   font-weight: 500;
-  color: #555;
-  text-align: center;
-  word-wrap: break-word;
+  color: #777;
+  margin: 5px 0 0;
 }
 
 /* Loader container styling */
@@ -247,15 +253,15 @@ export default {
   #card1, #card2 {
     width: 100%;
   }
-  
-  .task-card-item {
-    flex: 0 1 calc(50% - 20px);
+
+  .employee-card {
+    width: calc(33.33% - 20px); /* 3 cards per row on tablets */
   }
 }
 
 @media (max-width: 480px) {
-  .task-card-item {
-    flex: 0 1 100%;
+  .employee-card {
+    width: calc(50% - 20px); /* 2 cards per row on mobile */
   }
 }
 </style>

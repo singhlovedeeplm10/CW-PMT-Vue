@@ -546,42 +546,59 @@ public function search(Request $request)
     ]);
 }
     
-   
-    public function getUsersLeave(Request $request)
-    {
-        $selectedDate = $request->input('date'); // Get the selected date from the request
-    
-        $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
-            ->whereHas('user', function ($query) {
-                $query->where('status', '1'); // Fetch only users with status '1'
+public function getUsersLeave(Request $request)
+{
+    $selectedDate = $request->input('date'); // Get the selected date from the request
+
+    $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
+        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave']) // Filter specific leave types
+        ->whereHas('user', function ($query) {
+            $query->where('status', '1'); // Fetch only users with status '1'
+        })
+        ->where(function ($query) use ($selectedDate) {
+            // For Full Day Leave, check if the selected date is between start_date and end_date
+            $query->where(function ($q) use ($selectedDate) {
+                $q->where('type_of_leave', 'Full Day Leave')
+                  ->whereDate('start_date', '<=', $selectedDate)
+                  ->whereDate('end_date', '>=', $selectedDate);
             })
-            ->whereDate('start_date', '<=', $selectedDate) // Start date is before or equal to the selected date
-            ->whereDate('end_date', '>=', $selectedDate) // End date is after or equal to the selected date
-            ->with(['user:id,name,status', 'user.profile:user_id,user_image']) // Load user details and profile
-            ->get()
-            ->map(function ($leave) {
-                $user = $leave->user;
-    
-                // Ensure the user is active before including them
-                if ($user->status == '0') {
-                    return null;
-                }
-    
-                $userImage = $user->profile->user_image ?? null; // Fetch user image
-                $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate full image URL
-    
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'status' => $leave->status, // Leave status
-                    'user_image' => $userImageUrl, // Full URL for the user image
-                ];
-            })
-            ->filter(); // Remove null values (users with status 0)
-    
-        return response()->json($usersOnLeave);
-    }    
-    
+            // For Half Day Leave and Short Leave, check if the selected date matches the start_date
+            ->orWhere(function ($q) use ($selectedDate) {
+                $q->whereIn('type_of_leave', ['Half Day Leave', 'Short Leave'])
+                  ->whereDate('start_date', $selectedDate);
+            });
+        })
+        ->with(['user:id,name,status', 'user.profile:user_id,user_image']) // Load user details and profile
+        ->get()
+        ->map(function ($leave) {
+            $user = $leave->user;
+
+            // Ensure the user is active before including them
+            if ($user->status == '0') {
+                return null;
+            }
+
+            $userImage = $user->profile->user_image ?? null; // Fetch user image
+            $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate full image URL
+
+            // Determine the leave description
+            $leaveDescription = $leave->type_of_leave;
+            if ($leave->type_of_leave === 'Half Day Leave' && $leave->half) {
+                $leaveDescription .= " ({$leave->half})";
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'status' => $leave->status, // Leave status
+                'type_of_leave' => $leaveDescription, // Updated leave description
+                'user_image' => $userImageUrl, // Full URL for the user image
+            ];
+        })
+        ->filter(); // Remove null values (users with status 0)
+
+    return response()->json($usersOnLeave);
+}
 
 // public function getUsersOnLeave(Request $request)
 // {

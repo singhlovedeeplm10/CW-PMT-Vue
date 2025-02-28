@@ -10,6 +10,7 @@
         </div>
         <!-- Modal Body -->
         <div class="modal-body">
+          <!-- Project Name -->
           <div class="mb-3">
             <label for="name" class="form-label">Project Name</label>
             <input
@@ -18,8 +19,14 @@
               v-model="project.name"
               class="form-control custom-input"
               placeholder="Enter project name"
+              :class="{ 'is-invalid': errors.name }"
             />
+            <div v-if="errors.name" class="invalid-feedback">
+              {{ errors.name }}
+            </div>
           </div>
+
+          <!-- Project Description -->
           <div class="mb-3">
             <TextArea
               label="Project Description"
@@ -27,31 +34,48 @@
               placeholder="Enter project description"
               rows="4"
               textareaClass="custom-input"
+              :class="{ 'is-invalid': errors.description }"
             />
+            <div v-if="errors.description" class="invalid-feedback">
+              {{ errors.description }}
+            </div>
           </div>
-          <div class="mb-3">
-      <SelectInput
-        label="Project Type"
-        id="type"
-        v-model="project.type"
-        :options="projectTypeOptions"
-        placeholder="Select Type"
-        valueKey="value"
-        labelKey="label"
-      />
-    </div>
 
-    <div class="mb-3">
-      <SelectInput
-        label="Project Status"
-        id="status"
-        v-model="project.status"
-        :options="projectStatusOptions"
-        placeholder="Select Status"
-        valueKey="value"
-        labelKey="label"
-      />
-    </div>
+          <!-- Project Type -->
+          <div class="mb-3">
+            <SelectInput
+              label="Project Type"
+              id="type"
+              v-model="project.type"
+              :options="projectTypeOptions"
+              placeholder="Select Type"
+              valueKey="value"
+              labelKey="label"
+              :class="{ 'is-invalid': errors.type }"
+            />
+            <div v-if="errors.type" class="invalid-feedback">
+              {{ errors.type }}
+            </div>
+          </div>
+
+          <!-- Project Status -->
+          <div class="mb-3">
+            <SelectInput
+              label="Project Status"
+              id="status"
+              v-model="project.status"
+              :options="projectStatusOptions"
+              placeholder="Select Status"
+              valueKey="value"
+              labelKey="label"
+              :class="{ 'is-invalid': errors.status }"
+            />
+            <div v-if="errors.status" class="invalid-feedback">
+              {{ errors.status }}
+            </div>
+          </div>
+
+          <!-- Comments -->
           <div class="mb-3">
             <TextArea
               label="Comments"
@@ -61,6 +85,7 @@
               textareaClass="custom-input"
             />
           </div>
+
           <!-- Autocomplete Input for User -->
           <div class="mb-3" style="position: relative;">
             <label for="userSearch">Select Users</label>
@@ -125,7 +150,6 @@
               </span>
             </template>
           </ButtonComponent>
-
         </div>
       </div>
     </div>
@@ -158,22 +182,31 @@ export default {
       comments: "",
       developer_assign_list: [], // List to store user ids
     });
+
     const isLoading = ref(false);
     const userSearchQuery = ref("");
     const userSuggestions = ref([]);
     const userError = ref(null);
     const selectedUsers = ref([]); // Store selected users
 
+    // Error state for each field
+    const errors = ref({
+      name: "",
+      description: "",
+      type: "",
+      status: "",
+    });
+
     // Define options for project type and status
     const projectTypeOptions = ref([
-    { label: "Select Project Type", value: "" },
+      { label: "Select Project Type", value: "" },
       { value: "Long", label: "Long" },
       { value: "Medium", label: "Medium" },
       { value: "Short", label: "Short" },
     ]);
 
     const projectStatusOptions = ref([
-    { label: "Select Project Status", value: "" },
+      { label: "Select Project Status", value: "" },
       { value: "Awaiting", label: "Awaiting" },
       { value: "Started", label: "Started" },
       { value: "Paused", label: "Paused" },
@@ -182,18 +215,35 @@ export default {
 
     // Add project method
     const addProject = async () => {
-      if (
-        !project.value.name ||
-        !project.value.description ||
-        !project.value.type ||
-        !project.value.status
-      ) {
-        toast.error("Please fill in all required fields.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-        return;
+      // Reset errors
+      errors.value = {
+        name: "",
+        description: "",
+        type: "",
+        status: "",
+      };
+
+      // Validate fields
+      let hasErrors = false;
+      if (!project.value.name) {
+        errors.value.name = "Project name is required.";
+        hasErrors = true;
       }
+      if (!project.value.description) {
+        errors.value.description = "Project description is required.";
+        hasErrors = true;
+      }
+      if (!project.value.type) {
+        errors.value.type = "Project type is required.";
+        hasErrors = true;
+      }
+      if (!project.value.status) {
+        errors.value.status = "Project status is required.";
+        hasErrors = true;
+      }
+
+      // If there are errors, stop here
+      if (hasErrors) return;
 
       isLoading.value = true;
       try {
@@ -203,16 +253,16 @@ export default {
           },
         });
         toast.success("Project added successfully.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
         emit("project-added");
         emit("close");
       } catch (error) {
         toast.error("Failed to add project. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
       } finally {
         isLoading.value = false;
       }
@@ -268,12 +318,22 @@ export default {
       selectedUsers,
       projectStatusOptions,
       removeUser,
+      errors, // Expose errors to the template
     };
   },
 };
 </script>
-  
-  <style scoped>
+
+<style scoped>
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875em;
+}
+
   /* General Modal Styling */
   .modal.fade.show {
     display: block;

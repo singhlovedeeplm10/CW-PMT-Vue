@@ -397,7 +397,7 @@ public function getEmployeeTimeLogs(Request $request)
             $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
             $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
             $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-            $imagePath = $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : asset('default-profile.png');
+            $imagePath = $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : asset('img/CWlogo.jpeg');
 
             $timeLogs[] = [
                 'employee_code' => $user->profile->employee_code,

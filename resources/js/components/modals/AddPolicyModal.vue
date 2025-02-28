@@ -1,7 +1,10 @@
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
-      <h2>Add New Policy</h2>
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2 class="modal-title">Add New Policy</h2>
+      </div>
 
       <!-- Policy Title -->
       <div class="form-group">
@@ -27,21 +30,20 @@
       </div>
 
       <!-- Buttons -->
-      <div class="modal-footer d-flex justify-content-end gap-2">
-  <ButtonComponent
-    label="Cancel"
-    buttonClass="btn-secondary"
-    @click="closeModal"
-  />
-  <ButtonComponent
-    label="Save Policy"
-    buttonClass="btn-primary"
-    :isDisabled="loading"
-    :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
-    @click="submitPolicy"
-  />
-</div>
-
+      <div class="modal-footer">
+        <ButtonComponent
+          label="Cancel"
+          buttonClass="btn-secondary"
+          @click="closeModal"
+        />
+        <ButtonComponent
+          label="Save Policy"
+          buttonClass="btn-primary"
+          :isDisabled="loading"
+          :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
+          @click="submitPolicy"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -114,132 +116,129 @@ export default {
 };
 </script>
 
+<style scoped>
+.modal-title{
+  line-height: 1.5;
+  text-align: center;
+  margin: auto;
+}
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
 
-  
-  <style scoped>
-  /* Modal Overlay */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Darker background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
+/* Modal Content */
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  width: 550px;
+  min-height: 350px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.4s ease-out;
+  position: relative;
+}
+
+/* Modal Header */
+.modal-header {
+  background-color: #007bff;
+  padding: 16px;
+  border-radius: 10px 10px 0 0;
+  text-align: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Form Group Styling */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 5px;
+  background-color: #f8f9fa;
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Buttons */
+button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* Modal Footer */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  /* Modal Content */
-  .modal-content {
-    background: white;
-    border-radius: 8px; /* Rounded corners */
-    padding: 30px;
-    width: 450px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-    animation: slideIn 0.4s ease-out;
+  to {
+    opacity: 1;
   }
-  
-  /* Title Styling */
-  .modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #333;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
   }
-  
-  /* Form Group Styling */
-  .form-group {
-    margin-bottom: 20px;
+  to {
+    transform: translateY(0);
   }
-  
-  label {
-    font-weight: 600;
-    color: #555;
-    display: block;
-    margin-bottom: 8px;
-  }
-  
-  /* Input Fields Styling */
-  input[type="text"],
-  input[type="file"] {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-top: 8px;
-    background-color: #f9f9f9;
-    transition: border 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  input[type="text"]:focus,
-  input[type="file"]:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
-    outline: none;
-  }
-  
-  /* Button Styling */
-  button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-  }
-  
-  .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #5a6268;
-  }
-  
-  .btn-primary {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  .btn-primary:hover {
-    background-color: #0056b3;
-  }
-  
-  .btn-primary:active {
-    transform: scale(0.98);
-  }
-  
-  /* Modal Footer Styling */
-  .modal-footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  /* Animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideIn {
-    from {
-      transform: translateY(-30px);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-  </style>
-  
-  
+}
+</style>

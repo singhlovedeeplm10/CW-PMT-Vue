@@ -161,6 +161,7 @@ h2 {
   margin-bottom: 20px;
   font-size: 1.8rem;
   color: #333;
+  text-align: center;
 }
 
 /* Form Grid (Two-Column Layout) */
