@@ -426,4 +426,4 @@ const startBreakTimer = () => {
 };
 </script>
 
-<style src="../resources/css/home.css"></style>
+<style src="/resources/css/home.css"></style>
