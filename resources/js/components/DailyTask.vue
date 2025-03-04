@@ -195,7 +195,7 @@
 
 <script>
 import MasterComponent from './layouts/Master.vue';
-import Calendar from "@/components/Calendar.vue";
+import Calendar from "@/components/forms/Calendar.vue";
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 import { toast } from 'vue3-toastify';

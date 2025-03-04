@@ -50,8 +50,8 @@
 
 
 <script>
-import ButtonComponent from "@/components/ButtonComponent.vue";
-import InputField from "@/components/InputField.vue"; // Import InputField
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import InputField from "@/components/inputs/InputField.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 

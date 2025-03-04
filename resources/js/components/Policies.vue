@@ -130,7 +130,7 @@
 import MasterComponent from './layouts/Master.vue';
 import AddPolicyModal from './modals/AddPolicyModal.vue';
 import EditPolicyModal from './modals/EditPolicyModal.vue';
-import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import axios from 'axios';

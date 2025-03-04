@@ -43,7 +43,7 @@
   
   <script>
   import MasterComponent from './layouts/Master.vue';
-  import Pagination from './ui/pagination/Pagination.vue';
+  import Pagination from "@/components/forms/Pagination.vue";
   
   export default {
     name: "Listings",

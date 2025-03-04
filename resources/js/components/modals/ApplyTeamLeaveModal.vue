@@ -238,11 +238,11 @@
 
 <script>
 import axios from "axios";
-import TimeInput from "@/components/TimeInput.vue";
-import DateInput from "@/components/DateInput.vue";
-import SelectInput from "@/components/SelectInput.vue";
-import TextArea from "@/components/TextArea.vue";
-import InputField from "@/components/InputField.vue";
+import TimeInput from "@/components/inputs/TimeInput.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
+import SelectInput from "@/components/inputs/SelectInput.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
+import InputField from "@/components/inputs/InputField.vue";
 import { Modal } from "bootstrap";
 import { toast } from "vue3-toastify";
 

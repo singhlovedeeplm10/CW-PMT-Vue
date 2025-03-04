@@ -60,7 +60,7 @@
 import $ from "jquery";
 import "summernote/dist/summernote-lite.css";
 import "summernote/dist/summernote-lite.js";
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";

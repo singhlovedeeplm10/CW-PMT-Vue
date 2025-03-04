@@ -46,7 +46,7 @@
 
 <script>
 import MasterComponent from "./layouts/Master.vue";
-import InputField from "./InputField.vue"; // Import the InputField component
+import InputField from "@/components/inputs/InputField.vue";
 
 export default {
   name: "Tasks",

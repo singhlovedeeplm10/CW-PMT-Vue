@@ -60,7 +60,7 @@
 <script>
 import MasterComponent from './layouts/Master.vue';
 import axios from 'axios';
-import Calendar from './Calendar.vue';
+import Calendar from "@/components/forms/Calendar.vue";
 
 export default {
   name: 'MyTaskList',

@@ -127,7 +127,7 @@
 import MasterComponent from './layouts/Master.vue';
 import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
 import UpdateLeaveModal from "@/components/modals/UpdateLeaveModal.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue"; // Import ButtonComponent
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 

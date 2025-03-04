@@ -49,7 +49,7 @@
 <script>
 import axios from "axios";
 import AddTaskModal from "@/components/modals/AddTaskModal.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import * as bootstrap from "bootstrap";

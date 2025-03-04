@@ -95,10 +95,10 @@ import { ref } from "vue";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import ButtonComponent from "@/components/ButtonComponent.vue";
-import InputField from "@/components/InputField.vue";
-import EmailInput from "@/components/EmailInput.vue";
-import PasswordInput from "@/components/PasswordInput.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import InputField from "@/components/inputs/InputField.vue";
+import EmailInput from "@/components/inputs/EmailInput.vue";
+import PasswordInput from "@/components/inputs/PasswordInput.vue";
 
 export default {
   name: "AddEmployeeModal",

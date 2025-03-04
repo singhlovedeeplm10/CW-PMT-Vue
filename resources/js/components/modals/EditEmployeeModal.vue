@@ -134,7 +134,7 @@
 
 <script>
 import { toast } from 'vue3-toastify';
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 export default {
   components: {
     ButtonComponent

@@ -101,7 +101,7 @@
 import MasterComponent from './layouts/Master.vue';
 import AddProjectModal from './modals/AddProjectModal.vue';
 import EditProjectModal from './modals/EditProjectModal.vue';
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import axios from 'axios';
 
 export default {

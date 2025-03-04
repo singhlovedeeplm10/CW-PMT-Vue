@@ -66,9 +66,9 @@
 
 <script>
 import MasterComponent from "./layouts/Master.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue";
-import TextArea from "@/components/TextArea.vue";
-import InputField from "@/components/InputField.vue"; // Import InputField
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
+import InputField from "@/components/inputs/InputField.vue";
 import { toast } from "vue3-toastify";
 
 export default {

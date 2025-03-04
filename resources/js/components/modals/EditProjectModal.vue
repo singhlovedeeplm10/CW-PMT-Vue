@@ -134,9 +134,9 @@
 import axios from 'axios';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import ButtonComponent from "@/components/ButtonComponent.vue";
-import TextArea from "@/components/TextArea.vue"; // Import the TextArea component
-import SelectInput from "@/components/SelectInput.vue"; // Import SelectInput
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
+import SelectInput from "@/components/inputs/SelectInput.vue"; // Import SelectInput
 
 
 export default {

@@ -92,9 +92,9 @@
 </template>
 
 <script>
-import InputField from "@/components/InputField.vue";
-import DateInput from "@/components/DateInput.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import InputField from "@/components/inputs/InputField.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import $ from "jquery";

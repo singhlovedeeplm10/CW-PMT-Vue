@@ -145,7 +145,7 @@
 import MasterComponent from './layouts/Master.vue';
 import ApplyTeamLeaveModal from "@/components/modals/ApplyTeamLeaveModal.vue";
 import UpdateTeamLeaveModal from "@/components/modals/UpdateTeamLeaveModal.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 

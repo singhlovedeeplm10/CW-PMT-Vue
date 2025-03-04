@@ -28,7 +28,7 @@
   </template>
   
   <script>
-  import Pagination from "@/components/ui/pagination/Pagination.vue";
+import Pagination from "@/components/forms/Pagination.vue";
   
   export default {
     name: "ShowListing",

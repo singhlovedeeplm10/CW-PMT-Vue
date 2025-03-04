@@ -53,7 +53,7 @@
 
 <script>
 import axios from "axios";
-import Calendar from "@/components/Calendar.vue";
+import Calendar from "@/components/forms/Calendar.vue";
 
 export default {
   name: "MembersWorkFromHome",

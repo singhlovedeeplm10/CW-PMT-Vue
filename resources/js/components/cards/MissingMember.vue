@@ -85,7 +85,7 @@
 </template>
 
 <script>
-import Calendar from "@/components/Calendar.vue";
+import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
 import { ref, onMounted } from "vue";
 
@@ -153,7 +153,7 @@ export default {
 <style scoped>
 /* Table styling */
 .table {
-  width: 130%;
+  width: 185%;
   border-collapse: collapse;
 }
 .table th, .table td {

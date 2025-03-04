@@ -57,8 +57,8 @@
 </template>
   
   <script>
-  import Calendar from "@/components/Calendar.vue";
-  import axios from "axios";
+import Calendar from "@/components/forms/Calendar.vue";
+import axios from "axios";
   import { ref } from "vue";
   
   export default {

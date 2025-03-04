@@ -80,7 +80,7 @@
 import MasterComponent from "./layouts/Master.vue";
 import AddNoticeModal from "./modals/AddNoticeModal.vue";
 import EditNoticeModal from "./modals/EditNoticeModal.vue";
-import Pagination from "@/components/Pagination.vue";
+import Pagination from "@/components/forms/Pagination.vue";
 import axios from "axios";
 
 export default {

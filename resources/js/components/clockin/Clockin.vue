@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import AddBreakModal from "@/components/modals/AddBreakModal.vue";
 import axios from "axios";
 import { ref, onMounted, computed } from "vue";
@@ -364,13 +364,6 @@ const startBreakTimer = () => {
       clockInTime.value = new Date(clockinResponse.data.clockInTime).getTime(); // Convert server time to local timestamp
     }
 
-    if (clockinResponse.data.isOnBreak) {
-      isOnBreak.value = true;
-      breakStartTime.value = new Date(clockinResponse.data.breakStartTime).getTime(); // Convert server time to local timestamp
-      totalBreakTime.value = clockinResponse.data.totalBreakTime || 0;
-      startBreakTimer();
-    }
-
     // Fetch break-in status
     const breakinResponse = await axios.get('/api/get-breakin-token', {
       headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
@@ -380,28 +373,28 @@ const startBreakTimer = () => {
       isOnBreak.value = true;
       breakStartTime.value = new Date(breakinResponse.data.breakStartTime).getTime(); // Convert to timestamp
       totalBreakTime.value = breakinResponse.data.totalBreakTime || 0;
-      startBreakTimer(); // Start the break timer with the updated total time
     }
 
     // Fetch daily hours
     await fetchDailyHours();
 
     // Adjust productive hours by subtracting total break time (frontend only)
-    // Ensure that the daily hours are updated by subtracting the total break time before starting the timer
     dailyHours.value -= totalBreakTime.value;
 
-    // Set timer to daily hours and start timer if clocked in
+    // Start both timers if applicable
     if (isClockedIn.value) {
       pausedTime.value = dailyHours.value; // Initialize timer with the adjusted daily hours
-      startTimer();
+      startTimer(); // Start the main timer
+    }
+
+    if (isOnBreak.value) {
+      startBreakTimer(); // Start the break timer
     }
 
   } catch (error) {
     console.error("Error fetching status:", error.response?.data || error.message);
-    toast.error("Failed to fetch status", { position: "top-right",
-    autoClose: 1000 });
-  }
-  finally {
+    toast.error("Failed to fetch status", { position: "top-right", autoClose: 1000 });
+  } finally {
     isPageLoading.value = false; // Set loading to false after all data is fetched
   }
 });

@@ -111,9 +111,9 @@
 </template>
 
 <script>
-import ButtonComponent from '@/components/ButtonComponent.vue';
-import InputField from '@/components/InputField.vue';
-import TextArea from '@/components/TextArea.vue';
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import InputField from "@/components/inputs/InputField.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
 import { Modal } from 'bootstrap';
 import axios from 'axios';
 import { ref, computed, onMounted, watch } from 'vue';

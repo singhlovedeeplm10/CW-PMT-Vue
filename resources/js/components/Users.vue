@@ -138,8 +138,8 @@ import axios from "axios";
 import MasterComponent from "./layouts/Master.vue";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/modals/EditEmployeeModal.vue";
-import Pagination from "@/components/Pagination.vue";
-import ButtonComponent from "@/components/ButtonComponent.vue";
+import Pagination from "@/components/forms/Pagination.vue";
+import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 
 export default {
   name: "Users",
