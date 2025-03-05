@@ -1,6 +1,6 @@
 <template>
   <!-- CARDS (MISSING TEAM MEMBERS AND TEAM MEMBERS ON LEAVE) -->
-  <div class="d-flex justify-content-between task-card-container mt-3" style="width: 1262px; height: 300px;">
+  <div class="d-flex justify-content-between task-card-container mt-3" style="width: 1262px; height: 300px; gap: 8px;">
     
     <!-- 1st Task List Card (Missing Team Members) -->
     <div class="card flex-fill me-3 shadow-sm" id="card1">
@@ -153,7 +153,7 @@ export default {
 <style scoped>
 /* Table styling */
 .table {
-  width: 185%;
+  width: 149%;
   border-collapse: collapse;
 }
 .table th, .table td {
@@ -171,24 +171,25 @@ export default {
   max-height: 350px;
   overflow-y: auto;
   padding: 20px;
-  border-radius: 10px;
   background: #ffffff;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  border: none;
   transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid rgb(245, 90, 90);
+  border-radius: 8px; /* Smooth border corners */
 }
 #card2 {
   max-height: 350px;
   overflow-y: auto;
   padding: 20px;
-  border-radius: 10px;
   background: #ffffff;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  border: none;
   transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid rgb(205, 141, 111);
+  border-radius: 8px; /* Smooth border corners */
 }
+
 
 /* Header styling */
 .task-card-header h4 {

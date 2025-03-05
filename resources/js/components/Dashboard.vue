@@ -140,8 +140,9 @@ export default {
 
 .card-container {
   display: flex;
-  gap: 16px; /* Space between cards */
+  gap: 20px; /* Space between cards */
   flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  width: 98%;
 }
 
 .card-container > * {

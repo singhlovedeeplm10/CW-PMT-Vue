@@ -207,21 +207,27 @@ public function updateStatus(Request $request, $id)
     }
 
     public function getUserProfile()
-{
-    $user = auth()->user(); // Get logged-in user
-    $profile = $user->profile; // Use the relationship to get profile data
-
-    return response()->json([
-        'name' => $user->name,
-        'email' => $user->email,
-        'status' => $user->status,
-        'dob' => $profile->user_DOB,
-        'contact' => $profile->contact,
-        'address' => $profile->address,
-        'user_image' => $profile->user_image,
-        'employee_code' => $profile->employee_code,
-    ]);
-}
+    {
+        $user = auth()->user(); // Get logged-in user
+        $profile = $user->profile; // Use the relationship to get profile data
+    
+        // Generate employee_code based on user ID
+        $userId = $user->id;
+        $formattedId = str_pad($userId, 3, "0", STR_PAD_LEFT); // Ensure minimum 3 digits
+        $employeeCode = "CW" . $formattedId;
+    
+        return response()->json([
+            'name' => $user->name,
+            'email' => $user->email,
+            'status' => $user->status,
+            'dob' => $profile?->user_DOB ?? null, // Check if $profile exists
+            'contact' => $profile?->contact ?? null,
+            'address' => $profile?->address ?? null,
+            'user_image' => $profile?->user_image ?? null,
+            'employee_code' => $employeeCode, // Dynamically generated employee code
+        ]);
+    }
+    
 public function edit(User $user)
 {
     // Ensure eager loading of the user profile
@@ -248,13 +254,12 @@ public function employeeAttendances(Request $request)
     }
 
     $query = User::with([
-        'profile', 
         'attendances', 
         'leaves' => function ($query) {
             $query->where('status', 'approved');
-        }
+        },
+        'profile:user_id,user_image' // Only fetching user image from user_profiles
     ])
-    ->whereHas('profile')
     ->orderBy('name', 'asc');
 
     // Apply search filters
@@ -270,12 +275,12 @@ public function employeeAttendances(Request $request)
         // Fetch attendance records for the given month
         $attendances = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate]);
 
-        // Group attendance records by date to ensure multiple clicks are counted only once per day
+        // Group attendance records by date
         $uniqueAttendances = $attendances->groupBy(function ($attendance) {
             return Carbon::parse($attendance->clockin_time)->toDateString();
         });
 
-        // Fetch work-from-home leaves with approved status for the given month
+        // Fetch work-from-home leaves
         $wfhLeaves = $user->leaves->where('type_of_leave', 'Work From Home')
             ->filter(function ($leave) use ($startDate, $endDate) {
                 return ($leave->start_date <= $endDate && (!$leave->end_date || $leave->end_date >= $startDate));
@@ -284,18 +289,16 @@ public function employeeAttendances(Request $request)
         // Count days where the user has both an approved WFH leave and an attendance record
         $totalWFH = $wfhLeaves->reduce(function ($count, $leave) use ($uniqueAttendances) {
             $daysInLeaveRange = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date ?: $leave->start_date)) + 1;
-
             $daysWithAttendance = $uniqueAttendances->filter(function ($attendance, $date) use ($leave) {
                 return Carbon::parse($date)->between($leave->start_date, $leave->end_date ?: $leave->start_date);
             })->count();
-
             return $count + min($daysInLeaveRange, $daysWithAttendance);
         }, 0);
 
-        // Count WFO days excluding those counted in WFH
+        // Count WFO days excluding WFH
         $totalWFO = $uniqueAttendances->count() - $totalWFH;
 
-        // Count total leave days (Full Day and Half Day)
+        // Count total leave days
         $totalLeaves = $user->leaves
             ->filter(function ($leave) use ($startDate, $endDate) {
                 return in_array($leave->type_of_leave, ['Full Day Leave', 'Half Day Leave']) &&
@@ -307,12 +310,14 @@ public function employeeAttendances(Request $request)
 
         $totalWorkingDays = $totalWFO + $totalWFH;
 
-        // Generate employee code based on user ID
+        // Generate employee code
         $employeeCode = sprintf("CW%03d", $user->id);
 
         return [
             'id' => $employeeCode,
-            'image' => $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : null,
+            'image' => $user->profile && $user->profile->user_image 
+                ? asset('storage/' . $user->profile->user_image) 
+                : asset('img/CWlogo.jpeg'), // Default image if no user image exists
             'name' => $user->name,
             'status' => $user->status,
             'totalWFO' => $totalWFO,
@@ -324,6 +329,7 @@ public function employeeAttendances(Request $request)
 
     return response()->json($employees);
 }
+
 
 public function getEmployeeTimeLogs(Request $request)
 {

@@ -204,7 +204,9 @@ export default {
     padding: 16px;
     box-sizing: border-box;
     overflow: hidden;
-    max-height: 100%;
+    max-height: 91%;
+    border: 1px solid rgb(183, 111, 205);
+    border-radius: 8px; /* Smooth border corners */
 }
 
 .task-card-header {

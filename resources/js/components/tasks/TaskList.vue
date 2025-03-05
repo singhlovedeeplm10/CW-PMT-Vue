@@ -162,6 +162,7 @@ export default {
     border-radius: 8px;
     margin-top: 20px;
     background-color: #fff;
+    width: 98%;
   }
   .task-card-header {
     display: flex;
