@@ -77,7 +77,7 @@
           </thead>
           <tbody>
             <tr v-for="slip in filteredSalarySlips" :key="slip.id">
-              <td>{{ slip.employee_code }}</td>
+              <td>{{ slip.employee_id }}</td>
               <td>{{ slip.employee_name }}</td>
               <td>{{ slip.total_salary }}</td>
               <td>{{ slip.basic_salary }}</td>
@@ -85,7 +85,7 @@
               <td>{{ slip.total_incentives }}</td>
               <td>{{ slip.net_salary_credited }}</td>
               <td class="action-buttons">
-                <button @click="viewSalarySlip(slip.employee_code)" class="view-button">
+                <button @click="viewSalarySlip(slip.employee_id)" class="view-button">
                   <i class="fas fa-eye"></i>
                 </button>
                 <button v-if="userRole === 'Admin'" @click="deleteSalarySlip(slip.id)" class="delete-button">
@@ -167,7 +167,7 @@ export default {
         this.selectedSalarySlip = response.data;
         this.showModal = true;
       } catch (error) {
-        toast.error('Failed to fetch salary slip details.', { position: "top-right" });
+        toast.error('Failed to fetch salary slip details.', { position: "top-right" , autoClose: 1000, });
         console.error(error);
       }
     },
@@ -176,7 +176,7 @@ export default {
     },
     async uploadFile() {
     if (!this.file) {
-      toast.error('Please select a file to upload.', { position: "top-right" });
+      toast.error('Please select a file to upload.', { position: "top-right" , autoClose: 1000, });
       return;
     }
 
@@ -205,9 +205,9 @@ export default {
         headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
       });
       this.salarySlips = this.salarySlips.filter(slip => slip.id !== id);
-      toast.success('Salary slip deleted successfully!', { position: "top-right" });
+      toast.success('Salary slip deleted successfully!', { position: "top-right" , autoClose: 1000,});
     } catch (error) {
-      toast.error('Failed to delete salary slip.', { position: "top-right" });
+      toast.error('Failed to delete salary slip.', { position: "top-right" , autoClose: 1000,});
       console.error(error);
     }
   },

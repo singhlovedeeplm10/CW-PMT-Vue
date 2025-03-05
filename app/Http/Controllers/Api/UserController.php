@@ -79,39 +79,43 @@ class UserController extends Controller
     
 
     public function addUser(Request $request)
-{
-    // Validate the incoming request
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8',
-    ]);
-
-    // Check if the email already exists
-    if (User::where('email', $request->email)->exists()) {
-        return response()->json(['email' => 'The email has already been taken.'], 422);
+    {
+        // Validate the incoming request
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+    
+        // Create a new user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+    
+        // Generate Employee Code (CW00{id} or CW{id})
+        $employee_code = 'CW' . str_pad($user->id, 3, '0', STR_PAD_LEFT);
+    
+        // Create User Profile with Employee Code
+        UserProfile::create([
+            'user_id' => $user->id,
+            'employee_code' => $employee_code,
+        ]);
+    
+        // Send Welcome Email
+        try {
+            Mail::to($user->email)->send(new WelcomeMail(['name' => $user->name]));
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'User created but email could not be sent. ' . $e->getMessage()], 500);
+        }
+    
+        return response()->json(['message' => 'User created successfully, and email sent!', 'user' => $user], 201);
     }
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
-    }
-
-    // Create a new user
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
-
-    // Send Welcome Email
-    try {
-        Mail::to($user->email)->send(new WelcomeMail(['name' => $user->name]));
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'User created but email could not be sent. ' . $e->getMessage()], 500);
-    }
-
-    return response()->json(['message' => 'User created successfully, and email sent!', 'user' => $user], 201);
-}
 
     public function updateUser(Request $request, $id)
 {

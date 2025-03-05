@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('salary_slips', function (Blueprint $table) {
             $table->id();
-            $table->string('employee_code')->unique();
+            $table->string('employee_id')->unique();
             $table->string('employee_name');
             $table->string('month_year');
             $table->integer('total_salary');

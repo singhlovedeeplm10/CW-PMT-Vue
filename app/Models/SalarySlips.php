@@ -13,7 +13,7 @@ class SalarySlips extends Model
     protected $table = 'salary_slips';
 
     protected $fillable = [
-        'employee_code',
+        'employee_id',
         'employee_name',
         'month_year',
         'total_salary',
