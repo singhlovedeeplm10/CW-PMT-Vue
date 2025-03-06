@@ -684,4 +684,76 @@
       background: #218838;
     }
     </style> --}}
+    {{-- NOT USED MIGRATION FILES
     
+     Schema::create('billing_credentials', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['Upwork', 'Freelancer']);
+            $table->string('username');
+            $table->string('password');
+            $table->unsignedBigInteger('admin_id');
+            $table->timestamps();
+
+            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+         Schema::create('project_teams', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('admin_id');
+            $table->timestamps();
+
+            // Define foreign keys if necessary
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
+        });
+    
+        Schema::create('project_details', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->timestamp('start_date')->nullable();
+            $table->timestamp('end_date')->nullable();
+            $table->enum('billing_type', ['Online', 'Offline', 'Fixed'])->nullable();
+            $table->integer('billing_hours')->nullable();
+            $table->json('milestone_ids')->nullable(); // Change to JSON
+            $table->unsignedBigInteger('billing_credential_id')->nullable();
+            $table->string('credentials')->nullable();
+            $table->string('technology_front')->nullable();
+            $table->string('technology_back')->nullable();
+            $table->string('technology_dbms')->nullable();
+            $table->string('dependencies')->nullable();
+            $table->json('upload_ids')->nullable(); // Change to JSON
+            $table->timestamps();
+
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+            $table->foreign('billing_credential_id')->references('id')->on('billing_credentials')->onDelete('set null');
+        });
+
+ Schema::create('milestones', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->integer('hours')->nullable();
+            $table->text('description')->nullable();
+            $table->enum('status', ['Awaiting', 'Started', 'Paused', 'Completed'])->nullable();
+            $table->timestamps();
+
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+        });
+
+
+        Schema::create('technologies', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->enum('type', ['frontend', 'backend', 'dbms', 'frontend & backend']);
+            $table->unsignedBigInteger('admin_id');
+            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+    --}}

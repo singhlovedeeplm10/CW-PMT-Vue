@@ -335,7 +335,7 @@ public function employeeAttendances(Request $request)
 }
 
 
-public function getEmployeeTimeLogs(Request $request)
+public function getEmployeeTimeLogsById(Request $request)
 {
     $user = Auth::user(); // Get the logged-in user
 
@@ -348,7 +348,7 @@ public function getEmployeeTimeLogs(Request $request)
     $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
     $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
 
-    $query = User::with(['profile', 'attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+    $query = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
         $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
               ->with('breaks');
     }]);
@@ -356,15 +356,7 @@ public function getEmployeeTimeLogs(Request $request)
     // Check if the logged-in user is not an admin
     if (!$user->hasRole('Admin')) {
         // Filter only the logged-in user's data
-        $employeeCode = $user->profile->employee_code ?? null;
-
-        if (!$employeeCode) {
-            return response()->json(['error' => 'Employee code not found'], 404);
-        }
-
-        $query->whereHas('profile', function ($query) use ($employeeCode) {
-            $query->where('employee_code', $employeeCode);
-        });
+        $query->where('id', $user->id);
     }
 
     // Apply name filter if the user is an admin
@@ -407,10 +399,10 @@ public function getEmployeeTimeLogs(Request $request)
             $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
             $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
             $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-            $imagePath = $user->profile->user_image ? asset('storage/' . $user->profile->user_image) : asset('img/CWlogo.jpeg');
+            $imagePath = $user->user_image ? asset('storage/' . $user->user_image) : asset('img/CWlogo.jpeg');
 
             $timeLogs[] = [
-                'employee_code' => $user->profile->employee_code,
+                'id' => $user->id,
                 'image' => $imagePath,
                 'name' => $user->name,
                 'status' => $user->status,
@@ -427,18 +419,16 @@ public function getEmployeeTimeLogs(Request $request)
 }
 
 
-public function getDetailedTimeLogs(Request $request)
+public function getEmployeeAttendanceTimelogs(Request $request)
 {
-    $employeeCode = $request->query('employee_code');
+    $userId = $request->query('user_id');
     $date = $request->query('date');
 
-    // Fetch user ID from employee code
-    $userProfile = UserProfile::where('employee_code', $employeeCode)->first();
-    if (!$userProfile) {
+    // Fetch user details
+    $user = User::find($userId);
+    if (!$user) {
         return response()->json([]);
     }
-
-    $userId = $userProfile->user_id;
 
     // Fetch detailed time logs
     $detailedLogs = Attendance::where('user_id', $userId)
@@ -447,18 +437,17 @@ public function getDetailedTimeLogs(Request $request)
 
     return response()->json($detailedLogs);
 }
-public function getEmployeeBreaks(Request $request)
+
+public function getEmployeeBreaksTimelogs(Request $request)
 {
-    $employeeCode = $request->query('employee_code');
+    $userId = $request->query('user_id');
     $date = $request->query('date');
 
-    // Fetch user ID from employee code
-    $userProfile = UserProfile::where('employee_code', $employeeCode)->first();
-    if (!$userProfile) {
+    // Fetch user from users table
+    $user = User::find($userId);
+    if (!$user) {
         return response()->json([]);
     }
-
-    $userId = $userProfile->user_id;
 
     // Fetch break details
     $breakLogs = Breaks::where('user_id', $userId)
@@ -473,5 +462,6 @@ public function getEmployeeBreaks(Request $request)
 
     return response()->json($breakLogs);
 }
+
 
 }

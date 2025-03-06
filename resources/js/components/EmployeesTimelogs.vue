@@ -85,12 +85,14 @@
   >
     <!-- <td>{{ log.name }}</td> -->
     <td>{{ formatDate(log.date) }}</td>
-    <td @click="openModal(log.employee_code, log.date)" class="clickable-time">
+    <td @click="openModal(log.id, log.date)" class="clickable-time">
       {{ log.clock_in_out }}
-    </td>
-    <td @click="openBreakModal(log.employee_code, log.date)" class="clickable-time">
+</td>
+
+<td @click="openBreakModal(log.id, log.date)" class="clickable-time">
   {{ log.total_break }}
 </td>
+
 
     <td>{{ log.total_hours }}</td>
     <td>{{ log.total_productive_hours }}</td>
@@ -244,14 +246,14 @@
         console.error("Error fetching user role:", error);
       }
     },
-    async openBreakModal(employeeCode, date) {
-  this.selectedEmployeeCode = employeeCode;
+    async openBreakModal(userId, date) {
+  this.selectedUserId = userId;
   this.selectedDate = date;
   this.showBreakModal = true;
   this.noBreakDataMessage = ""; // Reset message before fetching
 
   try {
-    const response = await fetch(`/api/employee-breaks?employee_code=${employeeCode}&date=${date}`);
+    const response = await fetch(`/api/employee-breaks?user_id=${userId}&date=${date}`);
     const data = await response.json();
     this.breakLogs = data;
 
@@ -263,6 +265,7 @@
     this.noBreakDataMessage = "Failed to fetch break details.";
   }
 },
+
 
 
   closeBreakModal() {
@@ -345,22 +348,20 @@
   }
 },
 
-      async openModal(employeeCode, date) {
-        this.selectedEmployeeCode = employeeCode;
-        this.selectedDate = date;
-        this.showModal = true;
-        // this.loading = true;
-  
-        try {
-          const response = await fetch(`/api/employee-detailed-time-logs?employee_code=${employeeCode}&date=${date}`);
-          const data = await response.json();
-          this.detailedLogs = data;
-        } catch (error) {
-          console.error('Error fetching detailed time logs:', error);
-        } finally {
-          // this.loading = false;
-        }
-      },
+      async openModal(userId, date) {
+    this.selectedUserId = userId;
+    this.selectedDate = date;
+    this.showModal = true;
+
+    try {
+        const response = await fetch(`/api/employee-detailed-time-logs?user_id=${userId}&date=${date}`);
+        const data = await response.json();
+        this.detailedLogs = data;
+    } catch (error) {
+        console.error('Error fetching detailed time logs:', error);
+    }
+},
+
       closeModal() {
         this.showModal = false;
         this.detailedLogs = [];
