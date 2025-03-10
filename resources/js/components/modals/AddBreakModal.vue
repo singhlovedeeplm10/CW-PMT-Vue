@@ -15,6 +15,7 @@
             class="btn-close"
             data-bs-dismiss="modal"
             aria-label="Close"
+            @click="resetModal"
           ></button>
         </div>
         <div class="modal-body">
@@ -33,7 +34,7 @@
             label="Take Break"
             iconClass="fas fa-clock"
             buttonClass="btn-success w-100"
-            @click="startBreak"
+            @click="handleBreakStart"
           />
           <div v-else class="text-center">
             <span class="spinner-border text-primary" role="status">
@@ -69,60 +70,71 @@ export default {
     const breakReason = ref("");
     const isLoading = ref(false);
 
-    const startBreak = async () => {
-  if (!breakReason.value.trim()) {
-    toast.error("Break reason is required.", { position: "top-right" });
-    return;
-  }
+    const resetModal = () => {
+      breakReason.value = ""; // Reset input field
+    };
 
-  isLoading.value = true;
-
-  try {
-    const response = await axios.post(
-      "/api/start-break",
-      { reason: breakReason.value },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
+    const handleBreakStart = async () => {
+      if (!breakReason.value.trim()) {
+        toast.error("Break reason is required.", { position: "top-right" });
+        return;
       }
-    );
 
-    if (response.status === 201) {
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById("addbreakmodal")
-      );
-      modal.hide();
-      toast.success("Break started successfully.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+      isLoading.value = true;
 
-      // Emit event with break data
-      emit("breakStarted", { reason: breakReason.value, startTime: Date.now() });
+      try {
+        const response = await axios.post(
+          "/api/start-break",
+          { reason: breakReason.value },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
 
-      // Store the break state in localStorage
-      localStorage.setItem("isOnBreak", "true");
-      localStorage.setItem("breakStartTime", Date.now());  // Save break start time
-      localStorage.setItem("totalBreakTime", 0);  // Initialize break time to 0
-    }
-  } catch (error) {
-    toast.error("Failed to start break. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-  } finally {
-    isLoading.value = false;
-  }
-};
+        if (response.status === 201) {
+          resetModal(); // Reset before closing
+
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("addbreakmodal")
+          );
+          modal.hide();
+
+          toast.success("Break started successfully.", {
+            position: "top-right",
+            autoClose: 1000,
+          });
+
+          emit("breakStarted", {
+            reason: breakReason.value,
+            startTime: Date.now(),
+          });
+
+          localStorage.setItem("isOnBreak", "true");
+          localStorage.setItem("breakStartTime", Date.now());
+          localStorage.setItem("totalBreakTime", 0);
+        }
+      } catch (error) {
+        toast.error("Failed to start break. Please try again.", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
     return {
       breakReason,
-      startBreak,
+      resetModal,
+      handleBreakStart,
       isLoading,
     };
   },
 };
 </script>
+
 
   
   <style scoped>

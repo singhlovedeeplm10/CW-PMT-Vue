@@ -8,7 +8,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TechnologyController;
 use App\Http\Controllers\Api\BillingCredentialController;
 use App\Http\Controllers\API\PermissionController;
-use App\Http\Controllers\API\UserProfileController;
 use App\Http\Controllers\API\AttendanceController;
 use App\Http\Controllers\API\BreakController;
 use App\Http\Controllers\API\ProjectController;
@@ -69,7 +68,6 @@ Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH'
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
-Route::post('/user-profiles', [UserProfileController::class, 'addUserdetails']);
 Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'index']);
 Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
 Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);

@@ -1,9 +1,7 @@
 <template>
   <master-component>
     <div class="project-page">
-      <h1>Projects Page</h1>
-      <p>This is the Projects page content.</p>
-
+      <h2>Projects</h2>
       <!-- Add Project Button using ButtonComponent -->
       <ButtonComponent
         label="Add New Project"
@@ -230,12 +228,6 @@ export default {
   padding: 20px;
   position: relative;
 }
-
-h1 {
-  font-size: 2em;
-  margin-bottom: 15px;
-}
-
 p {
   font-size: 1em;
   color: #6c757d;
@@ -293,10 +285,13 @@ p {
   border-bottom: 1px solid #ddd;
 }
 
+/* Project Table Header */
 .project-table th {
-  font-size: 17px;
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: #ffffff;
+  text-align: left;
+  padding: 12px 15px;
+  font-weight: 600;
 }
 
 .project-table tr:hover {
@@ -304,8 +299,13 @@ p {
 }
 
 .project-table td {
-  font-size: 15px;
-  color: #333;
+  padding: 18px 19px;
+  font-size: 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.project-table tbody tr {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Button Styling */
@@ -335,4 +335,39 @@ edit-project-modal {
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+/* Add Project Button */
+.btn-primary {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  font-size: 0.9em;
+  font-weight: bold;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #003d80);
+}
+
+/* Edit Project Button */
+.btn-secondary {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
 </style>

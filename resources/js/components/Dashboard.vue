@@ -143,6 +143,7 @@ export default {
   gap: 20px; /* Space between cards */
   flex-wrap: wrap; /* Allows wrapping on smaller screens */
   width: 98%;
+  margin-bottom: -21px;
 }
 
 .card-container > * {

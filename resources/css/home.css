@@ -39,7 +39,15 @@ body {
     font-size: 2rem;
 }
 
-.box p {
+.box-1 p {
+    margin: 9px 5px;
+    font-size: 1.2rem;
+}
+.box-2 p {
+    margin: 9px 5px;
+    font-size: 1.2rem;
+}
+.box-3 p {
     margin: 10px 0 0;
     font-size: 1.2rem;
 }

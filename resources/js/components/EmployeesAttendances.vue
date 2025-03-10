@@ -45,9 +45,10 @@
 
               <td>{{ employee.name }}</td>
               <td>
-                <span :class="{'status-active': employee.status === '1', 'status-inactive': employee.status === '0'}">
-                  {{ employee.status === '1' ? 'Active' : 'Inactive' }}
-                </span>
+                <button :class="{'btn-active': employee.status === '1', 'btn-inactive': employee.status === '0'}">
+  {{ employee.status === '1' ? 'Active' : 'Inactive' }}
+</button>
+
               </td>
               <td>{{ employee.totalWFO }}</td>
               <td>{{ employee.totalWFH }}</td>
@@ -205,8 +206,9 @@
   }
   
   .search-btn {
-      background-color: #007bff;
+    background: linear-gradient(135deg, #007bff, #0056b3);
       color: white;
+      font-weight: bold;
       padding: 10px 15px;
       border: none;
       border-radius: 5px;
@@ -216,7 +218,7 @@
   }
   
   .search-btn:hover {
-      background-color: #0056b3;
+    background: linear-gradient(135deg, #0056b3, #003d82);
   }
   
   .attendance-table {
@@ -229,7 +231,7 @@
   }
   
   .attendance-table th {
-      background-color: #007bff;
+    background: linear-gradient(10deg, #2a5298, #2a5298);
       color: white;
       font-weight: bold;
       text-transform: uppercase;
@@ -238,11 +240,14 @@
       text-align: left;
   }
   
-  .attendance-table td {
+  .attendance-table tbody td {
       padding: 12px 15px;
-      text-align: left;
       border-bottom: 1px solid #ddd;
       font-size: 0.9rem;
+  }
+  .attendance-table tbody tr {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
   }
   
   .table-row:hover {
@@ -256,15 +261,25 @@
       border-radius: 50%;
       object-fit: cover;
   }
-  
-  .status-active {
-      color: #28a745;
-      font-weight: bold;
-  }
-  
-  .status-inactive {
-      color: #dc3545;
-      font-weight: bold;
-  }
+
+  .btn-active {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 40px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-inactive {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  border: none;
+  padding: 5px 12px;
+  border-radius: 40px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.3s ease-in-out;
+}
   </style>
   

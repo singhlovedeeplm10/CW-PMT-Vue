@@ -3,8 +3,7 @@
     <div class="policies-page">
       <!-- Conditionally render the page header and "Add New Policy" button -->
       <template v-if="!currentDocument">
-        <h1>Policies Page</h1>
-        <p>This is the Policies page content.</p>
+        <h1>Company Policies</h1>
 
         <!-- Add Project Button -->
         <ButtonComponent
@@ -277,6 +276,13 @@ export default {
 
 
 <style scoped>
+.table thead th {
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: #ffffff;
+  text-align: left;
+  padding: 12px 15px;
+  font-weight: 600;
+}
 .text-muted{
   margin-top: 60px;
   font-size: 18px;
@@ -285,7 +291,7 @@ export default {
 }
 h1 {
   font-size: 2em;
-  margin-bottom: 15px;
+  margin-bottom: 50px;
 }
 .loader-container {
   display: flex;
@@ -360,16 +366,16 @@ h1 {
   right: 20px;
   padding: 10px 16px;
   font-size: 1em;
-  background-color: #007bff;
-  border: none;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-weight: bold;
   color: white;
+  border: none;
   border-radius: 8px;
   transition: all 0.3s ease-in-out;
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, #0056b3, #003d82);
 }
 
 /* Search Field */
@@ -394,9 +400,7 @@ h1 {
 
 /* Table Container */
 .table-container {
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
 }
 
@@ -415,20 +419,9 @@ thead th {
   padding: 12px;
 }
 
-thead th:first-child {
-  border-top-left-radius: 8px;
-}
-
-thead th:last-child {
-  border-top-right-radius: 8px;
-}
-
 tbody tr {
   transition: background-color 0.3s ease-in-out;
-}
-
-tbody tr:nth-child(odd) {
-  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 tbody tr:hover {
@@ -436,8 +429,9 @@ tbody tr:hover {
 }
 
 tbody td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #ddd;
+  padding: 18px 19px;
+  font-size: 16px;
+  border-bottom: 1px solid #e9ecef;
 }
 
 /* Manage Buttons */
@@ -454,21 +448,32 @@ tbody td {
 }
 
 .btn-info {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #218838);
   color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
 }
 
 .btn-info:hover {
-  background-color: #218838;
+  background: linear-gradient(135deg, #218838, #1e7e34);
 }
 
 .btn-warning {
-  background-color: #ffc107;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.3s ease-in-out, transform 0.2s;
 }
 
 .btn-warning:hover {
-  background-color: #e0a800;
+  background: linear-gradient(135deg, #0056b3, #003d82);
 }
 
 .btn-danger {

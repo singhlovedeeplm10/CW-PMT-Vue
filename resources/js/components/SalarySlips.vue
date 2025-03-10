@@ -89,7 +89,7 @@
                   <i class="fas fa-eye"></i>
                 </button>
                 <button v-if="userRole === 'Admin'" @click="deleteSalarySlip(slip.id)" class="delete-button">
-    <i class="fas fa-trash-alt"></i>
+    <i class="fas fa-trash"></i>
   </button>
               </td>
             </tr>
@@ -324,18 +324,19 @@ export default {
 
 /* Buttons */
 .btn-primary {
-  background: #007bff;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      font-weight: bold;
+      padding: 8px 13px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
 }
 
 .btn-primary:hover {
-  background: #0056b3;
+  background: linear-gradient(135deg, #0056b3, #003d82);
 }
 
 .btn-secondary {
@@ -398,10 +399,10 @@ table {
 }
 
 th {
-  background-color: #f4f4f4;
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: white;
   text-align: left;
   padding: 10px;
-  color: #333;
   font-size: 14px;
 }
 
@@ -422,23 +423,24 @@ tr:hover {
 
 /* View Button */
 .view-button {
-  background: #007bff;
-  color: #fff;
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
   border: none;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
 }
 
 .view-button:hover {
-  background: #0056b3;
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: scale(1.1);
 }
 .delete-button {
-  background: #f01818;
+  background-color: #dc3545;
   color: #fff;
   border: none;
-  padding: 8px 10px;
+  padding: 8px 12px;
   margin: 0px 5px;
   border-radius: 5px;
   cursor: pointer;
@@ -446,6 +448,7 @@ tr:hover {
 }
 
 .delete-button:hover {
-  background: #e10303;
+  background-color: #c82333;
+  transform: scale(1.1);
 }
 </style>

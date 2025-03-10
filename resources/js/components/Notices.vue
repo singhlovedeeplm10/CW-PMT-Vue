@@ -46,9 +46,9 @@
               <td>{{ notice.title }}</td>
               <td>{{ formatDate(notice.start_date) }}</td>
               <td>{{ formatDate(notice.end_date) }}</td>
-              <td>
-                <button @click="openEditModal(notice)" class="edit-btn">✏️</button>
-                <button @click="deleteNotice(notice.id)" class="delete-btn">🗑️</button>
+              <td class="manage-buttons">
+                <button @click="openEditModal(notice)" class="btn btn-warning"><i class="fas fa-edit"></i></button>
+                <button @click="deleteNotice(notice.id)" class="btn btn-danger"><i class="fas fa-trash"></i></button>
               </td>
             </tr>
           </tbody>
@@ -241,7 +241,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  border: none;
 }
 
 .add-notice-btn {
@@ -250,15 +250,16 @@ h1 {
   right: 20px;
   padding: 10px 16px;
   font-size: 1em;
-  background-color: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);background-color: #007bff;
   border: none;
+  font-weight: bold;
   color: white;
   border-radius: 8px;
   transition: all 0.3s ease-in-out;
 }
 
 .add-notice-btn:hover {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #0056b3, #003d80);
 }
 
 .notices-section {
@@ -287,7 +288,7 @@ h1 {
 }
 
 .notices-table th {
-  background-color: #007bff;
+  background: linear-gradient(10deg, #2a5298, #2a5298);
   color: white;
   text-transform: uppercase;
   font-weight: 600;
@@ -301,35 +302,62 @@ h1 {
   border-bottom: none;
 }
 
-.edit-btn,
-.delete-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 18px;
-  margin-right: 5px;
-}
 
-.edit-btn {
-  color: #4caf50;
-}
-
-.edit-btn:hover {
-  color: #388e3c;
-}
-
-.delete-btn {
-  color: #f44336;
-}
-
-.delete-btn:hover {
-  color: #d32f2f;
-}
 
 .no-notices {
   margin-top: 20px;
   font-size: 18px;
   color: #555;
   text-align: center;
+}
+/* Manage Buttons */
+.manage-buttons .btn {
+  margin-right: 5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: transform 0.2s ease-in-out;
+}
+
+.manage-buttons .btn:hover {
+  transform: scale(1.1);
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
+
+.btn-warning {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
 }
 </style>

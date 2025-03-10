@@ -1,7 +1,8 @@
 <template>
   <master-component>
     <div class="users-page">
-      <div class="header d-flex justify-content-between align-items-center" style="padding: 15px 37px 14px;">
+      <div class="header d-flex justify-content-between align-items-center" style="padding: 21px 25px 10px; border: none; margin-bottom: 5px;
+">
         <h2 class="title">Employees</h2>
         <ButtonComponent
           label="Add Employee"
@@ -36,7 +37,7 @@
       <!-- Table & Pagination (Visible only when data is loaded) -->
       <div v-if="!isLoading">
         <div class="table-container">
-          <table class="table table-striped">
+          <table class="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -280,7 +281,8 @@ export default {
   width: 42%;
 }
 .header{
-  border: none;
+  padding: 20px;
+  position: relative;
 }
 .circular-image {
   border: none;
@@ -301,9 +303,6 @@ export default {
 }
 .table-container {
   margin: 10px 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .table {
@@ -315,17 +314,84 @@ export default {
 }
 
 .table thead th {
-  background-color: #007bff;
+  background: linear-gradient(10deg, #2a5298, #2a5298);
   color: #ffffff;
   text-align: left;
   padding: 12px 15px;
   font-weight: 600;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+}
+/* Updated Add Employee Button */
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+/* Role Toggle Button Styling */
+.btn-primary,
+.btn-secondary {
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background 0.3s ease-in-out;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  border: none;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5a6268, #343a40);
+}
+/* Status Toggle Button */
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #218838);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #e0a800, #c69500);
+  color: #222;
+}
+
+/* Disabled Button */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .table tbody tr {
-  background-color: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -334,18 +400,10 @@ export default {
   border-bottom: 1px solid #e9ecef;
 }
 
-.table tbody tr:hover {
-  background-color: #f1f8ff;
-  transform: scale(1.01);
-  transition: all 0.2s ease-in-out;
-}
 
 .table tbody tr td button {
   padding: 6px 12px;
   font-size: 14px;
-  border: none;
-  border-radius: 6px;
-  transition: background-color 0.3s ease;
 }
 
 .table tbody tr td button.btn-success {
@@ -367,20 +425,5 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 20px;
-}
-
-.pagination button {
-  margin: 0 5px;
-  padding: 8px 12px;
-  border: none;
-  background-color: #007bff;
-  color: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.pagination button:hover {
-  background-color: #0056b3;
 }
 </style>

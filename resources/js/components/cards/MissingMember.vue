@@ -153,7 +153,7 @@ export default {
 <style scoped>
 /* Table styling */
 .table {
-  width: 149%;
+  width: 190%;
   border-collapse: collapse;
 }
 .table th, .table td {

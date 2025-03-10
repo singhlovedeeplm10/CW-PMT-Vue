@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
+  <div class="d-flex justify-content-between task-card-container" style="width: 612px; height: 430px;">
       <!-- Task List Card -->
       <div class="task-card flex-fill shadow-sm position-relative" id="card2">
           <div class="task-card-header d-flex justify-content-between align-items-center">

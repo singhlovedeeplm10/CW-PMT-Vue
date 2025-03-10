@@ -549,19 +549,19 @@
 }
 
   .bg-green {
-  background-color: forestgreen; /* Light green */
+    background-color: #2eb62e; /* Light green */
   color: white;
   font-weight: bold;
 }
 
 .bg-red {
-  background-color: rgb(229, 86, 86); /* Light red */
+  background-color: rgb(243, 62, 62); /* Light red */
   color: white;
   font-weight: bold;
 }
 
 .bg-orange {
-  background-color: rgb(184, 141, 61); /* Light orange */
+  background-color: rgb(205, 156, 65); /* Light orange */
   color: white;
   font-weight: bold;
 }
@@ -646,8 +646,9 @@
   }
   
   .search-btn {
-      background-color: #007bff;
+    background: linear-gradient(135deg, #007bff, #0056b3);
       color: white;
+      font-weight: bold;
       padding: 10px 15px;
       border: none;
       border-radius: 5px;
@@ -657,7 +658,7 @@
   }
   
   .search-btn:hover {
-      background-color: #0056b3;
+    background: linear-gradient(135deg, #0056b3, #003d82);
   }
   
   .time-logs-table {
@@ -670,7 +671,7 @@
   }
   
   .time-logs-table th {
-      background-color: #007bff;
+    background: linear-gradient(10deg, #2a5298, #2a5298);
       color: white;
       font-weight: bold;
       text-transform: uppercase;

@@ -234,8 +234,6 @@ export default {
 /* Modal Content */
 .modal-content {
   background: #fff;
-  padding: 20px;
-  border-radius: 8px;
   width: 800px; /* Wider modal for horizontal layout */
   margin: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -268,6 +266,7 @@ export default {
   flex-wrap: wrap; /* Allows items to wrap */
   gap: 15px; /* Space between inputs */
   justify-content: space-between;
+  padding: 20px;
 }
 
 /* Form Groups (2 per row) */

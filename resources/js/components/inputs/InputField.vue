@@ -70,3 +70,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+label{
+  margin-bottom: 8px;
+}
+</style>

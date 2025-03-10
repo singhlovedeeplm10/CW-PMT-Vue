@@ -150,8 +150,8 @@ export default {
 }
 
 .profile-image {
-  width: 50px;
-  height: 50px;
+  width: 78px;
+  height: 52px;
   border-radius: 50%;
   border: 2px solid #f39c12;
   margin-right: 15px;

@@ -85,9 +85,9 @@ export default {
 }
 
 .break-card-title {
-  font-size: 1.5rem;
+  font-size: 18px;
   font-weight: bold;
-  color: #343a40;
+  color: #3498db;
   margin: 0;
 }
 
@@ -98,11 +98,11 @@ export default {
 
 .break-table th {
   padding: 12px 10px;
-  background-color: #007bff;
-  color: #fff;
+  background-color: #f2f2f2; 
+  color: black;
   font-weight: 600;
   text-transform: uppercase;
-  border-bottom: 3px solid #0056b3;
+  background-color: #f2f2f2;
 }
 
 .break-table td {

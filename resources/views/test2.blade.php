@@ -684,6 +684,15 @@
       background: #218838;
     }
     </style> --}}
+
+
+
+
+
+
+
+
+
     {{-- NOT USED MIGRATION FILES
     
      Schema::create('billing_credentials', function (Blueprint $table) {
@@ -753,6 +762,37 @@
             $table->enum('type', ['frontend', 'backend', 'dbms', 'frontend & backend']);
             $table->unsignedBigInteger('admin_id');
             $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
+        Schema::create('uploads', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('admin_id')->nullable();
+            $table->string('file_name')->nullable();
+            $table->text('file_description')->nullable();
+            $table->string('path')->nullable();
+            $table->timestamps();
+        
+            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+         Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['events', 'moments', 'shorts', 'birthdays', 'appreciation']);
+            $table->text('description');
+            $table->json('files_upload_ids');
+            $table->timestamps();
+        });
+
+
+        Schema::create('reactions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['like', 'LOL', 'heart', 'happyface']);
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->json('files'); // JSON field to store multiple IDs from uploads table
             $table->timestamps();
         });
 

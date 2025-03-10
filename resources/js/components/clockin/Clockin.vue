@@ -88,7 +88,7 @@ export default {
 
     let interval = null;
 
-    const clockInOutText = computed(() => (isClockedIn.value ? "Clock Out" : "Clock In"));
+    const clockInOutText = computed(() => (isClockedIn.value ? "Clock Out " : "Clock In "));
     const clockInOutButtonClass = computed(() => (isClockedIn.value ? "btn-danger" : "btn-success"));
 
     const formattedTime = computed(() => {
