@@ -1,7 +1,9 @@
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
-      <h2>Edit Notice</h2>
+      <h5>Edit Notice
+        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
+      </h5>
       <form @submit.prevent="updateNotice">
         <div class="form-grid">
           <!-- Left Column -->
@@ -36,12 +38,6 @@
         </div>
 
         <div class="modal-actions">
-          <ButtonComponent 
-            :label="'Cancel'" 
-            :buttonClass="'cancel-btn'" 
-            @click="$emit('close')" 
-          />
-          
           <ButtonComponent
             :isLoading="isLoading"
             :label="'Save'"
@@ -131,6 +127,17 @@ export default {
 </script>
 
 <style scoped>
+   .close-modal {
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    cursor: pointer;
+  }
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -148,7 +155,6 @@ export default {
 /* Modal Content */
 .modal-content {
   background: white;
-  padding: 30px;
   border-radius: 12px;
   width: 700px; /* Increased width for horizontal layout */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -157,11 +163,12 @@ export default {
 }
 
 /* Headings */
-h2 {
-  margin-bottom: 20px;
-  font-size: 1.8rem;
-  color: #333;
-  text-align: center;
+h5 {
+  color: white;
+  background-color: #007bff;
+  padding: 22px 22px;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 10px;
 }
 
 /* Form Grid (Two-Column Layout) */
@@ -170,6 +177,7 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   align-items: center;
+  padding: 7px 20px;
 }
 
 /* Make Description Full Width */
@@ -206,7 +214,7 @@ label {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
-  margin-top: 20px;
+  margin: 10px 30px;
 }
 
 /* Save Button */

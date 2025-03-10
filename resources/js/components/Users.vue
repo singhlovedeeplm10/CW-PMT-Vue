@@ -58,8 +58,8 @@
   alt="User Image"
   class="img-thumbnail circular-image me-2"
   :style="{
-    width: '50px',
-    height: '50px',
+    width: '60px',
+    height: '60px',
     border: user.border_color
   }"
 />

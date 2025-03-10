@@ -6,7 +6,8 @@
         <!-- Modal Header -->
         <div class="modal-header custom-modal-header">
           <h5 class="modal-title">Add Project</h5>
-          <button type="button" class="btn-close" @click="$emit('close')"></button>
+          <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
+
         </div>
         <!-- Modal Body -->
         <div class="modal-body">
@@ -128,12 +129,6 @@
         </div>
         <!-- Modal Footer -->
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label="Close"
-            buttonClass="btn-secondary custom-btn-close"
-            @click="$emit('close')"
-          />
-          
           <ButtonComponent
             label="Add Project"
             buttonClass="btn-primary custom-btn-submit"
@@ -460,6 +455,13 @@ export default {
     padding: 10px 20px;
     border: none;
     transition: background-color 0.3s ease;
+  }
+  .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
   }
   
   .custom-btn-close:hover {

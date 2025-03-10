@@ -4,7 +4,7 @@
       <div class="modal-content custom-modal">
         <div class="modal-header custom-modal-header">
           <h5 class="modal-title">Add Employee</h5>
-          <button type="button" class="btn-close" @click="$emit('close')"></button>
+          <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
         </div>
         <div class="modal-body">
           <!-- Employee Name -->
@@ -65,11 +65,6 @@
         </div>
 
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label="Close"
-            buttonClass="btn-secondary custom-btn-close"
-            :clickEvent="() => $emit('close')"
-          />
           <ButtonComponent
             label=""
             :isDisabled="isLoading"
@@ -232,6 +227,13 @@ export default {
 </script>
 
 <style scoped>
+ .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
 .error-message {
   color: red;
   font-size: 0.875rem;

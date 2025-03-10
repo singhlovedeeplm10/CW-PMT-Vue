@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header custom-modal-header">
         <h5 class="modal-title">Edit Employee</h5>
-        <button type="button" class="btn-close" @click="$emit('close')"></button>
+        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
       </div>
       <form @submit.prevent="updateEmployee">
         <div class="form-container">
@@ -109,12 +109,6 @@
         </div>
 
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label="Cancel"
-            buttonClass="custom-btn-close"
-            :clickEvent="() => $emit('close')"
-          />
-          
           <ButtonComponent
             :label="loading ? '' : 'Save Changes'"
             :iconClass="loading ? 'spinner-border spinner-border-sm' : null"
@@ -231,6 +225,13 @@ export default {
 </script>
 
   <style scoped>
+   .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
 /* Modal Content */
 .modal-content {
   background: #fff;

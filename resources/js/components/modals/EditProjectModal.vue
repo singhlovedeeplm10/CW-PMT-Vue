@@ -5,7 +5,7 @@
         <!-- Modal Header -->
         <div class="modal-header custom-modal-header">
           <h5 class="modal-title">Edit Project</h5>
-          <button type="button" class="btn-close" @click="close"></button>
+          <button type="button" class="close-modal" @click="close">&times;</button>
         </div>
         <!-- Modal Body -->
         <div class="modal-body">
@@ -102,11 +102,6 @@
         </div>
         <!-- Modal Footer -->
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label="Close"
-            buttonClass="btn-secondary custom-btn-close"
-            @click="close"
-          />
           <ButtonComponent
             label="Save Changes"
             buttonClass="btn-primary custom-btn-submit"
@@ -227,6 +222,13 @@ export default {
 
 
 <style scoped>
+  .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
   /* General Modal Styling */
   .modal.fade.show {
     display: block;

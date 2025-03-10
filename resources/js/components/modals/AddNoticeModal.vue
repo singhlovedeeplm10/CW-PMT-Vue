@@ -1,7 +1,10 @@
 <template>
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
-      <h2>Add New Notice</h2>
+      <h5>Add New Notice
+        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
+      </h5>
+      
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-row">
           <!-- Title input field -->
@@ -71,12 +74,6 @@
 
         <!-- Buttons -->
         <div class="form-actions">
-          <ButtonComponent
-            label="Cancel"
-            buttonClass="cancel-btn"
-            @click="closeModal"
-          />
-          
           <ButtonComponent
             label="Save"
             buttonClass="submit-btn"
@@ -220,6 +217,18 @@ export default {
 </script>
 
 <style scoped>
+   .close-modal {
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    cursor: pointer;
+  }
+  
 /* .error {
   border: 2px solid red !important;
   border-radius: 5px;
@@ -245,17 +254,18 @@ export default {
 
 .modal-content {
   background: #ffffff;
-  padding: 30px;
   border-radius: 12px;
   width: 700px;
+  height: 690px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-h2 {
-  margin-top: 0;
-  font-size: 1.8rem;
-  color: #333333;
-  text-align: center;
+h5 {
+  color: white;
+  background-color: #007bff;
+  padding: 22px 22px;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 10px;
 }
 
 .modal-form {
@@ -272,6 +282,7 @@ h2 {
 
 .form-group {
   flex: 1;
+  padding: 0px 20px;
 }
 
 .full-width {
@@ -289,6 +300,7 @@ label {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
+  margin: 0px 30px;
 }
 
 .submit-btn, .cancel-btn {

@@ -27,8 +27,8 @@
           <thead>
             <tr>
               <th>Employee ID</th>
-              <th>Image</th>
-              <th>Name</th>
+              <!-- <th>Image</th>
+              <th>Name</th> -->
               <th>Status</th>
               <th>Total WFO</th>
               <th>Today WFH</th>
@@ -38,12 +38,21 @@
           </thead>
           <tbody>
             <tr v-for="employee in employees" :key="employee.id" class="table-row">
-              <td>{{ employee.id }}</td>
-              <td>
+              <td><div class="d-flex align-items-center">
+                <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="img-thumbnail employee-image me-2" />
+                <div>
+  <div class="fw-bold">
+    {{ employee.name }}
+  </div>
+  <div class="text-muted">{{ employee.id}}</div>
+</div>
+</div>
+              </td>
+              <!-- <td>
   <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="employee-image" />
 </td>
 
-              <td>{{ employee.name }}</td>
+              <td>{{ employee.name }}</td> -->
               <td>
                 <button :class="{'btn-active': employee.status === '1', 'btn-inactive': employee.status === '0'}">
   {{ employee.status === '1' ? 'Active' : 'Inactive' }}
@@ -256,8 +265,8 @@
   }
   
   .employee-image {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
   }

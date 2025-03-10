@@ -3,7 +3,8 @@
     <div class="modal-content">
       <!-- Modal Header -->
       <div class="modal-header">
-        <h2 class="modal-title">Add New Policy</h2>
+        <h5 class="modal-title">Add New Policy</h5>
+        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
       </div>
 
       <!-- Policy Title -->
@@ -31,11 +32,6 @@
 
       <!-- Buttons -->
       <div class="modal-footer">
-        <ButtonComponent
-          label="Cancel"
-          buttonClass="btn-secondary"
-          @click="closeModal"
-        />
         <ButtonComponent
           label="Save Policy"
           buttonClass="btn-primary"
@@ -117,11 +113,13 @@ export default {
 </script>
 
 <style scoped>
-.modal-title{
-  line-height: 1.5;
-  text-align: center;
-  margin: auto;
-}
+  .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -141,7 +139,6 @@ export default {
 .modal-content {
   background: white;
   border-radius: 12px;
-  padding: 10px;
   width: 550px;
   min-height: 350px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
@@ -152,7 +149,7 @@ export default {
 /* Modal Header */
 .modal-header {
   background-color: #007bff;
-  padding: 16px;
+  padding: 7px 18px;
   border-radius: 10px 10px 0 0;
   text-align: center;
   color: white;
@@ -162,7 +159,8 @@ export default {
 
 /* Form Group Styling */
 .form-group {
-  margin-bottom: 20px;
+  margin-top: 12px;
+  padding: 5px 22px;
 }
 
 label {
