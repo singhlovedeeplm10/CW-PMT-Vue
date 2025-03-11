@@ -88,14 +88,6 @@
           </table>
         </div>
         <div class="modal-footer modal-footer-custom">
-          <!-- Close Button -->
-          <button 
-            class="btn btn-secondary" 
-            @click="closeModal"
-            :disabled="isSaving"
-          >
-            Close
-          </button>
           <button 
             class="btn btn-primary" 
             :disabled="isSaving" 

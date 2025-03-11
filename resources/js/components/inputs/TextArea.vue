@@ -65,5 +65,8 @@ export default {
   .form-control {
     resize: vertical; 
   }
+  label{
+    margin-bottom: 10px;
+  }
   </style>
   

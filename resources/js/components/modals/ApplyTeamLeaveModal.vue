@@ -12,10 +12,10 @@
           <h5 class="modal-title" id="applyteamleavemodalLabel">Apply for Team Leave</h5>
           <button
             type="button"
-            class="btn-close"
+            class="close-modal"
             data-bs-dismiss="modal"
             aria-label="Close"
-          ></button>
+          >&times;</button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="validateAndSubmit">
@@ -65,19 +65,7 @@
               <!-- <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span> -->
             </div>
 
-            <!-- Dynamic Fields for Half Day -->
-            <div v-if="form.type_of_leave === 'Half Day Leave'" class="mb-3">
-  <SelectInput
-    :options="halfDayOptions"
-    v-model="form.half" 
-    label="Select Half"
-    id="halfDayOption"
-    name="half_day"
-    placeholder="Select Half"
-    :error="halfDayError"
-  />
-  <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
-</div>
+      
 
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
@@ -92,6 +80,20 @@
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
+
+                  <!-- Dynamic Fields for Half Day -->
+                  <div v-if="form.type_of_leave === 'Half Day Leave'" class="mb-3">
+  <SelectInput
+    :options="halfDayOptions"
+    v-model="form.half" 
+    label="Select Half"
+    id="halfDayOption"
+    name="half_day"
+    placeholder="Select Half"
+    :error="halfDayError"
+  />
+  <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
+</div>
 
             <!-- Dynamic Fields for Short Leave -->
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
@@ -213,13 +215,6 @@
             </div>
 
             <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
               <button type="submit" class="btn btn-success" :disabled="isSubmitting">
                 <span v-if="isSubmitting">
                   <i class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></i> Applying...
@@ -468,16 +463,25 @@ export default {
 
   
 <style scoped>
+.col{
+  margin-bottom: -16px;
+}
+.close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
 /* Modal CSS */
 .custom-modal {
   border-radius: 10px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
   background: linear-gradient(135deg, #f5f7fa, #e2e8f0);
-  padding: 15px;
 }
 
 .custom-header {
-  background: linear-gradient(135deg, #4a90e2, #007aff);
+  background-color: #4e73df;
   color: white;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -507,13 +511,16 @@ export default {
 
 /* Buttons */
 .btn-success {
-  background-color: #0056b3;
-  border: none;
-  transition: background-color 0.3s ease;
+  background-color: #4e73df;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn-success:hover {
-  background-color: #0056b3;
+  background-color: #3e5bcd;
+  transform: translateY(-2px);
 }
 
 .btn-secondary {

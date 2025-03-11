@@ -254,7 +254,7 @@ export default {
 
   /* Modal Header */
   .custom-modal-header {
-    background-color: #007bff;
+    background-color: #4e73df;
     color: white;
     padding: 20px;
     font-weight: bold;
@@ -286,7 +286,6 @@ export default {
 
   .form-label {
     font-size: 1rem;
-    font-weight: 500;
     margin-bottom: 8px;
   }
 
@@ -362,17 +361,16 @@ export default {
   }
 
   .custom-btn-submit {
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-    padding: 10px 20px;
-    border: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    background-color: #4e73df;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   }
 
   .custom-btn-submit:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
+    background-color: #3e5bcd;
+  transform: translateY(-2px);
   }
 
   .custom-btn-submit:disabled {

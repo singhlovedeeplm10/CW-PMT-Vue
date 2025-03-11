@@ -165,7 +165,7 @@ export default {
 /* Headings */
 h5 {
   color: white;
-  background-color: #007bff;
+  background-color: #4e73df;
   padding: 22px 22px;
   border-top-left-radius: 11px;
   border-top-right-radius: 10px;
@@ -219,17 +219,16 @@ label {
 
 /* Save Button */
 .save-btn {
-  background-color: #0056b3;
+  background-color: #4e73df;
   color: white;
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .save-btn:hover {
-  background-color: #0056b3;
+  background-color: #3e5bcd;
+  transform: translateY(-2px);
 }
 
 /* Cancel Button */

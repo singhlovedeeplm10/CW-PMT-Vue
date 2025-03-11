@@ -12,11 +12,11 @@
           <h5 class="modal-title" id="addbreakmodallabel">Add Break</h5>
           <button
             type="button"
-            class="btn-close"
+            class="close-modal"
             data-bs-dismiss="modal"
             aria-label="Close"
             @click="resetModal"
-          ></button>
+          >&times;</button>
         </div>
         <div class="modal-body">
           <div class="form-group mb-4" v-if="!isOnBreak">
@@ -138,6 +138,13 @@ export default {
 
   
   <style scoped>
+  .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
   .add-break-modal {
     border-radius: 8px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);

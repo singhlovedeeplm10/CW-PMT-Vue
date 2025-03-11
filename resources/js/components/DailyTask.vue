@@ -86,10 +86,10 @@
   </h5>
         <button
           type="button"
-          class="btn-close"
+          class="close-modal"
           data-bs-dismiss="modal"
           aria-label="Close"
-        ></button>
+        >&times;</button>
       </div>
       <!-- Modal Body -->
       <div class="modal-body custom-body">
@@ -102,7 +102,7 @@
 <div class="form-group me-3 mb-3" style="flex: 1; min-width: 300px;">
   <label for="projectName" class="form-label">Project Name</label>
   <select
-    class="form-control"
+    class="form-control" style="margin-bottom: 80px;"
     id="projectName"
     v-model="task.project_id"
     :disabled="task.leave_id !== null"
@@ -130,11 +130,12 @@
   <label for="hours" class="form-label">Hours</label>
   <input
     type="number"
-    class="form-control"
+    class="form-control" style="margin-bottom: 80px; width: 100px;"
     id="hours"
     v-model="task.hours"
     step="0.01"
     :disabled="task.leave_id !== null"
+    
   />
 </div>
 
@@ -142,7 +143,7 @@
 <div class="form-group me-3 mb-3" style="flex: 2; min-width: 400px;">
   <label for="taskDescription" class="form-label">Task Description</label>
   <textarea
-    class="form-control"
+    class="form-control" style="height: 120px;"
     id="taskDescription"
     v-model="task.task_description"
     :disabled="task.leave_id !== null"
@@ -150,7 +151,7 @@
 </div>
 
 <!-- Buttons for Update and Delete -->
-<div class="form-group d-flex align-items-center mb-3" style="flex: 1; min-width: 200px;">
+<div class="form-group d-flex align-items-center mb-3" style="flex: 1; width: 90px;">
   <!-- Update Task -->
   <button
     type="button"
@@ -175,15 +176,6 @@
 
           </form>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>
@@ -332,6 +324,27 @@ export default {
 
 
 <style scoped>
+ .close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
+.modal-header{
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+}
+.modal-title{
+  color: white;
+}
+.task-table th{
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: #ffffff;
+  text-align: left;
+  padding: 12px 15px;
+  font-weight: 600;
+  border: none;
+}
 .bg-light-gray {
   background-color: #f0f0f0 !important;
   /* cursor: not-allowed; */
@@ -368,6 +381,7 @@ ul{
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  padding: 30px 100px;
 }
 
 .form-group label {

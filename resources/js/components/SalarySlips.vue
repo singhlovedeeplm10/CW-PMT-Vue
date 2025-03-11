@@ -4,7 +4,6 @@
       <div class="header">
         <div class="header-title">
           <h1>Salary Slips</h1>
-          <p class="subtext">Upload and manage salary slips with ease.</p>
         </div>
         <div class="actions" v-if="userRole === 'Admin'">
           <input
@@ -292,13 +291,12 @@ export default {
   align-items: center;
   gap: 20px;
   padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  border: none;  
 }
 
 .header-title h1 {
   font-size: 24px;
+  font-weight: bold;
   color: #333;
   margin-bottom: 5px;
 }

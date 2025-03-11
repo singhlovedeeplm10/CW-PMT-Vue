@@ -143,7 +143,7 @@ export default {
 
 /* Modal Header */
 .modal-header {
-  background-color: #007bff;
+  background-color: #4e73df;
   padding: 7px 18px;
   border-radius: 10px 10px 0 0;
   text-align: center;
@@ -200,8 +200,11 @@ button {
   color: white;
 }
 .btn-primary {
-  background-color: #007bff;
+  background-color: #4e73df;
   color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn-primary:active {

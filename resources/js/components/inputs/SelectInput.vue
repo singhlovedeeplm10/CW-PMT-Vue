@@ -102,7 +102,6 @@
   .select-label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: bold;
   }
   .form-select {
     width: 100%;

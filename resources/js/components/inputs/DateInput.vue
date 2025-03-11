@@ -79,7 +79,6 @@
   .date-label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: bold;
   }
   .form-control {
     width: 100%;

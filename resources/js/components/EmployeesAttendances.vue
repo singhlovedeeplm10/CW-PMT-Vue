@@ -1,79 +1,75 @@
 <template>
-    <master-component>
-      <div class="attendance-container">
-        <h2 class="title">Employee Attendance</h2>
-  
-        <div class="filters">
-          <input type="text" v-model="filters.name" placeholder="Search by Name" class="filter-input" />
-          <select v-model="filters.status" class="filter-select">
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-          <input type="month" v-model="filters.monthYear" class="filter-input" />
-          <button @click="fetchData" class="search-btn" :disabled="loading">
-            <span v-if="loading">Searching...</span>
-            <span v-else>Search</span>
-          </button>
-        </div>
-  
-        <!-- Loader Spinner -->
-        <div v-if="loading && employees.length === 0" class="loader-container">
-          <div class="spinner-border text-primary" role="status">
+  <master-component>
+    <div class="attendance-container">
+      <h2 class="title">Employee Attendance</h2>
+
+      <div class="filters">
+        <input type="text" v-model="filters.name" placeholder="Search by Name" class="filter-input" />
+        <select v-model="filters.status" class="filter-select">
+          <option value="1">Active</option>
+          <option value="0">Inactive</option>
+        </select>
+        <input type="month" v-model="filters.monthYear" class="filter-input" />
+        <button @click="fetchData" class="search-btn" :disabled="loading">
+          <span v-if="loading">Searching...</span>
+          <span v-else>Search</span>
+        </button>
+      </div>
+
+      <!-- Loader Spinner -->
+      <div v-if="loading && employees.length === 0" class="loader-container">
+        <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        </div>
-  
-        <table v-if="!loading && employees.length > 0" class="attendance-table">
-          <thead>
-            <tr>
-              <th>Employee ID</th>
-              <!-- <th>Image</th>
-              <th>Name</th> -->
-              <th>Status</th>
-              <th>Total WFO</th>
-              <th>Today WFH</th>
-              <th>Total Leave</th>
-              <th>Total Working Days</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="employee in employees" :key="employee.id" class="table-row">
-              <td><div class="d-flex align-items-center">
+      </div>
+
+      <table v-if="!loading && employees.length > 0" class="attendance-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <!-- <th>Status</th> -->
+            <th>Total WFO</th>
+            <th>Today WFH</th>
+            <th>Total Leave</th>
+            <th>Total Working Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="employee in employees" :key="employee.id" class="table-row">
+            <td>
+              <div class="d-flex align-items-center">
                 <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="img-thumbnail employee-image me-2" />
                 <div>
-  <div class="fw-bold">
-    {{ employee.name }}
-  </div>
-  <div class="text-muted">{{ employee.id}}</div>
-</div>
-</div>
-              </td>
-              <!-- <td>
-  <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="employee-image" />
-</td>
+                  <div class="fw-bold">
+                    {{ employee.name }}
+                    <!-- Status Dot -->
+                    <span :class="{'status-dot-active': employee.status === '1', 'status-dot-inactive': employee.status === '0'}"></span>
+                  </div>
+                  <div class="text-muted">{{ employee.id }}</div>
+                </div>
+              </div>
+            </td>
+            <!-- <td>
+              <button :class="{'btn-active': employee.status === '1', 'btn-inactive': employee.status === '0'}">
+                {{ employee.status === '1' ? 'Active' : 'Inactive' }}
+              </button>
+            </td> -->
+            <td>{{ employee.totalWFO }}</td>
+            <td>{{ employee.totalWFH }}</td>
+            <td>{{ employee.totalLeave }}</td>
+            <td>{{ employee.totalWorkingDays }}</td>
+          </tr>
+        </tbody>
+      </table>
 
-              <td>{{ employee.name }}</td> -->
-              <td>
-                <button :class="{'btn-active': employee.status === '1', 'btn-inactive': employee.status === '0'}">
-  {{ employee.status === '1' ? 'Active' : 'Inactive' }}
-</button>
-
-              </td>
-              <td>{{ employee.totalWFO }}</td>
-              <td>{{ employee.totalWFH }}</td>
-              <td>{{ employee.totalLeave }}</td>
-              <td>{{ employee.totalWorkingDays }}</td>
-            </tr>
-          </tbody>
-        </table>
-  
-        <!-- Message if no data is available -->
-        <div v-if="!loading && employees.length === 0" class="no-data-message">
-          No data available for the selected filters.
-        </div>
+      <!-- Message if no data is available -->
+      <div v-if="!loading && employees.length === 0" class="no-data-message">
+        No data available for the selected filters.
       </div>
-    </master-component>
-  </template>
+    </div>
+  </master-component>
+</template>
+
   
   <script>
   import MasterComponent from './layouts/Master.vue';
@@ -135,6 +131,24 @@
   </script>
   
   <style scoped>
+  
+.status-dot-active {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #28a745; /* Green dot for active */
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.status-dot-inactive {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ffc107; /* Yellow dot for inactive */
+  display: inline-block;
+  margin-left: 8px;
+}
 .filter-input, .filter-select, .search-btn {
   margin: 10px 5px;
   padding: 8px;

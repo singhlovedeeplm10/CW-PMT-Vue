@@ -149,6 +149,10 @@ export default {
 
   
   <style scoped>
+  .card-body {
+    flex: 1 1 auto;
+    padding: 1px 0px;
+}
   .task-list{
     margin: 20px;
   }
@@ -162,9 +166,12 @@ export default {
   }
   
   .table th {
-    background-color: #f8f9fa;
+    background: linear-gradient(10deg, #2a5298, #2a5298);
     font-weight: bold;
-    text-align: center; /* Center-align column headers */
+    text-align: left;
+    padding: 9px 10px;
+    border: none;
+    color: white;
   }
   
   .table td {
@@ -205,14 +212,6 @@ export default {
   
   #task-table {
     width: 100%;
-  }
-  
-  #task-table th:nth-child(2) {
-    width: 30%; /* Reducing width of 'Dated' column */
-  }
-  
-  #task-table th:nth-child(3) {
-    width: 60%; /* Increasing width of 'Project List' column */
   }
   
   #task-table input.form-control {

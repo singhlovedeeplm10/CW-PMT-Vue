@@ -262,7 +262,7 @@ export default {
 
 h5 {
   color: white;
-  background-color: #007bff;
+  background-color: #4e73df;
   padding: 22px 22px;
   border-top-left-radius: 11px;
   border-top-right-radius: 10px;
@@ -314,11 +314,16 @@ label {
 }
 
 .submit-btn {
-  background-color: #0056b3;
+  background-color: #4e73df;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .submit-btn:hover {
-  background-color: #0056b3;
+  background-color: #3e5bcd;
+  transform: translateY(-2px);
 }
 
 .cancel-btn {

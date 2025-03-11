@@ -2,6 +2,16 @@
   <master-component>
     <div class="timeline-container">
       <h2 class="timeline-heading">Activity Timeline</h2>
+       <!-- Loader Spinner -->
+    <div v-if="loading" class="loader-container">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+     <!-- Message when there is no data -->
+     <div v-if="!loading && events.length === 0" class="no-data-message">
+      <p>No activity timelines available to show.</p>
+    </div>
       <div class="timeline">
         <div v-for="(event, index) in events" :key="index" class="timeline-item">
           <div class="timeline-icon" :class="event.type">
@@ -212,6 +222,7 @@ export default {
       videoUrl: null,  // Holds the YouTube video URL
       isLikesModalOpen: false, 
       selectedLikedUsers: [], 
+      loading: true,  
     };
   },
   created() {
@@ -273,10 +284,11 @@ export default {
   likedByUser: timeline.likedByUser || false,
   comments: [],
 }));
-
+this.loading = false;
 
       } catch (error) {
         console.error('There was an error fetching the timeline data:', error);
+        this.loading = false; 
       }
     },
 
@@ -517,6 +529,18 @@ export default {
 </script>
 
   <style scoped>
+  .no-data-message {
+  text-align: center;
+  margin: 20px;
+  font-size: 1.2em;
+  color: #666;
+}
+  .loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
   .video-modal-overlay {
   position: fixed;
   top: 0;

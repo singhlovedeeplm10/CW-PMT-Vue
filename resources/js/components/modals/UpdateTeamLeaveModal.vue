@@ -28,11 +28,10 @@
 
           <button
             type="button"
-            class="btn-close"
+            class="close-modal"
             data-bs-dismiss="modal"
-            
             aria-label="Close"
-          ></button>
+          >&times;</button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="submitLeaveUpdate">
@@ -75,29 +74,6 @@
     />
   </div>
 </div>
-
-            <!-- Reason and Contact fields -->
-            <div class="mb-3">
-              <label for="reason" class="form-label">Reason</label>
-              <textarea
-                v-model="leave.reason"
-                id="reason"
-                class="form-control"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label for="contact" class="form-label">Contact During Leave</label>
-              <input
-                type="text"
-                v-model="leave.contact_during_leave"
-                id="contact"
-                class="form-control"
-                required
-              />
-            </div>
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
@@ -149,7 +125,28 @@
     required
   />
 </div>
+<!-- Reason and Contact fields -->
+<div class="mb-3">
+              <label for="reason" class="form-label">Reason</label>
+              <textarea
+                v-model="leave.reason"
+                id="reason"
+                class="form-control"
+                rows="3"
+                required
+              ></textarea>
+            </div>
 
+            <div class="mb-3">
+              <label for="contact" class="form-label">Contact During Leave</label>
+              <input
+                type="text"
+                v-model="leave.contact_during_leave"
+                id="contact"
+                class="form-control"
+                required
+              />
+            </div>
 
             <div class="mb-3">
               <label for="status" class="form-label">Leave Status</label>
@@ -168,13 +165,9 @@
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                Close
-              </button>
-              
               <button
                 type="submit"
-                class="btn btn-success"
+                class="custom-btn-submit"
                 :disabled="isLoading"
               >
                 <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -291,16 +284,34 @@ export default {
 </script>
 
 <style scoped>
+.custom-btn-submit {
+  background-color: #4e73df;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.custom-btn-submit:hover {
+  background-color: #3e5bcd;
+  transform: translateY(-2px);
+}
+.close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
   /* Modal Content Styling */
   .custom-modal {
     border-radius: 10px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
   background: linear-gradient(135deg, #f5f7fa, #e2e8f0);
-  padding: 15px;
   }
   
   .custom-header {
-    background: linear-gradient(135deg, #4a90e2, #007aff);
+  background-color: #4e73df;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -322,12 +333,17 @@ export default {
   
   .status-box {
     position: absolute;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    color: #ffffff;
-    right: 65px;
-    font-weight: bold;
+  font-size: 12px;
+  padding: 15px 13px;
+  border-radius: 4px;
+  color: #ffffff;
+  right: 65px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px; /* Ensures consistent width */
+  height: 24px; /* Adjust height to center the text properly */
   }
   
   .modal-body {

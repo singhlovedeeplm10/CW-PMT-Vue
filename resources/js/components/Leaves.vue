@@ -7,7 +7,7 @@
         <!-- Button to open Apply Leave Modal -->
         <ButtonComponent 
           label="Apply Leave" 
-          buttonClass="btn-primary add-leave-btn"
+          buttonClass="add-leave-btn"
           :clickEvent="openApplyLeaveModal"  
         />
       </div>
@@ -243,6 +243,20 @@ export default {
 
 
 <style scoped>
+.add-leave-btn{
+  padding: 10px 16px;
+  font-size: 1em;
+  background: linear-gradient(135deg, #007bff, #0056b3);background-color: #007bff;
+  border: none;
+  font-weight: bold;
+  color: white;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+}
+.add-leave-btn:hover{
+  background: linear-gradient(135deg, #0056b3, #003d80);
+  color: white;
+}
 .leaves-page {
   padding: 20px;
 }

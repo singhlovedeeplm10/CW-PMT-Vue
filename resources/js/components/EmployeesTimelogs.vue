@@ -425,7 +425,8 @@
   padding: 10px;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -665,7 +666,8 @@
       width: 100%;
       border-collapse: collapse;
       background-color: #fff;
-      border-radius: 8px;
+      border-bottom-right-radius: 5px;
+      border-bottom-left-radius: 5px;
       overflow: hidden;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
