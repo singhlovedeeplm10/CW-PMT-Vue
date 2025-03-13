@@ -21,20 +21,10 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             [
-                'name' => 'Bharat Chauhan',
-                'email' => 'adbbharat@gmail.com',
+                'name' => 'Admin',
+                'email' => 'contriwhiz@gmail.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('12345678'),
-                'status' => '1', // Active
-                'remember_token' => Str::random(10),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Vineet Sharma',
-                'email' => 'vineet@gmail.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('vineetsharma'),
+                'password' => Hash::make('M7)-B45!?pSt'),
                 'status' => '1', // Active
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
@@ -44,6 +34,6 @@ class UserSeeder extends Seeder
 
         // Assign roles to users:
         User::find(1)->assignRole($adminRole); // Assign Admin role to the first user
-        User::find(2)->assignRole($employeeRole); // Assign Employee role to the second user
+        // User::find(2)->assignRole($employeeRole); // Assign Employee role to the second user
     }
 }
