@@ -30,6 +30,16 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            // [
+            //     'name' => 'Vineet Sharma',
+            //     'email' => 'vineet@gmail.com',
+            //     'email_verified_at' => now(),
+            //     'password' => Hash::make('vineetsharma'),
+            //     'status' => '1', // Active
+            //     'remember_token' => Str::random(10),
+            //     'created_at' => now(),
+            //     'updated_at' => now(),
+            // ],
         ]);
 
         // Assign roles to users:
