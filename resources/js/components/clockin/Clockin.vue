@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" style="padding-left: 5px;">
     <div class="box box-1">
   <h3 class="box-time">
     <span v-if="loadingWeeklyHours"><i class="fas fa-circle-notch fa-spin"></i></span>
@@ -34,7 +34,7 @@
       </button>
     </div>
     
-    <div class="box clock-in-box">
+    <div class="clock-in-box">
   <ButtonComponent
     :label="clockInOutText"
     :iconClass="'fas fa-clock'"

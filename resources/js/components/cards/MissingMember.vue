@@ -1,6 +1,6 @@
 <template>
   <!-- CARDS (MISSING TEAM MEMBERS AND TEAM MEMBERS ON LEAVE) -->
-  <div class="d-flex justify-content-between task-card-container mt-3" style="width: 1262px; height: 300px; gap: 8px;">
+  <div class="d-flex justify-content-between task-card-container mt-3" style="width: 101.2%; height: 300px; gap: 8px;">
     
     <!-- 1st Task List Card (Missing Team Members) -->
     <div class="card flex-fill me-3 shadow-sm" id="card1">
@@ -73,7 +73,9 @@
               >
               {{ user.name }}
             </td>
-            <td>{{ user.type_of_leave }}</td>
+            <td style="
+    padding: 16px 50px;
+">{{ user.type_of_leave }}</td>
           </tr>
         </tbody>
       </table>
@@ -153,16 +155,17 @@ export default {
 <style scoped>
 /* Table styling */
 .table {
-  width: 190%;
+  width: 100%;
   border-collapse: collapse;
 }
 .table th, .table td {
-  padding: 10px;
-  text-align: left;
+  padding: 4px 50px;
   border-bottom: 1px solid #ddd;
+  white-space: nowrap; /* Prevents text wrapping */
 }
 .table th {
   background-color: #f8f9fa;
+  padding: 10px 123px;
   font-weight: bold;
 }
 
@@ -178,6 +181,7 @@ export default {
   border: 1px solid rgb(245, 90, 90);
   border-radius: 8px; /* Smooth border corners */
 }
+/* Card container styling */
 #card2 {
   max-height: 350px;
   overflow-y: auto;
@@ -188,6 +192,16 @@ export default {
   transition: transform 0.3s, box-shadow 0.3s;
   border: 1px solid rgb(205, 141, 111);
   border-radius: 8px; /* Smooth border corners */
+}
+/* Responsive table container */
+.task-card-body {
+  width: 100%;
+  overflow-x: auto; /* Makes table scrollable if needed */
+}
+/* Ensures images and text align properly */
+td.d-flex {
+  display: flex;
+  align-items: center;
 }
 
 

@@ -45,7 +45,10 @@
             </tr>
           </tbody>
         </table>
-        <p v-if="!loading && members.length === 0" class="text-muted">No members on WFH for the selected date.</p>
+        <p v-if="!loading && members.length === 0" class="text-muted" style="
+    text-align: center;
+    margin: auto;"
+>No members on WFH for the selected date.</p>
       </div>
     </div>
   </div>

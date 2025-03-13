@@ -30,8 +30,12 @@
                                     <span>{{ breakEntry.user_name }}</span>
                                 </div>
                             </td>
-                            <td>{{ breakEntry.total_breaks }}</td>
-                            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
+                            <td style="
+    padding: 0px 40px;
+">{{ breakEntry.total_breaks }}</td>
+                            <td style="
+    padding: 0px 18px;
+"@click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
                         </tr>
                     </tbody>
                 </table>

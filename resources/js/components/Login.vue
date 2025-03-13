@@ -2,8 +2,8 @@
   <div class="login-container">
     <div class="login-card">
       <div class="header">
-        <img src="img/CWlogo.jpeg" alt="Logo" class="logo" />
-        <h2 class="brand">CONTRIWHIZ</h2>
+        <img src="img/Tablogo.svg" alt="Logo" class="logo" />
+        <!-- <h2 class="brand">CONTRIWHIZ</h2> -->
       </div>
       <form @submit.prevent="login" class="login-form">
         <div class="input-group">
@@ -93,11 +93,14 @@ export default {
 /* Header section */
 .header {
   margin-bottom: 20px;
+  border: none;
 }
 
 .logo {
-  width: 80px;
-  margin-bottom: 10px;
+  width: 60%;
+  text-align: center;
+  margin: auto;
+  border-radius: 0;
 }
 
 .brand {

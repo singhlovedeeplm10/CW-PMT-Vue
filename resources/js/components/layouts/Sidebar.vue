@@ -1,9 +1,12 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
-      <h2 class="sidebar-title">{{ userName }}</h2>
-    </div>
+  <div class="profile-container">
+    <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
+  </div>
+  <h2 class="sidebar-title">{{ userName }}</h2>
+</div>
+
     <ul class="sidebar-list">
       <li class="sidebar-item">
         <router-link to="/dashboard" class="sidebar-link" active-class="active-link">Dashboard</router-link>
@@ -180,25 +183,36 @@ export default {
 
 .sidebar-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
-  border-bottom: 1px solid #7f8c8d;
-  padding-bottom: 15px;
+  text-align: center;
+  padding: 0px 10px;
+  background: #1e272e; /* Darker background */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .profile-image {
-  width: 78px;
-  height: 52px;
+  width: 85px;
+  height: 85px;
   border-radius: 50%;
-  border: 2px solid #f39c12;
-  margin-right: 15px;
   object-fit: cover;
 }
-
+.profile-container {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid #f39c12;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
 .sidebar-title {
-  font-size: 1.4rem;
-  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
   color: #f39c12;
+  margin-top: 10px;
 }
 
 .sidebar-list {
@@ -226,13 +240,19 @@ export default {
   text-decoration: none;
   color: #bdc3c7;
   font-size: 13px;
-  padding: 10px 15px;
+  padding: 6px 15px;
   border-radius: 8px;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .sidebar-link:hover,
+.active-link {
+  background-color: #16a085; /* Highlight on hover/active */
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
+}
+.sidebar-sublink:hover,
 .active-link {
   background-color: #16a085; /* Highlight on hover/active */
   color: #fff;
@@ -268,13 +288,19 @@ export default {
 }
 
 .timelines-header:hover {
-  background-color: rgba(236, 240, 241, 0.2);
+  background-color: #16a085; /* Highlight on hover/active */
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 .leaves-header:hover {
-  background-color: rgba(236, 240, 241, 0.2);
+  background-color: #16a085; /* Highlight on hover/active */
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 .tasks-header:hover {
-  background-color: rgba(236, 240, 241, 0.2);
+  background-color: #16a085; /* Highlight on hover/active */
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 
 .sidebar-subtitle {
