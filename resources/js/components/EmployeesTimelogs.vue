@@ -537,12 +537,13 @@
   background-color: #007bff;
   color: white;
   padding: 12px;
-  text-align: left;
+  text-align: center;
 }
 
 .detailed-logs-table td {
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  text-align: center;
 }
 
 .detailed-logs-table tr:nth-child(even) {
@@ -614,8 +615,6 @@
   }
   
   .title {
-      font-size: 2rem;
-      font-weight: bold;
       color: #333;
       margin-bottom: 20px;
   }

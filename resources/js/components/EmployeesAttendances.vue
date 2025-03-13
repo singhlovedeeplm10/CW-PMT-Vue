@@ -196,8 +196,6 @@
   }
   
   .title {
-      font-size: 2rem;
-      font-weight: bold;
       color: #333;
       margin-bottom: 20px;
   }

@@ -3,7 +3,7 @@
     <div class="salary-container">
       <div class="header">
         <div class="header-title">
-          <h1>Salary Slips</h1>
+          <h2>Salary Slips</h2>
         </div>
         <div class="actions" v-if="userRole === 'Admin'">
           <input
@@ -174,28 +174,34 @@ export default {
       this.file = event.target.files[0];
     },
     async uploadFile() {
-    if (!this.file) {
-      toast.error('Please select a file to upload.', { position: "top-right" , autoClose: 1000, });
-      return;
-    }
+  if (!this.file) {
+    toast.error('Please select a file to upload.', { position: "top-right" , autoClose: 1000, });
+    return;
+  }
 
-    this.isUploading = true;
-    const formData = new FormData();
-    formData.append('file', this.file);
+  this.isUploading = true;
+  const formData = new FormData();
+  formData.append('file', this.file);
 
-    try {
-      await axios.post('/api/upload-salary-slip', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      toast.success('File uploaded successfully!', { position: "top-right", autoClose: 1000, });
-      this.fetchSalarySlips();
-    } catch (error) {
-      toast.error('Failed to upload file.', { position: "top-right", autoClose: 1000, });
-      console.error(error);
-    } finally {
-      this.isUploading = false;
-    }
-  },
+  try {
+    await axios.post('/api/upload-salary-slip', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    toast.success('File uploaded successfully!', { position: "top-right", autoClose: 1000, });
+
+    // Reset file input
+    this.file = null;
+    this.$refs.fileInput.value = ""; // Reset file input field
+
+    this.fetchSalarySlips();
+  } catch (error) {
+    toast.error('Failed to upload file.', { position: "top-right", autoClose: 1000, });
+    console.error(error);
+  } finally {
+    this.isUploading = false;
+  }
+},
+
     async deleteSalarySlip(id) {
     if (!confirm("Are you sure you want to delete this salary slip?")) return;
 
@@ -295,8 +301,6 @@ export default {
 }
 
 .header-title h1 {
-  font-size: 24px;
-  font-weight: bold;
   color: #333;
   margin-bottom: 5px;
 }
@@ -357,7 +361,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 20px 0;
+  margin: 0px 0;
 }
 
 .search-input {

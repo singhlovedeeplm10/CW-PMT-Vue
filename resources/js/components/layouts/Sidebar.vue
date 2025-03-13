@@ -1,7 +1,6 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-      <!-- Show profile image -->
       <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
       <h2 class="sidebar-title">{{ userName }}</h2>
     </div>
@@ -9,44 +8,43 @@
       <li class="sidebar-item">
         <router-link to="/dashboard" class="sidebar-link" active-class="active-link">Dashboard</router-link>
       </li>
-      <li v-if="userRole === 'Admin'" class="sidebar-item">
-        <router-link to="/users" class="sidebar-link" active-class="active-link">Employees</router-link>
-      </li>
+
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
-      <li class="sidebar-item">
-        <router-link to="/policies" class="sidebar-link" active-class="active-link">Policies</router-link>
-      </li>
-      <li v-if="userRole === 'Admin'" class="sidebar-item">
-        <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
-      </li>
-      <li v-if="userRole === 'Admin'" class="sidebar-item">
-        <router-link to="/employees-attendances" class="sidebar-link" active-class="active-link">Employees Attendances</router-link>
-      </li>
-      <li class="sidebar-item">
-        <router-link to="/employees-timelogs" class="sidebar-link" active-class="active-link">Time Logs</router-link>
-      </li>
-      <li class="sidebar-item">
-        <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>
-      </li>
-      
-      <!-- Dropdown for TimeLine -->
-      <li class="sidebar-item" @click="toggleDropdown('timelines')">
+      <!-- Dropdown for Employees -->
+      <li class="sidebar-item" @click="toggleDropdown('employees')">
         <div class="timelines-header">
-          <h3 class="sidebar-subtitle">TimeLine</h3>
-          <span :class="dropdowns.timelines ? 'icon-rotate' : ''">▼</span>
+          <h3 class="sidebar-subtitle">Employees</h3>
+          <span :class="dropdowns.employees ? 'icon-rotate' : ''">▼</span>
         </div>
-        <ul v-show="dropdowns.timelines" class="sidebar-submenu">
-          <li class="sidebar-subitem">
-            <router-link to="/timeline" class="sidebar-link" active-class="active-link">View TimeLine</router-link>
+        <ul v-show="dropdowns.employees" class="sidebar-submenu">
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/users" class="sidebar-sublink" active-class="active-link">View Employees</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/uploadtimeline" class="sidebar-link" active-class="active-link">Upload TimeLine</router-link>
+            <router-link to="/employees-attendances" class="sidebar-sublink" active-class="active-link">Employees Attendances</router-link>
+          </li>
+          <li class="sidebar-subitem">
+            <router-link to="/employees-timelogs" class="sidebar-sublink" active-class="active-link">Time Logs</router-link>
           </li>
         </ul>
       </li>
-
+<!-- Dropdown for Tasks -->
+<li class="sidebar-item" @click="toggleDropdown('tasks')">
+        <div class="tasks-header">
+          <h3 class="sidebar-subtitle">Tasks</h3>
+          <span :class="dropdowns.tasks ? 'icon-rotate' : ''">▼</span>
+        </div>
+        <ul v-show="dropdowns.tasks" class="sidebar-submenu">
+          <li class="sidebar-subitem">
+            <router-link to="/mytasklist" class="sidebar-sublink" active-class="active-link">My Task List</router-link>
+          </li>
+          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+            <router-link to="/dailytask" class="sidebar-sublink" active-class="active-link">Daily Task List</router-link>
+          </li>
+        </ul>
+      </li>
       <!-- Dropdown for Leaves -->
       <li class="sidebar-item" @click="toggleDropdown('leaves')">
         <div class="leaves-header">
@@ -55,29 +53,38 @@
         </div>
         <ul v-show="dropdowns.leaves" class="sidebar-submenu">
           <li class="sidebar-subitem">
-            <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
+            <router-link to="/leaves" class="sidebar-sublink" active-class="active-link">My Leaves</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/teamleaves" class="sidebar-link" active-class="active-link">My Team Leaves</router-link>
+            <router-link to="/teamleaves" class="sidebar-sublink" active-class="active-link">My Team Leaves</router-link>
           </li>
         </ul>
       </li>
-
-      <!-- Dropdown for Tasks -->
-      <li class="sidebar-item" @click="toggleDropdown('tasks')">
-        <div class="tasks-header">
-          <h3 class="sidebar-subtitle">Tasks</h3>
-          <span :class="dropdowns.tasks ? 'icon-rotate' : ''">▼</span>
+<!-- Dropdown for TimeLine -->
+<li class="sidebar-item" @click="toggleDropdown('timelines')">
+        <div class="timelines-header">
+          <h3 class="sidebar-subtitle">TimeLine</h3>
+          <span :class="dropdowns.timelines ? 'icon-rotate' : ''">▼</span>
         </div>
-        <ul v-show="dropdowns.tasks" class="sidebar-submenu">
+        <ul v-show="dropdowns.timelines" class="sidebar-submenu">
           <li class="sidebar-subitem">
-            <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Task List</router-link>
+            <router-link to="/timeline" class="sidebar-sublink" active-class="active-link">View TimeLine</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/dailytask" class="sidebar-link" active-class="active-link">Daily Task List</router-link>
+            <router-link to="/uploadtimeline" class="sidebar-sublink" active-class="active-link">Upload TimeLine</router-link>
           </li>
         </ul>
       </li>
+      <li class="sidebar-item">
+        <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>
+      </li>
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
+        <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
+      </li>
+      <li class="sidebar-item">
+        <router-link to="/policies" class="sidebar-link" active-class="active-link">Policies</router-link>
+      </li>
+      
     </ul>
   </aside>
 </template>
@@ -93,6 +100,7 @@ export default {
         leaves: false,
         tasks: false,
         timelines: false,
+        employees: false,
       },
     };
   },
@@ -107,25 +115,54 @@ export default {
     userRole() {
       return this.getUserRole;
     },
+    
+    // Check if a sub-tab is active
+    isActiveEmployees() {
+      return ["/users", "/employees-attendances", "/employees-timelogs"].includes(this.$route.path);
+    },
+    isActiveTimelines() {
+      return ["/timeline", "/uploadtimeline"].includes(this.$route.path);
+    },
+    isActiveLeaves() {
+      return ["/leaves", "/teamleaves"].includes(this.$route.path);
+    },
+    isActiveTasks() {
+      return ["/mytasklist", "/dailytask"].includes(this.$route.path);
+    },
   },
   methods: {
     ...mapActions(["fetchUserDetails", "fetchUserRole"]),
+    
     toggleDropdown(dropdownName) {
       this.dropdowns = {
         ...this.dropdowns,
         [dropdownName]: !this.dropdowns[dropdownName],
       };
     },
+    
+    keepDropdownOpen() {
+      if (this.isActiveEmployees) this.dropdowns.employees = true;
+      if (this.isActiveTimelines) this.dropdowns.timelines = true;
+      if (this.isActiveLeaves) this.dropdowns.leaves = true;
+      if (this.isActiveTasks) this.dropdowns.tasks = true;
+    },
   },
   mounted() {
-    // Only fetch the data once if not already fetched
     if (!this.userName || !this.userRole) {
       this.fetchUserDetails();
       this.fetchUserRole();
     }
+    
+    this.keepDropdownOpen();
+  },
+  watch: {
+    $route() {
+      this.keepDropdownOpen();
+    },
   },
 };
 </script>
+
 
 
 <style scoped>
@@ -184,12 +221,21 @@ export default {
   transition: all 0.3s ease;
   position: relative;
 }
+.sidebar-sublink {
+  display: block;
+  text-decoration: none;
+  color: #bdc3c7;
+  font-size: 13px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
 
 .sidebar-link:hover,
 .active-link {
   background-color: #16a085; /* Highlight on hover/active */
   color: #fff;
-  font-weight: bold;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 
@@ -234,7 +280,6 @@ export default {
 .sidebar-subtitle {
   font-size: 1rem;
   color: #ecf0f1;
-  font-weight: bold;
 }
 
 .sidebar-submenu {

@@ -2,7 +2,7 @@
   <master-component>
     <div class="notice-container">
       <div class="header">
-        <h1>Notices</h1>
+        <h2>Notices</h2>
         <button class="add-notice-btn" @click="showModal = true">Add New Notice</button>
       </div>
 
@@ -265,7 +265,6 @@ h1 {
 .notices-section {
   overflow-x: auto;
   background: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   padding: 15px;
 }

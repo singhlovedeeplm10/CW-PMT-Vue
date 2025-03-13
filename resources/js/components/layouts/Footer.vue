@@ -1,7 +1,7 @@
 <!-- resources/js/components/Footer.vue -->
 <template>
   <footer class="footer">
-    <h2 class="footer-title">Footer Section</h2>
+    <h2 class="footer-title">© 2025 Contriwhiz Technologies.All rights reserved.</h2>
   </footer>
 </template>
 

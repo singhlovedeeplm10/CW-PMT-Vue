@@ -3,7 +3,7 @@
     <div class="leaves-page">
       <!-- Header with Heading and Apply Leave Button -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="page-heading">My Leaves</h1>
+        <h2 class="page-heading">My Leaves</h2>
         <!-- Button to open Apply Leave Modal -->
         <ButtonComponent 
           label="Apply Leave" 
@@ -25,17 +25,17 @@
             <th>Manage</th>
           </tr>
           <tr>
-            <th></th>
-            <th>
+            <th style="background: none;"></th>
+            <th style="background: none;">
               <input
                 type="text"
-                class="form-control"
+                class="form-control" 
                 v-model="search.type"
                 placeholder="Search Type"
                 @input="fetchLeaves"
               />
             </th>
-            <th>
+            <th style="background: none;">
               <input
                 type="text"
                 class="form-control"
@@ -44,7 +44,7 @@
                 @input="fetchLeaves"
               />
             </th>
-            <th>
+            <th style="background: none;">
               <select
                 class="form-select"
                 v-model="search.status"
@@ -58,7 +58,7 @@
                 <option value="canceled">Canceled</option>
               </select>
             </th>
-            <th>
+            <th style="background: none;">
               <input
                 type="date"
                 class="form-control"
@@ -261,13 +261,17 @@ export default {
   padding: 20px;
 }
 
-.page-heading {
-  font-size: 2rem;
-}
-
 .leave-table th,
 .leave-table td {
   vertical-align: middle;
+}
+.leave-table th {
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: white;
+  text-align: left;
+  padding: 10px;
+  font-size: 14px;
+  border: none;
 }
 
 .invalid-feedback {
@@ -294,5 +298,18 @@ export default {
 .spinner-border {
   width: 2rem;
   height: 2rem;
+}
+.btn-info {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
 }
 </style>

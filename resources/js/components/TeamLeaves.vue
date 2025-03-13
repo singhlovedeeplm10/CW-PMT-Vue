@@ -3,7 +3,7 @@
     <div class="leaves-page">
       <!-- Header with Heading and Apply Leave Button -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="page-heading">My Team Leaves</h1>
+        <h2 class="page-heading">My Team Leaves</h2>
         <ButtonComponent
           label="Apply Team Leave"
           buttonClass="add-leave-btn"
@@ -25,8 +25,8 @@
             <th>Manage</th>
           </tr>
           <tr>
-            <th></th>
-            <th>
+            <th style="background: none;"></th>
+            <th style="background: none;">
               <input
                 type="text"
                 class="form-control"
@@ -35,7 +35,7 @@
                 @input="fetchLeaves"
               />
             </th>
-            <th>
+            <th style="background: none;">
               <input
                 type="text"
                 class="form-control"
@@ -44,7 +44,7 @@
                 @input="fetchLeaves"
               />
             </th>
-            <th>
+            <th style="background: none;">
               <input
                 type="text"
                 class="form-control"
@@ -52,8 +52,8 @@
                 placeholder="Search Duration"
                 @input="fetchLeaves"
               />
-            </th>
-            <th>
+            </th style="background: none;">
+            <th style="background: none;">
               <select
                 class="form-select"
                 v-model="search.status"
@@ -67,7 +67,7 @@
                 <option value="canceled">Canceled</option>
               </select>
             </th>
-            <th>
+            <th style="background: none;">
               <input
                 type="date"
                 class="form-control"
@@ -263,6 +263,19 @@ export default {
 </script>
   
   <style scoped>
+  .btn-info {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
   .add-leave-btn{
   padding: 10px 16px;
   font-size: 1em;
@@ -281,14 +294,18 @@ export default {
     padding: 20px;
   }
   
-  .page-heading {
-    font-size: 2rem;
-  }
-  
   .leave-table th,
   .leave-table td {
     vertical-align: middle;
   }
+  .leave-table th {
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: white;
+  text-align: left;
+  padding: 10px;
+  font-size: 14px;
+  border: none;
+}
   
   .invalid-feedback {
     color: red;

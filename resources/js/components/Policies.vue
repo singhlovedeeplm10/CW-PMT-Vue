@@ -3,7 +3,7 @@
     <div class="policies-page">
       <!-- Conditionally render the page header and "Add New Policy" button -->
       <template v-if="!currentDocument">
-        <h1>Company Policies</h1>
+        <h2>Company Policies</h2>
 
         <!-- Add Project Button -->
         <ButtonComponent
@@ -248,7 +248,9 @@ export default {
         axios.delete(`/api/delete-policies/${policyId}`)
           .then(() => {
             console.log('Policy deleted successfully');
-            toast.success("Policy deleted successfully");
+            toast.success("Policy deleted successfully", {
+        autoClose: 1000, // Set to 2 seconds
+      });
           })
           .catch(error => {
             console.error('Error deleting policy:', error);

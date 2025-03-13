@@ -2,7 +2,7 @@
   <master-component>
     <div class="task-card">
       <div class="task-card-header">
-        <h4>Daily Tasks</h4>
+        <h2>Daily Tasks</h2>
         <div class="date-picker">
           <label for="date" class="form-label">Date:</label>
           <Calendar
@@ -16,7 +16,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Team Lead</th>
+            <!-- <th>Team Lead</th> -->
             <th>Projects</th>
             <th>Manage</th>
           </tr>
@@ -42,9 +42,9 @@
     :class="{ 'bg-light-gray': task.leave_id !== null }"
   >
     <td>{{ task.user.name }}</td>
-    <td>{{ task.user.team_lead_name || "N/A" }}</td>
+    <!-- <td>{{ task.user.team_lead_name || "N/A" }}</td> -->
     <td>
-      <ul>
+      <ul style="padding: 3px 5px;">
         <li
           v-for="(project, projectIndex) in task.projects"
           :key="projectIndex"
@@ -54,13 +54,13 @@
             'bg-light-gray': task.leave_id !== null,
           }"
         >
-          <strong>(<em>{{ project.hours }}</em>)</strong>
+          <strong class="badge badge-red"><em>{{ project.hours }}</em></strong>
           {{ project.project_name }} {{ project.task_description }}
         </li>
       </ul>
     </td>
     <td>
-      <button class="btn btn-primary btn-sm" @click="openModal(task)">
+      <button class="btn btn-info" @click="openModal(task)">
         <i class="fas fa-eye"></i>
       </button>
     </td>
@@ -324,6 +324,25 @@ export default {
 
 
 <style scoped>
+.badge-red {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+ .btn-info {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
  .close-modal{
     background: none;
     color: white;

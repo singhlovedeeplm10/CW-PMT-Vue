@@ -148,7 +148,7 @@
 
         <!-- Footer -->
         <div class="email-footer">
-            &copy; {{ date('Y') }} Your Company Name. All rights reserved.
+            &copy; {{ date('Y') }} Contriwhiz Technologies.All rights reserved.
         </div>
     </div>
 </body>

@@ -1,7 +1,7 @@
 <template>
   <master-component>
     <div class="task-list">
-      <h1>My Task List</h1>
+      <h2>My Task List</h2>
       <!-- Card for the table -->
       <div class="card">
         <div class="card-body">
@@ -25,8 +25,8 @@
                   <th>Project List</th>
                 </tr>
                 <tr>
-                  <th></th>
-                  <th>
+                  <th style="background: none;"></th>
+                  <th style="background: none;">
                     <!-- Replace input with Calendar component -->
                     <Calendar
                       v-model="filterDate"
@@ -34,7 +34,7 @@
                       @dateSelected="onDateSelected"
                     />
                   </th>
-                  <th></th>
+                  <th style="background: none;"></th>
                 </tr>
               </thead>
               <tbody>
