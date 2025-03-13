@@ -54,10 +54,18 @@
                 {{ employee.status === '1' ? 'Active' : 'Inactive' }}
               </button>
             </td> -->
-            <td>{{ employee.totalWFO }}</td>
-            <td>{{ employee.totalWFH }}</td>
-            <td>{{ employee.totalLeave }}</td>
-            <td>{{ employee.totalWorkingDays }}</td>
+            <td style="
+    padding: 0px 50px;
+">{{ employee.totalWFO }}</td>
+            <td style="
+    padding: 0px 50px;
+">{{ employee.totalWFH }}</td>
+            <td style="
+    padding: 0px 50px;
+">{{ employee.totalLeave }}</td>
+            <td style="
+    padding: 0px 50px;
+">{{ employee.totalWorkingDays }}</td>
           </tr>
         </tbody>
       </table>

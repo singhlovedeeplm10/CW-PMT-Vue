@@ -162,7 +162,7 @@ export default {
     border-radius: 8px;
     margin-top: 20px;
     background-color: #fff;
-    width: 98%;
+    width: 100%;
   }
   .task-card-header {
     display: flex;
@@ -179,6 +179,7 @@ export default {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
+    font-family: 'Poppins', sans-serif;
   }
   .spinner-border {
   width: 2rem;

@@ -1,13 +1,18 @@
-<!-- resources/js/components/Footer.vue -->
 <template>
   <footer class="footer">
-    <h2 class="footer-title">© 2025 Contriwhiz Technologies.All rights reserved.</h2>
+    <h2 class="footer-title">{{ currentYear }} Copyright © All rights reserved Contriwhiz Technologies Pvt Ltd.</h2>
   </footer>
 </template>
 
 <script>
 export default {
   name: 'FooterComponent',
+  data() {
+    return {
+      // Get the current year
+      currentYear: new Date().getFullYear(),
+    };
+  },
 };
 </script>
 
@@ -20,18 +25,12 @@ export default {
   background-color: #24292e;
   color: #fff;
   font-family: 'Arial', sans-serif;
-  
 }
 
 .footer-title {
-  font-size: 1.5rem;
+  font-size: 15px;
   text-align: center;
   color: #f1c40f;
   margin: 0;
-}
-
-.footer-title:hover {
-  color: #3498db;
-  transition: color 0.3s ease;
 }
 </style>
