@@ -34,7 +34,7 @@
                 alt="User Image" 
                 class="rounded-circle user-avatar me-2"
             />
-            <span class="user-name"><strong>{{ user.name }}</strong></span>
+            <span class="user-name">{{ user.name }}</span>
         </div>
         <!-- <span class="birthday-message">
           Wishing you the happiest of birthdays, filled with love, laughter, and all your favorite things.
@@ -155,14 +155,16 @@ table {
 thead th {
     text-align: left;
     padding: 10px;
-    font-size: 14px;
-    background-color: #f8f8f8;
-    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #3498db;
+  color: white;
 }
 
 tbody td {
     padding: 10px;
-    font-size: 14px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
     border-bottom: 1px solid #f1f1f1;
     word-break: break-word;
     vertical-align: middle; /* Ensure content is vertically aligned */
@@ -189,8 +191,9 @@ tbody td {
 
 .task-card-header h4 {
     color: #3498db;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 17px;
+    font-family: 'Poppins', sans-serif;
+  font-weight: 600;
 }
 
 /* Loader Style */
@@ -217,8 +220,7 @@ tbody td {
 }
 
 .user-name {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
     white-space: nowrap;
 }
 </style>

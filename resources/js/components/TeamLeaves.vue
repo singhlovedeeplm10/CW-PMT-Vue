@@ -263,6 +263,10 @@ export default {
 </script>
   
   <style scoped>
+  h2{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
   .btn-info {
   background: linear-gradient(135deg, #28a745, #218838);
   color: white;

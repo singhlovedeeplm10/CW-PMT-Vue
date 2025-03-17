@@ -243,6 +243,10 @@ export default {
 
 
 <style scoped>
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
 .add-leave-btn{
   padding: 10px 16px;
   font-size: 1em;

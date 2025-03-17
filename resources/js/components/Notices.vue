@@ -166,9 +166,9 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-  font-size: 2em;
-  margin-bottom: 15px;
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 .loader-container {
   display: flex;

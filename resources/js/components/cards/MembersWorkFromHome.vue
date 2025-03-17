@@ -41,7 +41,7 @@
                 />
                 <span>{{ member.user_name }}</span>
               </td>
-              <td>{{ member.date_range }}</td>
+              <td style="padding: 18px 15px;">{{ member.date_range }}</td>
             </tr>
           </tbody>
         </table>
@@ -147,18 +147,24 @@ table {
 }
 
 thead th {
-    text-align: left;
-    padding: 10px;
-    font-size: 14px;
-    background-color: #f8f8f8; /* Adds a subtle background */
-    border-bottom: 1px solid #ddd;
+    text-align: center;
+    margin: auto;
+    font-size: 16px; 
+    background-color: #3498db;
+  color: white;
+    font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  border: none;
 }
 
 tbody td {
-    padding: 10px;
-    font-size: 14px;
-    border-bottom: 1px solid #f1f1f1; /* Adds spacing between rows */
-    word-break: break-word; /* Ensures long words break properly */
+  text-align: center;
+    margin: auto;
+    padding: 8px 55px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    border-bottom: 1px solid #f1f1f1;
+    word-break: break-word;
 }
 
 .profile {
@@ -167,8 +173,8 @@ tbody td {
 }
 
 .profile img {
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     margin-right: 8px;
 }
@@ -181,8 +187,9 @@ tbody td {
 
 .task-card-header h4 {
     color: #3498db;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 17px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 /* Loader Style */

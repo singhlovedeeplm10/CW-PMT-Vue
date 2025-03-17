@@ -324,6 +324,10 @@ export default {
 
 
 <style scoped>
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
 .badge-red {
     background-color: #ff4d4d;
     color: white;

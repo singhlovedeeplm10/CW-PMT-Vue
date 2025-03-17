@@ -618,7 +618,10 @@
       color: #333;
       margin-bottom: 20px;
   }
-  
+  h2{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
   .filters {
       display: flex;
       gap: 10px;

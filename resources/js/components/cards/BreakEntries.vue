@@ -25,17 +25,13 @@
                                     <img 
                                         :src="breakEntry.user_image" 
                                         alt="User Image" 
-                                        class="rounded-circle" width="50" height="50"
+                                        class="rounded-circle"
                                     >
                                     <span>{{ breakEntry.user_name }}</span>
                                 </div>
                             </td>
-                            <td style="
-    padding: 0px 40px;
-">{{ breakEntry.total_breaks }}</td>
-                            <td style="
-    padding: 0px 18px;
-"@click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
+                            <td>{{ breakEntry.total_breaks }}</td>
+                            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -150,6 +146,10 @@ export default {
 </script>
 
 <style scoped>
+
+.profile span {
+    font-weight: 400;
+}
   .clickable-time {
     cursor: pointer;
     text-decoration: underline; /* Underline effect */
@@ -248,16 +248,21 @@ table {
 }
 
 thead th {
-    text-align: left;
+    text-align: center;
     padding: 10px;
-    font-size: 14px;
-    background-color: #f8f8f8; /* Adds a subtle background */
-    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  background-color: #3498db;
+  color: white;
+    
 }
 
 tbody td {
+    text-align: center;
     padding: 10px;
-    font-size: 14px;
+    font-size: 15px;
+  font-family: 'Poppins', sans-serif;
     border-bottom: 1px solid #f1f1f1; /* Adds spacing between rows */
     word-break: break-word; /* Ensures long words break properly */
 }
@@ -268,8 +273,8 @@ tbody td {
 }
 
 .profile img {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     margin-right: 8px;
 }
@@ -282,8 +287,9 @@ tbody td {
 
 .task-card-header h4 {
     color: #3498db;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 17px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
 }
 
 /* Loader Style */
