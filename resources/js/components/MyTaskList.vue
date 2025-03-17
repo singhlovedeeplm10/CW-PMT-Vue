@@ -149,6 +149,10 @@ export default {
 
   
   <style scoped>
+  h2{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
   .card-body {
     flex: 1 1 auto;
     padding: 1px 0px;

@@ -98,14 +98,16 @@
             />
           </div>
           <div class="form-group">
-            <label for="user_image" class="form-label">Profile Image</label>
-            <input
-              id="user_image"
-              type="file"
-              @change="handleImageUpload"
-              class="form-control custom-input"
-            />
-          </div>
+  <label for="user_image" class="form-label">Profile Image</label>
+  <input
+    id="user_image"
+    type="file"
+    accept="image/png, image/jpeg, image/jpg, image/webp"
+    @change="handleImageUpload"
+    class="form-control custom-input"
+  />
+</div>
+
         </div>
 
         <div class="modal-footer custom-modal-footer">
@@ -183,8 +185,18 @@ export default {
       }
     },
     handleImageUpload(event) {
-      this.formData.user_image = event.target.files[0];
-    },
+  const file = event.target.files[0];
+  if (file) {
+    const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Only image files (PNG, JPG, JPEG, WEBP) are allowed.");
+      event.target.value = ""; // Clear the input field
+      return;
+    }
+    this.formData.user_image = file;
+  }
+},
+
     async updateEmployee() {
       this.loading = true; // Show loader when the form starts submitting
       try {

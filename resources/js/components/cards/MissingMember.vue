@@ -158,15 +158,23 @@ export default {
   width: 100%;
   border-collapse: collapse;
 }
+.table td {
+  padding: 4px 50px;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  white-space: nowrap; /* Prevents text wrapping */
+}
 .table th, .table td {
   padding: 4px 50px;
-  border-bottom: 1px solid #ddd;
   white-space: nowrap; /* Prevents text wrapping */
 }
 .table th {
-  background-color: #f8f9fa;
-  padding: 10px 123px;
-  font-weight: bold;
+  background-color: #3498db;
+  color: white;
+  padding: 10px 120px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Card container styling */
@@ -207,8 +215,9 @@ td.d-flex {
 
 /* Header styling */
 .task-card-header h4 {
-  font-size: 18px;
-  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
   color: #3498db;
   margin: 0;
   text-transform: capitalize;
@@ -220,7 +229,7 @@ td.d-flex {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 10px;
+  padding: 10px 16px;
 }
 .leave-type{
   font-size: small;
@@ -240,8 +249,8 @@ td.d-flex {
 }
 
 .user-image {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 2px solid #ddd;
   object-fit: cover;
@@ -253,9 +262,9 @@ td.d-flex {
 }
 
 .employee-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
   color: #333;
+  font-family: 'Poppins', sans-serif;
   margin: 0;
 }
 

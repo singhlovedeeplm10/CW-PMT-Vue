@@ -300,11 +300,14 @@ export default {
   border: none;  
 }
 
-.header-title h1 {
+.header-title {
   color: #333;
   margin-bottom: 5px;
 }
-
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
 .subtext {
   font-size: 14px;
   color: #666;

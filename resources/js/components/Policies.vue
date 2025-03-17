@@ -278,6 +278,10 @@ export default {
 
 
 <style scoped>
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
 .table thead th {
   background: linear-gradient(10deg, #2a5298, #2a5298);
   color: #ffffff;

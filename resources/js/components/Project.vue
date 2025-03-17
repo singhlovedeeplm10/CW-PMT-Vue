@@ -185,6 +185,10 @@ export default {
 </script>
 
 <style scoped>
+h2{
+  font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
 .text-success {
   color: green;
   font-weight: bold;

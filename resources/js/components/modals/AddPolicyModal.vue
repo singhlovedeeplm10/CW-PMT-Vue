@@ -26,7 +26,7 @@
           id="document-upload"
           class="form-control"
           @change="handleFileUpload"
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+          accept=".pdf"
         />
       </div>
 

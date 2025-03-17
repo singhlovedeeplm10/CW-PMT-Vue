@@ -156,6 +156,11 @@ export default {
 
 
   <style scoped>
+  h4{
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+  }
   .task-card {
     padding: 20px;
     border: 1px solid #ccc;
@@ -174,10 +179,20 @@ export default {
     width: 100%;
     border-collapse: collapse;
   }
-  .task-table th,
+  .task-table th{
+    padding: 10px;
+    font-size: 16px;
+    text-align: left;
+    background-color: #3498db;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    border: none;
+  }
   .task-table td {
     padding: 10px;
     text-align: left;
+    font-size: 15px;
     border-bottom: 1px solid #ddd;
     font-family: 'Poppins', sans-serif;
   }
