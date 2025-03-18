@@ -1,7 +1,7 @@
 <template>
   <master-component>
     <div class="project-page">
-      <h2>Projects</h2>
+      <h2 class="title_heading">Projects</h2>
       <!-- Add Project Button using ButtonComponent -->
       <ButtonComponent
         label="Add New Project"

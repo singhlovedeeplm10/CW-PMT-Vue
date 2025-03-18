@@ -1,7 +1,7 @@
 <template>
   <div class="task-card">
     <div class="task-card-header">
-      <h4>Tasks List</h4>
+      <h4 class="card_heading">Tasks List</h4>
       <ButtonComponent
         :label="'Tasks'"
         :isLoading="buttonLoading"
@@ -32,7 +32,8 @@
         <tr v-else v-for="task in tasks" :key="task.id">
           <td>{{ task.project_name || 'N/A' }}</td>
           <td>{{ task.hours }}</td>
-          <td>{{ task.task_description }}</td>
+          <td v-html="formattedDescription(task.task_description)"></td>
+
         </tr>
       </tbody>
     </table>
@@ -71,6 +72,10 @@ export default {
     this.fetchProjects();
   },
   methods: {
+    formattedDescription(description) {
+  return description ? description.replace(/\n/g, "<br>") : "";
+},
+
     async fetchTasks() {
       this.loading = true;
       try {
@@ -133,7 +138,8 @@ export default {
             });
           }
         } else {
-          toast.warning("You need to clock in to add tasks!", { position: "top-right" });
+          toast.warning("You need to clock in to add tasks!", { position: "top-right" ,
+          autoClose: 1000});
         }
       } catch (error) {
         console.error("Error checking clock-in status:", error.response?.data || error.message);
@@ -156,11 +162,6 @@ export default {
 
 
   <style scoped>
-  h4{
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 17px;
-  }
   .task-card {
     padding: 20px;
     border: 1px solid #ccc;

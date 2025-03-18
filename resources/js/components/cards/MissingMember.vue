@@ -5,7 +5,7 @@
     <!-- 1st Task List Card (Missing Team Members) -->
     <div class="card flex-fill me-3 shadow-sm" id="card1">
       <div class="task-card-header d-flex justify-content-between align-items-center">
-        <h4>Missing Team Member Entry</h4>
+        <h4 class="card_heading">Missing Team Member Entry</h4>
       </div>
       <div class="task-card-body">
         <!-- Loader for Missing Team Members -->
@@ -39,7 +39,7 @@
     <!-- 2nd Task List Card (Team Members on Leave) -->
     <div class="card flex-fill me-3 shadow-sm" id="card2">
   <div class="task-card-header d-flex justify-content-between align-items-center">
-    <h4>Team Members on Leave</h4>
+    <h4 class="card_heading">Team Members on Leave</h4>
     <Calendar
       :selectedDate="date"
       @dateSelected="onDateSelected" 
@@ -216,9 +216,6 @@ td.d-flex {
 /* Header styling */
 .task-card-header h4 {
   font-family: 'Poppins', sans-serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: #3498db;
   margin: 0;
   text-transform: capitalize;
   padding-bottom: 10px;

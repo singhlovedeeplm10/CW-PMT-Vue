@@ -3,8 +3,8 @@
     <nav class="nav">
       <div class="header-left">
         <router-link to="/dashboard" class="sidebar-link header-logo">
-          <img src="img/CWlogo.jpeg" alt="Contriwhiz Logo" class="logo-image" />
-          <h1 class="logo-title">Contriwhiz</h1>
+          <img src="img/CWlogo2.svg" alt="Contriwhiz Logo" class="logo-image" />
+          <!-- <h1 class="logo-title">Contriwhiz</h1> -->
         </router-link>
       </div>
       <div class="header-right">
@@ -124,11 +124,10 @@ body {
 }
 
 .logo-image {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  margin-right: 10px;
+  width: 14%;
+  height: 50%;
   transition: transform 0.3s ease;
+  margin: 0px 18px;
 }
 
 .logo-title {
@@ -159,11 +158,12 @@ body {
 }
 
 .profile-image {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   transition: border 0.3s ease, box-shadow 0.3s ease;
   border: 2px solid #ffffff;
+  margin: 3px 0px;
   object-fit: cover;
 }
 

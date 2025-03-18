@@ -2,7 +2,7 @@
   <master-component>
     <div class="notice-container">
       <div class="header">
-        <h2>Notices</h2>
+        <h2 class="title_heading">Notices</h2>
         <button class="add-notice-btn" @click="showModal = true">Add New Notice</button>
       </div>
 

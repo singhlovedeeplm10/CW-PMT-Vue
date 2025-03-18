@@ -3,7 +3,7 @@
     <!-- Task List Card -->
     <div class="task-card flex-fill shadow-sm position-relative" id="card2">
       <div class="task-card-header d-flex justify-content-between align-items-center">
-        <h4>Members on WFH</h4>
+        <h4 class="card_heading">Members on WFH</h4>
         <calendar
           :selected-date="selectedDate"
           @dateSelected="fetchWFHMembers"
@@ -186,10 +186,7 @@ tbody td {
 }
 
 .task-card-header h4 {
-    color: #3498db;
-    font-size: 17px;
     font-family: 'Poppins', sans-serif;
-    font-weight: 600;
 }
 
 /* Loader Style */

@@ -72,7 +72,7 @@ class UserController extends Controller
         }
     
         // Fetch paginated users
-        $users = $query->paginate(5);
+        $users = $query->paginate(20);
     
         return response()->json($users);
     }

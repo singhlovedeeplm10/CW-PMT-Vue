@@ -4,6 +4,12 @@
       <div class="modal-content">
         <div class="modal-header modal-header-custom">
           <h5 class="modal-title" id="addtaskmodallabel">Tasks</h5>
+          <button
+            type="button"
+            class="close-modal"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >&times;</button>
         </div>
         <div class="modal-body modal-body-custom">
           <table class="table table-bordered">
@@ -298,6 +304,14 @@ export default {
 </script>
 
 <style scoped>
+
+.close-modal{
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-family: math;
+  }
 .custom-modal-dialog {
     max-width: 1000px;
     min-height: 600px;

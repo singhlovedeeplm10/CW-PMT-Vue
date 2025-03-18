@@ -3,38 +3,44 @@
         <!-- Task List Card -->
         <div class="task-card flex-fill shadow-sm">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4>Break Entries</h4>
+                <h4 class="card_heading">Break Entries</h4>
                 <Calendar :selectedDate="selectedDate" @dateSelected="onDateSelected" />
             </div>
             <div class="task-card-body mt-3">
                 <div v-if="loading" class="loader"></div>
 
                 <!-- Break Entries Table -->
-                <table v-else>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Total Breaks</th>
-                            <th>Break Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id" >
-                            <td>
-                                <div class="profile">
-                                    <img 
-                                        :src="breakEntry.user_image" 
-                                        alt="User Image" 
-                                        class="rounded-circle"
-                                    >
-                                    <span>{{ breakEntry.user_name }}</span>
-                                </div>
-                            </td>
-                            <td>{{ breakEntry.total_breaks }}</td>
-                            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">{{ formatBreakTime(breakEntry.total_break_time) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+<table v-else>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Total Breaks</th>
+            <th>Break Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-if="breakEntries.length === 0">
+            <td colspan="3" class="text-center">No break entries available for the selected date.</td>
+        </tr>
+        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id">
+            <td>
+                <div class="profile">
+                    <img 
+                        :src="breakEntry.user_image" 
+                        alt="User Image" 
+                        class="rounded-circle"
+                    >
+                    <span>{{ breakEntry.user_name }}</span>
+                </div>
+            </td>
+            <td>{{ breakEntry.total_breaks }}</td>
+            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">
+                {{ formatBreakTime(breakEntry.total_break_time) }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
             </div>
             <!-- Break Details Modal -->
         <div v-if="showModal" class="modal-overlay">
@@ -286,10 +292,7 @@ tbody td {
 }
 
 .task-card-header h4 {
-    color: #3498db;
-    font-size: 17px;
     font-family: 'Poppins', sans-serif;
-    font-weight: 600;
 }
 
 /* Loader Style */

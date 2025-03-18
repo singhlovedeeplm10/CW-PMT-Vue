@@ -3,7 +3,7 @@
     <div class="salary-container">
       <div class="header">
         <div class="header-title">
-          <h2>Salary Slips</h2>
+          <h2 class="title_heading">Salary Slips</h2>
         </div>
         <div class="actions" v-if="userRole === 'Admin'">
           <input

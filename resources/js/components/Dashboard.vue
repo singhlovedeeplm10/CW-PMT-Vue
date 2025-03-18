@@ -2,7 +2,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <master-component>
     <div class="dashboard">
-      <h1>Welcome to the Dashboard</h1>
+      <h1 class="title_heading">Welcome to the Dashboard</h1>
       <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
@@ -22,7 +22,10 @@
       <apply-team-leave-modal />
       <update-leave-modal />
       <update-team-leave-modal />
-      <upcoming-birthdays v-if="userRole === 'Admin'" />
+      <div class="birthday-container">
+        <upcoming-birthdays v-if="userRole === 'Admin'" />
+      </div>
+      
     </div>
   </master-component>
 </template>
@@ -145,6 +148,18 @@ export default {
 }
 
 .card-container > * {
+  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
+  min-width: 300px; /* Ensures a reasonable width for smaller screens */
+}
+.birthday-container {
+  display: flex;
+  gap: 20px; /* Space between cards */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  width: 627px;
+  margin-bottom: -21px;
+}
+
+.birthday-container > * {
   flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
   min-width: 300px; /* Ensures a reasonable width for smaller screens */
 }

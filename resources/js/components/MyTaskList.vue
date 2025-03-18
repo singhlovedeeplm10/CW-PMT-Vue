@@ -1,7 +1,7 @@
 <template>
   <master-component>
     <div class="task-list">
-      <h2>My Task List</h2>
+      <h2 class="title_heading">My Task List</h2>
       <!-- Card for the table -->
       <div class="card">
         <div class="card-body">
