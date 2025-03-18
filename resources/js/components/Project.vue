@@ -286,6 +286,7 @@ p {
 .project-table td {
   padding: 12px;
   text-align: left;
+  font-family: 'Poppins', sans-serif;
   border-bottom: 1px solid #ddd;
 }
 
@@ -295,6 +296,7 @@ p {
   color: #ffffff;
   text-align: left;
   padding: 12px 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -304,7 +306,7 @@ p {
 
 .project-table td {
   padding: 18px 19px;
-  font-size: 16px;
+  font-size: 15px;
   border-bottom: 1px solid #e9ecef;
 }
 
