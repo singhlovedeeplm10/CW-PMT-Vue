@@ -58,7 +58,6 @@
                 label="Type"
                 id="leaveType"
                 name="type_of_leave"
-                placeholder="Select Leave Type"
                 :error="leaveTypeError"
                 @change="handleLeaveTypeChange"
               />
@@ -89,7 +88,6 @@
     label="Select Half"
     id="halfDayOption"
     name="half_day"
-    placeholder="Select Half"
     :error="halfDayError"
   />
   <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->

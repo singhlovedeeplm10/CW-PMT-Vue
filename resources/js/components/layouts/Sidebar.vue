@@ -23,10 +23,10 @@
         </div>
         <ul v-show="dropdowns.employees" class="sidebar-submenu">
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/users" class="sidebar-sublink" active-class="active-link">View Employees</router-link>
+            <router-link to="/users" class="sidebar-sublink" active-class="active-link">View</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/employees-attendances" class="sidebar-sublink" active-class="active-link">Employees Attendances</router-link>
+            <router-link to="/employees-attendances" class="sidebar-sublink" active-class="active-link">Attendance</router-link>
           </li>
           <li class="sidebar-subitem">
             <router-link to="/employees-timelogs" class="sidebar-sublink" active-class="active-link">Time Logs</router-link>
@@ -41,10 +41,10 @@
         </div>
         <ul v-show="dropdowns.tasks" class="sidebar-submenu">
           <li class="sidebar-subitem">
-            <router-link to="/mytasklist" class="sidebar-sublink" active-class="active-link">My Task List</router-link>
+            <router-link to="/mytasklist" class="sidebar-sublink" active-class="active-link">My Tasks</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/dailytask" class="sidebar-sublink" active-class="active-link">Daily Task List</router-link>
+            <router-link to="/dailytask" class="sidebar-sublink" active-class="active-link">Team Tasks</router-link>
           </li>
         </ul>
       </li>
@@ -59,7 +59,7 @@
             <router-link to="/leaves" class="sidebar-sublink" active-class="active-link">My Leaves</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/teamleaves" class="sidebar-sublink" active-class="active-link">My Team Leaves</router-link>
+            <router-link to="/teamleaves" class="sidebar-sublink" active-class="active-link">Team Leaves</router-link>
           </li>
         </ul>
       </li>

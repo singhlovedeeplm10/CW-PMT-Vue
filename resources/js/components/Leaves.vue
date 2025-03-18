@@ -3,7 +3,7 @@
     <div class="leaves-page">
       <!-- Header with Heading and Apply Leave Button -->
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="page-heading">My Leaves</h2>
+        <h2 class="title_heading">My Leaves</h2>
         <!-- Button to open Apply Leave Modal -->
         <ButtonComponent 
           label="Apply Leave" 

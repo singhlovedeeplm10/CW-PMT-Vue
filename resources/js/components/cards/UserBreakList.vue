@@ -1,7 +1,7 @@
 <template>
   <div class="break-card">
     <div class="break-card-header">
-      <h4 class="break-card-title">My Breaks List</h4>
+      <h4 class="card_heading">My Breaks List</h4>
     </div>
     <table class="break-table">
       <thead>

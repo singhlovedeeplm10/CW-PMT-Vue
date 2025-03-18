@@ -144,13 +144,6 @@ body {
     position: relative;
 }
 
-/* Task card header styles */
-.task-card-header h4 {
-    color: #3498db;
-    font-size: 18px;
-    font-weight: bold;
-}
-
 .task-card-header span {
     color: #2980b9;
     font-size: 14px;

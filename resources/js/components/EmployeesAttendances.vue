@@ -1,7 +1,7 @@
 <template>
   <master-component>
     <div class="attendance-container">
-      <h2 class="title">Employee Attendance</h2>
+      <h2 class="title_heading">Employee Attendance</h2>
 
       <div class="filters">
         <input type="text" v-model="filters.name" placeholder="Search by Name" class="filter-input" />
@@ -30,7 +30,7 @@
             <!-- <th>Status</th> -->
             <th>Total WFO</th>
             <th>Today WFH</th>
-            <th>Total Leave</th>
+            <th>Total Leaves</th>
             <th>Total Working Days</th>
           </tr>
         </thead>

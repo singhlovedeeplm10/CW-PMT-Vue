@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             [
-                'name' => 'Bharat Chauhan',
+                'name' => 'Admin',
                 'email' => 'contriwhiz@gmail.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('M7)-B45!?pSt'),

@@ -30,7 +30,7 @@ export default {
 .footer-title {
   font-size: 15px;
   text-align: center;
-  color: #f1c40f;
+  color: white;
   margin: 0;
 }
 </style>

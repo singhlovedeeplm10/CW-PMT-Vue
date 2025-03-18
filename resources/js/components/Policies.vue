@@ -3,7 +3,7 @@
     <div class="policies-page">
       <!-- Conditionally render the page header and "Add New Policy" button -->
       <template v-if="!currentDocument">
-        <h2>Company Policies</h2>
+        <h2 class="title_heading">Company Policies</h2>
 
         <!-- Add Project Button -->
         <ButtonComponent

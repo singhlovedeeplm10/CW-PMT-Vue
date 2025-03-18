@@ -3,7 +3,7 @@
     <div class="users-page">
       <div class="header d-flex justify-content-between align-items-center" style="padding: 21px 25px 10px; border: none; margin-bottom: 5px;
 ">
-        <h2 class="title">Employees</h2>
+        <h2 class="title_heading">Employees</h2>
         <ButtonComponent
           label="Add Employee"
           :clickEvent="openAddEmployeeModal"
@@ -75,7 +75,7 @@
 
 
 
-    <td>{{ user.email }}</td>
+    <td style="padding: 17px 0px;">{{ user.email }}</td>
     <td>
   <button
     :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"

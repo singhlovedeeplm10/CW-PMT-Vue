@@ -12,9 +12,12 @@
     @vite(['resources/js/app.js', 'resources/css/home.css'])
 </head>
 <style>
+    *{
+        font-family: 'Poppins', sans-serif;
+    }
     body {
         margin: 0;
-        font-family: Arial, sans-serif;
+        font-family: 'Poppins', sans-serif;
         background-color: #f4f6f9;
     }
     .header {
@@ -25,11 +28,8 @@
         border-bottom: 1px solid #ddd;
     }
     .header .logo {
-        width: 50px;
         height: 100px;
-        border-radius: 50%;
         overflow: hidden;
-        margin-right: 15px;
     }
     .header .logo img {
         width: 100%;
@@ -40,6 +40,15 @@
         font-size: 20px;
         font-weight: bold;
         color: #333;
+    }
+    .title_heading{
+        color: #24292e;
+        font-weight: 600;
+    }
+    .card_heading{
+       font-weight: 600;
+       font-size: 17px;
+       color: #3498db;
     }
 </style>
 <body>

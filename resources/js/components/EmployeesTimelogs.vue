@@ -1,7 +1,7 @@
 <template>
     <master-component>
       <div class="attendance-container">
-        <h2 class="title">Time Logs</h2>
+        <h2 class="title_heading">Time Logs</h2>
   
         <div class="filters">
           <div class="filter-container" v-if="userRole === 'Admin'">

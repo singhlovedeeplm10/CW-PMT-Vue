@@ -2,7 +2,7 @@
   <master-component>
     <div class="task-card">
       <div class="task-card-header">
-        <h2>Daily Tasks</h2>
+        <h2 class="title_heading">Daily Tasks</h2>
         <div class="date-picker">
           <label for="date" class="form-label">Date:</label>
           <Calendar
