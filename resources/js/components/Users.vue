@@ -3,7 +3,7 @@
     <div class="users-page">
       <div class="header d-flex justify-content-between align-items-center" style="padding: 21px 25px 10px; border: none; margin-bottom: 5px;
 ">
-        <h2 class="title_heading">Employees</h2>
+        <h2 class="title_heading">Team</h2>
         <ButtonComponent
           label="Add Employee"
           :clickEvent="openAddEmployeeModal"
@@ -40,7 +40,7 @@
           <table class="table">
             <thead>
               <tr>
-                <th>ID</th>
+                <!-- <th>ID</th> -->
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
@@ -50,7 +50,7 @@
             </thead>
             <tbody>
   <tr v-for="user in filteredUsers" :key="user.id">
-    <td>{{ user.id }}</td>
+    <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
     <td>
   <div class="d-flex align-items-center">
     <img
@@ -75,8 +75,8 @@
 
 
 
-    <td style="padding: 17px 0px;">{{ user.email }}</td>
-    <td>
+    <td style="padding: 26px 0px;">{{ user.email }}</td>
+    <td style="padding: 22px 0px;">
   <button
     :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
     @click="toggleRole(user)"
@@ -86,16 +86,16 @@
   </button>
 </td>
 
-    <td>
+    <td style="padding: 21px 5px;">
       <button
-        :class="user.status === '1' ? 'btn btn-success' : 'btn btn-warning'"
+        :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
         @click="toggleStatus(user)"
         :disabled="user.role_name === 'Admin' && user.logged_in_status" 
       >
         {{ user.status === '1' ? 'Active' : 'Inactive' }}
       </button>
     </td>
-    <td>
+    <td style="padding: 21px 20px;">
       <button
         class="btn btn-sm btn-primary me-2"
         @click="editUser(user)"
@@ -374,19 +374,19 @@ h2{
   background: linear-gradient(135deg, #218838, #1e7e34);
 }
 
-.btn-warning {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
+.btn-danger {
+  background: linear-gradient(135deg, #e85151, #ed2424);
   border: none;
   padding: 8px 12px;
   border-radius: 5px;
   font-weight: bold;
-  color: #333;
+  color: white;
   transition: all 0.3s ease-in-out;
 }
 
-.btn-warning:hover {
-  background: linear-gradient(135deg, #e0a800, #c69500);
-  color: #222;
+.btn-danger:hover {
+  background: linear-gradient(135deg, #ea5c5c, #f51d1d);
+  color: white;
 }
 
 /* Disabled Button */

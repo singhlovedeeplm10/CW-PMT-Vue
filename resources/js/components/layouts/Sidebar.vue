@@ -1,11 +1,11 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-header">
-  <div class="profile-container">
-    <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
-  </div>
-  <h2 class="sidebar-title">{{ userName }}</h2>
-</div>
+      <div class="profile-container">
+        <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
+      </div>
+      <h2 class="sidebar-title">{{ userName }}</h2>
+    </div>
 
     <ul class="sidebar-list">
       <li class="sidebar-item">
@@ -15,17 +15,18 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
-      <!-- Dropdown for Employees -->
-      <li class="sidebar-item" @click="toggleDropdown('employees')">
+
+      <!-- Dropdown for Employees (Only shown for Admin) -->
+      <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('employees')">
         <div class="timelines-header">
-          <h3 class="sidebar-subtitle">Employees</h3>
+          <h3 class="sidebar-subtitle">Team</h3>
           <span :class="dropdowns.employees ? 'icon-rotate' : ''">▼</span>
         </div>
         <ul v-show="dropdowns.employees" class="sidebar-submenu">
-          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+          <li class="sidebar-subitem">
             <router-link to="/users" class="sidebar-sublink" active-class="active-link">View</router-link>
           </li>
-          <li v-if="userRole === 'Admin'" class="sidebar-subitem">
+          <li class="sidebar-subitem">
             <router-link to="/employees-attendances" class="sidebar-sublink" active-class="active-link">Attendance</router-link>
           </li>
           <li class="sidebar-subitem">
@@ -33,8 +34,14 @@
           </li>
         </ul>
       </li>
-<!-- Dropdown for Tasks -->
-<li class="sidebar-item" @click="toggleDropdown('tasks')">
+
+      <!-- Time Logs tab (Only shown for non-admin users) -->
+      <li v-if="userRole !== 'Admin'" class="sidebar-item">
+        <router-link to="/employees-timelogs" class="sidebar-link" active-class="active-link">Time Logs</router-link>
+      </li>
+
+      <!-- Dropdown for Tasks -->
+      <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('tasks')">
         <div class="tasks-header">
           <h3 class="sidebar-subtitle">Tasks</h3>
           <span :class="dropdowns.tasks ? 'icon-rotate' : ''">▼</span>
@@ -48,8 +55,14 @@
           </li>
         </ul>
       </li>
+
+      <!-- Time Logs tab (Only shown for non-admin users) -->
+      <li v-if="userRole !== 'Admin'" class="sidebar-item">
+        <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Tasks</router-link>
+      </li>
+
       <!-- Dropdown for Leaves -->
-      <li class="sidebar-item" @click="toggleDropdown('leaves')">
+      <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('leaves')">
         <div class="leaves-header">
           <h3 class="sidebar-subtitle">Leaves</h3>
           <span :class="dropdowns.leaves ? 'icon-rotate' : ''">▼</span>
@@ -63,8 +76,14 @@
           </li>
         </ul>
       </li>
-<!-- Dropdown for TimeLine -->
-<li class="sidebar-item" @click="toggleDropdown('timelines')">
+
+      <!-- Time Logs tab (Only shown for non-admin users) -->
+      <li v-if="userRole !== 'Admin'" class="sidebar-item">
+        <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
+      </li>
+
+      <!-- Dropdown for TimeLine -->
+      <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('timelines')">
         <div class="timelines-header">
           <h3 class="sidebar-subtitle">TimeLine</h3>
           <span :class="dropdowns.timelines ? 'icon-rotate' : ''">▼</span>
@@ -78,16 +97,23 @@
           </li>
         </ul>
       </li>
+
+      <!-- Time Logs tab (Only shown for non-admin users) -->
+      <li v-if="userRole !== 'Admin'" class="sidebar-item">
+        <router-link to="/timeline" class="sidebar-link" active-class="active-link">TimeLine</router-link>
+      </li>
+
       <li class="sidebar-item">
         <router-link to="/salary-slips" class="sidebar-link" active-class="active-link">Salary Slips</router-link>
       </li>
+
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/notices" class="sidebar-link" active-class="active-link">Notices</router-link>
       </li>
+
       <li class="sidebar-item">
         <router-link to="/policies" class="sidebar-link" active-class="active-link">Policies</router-link>
       </li>
-      
     </ul>
   </aside>
 </template>
@@ -187,9 +213,7 @@ export default {
   align-items: center;
   text-align: center;
   padding: 0px 10px;
-  background: #1e272e; /* Darker background */
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .profile-image {

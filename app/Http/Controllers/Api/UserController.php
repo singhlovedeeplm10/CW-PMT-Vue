@@ -348,20 +348,22 @@ public function getEmployeeTimeLogsById(Request $request)
     $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
     $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
 
+    // Join the user_profiles table to fetch the user_image
     $query = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
         $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
               ->with('breaks');
-    }]);
+    }])->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+       ->select('users.*', 'user_profiles.user_image'); // Select the user_image from user_profiles
 
     // Check if the logged-in user is not an admin
     if (!$user->hasRole('Admin')) {
         // Filter only the logged-in user's data
-        $query->where('id', $user->id);
+        $query->where('users.id', $user->id);
     }
 
     // Apply name filter if the user is an admin
     if ($user->hasRole('Admin') && $searchQuery) {
-        $query->where('name', 'like', '%' . $searchQuery . '%');
+        $query->where('users.name', 'like', '%' . $searchQuery . '%');
     }
 
     $users = $query->get();  // Get the users with their time logs and breaks

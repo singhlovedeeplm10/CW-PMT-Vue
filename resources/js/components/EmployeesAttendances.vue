@@ -1,7 +1,7 @@
 <template>
   <master-component>
     <div class="attendance-container">
-      <h2 class="title_heading">Employee Attendance</h2>
+      <h2 class="title_heading">Team Attendance</h2>
 
       <div class="filters">
         <input type="text" v-model="filters.name" placeholder="Search by Name" class="filter-input" />

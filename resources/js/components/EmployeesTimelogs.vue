@@ -445,6 +445,7 @@
 }
 
 .employee-details h3 {
+  color: black;
   margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
