@@ -79,43 +79,46 @@ class UserController extends Controller
     
 
     public function addUser(Request $request)
-    {
-        // Validate the incoming request
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-    
-        // Create a new user
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-    
-        // Generate Employee Code (CW00{id} or CW{id})
-        $employee_code = 'CW' . str_pad($user->id, 3, '0', STR_PAD_LEFT);
-    
-        // Create User Profile with Employee Code
-        UserProfile::create([
-            'user_id' => $user->id,
-            'employee_code' => $employee_code,
-        ]);
-    
-        // Send Welcome Email
-        try {
-            Mail::to($user->email)->send(new WelcomeMail(['name' => $user->name]));
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'User created but email could not be sent. ' . $e->getMessage()], 500);
-        }
-    
-        return response()->json(['message' => 'User created successfully, and email sent!', 'user' => $user], 201);
+{
+    // Validate the incoming request
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
     }
+
+    // Create a new user
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
+
+    // Generate Employee Code (CW00{id} or CW{id})
+    $employee_code = 'CW' . str_pad($user->id, 3, '0', STR_PAD_LEFT);
+
+    // Create User Profile with Employee Code
+    UserProfile::create([
+        'user_id' => $user->id,
+        'employee_code' => $employee_code,
+    ]);
+
+    // Assign the default role "Employee" to the new user
+    $user->syncRoles(['Employee']);
+
+    // Send Welcome Email
+    try {
+        Mail::to($user->email)->send(new WelcomeMail(['name' => $user->name]));
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'User created but email could not be sent. ' . $e->getMessage()], 500);
+    }
+
+    return response()->json(['message' => 'User created successfully, and email sent!', 'user' => $user], 201);
+}
 
     public function updateUser(Request $request, $id)
 {
@@ -355,15 +358,12 @@ public function getEmployeeTimeLogsById(Request $request)
     }])->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
        ->select('users.*', 'user_profiles.user_image'); // Select the user_image from user_profiles
 
-    // Check if the logged-in user is not an admin
-    if (!$user->hasRole('Admin')) {
-        // Filter only the logged-in user's data
-        $query->where('users.id', $user->id);
-    }
+    // Always include the logged-in user's data
+    $query->where('users.id', $user->id);
 
-    // Apply name filter if the user is an admin
+    // If the user is an admin and a search query is provided, search for other users
     if ($user->hasRole('Admin') && $searchQuery) {
-        $query->where('users.name', 'like', '%' . $searchQuery . '%');
+        $query->orWhere('users.name', 'like', '%' . $searchQuery . '%');
     }
 
     $users = $query->get();  // Get the users with their time logs and breaks
@@ -395,8 +395,9 @@ public function getEmployeeTimeLogsById(Request $request)
         }
 
         foreach ($groupedAttendances as $date => $data) {
-            $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('H:i:s') : 'N/A';
-            $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('H:i:s') : 'N/A';
+            // Format clockin_time and clockout_time in 12-hour format with AM/PM
+            $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('h:i:s A') : 'N/A';
+            $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('h:i:s A') : 'N/A';
             $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
             $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
             $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);

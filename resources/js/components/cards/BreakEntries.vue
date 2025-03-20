@@ -137,12 +137,17 @@ export default {
 
         formatDateTime(dateTime) {
     if (!dateTime) return "N/A";
-    return new Date(dateTime).toLocaleTimeString("en-IN", {
+
+    // Format the time in 12-hour format with AM/PM
+    const formattedTime = new Date(dateTime).toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit", // Added seconds to display
-        hour12: true,
+        second: "2-digit", // Include seconds
+        hour12: true, // Use 12-hour format
     });
+
+    // Convert the AM/PM part to uppercase
+    return formattedTime.replace(/(am|pm)/i, (match) => match.toUpperCase());
 },
 
 

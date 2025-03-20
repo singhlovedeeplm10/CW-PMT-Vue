@@ -80,7 +80,7 @@ class NoticeController extends Controller
 
 public function getNotices(Request $request)
 {
-    $perPage = 3; // Number of notices per page
+    $perPage = 20; // Number of notices per page
     $notices = Notice::orderBy('order', 'asc')->paginate($perPage);
 
     // Modify descriptions to include inline styles for images

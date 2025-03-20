@@ -4,7 +4,7 @@
       <div class="task-card-header">
         <h2 class="title_heading">Daily Tasks</h2>
         <div class="date-picker">
-          <label for="date" class="form-label">Date:</label>
+          <label for="date" class="date-form-label">Date:</label>
           <Calendar
       :selectedDate="selectedDate"
       @dateSelected="handleDateSelected"
@@ -36,35 +36,35 @@
       No tasks available for the selected date.
     </td>
   </tr>
-  <tr
-    v-for="(task, index) in tasks"
-    :key="index"
-    :class="{ 'bg-light-gray': task.leave_id !== null }"
-  >
-    <td>{{ task.user.name }}</td>
-    <!-- <td>{{ task.user.team_lead_name || "N/A" }}</td> -->
-    <td>
-      <ul style="padding: 3px 5px;">
-        <li
-          v-for="(project, projectIndex) in task.projects"
-          :key="projectIndex"
-          :class="{
-            'bg-light-red': project.hours !== 8 && task.leave_id === null,
-            'bg-light-green': project.hours == 8 && task.leave_id === null,
-            'bg-light-gray': task.leave_id !== null,
-          }"
-        >
-          <strong class="badge badge-red"><em>{{ project.hours }}</em></strong>
-          {{ project.project_name }} {{ project.task_description }}
-        </li>
-      </ul>
-    </td>
-    <td>
-      <button class="btn btn-info" @click="openModal(task)">
-        <i class="fas fa-eye"></i>
-      </button>
-    </td>
-  </tr>
+  <tr v-for="(task, index) in tasks" :key="index">
+  <td>
+    <div class="d-flex align-items-center">
+      <img 
+        v-if="task.user.image" 
+        :src="`/storage/${task.user.image}`" 
+        alt="User Image" 
+        class="rounded-circle" 
+        style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;"
+      />
+      {{ task.user.name }}
+    </div>
+  </td>
+  <td>
+    <ul>
+      <li v-for="(project, projectIndex) in task.projects" :key="projectIndex">
+        <strong class="badge badge-green"><em>{{ project.hours }}</em></strong>
+        {{ project.project_name }} 
+        <li><span v-html="formattedDescription(project.task_description)"></span></li>
+      </li>
+    </ul>
+  </td>
+  <td>
+    <button class="btn btn-info" @click="openModal(task)">
+      <i class="fas fa-eye"></i>
+    </button>
+  </td>
+</tr>
+
 </tbody>
 
       </table>
@@ -81,9 +81,17 @@
     <div class="modal-content">
       <!-- Modal Header -->
       <div class="modal-header custom-header">
-        <h5 class="modal-title" id="dailytaskmodalLabel">
-    Edit Tasks for {{ userName }}
-  </h5>
+        <h5 class="modal-title d-flex align-items-center" id="dailytaskmodalLabel">
+  <img 
+    v-if="userImage" 
+    :src="userImage" 
+    alt="User Image" 
+    class="rounded-circle" 
+    style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;"
+  />
+  Edit Tasks for {{ userName }}
+</h5>
+
         <button
           type="button"
           class="close-modal"
@@ -224,6 +232,12 @@ export default {
   },
 
   methods: {
+    formattedDescription(description) {
+        return description ? description.replace(/\n/g, "<br>") : "";
+    },
+    formattedDescription(description) {
+        return description ? description.replace(/\n/g, "<br>") : "";
+    },
     async fetchDailyTasks() {
   this.loading = true; // Set loading to true before the API call
   try {
@@ -250,33 +264,38 @@ export default {
     },
 
     async openModal(task) {
-      try {
-        const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`, {
-          params: { date: this.selectedDate.toISOString().slice(0, 10) },
-        });
-        if (response.data.success) {
-          const userTasks = response.data.tasks;
+  try {
+    const response = await axios.get(`/api/fetch-user-tasks/${task.user.id}`, {
+      params: { date: this.selectedDate.toISOString().slice(0, 10) },
+    });
 
-          this.currentTasks = userTasks.map((task) => ({
-            id: task.id,
-            project_id: task.project?.id || null,
-            project_name: task.project?.name || task.project_name,
-            hours: task.hours || 0,
-            task_description: task.task_description || '',
-            task_status: task.task_status || 'pending',
-            leave_id: task.leave_id,
-          }));
+    if (response.data.success) {
+      const userTasks = response.data.tasks;
 
-          this.userName = task.user.name;
+      this.currentTasks = userTasks.map((task) => ({
+        id: task.id,
+        project_id: task.project?.id || null,
+        project_name: task.project?.name || task.project_name,
+        hours: task.hours || 0,
+        task_description: task.task_description || '',
+        task_status: task.task_status || 'pending',
+        leave_id: task.leave_id,
+      }));
 
-          const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
-          modal.show();
-        }
-      } catch (error) {
-        console.error('Error fetching user tasks:', error);
-        toast.error('Failed to fetch user tasks. Please try again.');
-      }
-    },
+      this.userName = response.data.user.name;
+      this.userImage = response.data.user.image 
+        ? `/storage/${response.data.user.image}` 
+        : null;
+
+      const modal = new bootstrap.Modal(document.getElementById('dailytaskmodal'));
+      modal.show();
+    }
+  } catch (error) {
+    console.error('Error fetching user tasks:', error);
+    toast.error('Failed to fetch user tasks. Please try again.');
+  }
+},
+
 
     async updateTask(task) {
       try {
@@ -324,12 +343,15 @@ export default {
 
 
 <style scoped>
+.date-form-label{
+  margin-top: 8px;
+}
 h2{
   font-family: 'Poppins', sans-serif;
     font-weight: 600;
 }
-.badge-red {
-    background-color: #ff4d4d;
+.badge-green {
+  background: linear-gradient(135deg, #28a745, #218838);
     color: white;
     padding: 5px 10px;
     font-size: 12px;

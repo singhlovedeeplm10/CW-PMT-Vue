@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DailyTask;
 use App\Models\Attendance;
+use App\Models\UserProfile;
 use App\Models\User;
 use App\Models\Project;
 use Carbon\Carbon;
@@ -126,31 +127,35 @@ public function getUsersWithoutTasks()
 
     
     
-    public function getDailyTasks(Request $request)
-    {
-        $date = $request->query('date', now()->toDateString()); // Use today's date if no date is provided
-    
-        $dailyTasks = DailyTask::with(['user', 'project'])
-            ->whereDate('created_at', $date)
-            ->get()
-            ->groupBy('user_id')
-            ->map(function ($tasks, $userId) {
-                return [
-                    'user' => $tasks->first()->user,
-                    'projects' => $tasks->map(function ($task) {
-                        return [
-                            'project_name' => $task->project_name,
-                            'task_description' => $task->task_description,
-                            'hours' => $task->hours,
-                            'leave_id' => $task->leave_id, // Include leave_id in the response
-                        ];
-                    }),
-                ];
-            });
-    
-        return response()->json($dailyTasks);
-    }
-     
+public function getDailyTasks(Request $request)
+{
+    $date = $request->query('date', now()->toDateString()); // Default to today's date if no date is provided
+
+    $dailyTasks = DailyTask::with(['user.profile', 'project'])
+        ->whereDate('created_at', $date)
+        ->get()
+        ->groupBy('user_id')
+        ->map(function ($tasks, $userId) {
+            return [
+                'user' => [
+                    'id' => $tasks->first()->user->id,
+                    'name' => $tasks->first()->user->name,
+                    'image' => $tasks->first()->user->profile->user_image ?? null, // Fetch user image
+                ],
+                'projects' => $tasks->map(function ($task) {
+                    return [
+                        'project_name' => $task->project_name,
+                        'task_description' => $task->task_description,
+                        'hours' => $task->hours,
+                        'leave_id' => $task->leave_id,
+                    ];
+                }),
+            ];
+        });
+
+    return response()->json($dailyTasks);
+}
+
     
 
     public function updateTask(Request $request, $id)
@@ -213,17 +218,20 @@ public function getTasksForToday(Request $request)
 public function fetchUserTask($userId, Request $request)
 {
     try {
-        // Use the provided date or default to today
         $date = $request->input('date', Carbon::today()->toDateString());
 
-        // Fetch tasks based on the user and the given date
         $tasks = DailyTask::where('user_id', $userId)
             ->whereDate('created_at', $date)
-            ->with(['user', 'project'])
+            ->with(['user.profile', 'project'])
             ->get();
 
         return response()->json([
             'success' => true,
+            'user' => [
+                'id' => $tasks->first()?->user->id,
+                'name' => $tasks->first()?->user->name,
+                'image' => $tasks->first()?->user->profile->user_image ?? null, // Fetch user image
+            ],
             'tasks' => $tasks,
         ]);
     } catch (\Exception $e) {
@@ -233,6 +241,7 @@ public function fetchUserTask($userId, Request $request)
         ], 500);
     }
 }
+
 
 
 public function getUserDailyTasks()

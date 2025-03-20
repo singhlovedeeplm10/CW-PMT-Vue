@@ -99,11 +99,11 @@ export default {
     });
 
     const formattedWeeklyTime = computed(() => {
-      const hours = Math.floor(weeklyHours.value / 3600);
-      const minutes = Math.floor((weeklyHours.value % 3600) / 60);
-      const seconds = weeklyHours.value % 60;
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    });
+  const hours = Math.floor(weeklyHours.value / 3600);
+  const minutes = Math.floor((weeklyHours.value % 3600) / 60);
+  const seconds = weeklyHours.value % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+});
 
     const formattedBreakTime = computed(() => {
       const hours = Math.floor(totalBreakTime.value / 3600);
@@ -257,8 +257,7 @@ const fetchWeeklyHours = async () => {
     const handleClockInOut = async () => {
   try {
     if (isOnBreak.value) {
-      toast.error("Please end your break first", { position: "top-right",
-      autoClose: 1000, });
+      toast.error("Please end your break first", { position: "top-right", autoClose: 1000 });
       return;
     }
 
@@ -275,15 +274,13 @@ const fetchWeeklyHours = async () => {
       isClockedIn.value = true;
       pausedTime.value = dailyHours.value;
       startTimer();
-      toast.success("User Clocked In", { position: "top-right",
-      autoClose: 1000 });
+      toast.success("User Clocked In", { position: "top-right", autoClose: 1000 });
       emit("clockedIn");
     } else {
       // Clock Out logic
       isClockedIn.value = false;
       stopTimer();
-      toast.info("User Clocked Out", { position: "top-right",
-      autoClose: 1000 });
+      toast.info("User Clocked Out", { position: "top-right", autoClose: 1000 });
 
       // Fetch the updated daily hours from the server
       await fetchDailyHours();
@@ -291,14 +288,13 @@ const fetchWeeklyHours = async () => {
       // Subtract break time from productive hours immediately (frontend only)
       dailyHours.value = Math.max(dailyHours.value - totalBreakTime.value, 0); // Adjust for total break time
 
-      // Update the UI with the adjusted time
+      // Fetch the updated weekly hours after clocking out
       await fetchWeeklyHours(); // Update weekly hours
       await fetchTotalBreakTime(); // Fetch the latest break time
     }
   } catch (error) {
     console.error("Error:", error.response?.data || error.message);
-    toast.error(error.response?.data?.message || "An error occurred", { position: "top-right",
-    autoClose: 1000 });
+    toast.error(error.response?.data?.message || "An error occurred", { position: "top-right", autoClose: 1000 });
   }
 };
 
