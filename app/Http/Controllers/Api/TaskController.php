@@ -97,7 +97,7 @@ class TaskController extends Controller
    
     
 
-    public function getUsersWithoutTasks()
+public function getUsersWithoutTasks()
 {
     $today = now()->toDateString(); // Get today's date in 'Y-m-d' format
 
@@ -112,6 +112,7 @@ class TaskController extends Controller
             $query->where('users.status', '1') // Include only users with status 1
                   ->orWhereNull('users.status'); // Or users without a status (if applicable)
         })
+        ->where('users.id', '!=', 1) // Exclude users with ID = 1
         ->select(
             'users.id',
             DB::raw('CASE WHEN users.status = 0 THEN NULL ELSE users.name END AS name'), // Conditionally exclude name if status = 0
@@ -121,6 +122,7 @@ class TaskController extends Controller
 
     return response()->json($usersWithoutTasks);
 }
+
 
     
     

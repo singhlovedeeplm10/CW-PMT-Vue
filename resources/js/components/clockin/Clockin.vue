@@ -135,8 +135,40 @@ export default {
 };
 
 
-    const fetchWeeklyHours = async () => {
-      loadingWeeklyHours.value = true;
+//     const fetchWeeklyHours = async () => {
+//       loadingWeeklyHours.value = true;
+
+//   try {
+//     // Fetch weekly productive hours
+//     const weeklyHoursResponse = await axios.get("/api/weekly-hours", {
+//       headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+//     });
+
+//     // Fetch weekly break time
+//     const weeklyBreakResponse = await axios.get("/api/weekly-break-time", {
+//       headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+//     });
+
+//     const weeklyProductiveSeconds = weeklyHoursResponse.data.weekly_hours || 0; // Weekly productive hours in seconds
+//     const weeklyBreakSeconds = weeklyBreakResponse.data.weekly_break_time || 0; // Weekly break time in seconds
+
+//     // Subtract break time from productive hours
+//     weeklyHours.value = Math.max(weeklyProductiveSeconds - weeklyBreakSeconds, 0);
+
+//     // Toast notification for successful fetch
+//     // toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
+//   } catch (error) {
+//     console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
+//     toast.error("Failed to fetch weekly hours or break time", { position: "top-right",
+//     autoClose: 1000 });
+//   }
+//   finally {
+//     loadingWeeklyHours.value = false;
+//   }
+// };
+
+const fetchWeeklyHours = async () => {
+  loadingWeeklyHours.value = true;
 
   try {
     // Fetch weekly productive hours
@@ -149,23 +181,26 @@ export default {
       headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
     });
 
-    const weeklyProductiveSeconds = weeklyHoursResponse.data.weekly_hours || 0; // Weekly productive hours in seconds
-    const weeklyBreakSeconds = weeklyBreakResponse.data.weekly_break_time || 0; // Weekly break time in seconds
+    // Get weekly productive hours and break time
+    const weeklyProductiveSeconds = weeklyHoursResponse.data.weekly_hours || 0;
+    const weeklyBreakSeconds = weeklyBreakResponse.data.weekly_break_time || 0;
 
-    // Subtract break time from productive hours
-    weeklyHours.value = Math.max(weeklyProductiveSeconds - weeklyBreakSeconds, 0);
+    // Assign only the weekly productive hours
+    weeklyHours.value = weeklyProductiveSeconds;
 
     // Toast notification for successful fetch
     // toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
   } catch (error) {
     console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
-    toast.error("Failed to fetch weekly hours or break time", { position: "top-right",
-    autoClose: 1000 });
-  }
-  finally {
+    toast.error("Failed to fetch weekly hours or break time", {
+      position: "top-right",
+      autoClose: 1000
+    });
+  } finally {
     loadingWeeklyHours.value = false;
   }
 };
+
 
     const fetchDailyHours = async () => {
       loadingDailyHours.value = true;

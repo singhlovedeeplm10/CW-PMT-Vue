@@ -136,9 +136,15 @@ export default {
         },
 
         formatDateTime(dateTime) {
-            if (!dateTime) return "N/A";
-            return new Date(dateTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
-        },
+    if (!dateTime) return "N/A";
+    return new Date(dateTime).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit", // Added seconds to display
+        hour12: true,
+    });
+},
+
 
         onDateSelected(newDate) {
             this.selectedDate = newDate;

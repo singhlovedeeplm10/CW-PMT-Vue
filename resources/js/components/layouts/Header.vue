@@ -137,10 +137,6 @@ body {
   transition: color 0.3s ease;
 }
 
-.header-logo:hover .logo-image {
-  transform: scale(1.1);
-}
-
 .header-logo:hover .logo-title {
   color: #3498db; /* Light blue accent on hover */
 }
