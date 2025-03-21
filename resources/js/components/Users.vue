@@ -43,75 +43,72 @@
       <div v-if="!isLoading">
         <div class="table-container">
           <table class="table">
-            <thead>
-              <tr>
-                <!-- <th>ID</th> -->
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-  <tr v-for="user in filteredUsers" :key="user.id">
-    <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
-    <td>
-  <div class="d-flex align-items-center">
-    <img
-  :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
-  alt="User Image"
-  class="img-thumbnail circular-image me-2"
-  :style="{
-    width: '60px',
-    height: '60px',
-    border: user.border_color
-  }"
-/>
-<div>
-  <div class="fw-bold" :style="{ color: user.name_color }">
-    {{ user.name }}
-  </div>
-  <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
-</div>
-
-  </div>
-</td>
-
-
-
-    <td style="padding: 26px 0px;">{{ user.email }}</td>
-    <td style="padding: 22px 0px;">
-  <button
-    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
-    @click="toggleRole(user)"
-    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
-  >
-    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
-  </button>
-</td>
-
-    <td style="padding: 21px 5px;">
-      <button
-        :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
-        @click="toggleStatus(user)"
-        :disabled="user.role_name === 'Admin' && user.logged_in_status" 
-      >
-        {{ user.status === '1' ? 'Active' : 'Inactive' }}
-      </button>
-    </td>
-    <td style="padding: 21px 20px;">
-      <button
-        class="btn btn-sm btn-primary me-2"
-        @click="editUser(user)"
-      >
-        <i class="fas fa-edit"></i>
-      </button>
-    </td>
-  </tr>
-</tbody>
-
-          </table>
+    <thead>
+        <tr>
+            <!-- <th>ID</th> -->
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="user in filteredUsers" :key="user.id">
+            <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
+            <td>
+                <div class="d-flex align-items-center">
+                    <img
+                        :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
+                        alt="User Image"
+                        class="img-thumbnail circular-image me-2"
+                        :style="{
+                            width: '60px',
+                            height: '60px',
+                            border: user.border_color
+                        }"
+                    />
+                    <div>
+                        <div class="fw-bold" :style="{ color: user.name_color }">
+                            {{ user.name }}
+                        </div>
+                        <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="padding: 17px 0px;">
+                {{ user.email }}
+                <div class="text-muted">{{ user.contact }}</div> <!-- Display contact number here -->
+            </td>
+            <td style="padding: 22px 0px;">
+                <button
+                    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
+                    @click="toggleRole(user)"
+                    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
+                >
+                    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
+                </button>
+            </td>
+            <td style="padding: 21px 5px;">
+                <button
+                    :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
+                    @click="toggleStatus(user)"
+                    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
+                >
+                    {{ user.status === '1' ? 'Active' : 'Inactive' }}
+                </button>
+            </td>
+            <td style="padding: 21px 20px;">
+                <button
+                    class="btn btn-sm btn-primary me-2"
+                    @click="editUser(user)"
+                >
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
         </div>
 
         <!-- Pagination Component -->
@@ -317,7 +314,7 @@ h2{
     font-weight: 600;
 }
 .search-filters{
-  width: 42%;
+  width: 60%;
 }
 .header{
   padding: 20px;

@@ -183,6 +183,9 @@ export default {
     margin-left: 20px; /* Space between image and text */
   max-width: calc(100% - 100px); /* Adjusts for image width and padding */
   }
+  /* .content-container h5 {
+   font-weight: bold;
+  } */
   
   .title {
     font-size: 1.25rem;
