@@ -148,6 +148,12 @@ export default {
       loading: false, // Track loading state 
     };
   },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
   created() {
   const formatEmployeeCode = (id) => {
     return `CW${String(id).padStart(3, '0')}`;
@@ -172,6 +178,11 @@ export default {
 },
 
   methods: {
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.$emit("close");
+      }
+    },
     validateContact() {
       const contact = this.formData.contact;
       if (!/^\d*$/.test(contact)) {

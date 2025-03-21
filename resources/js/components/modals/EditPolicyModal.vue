@@ -70,7 +70,18 @@ export default {
       isLoading: false, // Tracks the loading state
     };
   },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
   methods: {
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.closeModal();
+      }
+    },
     // Close the modal
     closeModal() {
       this.$emit("close"); // Emit close event to parent component

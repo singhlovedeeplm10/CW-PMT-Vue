@@ -19,7 +19,7 @@ class NoticeController extends Controller
     {
         // Validate the incoming request
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'order' => 'required|integer',
             'description' => 'required|string',
             'start_date' => 'required|date|after_or_equal:today',
@@ -115,7 +115,7 @@ public function getNotices(Request $request)
 {
     // Validate the incoming request
     $validator = Validator::make($request->all(), [
-        'title' => 'required|string|max:255',
+        'title' => 'nullable|string|max:255',
         'order' => 'required|integer', 
         'description' => 'required|string',
         'start_date' => 'required|date',

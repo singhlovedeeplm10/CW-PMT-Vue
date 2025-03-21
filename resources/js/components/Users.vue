@@ -46,8 +46,12 @@
     <thead>
         <tr>
             <!-- <th>ID</th> -->
-            <th>Name</th>
-            <th>Email</th>
+            <th style="
+    padding: 12px 42px;
+">Name</th>
+            <th style="
+    padding: 12px 42px;
+">Email</th>
             <th>Role</th>
             <th>Status</th>
             <th>Actions</th>
@@ -113,10 +117,11 @@
 
         <!-- Pagination Component -->
         <pagination
-          :totalPages="totalPages"
-          :currentPage="currentPage"
-          @page-changed="fetchUsers"
-        />
+  v-if="totalPages > 1"
+  :totalPages="totalPages"
+  :currentPage="currentPage"
+  @page-changed="fetchUsers"
+/>
       </div>
 
       <!-- Modals -->
@@ -221,7 +226,7 @@ async toggleRole(user) {
     });
   }
 },
-    async fetchUsers(page = 1) {
+async fetchUsers(page = 1) {
   this.isLoading = true;
   try {
     const response = await axios.get('/api/users', {
@@ -229,15 +234,14 @@ async toggleRole(user) {
         Authorization: `Bearer ${localStorage.getItem('authToken')}`,
       },
       params: {
-        page: page,  // Ensure page is passed correctly
-        name: this.filters.query,
-        email: this.filters.query,
+        page: page,
+        query: this.filters.query, // Use a single "query" parameter for both name and email
         status: this.filters.status,
-        role: this.filters.role, // Include role filter
+        role: this.filters.role,
       }
     });
 
-    this.users.data = response.data.data;  // Correct assignment
+    this.users.data = response.data.data;
     this.totalPages = response.data.last_page;
     this.currentPage = response.data.current_page;
   } catch (error) {
@@ -246,6 +250,7 @@ async toggleRole(user) {
     this.isLoading = false;
   }
 },
+
 
     openAddEmployeeModal() {
       this.showAddEmployeeModal = true;
@@ -356,6 +361,13 @@ h2{
   padding: 12px 15px;
   font-weight: 600;
 }
+/* Center align Email column */
+.table thead th:nth-child(2),
+.table tbody tr td:nth-child(2) {
+  /* text-align: center; */
+  vertical-align: middle;
+}
+
 /* Updated Add Employee Button */
 .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3);

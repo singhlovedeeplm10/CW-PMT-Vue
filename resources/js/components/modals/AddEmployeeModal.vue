@@ -104,6 +104,12 @@ export default {
     EmailInput,
     PasswordInput,
   },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
   setup(_, { emit }) {
     const employee = ref({
       name: "",
@@ -208,6 +214,11 @@ export default {
         isLoading.value = false;
       }
     };
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        emit("close");
+      }
+    };
 
     return {
       employee,
@@ -221,6 +232,7 @@ export default {
       clearEmailError,
       clearPasswordError,
       clearConfirmPasswordError,
+      handleEscKey,
     };
   },
 };
