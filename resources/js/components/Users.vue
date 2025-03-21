@@ -13,19 +13,24 @@
 
       <!-- Single Search Filter -->
       <div class="search-filters d-flex gap-3 mb-3 px-4">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Search by Name or Email"
-          v-model="filters.query"
-          @input="fetchUsers()"
-        />
-        <select class="form-control" v-model="filters.status" @change="fetchUsers()">
-          <option value="">All Statuses</option>
-          <option value="1">Active</option>
-          <option value="0">Inactive</option>
-        </select>
-      </div>
+  <input
+    type="text"
+    class="form-control"
+    placeholder="Search by Name or Email"
+    v-model="filters.query"
+    @input="fetchUsers()"
+  />
+  <select class="form-control" v-model="filters.status" @change="fetchUsers()">
+    <option value="">All Statuses</option>
+    <option value="1">Active</option>
+    <option value="0">Inactive</option>
+  </select>
+  <select class="form-control" v-model="filters.role" @change="fetchUsers()">
+    <option value="">All Roles</option>
+    <option value="Admin">Admin</option>
+    <option value="Employee">Employee</option>
+  </select>
+</div>
 
       <!-- Loader Spinner -->
       <div v-if="isLoading" class="loader-container">
@@ -136,6 +141,8 @@
 
 <script>
 import axios from "axios";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 import MasterComponent from "./layouts/Master.vue";
 import AddEmployeeModal from "@/components/modals/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/modals/EditEmployeeModal.vue";
@@ -152,56 +159,71 @@ export default {
     ButtonComponent,
   },
   data() {
-    return {
-      users: { data: [] },
-      currentPage: 1,
-      totalPages: 1,
-      showAddEmployeeModal: false,
-      showEditEmployeeModal: false,
-      selectedUser: null,
-      isLoading: false,
-      filters: {
-        query: "", // Combined search field
-        status: "1", // Set default to Active (1)
-      },
-    };
-  },
+  return {
+    users: { data: [] },
+    currentPage: 1,
+    totalPages: 1,
+    showAddEmployeeModal: false,
+    showEditEmployeeModal: false,
+    selectedUser: null,
+    isLoading: false,
+    filters: {
+      query: "", // Combined search field
+      status: "1", // Set default to Active (1)
+      role: "", // New role filter
+    },
+  };
+},
   mounted() {
     this.fetchUsers(this.currentPage);
   },
   computed: {
-    filteredUsers() {
-      return this.users.data.filter((user) => {
-        const query = this.filters.query.toLowerCase();
-        const matchesName = user.name.toLowerCase().includes(query);
-        const matchesEmail = user.email.toLowerCase().includes(query);
-        const matchesStatus =
-          this.filters.status === "" || user.status === this.filters.status;
+  filteredUsers() {
+    return this.users.data.filter((user) => {
+      const query = this.filters.query.toLowerCase();
+      const matchesName = user.name.toLowerCase().includes(query);
+      const matchesEmail = user.email.toLowerCase().includes(query);
+      const matchesStatus =
+        this.filters.status === "" || user.status === this.filters.status;
+      const matchesRole =
+        this.filters.role === "" || user.role_name === this.filters.role;
 
-        return (matchesName || matchesEmail) && matchesStatus;
-      });
-    },
+      return (matchesName || matchesEmail) && matchesStatus && matchesRole;
+    });
   },
+},
   methods: {
     generateEmployeeCode(id) {
   // Convert ID to string and pad with leading zeros to 3 digits
   return `CW${id.toString().padStart(3, '0')}`;
 },
 
-    async toggleRole(user) {
-      try {
-        const newRole = user.role_name === "Admin" ? "Employee" : "Admin";
-        const response = await axios.post(`/api/users/${user.id}/assign-role`, { role: newRole });
+async toggleRole(user) {
+  try {
+    const newRole = user.role_name === "Admin" ? "Employee" : "Admin";
+    const response = await axios.post(`/api/users/${user.id}/assign-role`, { role: newRole });
 
-        if (response.data.success) {
-          user.role_name = newRole;
-        } else {
-          console.error("Failed to update role.");
-        }
-      } catch (error) {
-        console.error("Error toggling role:", error);
-      }
-    },
+    if (response.data.success) {
+      user.role_name = newRole;
+      toast.success("Role updated successfully!", {
+        autoClose: 1000,
+        position: "top-right",
+      });
+    } else {
+      console.error("Failed to update role.");
+      toast.error("Failed to update role.", {
+        autoClose: 1000,
+        position: "top-right",
+      });
+    }
+  } catch (error) {
+    console.error("Error toggling role:", error);
+    toast.error("An error occurred while updating the role.", {
+      autoClose: 1000,
+      position: "top-right",
+    });
+  }
+},
     async fetchUsers(page = 1) {
   this.isLoading = true;
   try {
@@ -213,7 +235,8 @@ export default {
         page: page,  // Ensure page is passed correctly
         name: this.filters.query,
         email: this.filters.query,
-        status: this.filters.status
+        status: this.filters.status,
+        role: this.filters.role, // Include role filter
       }
     });
 
@@ -265,11 +288,23 @@ export default {
 
     if (response.data.success) {
       user.status = newStatus;
+      toast.success("Status updated successfully!", {
+        autoClose: 1000,
+        position: "top-right",
+      });
     } else {
       console.error("Failed to update status.");
+      toast.error("Failed to update status.", {
+        autoClose: 1000,
+        position: "top-right",
+      });
     }
   } catch (error) {
     console.error("Error toggling status:", error);
+    toast.error("An error occurred while updating the status.", {
+      autoClose: 1000,
+      position: "top-right",
+    });
   }
 },
   },
