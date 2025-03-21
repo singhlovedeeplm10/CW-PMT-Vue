@@ -42,9 +42,11 @@
                   <td>{{ startIndex + index }}</td>
                   <td>{{ formatDate(row.created_at) }}</td>
                   <td>
-                    <span class="badge badge-red">{{ row.hours }}</span>
-                    {{ row.project_name }}({{ row.task_description }})
-                  </td>
+  <span class="badge badge-green">{{ row.hours }}</span>
+  <strong>{{ row.project_name }}</strong>
+  <li><span v-html="formattedDescription(row.task_description)"></span></li>
+</td>
+
                 </tr>
               </tbody>
             </table>
@@ -99,6 +101,9 @@ export default {
     },
   },
   methods: {
+    formattedDescription(description) {
+        return description ? description.replace(/\n/g, "<br>") : "";
+    },
     goToPage(page) {
       this.currentPage = page;
     },
@@ -180,6 +185,7 @@ export default {
   
   .table td {
     text-align: left;
+    list-style-type: none;
   }
   
   .table tbody tr:nth-child(odd) {
@@ -194,11 +200,12 @@ export default {
     background-color: #e9ecef; /* Highlight row on hover */
   }
   
-  .badge-red {
-    background-color: #ff4d4d;
+  .badge-green {
+    background: linear-gradient(135deg, #28a745, #218838);
     color: white;
     padding: 5px 10px;
     font-size: 12px;
+    margin: 0px 5px;
   }
   
   .pagination-info {

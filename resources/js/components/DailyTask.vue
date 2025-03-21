@@ -53,7 +53,7 @@
     <ul>
       <li v-for="(project, projectIndex) in task.projects" :key="projectIndex">
         <strong class="badge badge-green"><em>{{ project.hours }}</em></strong>
-        {{ project.project_name }} 
+        <strong> {{ project.project_name }} </strong>
         <li><span v-html="formattedDescription(project.task_description)"></span></li>
       </li>
     </ul>
@@ -355,6 +355,7 @@ h2{
     color: white;
     padding: 5px 10px;
     font-size: 12px;
+    margin: 0px 5px;
   }
  .btn-info {
   background: linear-gradient(135deg, #28a745, #218838);

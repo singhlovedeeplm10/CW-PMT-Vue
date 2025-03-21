@@ -1,8 +1,11 @@
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
-      <h5>Edit Notice
-        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
+      <h5>
+        Edit Notice
+        <button type="button" class="close-modal" @click="$emit('close')">
+          &times;
+        </button>
       </h5>
       <form @submit.prevent="updateNotice">
         <div class="form-grid">
@@ -16,9 +19,6 @@
             <label for="order">Order</label>
             <input type="number" v-model="form.order" id="order" class="input-field" required />
           </div>
-
-          <!-- Full-width Description -->
-          
 
           <!-- Right Column -->
           <div class="form-group">
@@ -45,7 +45,6 @@
             :buttonClass="'save-btn'"
             @click="updateNotice"
           />
-         
         </div>
       </form>
     </div>
@@ -76,7 +75,7 @@ export default {
     return {
       form: {
         title: this.notice.title,
-        order: this.notice.order,  // Added order field
+        order: this.notice.order,
         description: this.notice.description,
         start_date: this.notice.start_date,
         end_date: this.notice.end_date,
@@ -86,27 +85,32 @@ export default {
   },
   methods: {
     async updateNotice() {
-    this.isLoading = true;
-    this.form.description = $("#description-editor").summernote("code");
+      this.isLoading = true;
+      this.form.description = $("#description-editor").summernote("code");
 
-    try {
-      await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
-      toast.success("Notice updated successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-      this.$emit("noticeupdated");
-      this.$emit("close");
-    } catch (error) {
-      toast.error("Failed to update notice. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-      console.error("Error updating notice:", error);
-    } finally {
-      this.isLoading = false;
-    }
-  },
+      try {
+        await axios.put(`/api/edit-notice/${this.notice.id}`, this.form);
+        toast.success("Notice updated successfully!", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        this.$emit("noticeupdated");
+        this.$emit("close");
+      } catch (error) {
+        toast.error("Failed to update notice. Please try again.", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        console.error("Error updating notice:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.$emit("close");
+      }
+    },
   },
   mounted() {
     $("#description-editor")
@@ -122,9 +126,17 @@ export default {
         },
       })
       .summernote("code", this.form.description);
+
+    // Add event listener for Esc key
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    // Remove event listener to prevent memory leaks
+    document.removeEventListener("keydown", this.handleEscKey);
   },
 };
 </script>
+
 
 <style scoped>
    .close-modal {

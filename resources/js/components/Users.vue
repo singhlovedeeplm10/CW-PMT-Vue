@@ -43,83 +43,85 @@
       <div v-if="!isLoading">
         <div class="table-container">
           <table class="table">
-            <thead>
-              <tr>
-                <!-- <th>ID</th> -->
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-  <tr v-for="user in filteredUsers" :key="user.id">
-    <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
-    <td>
-  <div class="d-flex align-items-center">
-    <img
-  :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
-  alt="User Image"
-  class="img-thumbnail circular-image me-2"
-  :style="{
-    width: '60px',
-    height: '60px',
-    border: user.border_color
-  }"
-/>
-<div>
-  <div class="fw-bold" :style="{ color: user.name_color }">
-    {{ user.name }}
-  </div>
-  <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
-</div>
-
-  </div>
-</td>
-
-
-
-    <td style="padding: 26px 0px;">{{ user.email }}</td>
-    <td style="padding: 22px 0px;">
-  <button
-    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
-    @click="toggleRole(user)"
-    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
-  >
-    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
-  </button>
-</td>
-
-    <td style="padding: 21px 5px;">
-      <button
-        :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
-        @click="toggleStatus(user)"
-        :disabled="user.role_name === 'Admin' && user.logged_in_status" 
-      >
-        {{ user.status === '1' ? 'Active' : 'Inactive' }}
-      </button>
-    </td>
-    <td style="padding: 21px 20px;">
-      <button
-        class="btn btn-sm btn-primary me-2"
-        @click="editUser(user)"
-      >
-        <i class="fas fa-edit"></i>
-      </button>
-    </td>
-  </tr>
-</tbody>
-
-          </table>
+    <thead>
+        <tr>
+            <!-- <th>ID</th> -->
+            <th style="
+    padding: 12px 42px;
+">Name</th>
+            <th style="
+    padding: 12px 42px;
+">Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="user in filteredUsers" :key="user.id">
+            <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
+            <td>
+                <div class="d-flex align-items-center">
+                    <img
+                        :src="user.user_image ? '/storage/' + user.user_image : 'img/CWlogo.jpeg'"
+                        alt="User Image"
+                        class="img-thumbnail circular-image me-2"
+                        :style="{
+                            width: '60px',
+                            height: '60px',
+                            border: user.border_color
+                        }"
+                    />
+                    <div>
+                        <div class="fw-bold" :style="{ color: user.name_color }">
+                            {{ user.name }}
+                        </div>
+                        <div class="text-muted">{{ generateEmployeeCode(user.id) }}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="padding: 17px 0px;">
+                {{ user.email }}
+                <div class="text-muted">{{ user.contact }}</div> <!-- Display contact number here -->
+            </td>
+            <td style="padding: 22px 0px;">
+                <button
+                    :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
+                    @click="toggleRole(user)"
+                    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
+                >
+                    {{ user.role_name === 'Admin' ? 'Admin' : 'Employee' }}
+                </button>
+            </td>
+            <td style="padding: 21px 5px;">
+                <button
+                    :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
+                    @click="toggleStatus(user)"
+                    :disabled="user.role_name === 'Admin' && user.logged_in_status" 
+                >
+                    {{ user.status === '1' ? 'Active' : 'Inactive' }}
+                </button>
+            </td>
+            <td style="padding: 21px 20px;">
+                <button
+                    class="btn btn-sm btn-primary me-2"
+                    @click="editUser(user)"
+                >
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
         </div>
 
         <!-- Pagination Component -->
         <pagination
-          :totalPages="totalPages"
-          :currentPage="currentPage"
-          @page-changed="fetchUsers"
-        />
+  v-if="totalPages > 1"
+  :totalPages="totalPages"
+  :currentPage="currentPage"
+  @page-changed="fetchUsers"
+/>
       </div>
 
       <!-- Modals -->
@@ -224,7 +226,7 @@ async toggleRole(user) {
     });
   }
 },
-    async fetchUsers(page = 1) {
+async fetchUsers(page = 1) {
   this.isLoading = true;
   try {
     const response = await axios.get('/api/users', {
@@ -232,15 +234,14 @@ async toggleRole(user) {
         Authorization: `Bearer ${localStorage.getItem('authToken')}`,
       },
       params: {
-        page: page,  // Ensure page is passed correctly
-        name: this.filters.query,
-        email: this.filters.query,
+        page: page,
+        query: this.filters.query, // Use a single "query" parameter for both name and email
         status: this.filters.status,
-        role: this.filters.role, // Include role filter
+        role: this.filters.role,
       }
     });
 
-    this.users.data = response.data.data;  // Correct assignment
+    this.users.data = response.data.data;
     this.totalPages = response.data.last_page;
     this.currentPage = response.data.current_page;
   } catch (error) {
@@ -249,6 +250,7 @@ async toggleRole(user) {
     this.isLoading = false;
   }
 },
+
 
     openAddEmployeeModal() {
       this.showAddEmployeeModal = true;
@@ -317,7 +319,7 @@ h2{
     font-weight: 600;
 }
 .search-filters{
-  width: 42%;
+  width: 60%;
 }
 .header{
   padding: 20px;
@@ -359,6 +361,13 @@ h2{
   padding: 12px 15px;
   font-weight: 600;
 }
+/* Center align Email column */
+.table thead th:nth-child(2),
+.table tbody tr td:nth-child(2) {
+  /* text-align: center; */
+  vertical-align: middle;
+}
+
 /* Updated Add Employee Button */
 .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3);

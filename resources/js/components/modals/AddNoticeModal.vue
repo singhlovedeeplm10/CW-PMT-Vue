@@ -7,16 +7,15 @@
       
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-row">
-          <!-- Title input field -->
-          <div class="form-group" :class="{ 'error': validationErrors.title }">
+          <!-- Title input field (No longer required) -->
+          <div class="form-group">
             <InputField
               label="Title"
               :modelValue="form.title"
               @update:modelValue="(value) => (form.title = value)"
               placeholder="Enter notice title"
-              :isRequired="true"
+              :isRequired="false"
             />
-            <p v-if="validationErrors.title" class="error-message">Title is required.</p>
           </div>
 
           <!-- Order input field -->
@@ -121,6 +120,11 @@ export default {
     };
   },
   methods: {
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.closeModal();
+      }
+    },
     closeModal() {
       this.$emit("close");
     },
@@ -133,8 +137,7 @@ export default {
       // Reset validation errors
       this.validationErrors = {};
 
-      // Validate fields
-      if (!this.form.title) this.validationErrors.title = true;
+      // Validate fields (Title validation removed)
       if (!this.form.order && this.form.order !== 0) this.validationErrors.order = true;
       if (!this.form.description || this.form.description === "<p><br></p>") this.validationErrors.description = true;
       if (!this.form.start_date) this.validationErrors.start_date = true;
@@ -201,20 +204,28 @@ export default {
     },
   },
   mounted() {
-    $("#description-editor").summernote({
-      placeholder: "Enter a detailed description",
-      tabsize: 2,
-      height: 200,
-      dialogsInBody: true,
-      callbacks: {
-        onInit: function () {
-          $(".note-modal").appendTo("body");
-        },
+  $("#description-editor").summernote({
+    placeholder: "Enter a detailed description",
+    tabsize: 2,
+    height: 200,
+    dialogsInBody: true,
+    callbacks: {
+      onInit: function () {
+        $(".note-modal").appendTo("body");
       },
-    });
-  },
+    },
+  });
+
+  // Add event listener for Esc key
+  document.addEventListener("keydown", this.handleEscKey);
+},
+beforeUnmount() {
+  // Remove event listener when component is destroyed
+  document.removeEventListener("keydown", this.handleEscKey);
+},
 };
 </script>
+
 
 <style scoped>
    .close-modal {

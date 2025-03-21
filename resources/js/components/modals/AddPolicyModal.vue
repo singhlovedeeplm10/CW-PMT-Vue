@@ -1,10 +1,10 @@
 <template>
-  <div class="modal-overlay">
+  <div class="modal-overlay" @keydown.esc="closeModal" tabindex="0">
     <div class="modal-content">
       <!-- Modal Header -->
       <div class="modal-header">
         <h5 class="modal-title">Add New Policy</h5>
-        <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
+        <button type="button" class="close-modal" @click="closeModal">&times;</button>
       </div>
 
       <!-- Policy Title -->
@@ -54,14 +54,20 @@ export default {
   name: "AddPolicyModal",
   components: {
     ButtonComponent,
-    InputField, // Register InputField
+    InputField,
   },
   data() {
     return {
       policyTitle: "",
       document: null,
-      loading: false, // Add loading state
+      loading: false,
     };
+  },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
   },
   methods: {
     handleFileUpload(event) {
@@ -70,13 +76,13 @@ export default {
     async submitPolicy() {
       if (!this.policyTitle || !this.document) {
         toast.error("Please fill in all fields and upload a document.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000,
+        });
         return;
       }
 
-      this.loading = true; // Start loading
+      this.loading = true;
 
       const formData = new FormData();
       formData.append("policy_title", this.policyTitle);
@@ -90,27 +96,33 @@ export default {
           },
         });
         toast.success("Policy added successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000,
+        });
         this.$emit("policyadded");
-        this.$emit("close");
+        this.closeModal();
       } catch (error) {
         console.error("Error saving policy:", error);
         toast.error("Failed to save policy. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000,
+        });
       } finally {
-        this.loading = false; // Stop loading
+        this.loading = false;
+      }
+    },
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.closeModal();
       }
     },
     closeModal() {
-      this.$emit("close"); // Close the modal
+      this.$emit("close");
     },
   },
 };
 </script>
+
 
 <style scoped>
   .close-modal{

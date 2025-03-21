@@ -2,7 +2,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <master-component>
     <div class="dashboard">
-      <h1 class="title_heading">Welcome to the Dashboard</h1>
+      <h1 class="dashboard-heading">Welcome to ContriWhiz</h1>
       <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
@@ -136,7 +136,13 @@ export default {
 
 <style scoped>
 .dashboard {
-  padding: 30px;
+  padding: 60px 33px;
+}
+.dashboard-heading {
+  color: #24292e;
+  font-weight: 600;
+  margin: auto;
+  text-align: center;
 }
 
 .card-container {
