@@ -23,7 +23,7 @@ class TaskController extends Controller
     if (!$attendance) {
         return response()->json(['message' => 'User not clocked in.'], 403);
     }
-
+    // This is test comment
     // Filter and validate tasks
     $tasks = collect($request->input('tasks', []))->filter(function ($task) {
         return !empty($task['project_id']) && !empty($task['hours']) && !empty($task['task_description']);
