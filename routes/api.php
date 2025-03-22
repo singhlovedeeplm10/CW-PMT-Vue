@@ -2,22 +2,22 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\LeaveController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\LeaveController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\TechnologyController;
 use App\Http\Controllers\Api\BillingCredentialController;
-use App\Http\Controllers\API\PermissionController;
-use App\Http\Controllers\API\AttendanceController;
-use App\Http\Controllers\API\BreakController;
-use App\Http\Controllers\API\ProjectController;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\TaskController;
-use App\Http\Controllers\API\TimelineController;
-use App\Http\Controllers\API\MailController;
-use App\Http\Controllers\API\PolicyController;
-use App\Http\Controllers\API\NoticeController;
-use App\Http\Controllers\API\SalarySlipController;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\BreakController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\TimelineController;
+use App\Http\Controllers\Api\MailController;
+use App\Http\Controllers\Api\PolicyController;
+use App\Http\Controllers\Api\NoticeController;
+use App\Http\Controllers\Api\SalarySlipController;
 
 
 
