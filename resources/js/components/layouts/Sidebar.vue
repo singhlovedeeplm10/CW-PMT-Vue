@@ -193,7 +193,6 @@ export default {
 </script>
 
 
-
 <style scoped>
 .sidebar {
   width: 190px;
@@ -205,7 +204,6 @@ export default {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
   flex-shrink: 0; /* Prevents resizing */
 }
-
 
 .sidebar-header {
   display: flex;
@@ -222,6 +220,7 @@ export default {
   border-radius: 50%;
   object-fit: cover;
 }
+
 .profile-container {
   width: 70px;
   height: 70px;
@@ -232,6 +231,7 @@ export default {
   align-items: center;
   overflow: hidden;
 }
+
 .sidebar-title {
   font-family: 'Poppins', sans-serif;
   font-size: 18px;
@@ -259,6 +259,7 @@ export default {
   transition: all 0.3s ease;
   position: relative;
 }
+
 .sidebar-sublink {
   display: block;
   text-decoration: none;
@@ -276,6 +277,7 @@ export default {
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
+
 .sidebar-sublink:hover,
 .active-link {
   background-color: #16a085; /* Highlight on hover/active */
@@ -283,24 +285,8 @@ export default {
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 
-.timelines-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-.leaves-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
+.timelines-header,
+.leaves-header,
 .tasks-header {
   display: flex;
   justify-content: space-between;
@@ -309,18 +295,11 @@ export default {
   padding: 10px 15px;
   border-radius: 8px;
   transition: background-color 0.3s ease;
+  height: 40px; /* Fixed height for consistent alignment */
 }
 
-.timelines-header:hover {
-  background-color: #16a085; /* Highlight on hover/active */
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
-}
-.leaves-header:hover {
-  background-color: #16a085; /* Highlight on hover/active */
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
-}
+.timelines-header:hover,
+.leaves-header:hover,
 .tasks-header:hover {
   background-color: #16a085; /* Highlight on hover/active */
   color: #fff;
@@ -330,6 +309,7 @@ export default {
 .sidebar-subtitle {
   font-size: 1rem;
   color: #ecf0f1;
+  margin: 0; /* Remove default margin */
 }
 
 .sidebar-submenu {
@@ -358,6 +338,7 @@ span {
     z-index: 1000;
     overflow-y: auto;
   }
+
   .sidebar-header {
     justify-content: center;
   }

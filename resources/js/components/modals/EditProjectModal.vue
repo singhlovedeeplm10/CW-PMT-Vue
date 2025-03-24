@@ -152,7 +152,18 @@ export default {
       loading: false, // Loader state
     };
   },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
   methods: {
+    handleEscKey(event) {
+      if (event.key === "Escape") {
+        this.close();
+      }
+    },
     close() {
       this.$emit("close");
     },

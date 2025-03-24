@@ -10,8 +10,13 @@
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
       <user-break-list ref="userBreakList" />
-      <missing-member v-if="userRole === 'Admin'" />
+      <!-- <missing-member v-if="userRole === 'Admin'" /> -->
 
+      <!-- Flexbox wrapper for the cards -->
+      <div class="members-container">
+        <team-members-on-leave v-if="userRole === 'Admin'" />
+        <missing-team-members v-if="userRole === 'Admin'" />
+      </div>
       <!-- Flexbox wrapper for the cards -->
       <div class="card-container">
         <break-entries v-if="userRole === 'Admin'" />
@@ -40,6 +45,8 @@ import DailyTask from './DailyTask.vue';
 import BreakEntries from './cards/BreakEntries.vue';
 import UserBreakList from './cards/UserBreakList.vue';
 import MissingMember from './cards/MissingMember.vue';
+import MissingTeamMembers from './cards/MissingTeamMembers.vue';
+import TeamMembersOnLeave from './cards/TeamMembersOnLeave.vue';
 import MembersWorkFromHome from './cards/MembersWorkFromHome.vue';
 import UpcomingBirthdays from './cards/UpcomingBirthdays.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
@@ -63,6 +70,8 @@ export default {
     MissingMember,
     MembersWorkFromHome,
     UpcomingBirthdays,
+    MissingTeamMembers,
+    TeamMembersOnLeave,
     AddTaskModal,
     AddBreakModal,
     UserBreakList,
@@ -145,6 +154,18 @@ export default {
   text-align: center;
 }
 
+.members-container {
+  display: flex;
+  gap: 7px; /* Space between cards */
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  width: 101%;
+  margin-top: 20px;
+}
+
+.members-container > * {
+  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
+  min-width: 300px; /* Ensures a reasonable width for smaller screens */
+}
 .card-container {
   display: flex;
   gap: 20px; /* Space between cards */

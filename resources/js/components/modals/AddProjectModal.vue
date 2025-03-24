@@ -167,6 +167,12 @@ export default {
     TextArea,
     SelectInput
   },
+  mounted() {
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
   emits: ["close", "project-added"],
   setup(_, { emit }) {
     const project = ref({
@@ -299,6 +305,11 @@ export default {
         project.value.developer_assign_list.splice(userIdIndex, 1); // Remove user ID from project
       }
     };
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        emit("close");
+      }
+    };
 
     return {
       project,
@@ -314,6 +325,7 @@ export default {
       projectStatusOptions,
       removeUser,
       errors, // Expose errors to the template
+      handleEscKey,
     };
   },
 };
