@@ -112,9 +112,9 @@ public function showLeaves(Request $request)
         // Determine icon based on reason
         $reasonIcons = [
             'Full Day Leave' => '<i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>',
-                'Half Day Leave' => '<i class="fas fa-hourglass-half" style="color: #ff6347;"></i>',
-                'Short Leave' => '<i class="fas fa-clock" style="color: #3498db;"></i>',
-                'Work From Home' => '<i class="fas fa-home" style="color: #2ecc71;"></i> '
+            'Half Day Leave' => '<i class="fas fa-hourglass-half" style="color: #ff6347;"></i>',
+            'Short Leave' => '<i class="fas fa-clock" style="color: #3498db;"></i>',
+            'Work From Home' => '<i class="fas fa-home" style="color: #2ecc71;"></i>'
         ];
         $icon = $reasonIcons[$leave->type_of_leave] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
 
@@ -122,28 +122,27 @@ public function showLeaves(Request $request)
         $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
 
         // Format the week of the day (e.g., "Monday to Friday")
-        $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l'); // Day of the week for start_date
-        $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek; // Day of the week for end_date
+        $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l');
+        $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek;
 
         // Append the week range to the formatted type
         $typeFormatted .= ' (' . $startDayOfWeek . ' to ' . $endDayOfWeek . ')';
 
-        // Append the time range in IST if start_time and end_time exist
+        // Convert and append time range in 12-hour format if times exist
         if ($leave->start_time && $leave->end_time) {
-            $startTimeIST = \Carbon\Carbon::parse($leave->start_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
-            $endTimeIST = \Carbon\Carbon::parse($leave->end_time)->timezone('Asia/Kolkata')->format('g:i A'); // Format as 12-hour time
-            $typeFormatted .= " (from $startTimeIST to $endTimeIST)";
+            $startTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
+            $endTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
+            $typeFormatted .= " (from $startTime12hr to $endTime12hr)";
         }
 
-        // Return the formatted leave data including last_updated_by
         return [
             'id' => $leave->id,
             'type' => $typeFormatted,
-            'half' => $leave->half,  // Include the half data here
+            'half' => $leave->half,
             'duration' => $duration,
             'status' => ucfirst($leave->status),
             'created_at' => $leave->created_at->format('F d, Y'),
-            'updated_by' => $leave->last_updated_by,  // Fetch 'last_updated_by' directly from the leaves table
+            'updated_by' => $leave->last_updated_by,
         ];
     });
 
@@ -153,15 +152,8 @@ public function showLeaves(Request $request)
     ]);
 }
 
-    /**
-     * Calculate the duration of the leave.
-     *
-     * @param Leave $leave
-     * @return string
-     */
-    private function calculateDuration(Leave $leave)
+private function calculateDuration(Leave $leave)
 {
-    // Example logic to calculate duration
     if ($leave->type_of_leave === 'Full Day Leave') {
         $start = $leave->start_date;
         $end = $leave->end_date;
@@ -170,25 +162,37 @@ public function showLeaves(Request $request)
     } elseif ($leave->type_of_leave === 'Half Day Leave') {
         return $leave->half; // 'First Half' or 'Second Half'
     } elseif ($leave->type_of_leave === 'Short Leave') {
-        // Calculate time difference
-        $start = \Carbon\Carbon::parse($leave->start_time);
-        $end = \Carbon\Carbon::parse($leave->end_time);
-        $duration = $start->diff($end)->format('%H:%I hours');
-        return $duration;
+        $start = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time);
+        $end = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time);
+        
+        // Get the total difference in minutes
+        $totalMinutes = $start->diffInMinutes($end);
+        
+        // Calculate hours and minutes
+        $hours = floor($totalMinutes / 60);
+        $minutes = $totalMinutes % 60;
+        
+        // Format duration in a readable way
+        $duration = '';
+        if ($hours > 0) {
+            $duration .= $hours . ' hour' . ($hours > 1 ? 's' : '');
+        }
+        if ($minutes > 0) {
+            if ($hours > 0) {
+                $duration .= ' ';
+            }
+            $duration .= $minutes . ' minute' . ($minutes > 1 ? 's' : '');
+        }
+        return $duration ?: '0 minutes'; // Handle case when duration is 0
     } elseif ($leave->type_of_leave === 'Work From Home') {
         $start = $leave->start_date;
         $end = $leave->end_date;
-
-        // Calculate the number of working days
         $days = \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)) + 1;
 
-        // Check if start_time and end_time exist to calculate working hours
         if ($leave->start_time && $leave->end_time) {
-            $startTime = \Carbon\Carbon::parse($leave->start_time);
-            $endTime = \Carbon\Carbon::parse($leave->end_time);
-            $hours = $startTime->diff($endTime)->format('%H:%I hours');
-
-            return $days . ' day(s) (from ' . $startTime->format('g:i A') . ' to ' . $endTime->format('g:i A') - ')';
+            $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
+            $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
+            return $days . ' day(s) (from ' . $startTime . ' to ' . $endTime . ')';
         }
 
         return $days . ' day(s) of Work From Home';
