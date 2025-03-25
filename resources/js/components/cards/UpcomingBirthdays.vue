@@ -185,8 +185,8 @@ tbody td {
 
 /* Specific card border and header styles */
 #card2 {
-    border: 1px solid rgb(112, 165, 245);
     border-radius: 8px;
+    border: 1px solid #ccc;
 }
 
 .task-card-header h4 {

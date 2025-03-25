@@ -27,13 +27,15 @@
                 <tr>
                   <th style="background: none;"></th>
                   <th style="background: none;">
-                    <!-- Replace input with Calendar component -->
-                    <Calendar
-                      v-model="filterDate"
-                      :selectedDate="filterDate ? new Date(filterDate) : new Date()"
-                      @dateSelected="onDateSelected"
-                    />
-                  </th>
+  <Calendar
+    v-model="filterDate"
+    :selectedDate="filterDate ? new Date(filterDate) : new Date()"
+    @dateSelected="onDateSelected"
+  />
+  <button @click="filterDate = ''" class="btn btn-sm btn-secondary mt-2">
+    Show All Dates
+  </button>
+</th>
                   <th style="background: none;"></th>
                 </tr>
               </thead>
@@ -71,23 +73,24 @@ export default {
     Calendar, // Import the Calendar component
   },
   data() {
-    return {
-      data: [],
-      currentPage: 1,
-      rowsPerPage: 10,
-      filterDate: '', // Used to filter by date
-      isLoading: false, // Add isLoading to manage loader
-    };
-  },
+  return {
+    data: [],
+    currentPage: 1,
+    rowsPerPage: 10,
+    filterDate: new Date().toISOString().split('T')[0], // Default to today's date
+    isLoading: false,
+  };
+},
   computed: {
     filteredData() {
-      if (this.filterDate) {
-        return this.data.filter(row =>
-          row.created_at.includes(this.filterDate)
-        );
-      }
-      return this.data;
-    },
+  if (this.filterDate) {
+    return this.data.filter(row => {
+      const rowDate = new Date(row.created_at).toISOString().split('T')[0];
+      return rowDate === this.filterDate;
+    });
+  }
+  return this.data;
+},
     paginatedData() {
       const start = (this.currentPage - 1) * this.rowsPerPage;
       const end = this.currentPage * this.rowsPerPage;
