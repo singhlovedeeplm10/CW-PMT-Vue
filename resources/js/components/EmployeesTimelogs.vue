@@ -4,30 +4,27 @@
         <h2 class="title_heading">Time Logs</h2>
   
         <div class="filters">
-          <div class="filter-container" v-if="userRole === 'Admin'">
-  <input 
-    type="text" 
-    placeholder="Search by Name" 
-    class="filter-input" 
-    v-model="searchQuery"  
-    v-if="userRole === 'Admin'"
-    @input="fetchUserSuggestions"
-  />
-
-  <!-- Suggestions Dropdown (Appears Below the Input) -->
-  <ul v-if="searchResults.length > 0" class="suggestions-list">
-    <li 
-      v-for="user in searchResults" 
-      :key="user.id" 
-      @click="selectUser(user)"
-    >
-      <img :src="user.user_image" class="user-avatar" alt="User Image">
-      {{ user.name }}
-    </li>
-  </ul>
-</div>
-
-
+  <div class="filter-container" v-if="userRole === 'Admin'">
+    <input 
+      type="text" 
+      placeholder="Search by Name" 
+      class="filter-input" 
+      v-model="searchQuery" 
+       @input="fetchUserSuggestions"
+    />
+    
+    <!-- Suggestions Dropdown -->
+    <ul v-if="searchResults.length > 0" class="suggestions-list">
+      <li 
+        v-for="user in searchResults" 
+        :key="user.id" 
+        @click="selectUser(user)"
+      >
+        <img :src="user.user_image" class="user-avatar" alt="User Image">
+        {{ user.name }}
+      </li>
+    </ul>
+  </div>
 
   <input 
     type="month" 
@@ -40,6 +37,7 @@
     <span v-else>Search</span>
   </button>
 </div>
+
 
   
         <!-- Loader Spinner -->
@@ -183,30 +181,31 @@
       MasterComponent,
     },
     data() {
-    return {
-      userRole: null,
-      searchQuery: '',
-      searchTerm: '',
-      searchResults: [],
-      selectedMonth: new Date().toISOString().slice(0, 7),
-      timeLogs: [],
-      loading: false,
-      employeeDetails: null,  // New property to store employee details
-      showModal: false,
-      detailedLogs: [],
-      selectedEmployeeCode: '',
-      selectedDate: '',
-      showBreakModal: false,
-      breakLogs: [],
-      noBreakDataMessage: "",
-    };
-  },
-  computed: {
+  return {
+    userRole: null,
+    searchQuery: '',  // This will hold the search term
+    searchTerm: '',    // This term will be used for actual search when search button is clicked
+    searchResults: [],
+    selectedMonth: new Date().toISOString().slice(0, 7),
+    timeLogs: [],
+    loading: false,
+    employeeDetails: null,  
+    showModal: false,
+    detailedLogs: [],
+    selectedEmployeeCode: '',
+    selectedDate: '',
+    showBreakModal: false,
+    breakLogs: [],
+    noBreakDataMessage: "",
+  };
+},
+computed: {
   filteredTimeLogs() {
-    return this.timeLogs.filter(log => {
-      const matchesSearch = log.name.toLowerCase().includes(this.searchTerm.toLowerCase()); // Use searchTerm instead of searchQuery
-      return matchesSearch;
-    });
+    // Filter data only based on the searchTerm (updated when search button is clicked)
+    if (!this.searchTerm) return this.timeLogs;
+    return this.timeLogs.filter(log => 
+      log.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
   }
 },
 
@@ -229,11 +228,10 @@
       console.error('Error fetching user suggestions:', error);
     }
   },
-
   selectUser(user) {
-    this.searchQuery = user.name;
-    this.searchResults = [];
-  },
+  this.searchQuery = user.name;
+  this.searchResults = [];
+},
       async fetchUserRole() {
       try {
         const response = await axios.get("/api/user-role", {
@@ -306,47 +304,49 @@
         return 'bg-red';
       },
       async fetchTimeLogs() {
-  this.searchTerm = this.searchQuery; // Update searchTerm only when search is clicked
-
-  if (!this.searchTerm && !this.selectedMonth) {
+    this.loading = true;
     this.timeLogs = [];
     this.employeeDetails = null;
-    this.noDataMessage = "Please enter an employee name or select a month.";
-    return;
-  }
+    this.noDataMessage = "";
 
-  this.loading = true;
-  this.timeLogs = [];
-  this.employeeDetails = null;
-  this.noDataMessage = "";
+    // Use searchQuery as the search term when the button is clicked
+    this.searchTerm = this.searchQuery;
 
-  try {
-    const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchTerm}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    });
+    try {
+      const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchTerm}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.length > 0) {
-      this.employeeDetails = {
-        name: data[0].name,
-        image: data[0].image,
-      };
+      if (data.length > 0) {
+        this.timeLogs = data;
 
-      this.timeLogs = data.filter(log => log.name === this.employeeDetails.name);
+        // Find the employee that matches the search query
+        const matchedEmployee = data.find(employee => 
+          employee.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
+        
+        if (matchedEmployee) {
+          this.employeeDetails = {
+            name: matchedEmployee.name,
+            image: matchedEmployee.image,
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching time logs:', error);
+      this.noDataMessage = "Error fetching data";
+    } finally {
+      this.loading = false;
+
+      if (this.timeLogs.length === 0) {
+        this.noDataMessage = "No data available for the selected month or employee.";
+      }
     }
-  } catch (error) {
-    console.error('Error fetching time logs:', error);
-  } finally {
-    this.loading = false;
-
-    if (this.timeLogs.length === 0) {
-      this.noDataMessage = "No data available for the selected month or employee.";
-    }
-  }
-},
+  },
 
       async openModal(userId, date) {
     this.selectedUserId = userId;

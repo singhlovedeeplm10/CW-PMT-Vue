@@ -223,62 +223,74 @@ export default {
 
     // Submit the updated leave data
     async submitLeaveUpdate() {
-      if (this.timeError) return; // Prevent submission if validation fails
+  if (this.timeError) return; // Prevent submission if validation fails
 
-      try {
-        this.isLoading = true;
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("User is not authenticated.");
-          return;
-        }
+  try {
+    this.isLoading = true;
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      alert("User is not authenticated.");
+      return;
+    }
 
-        const leaveData = {
-          type_of_leave: this.leave.type_of_leave,
-          start_date: this.leave.start_date,
-          end_date: ["Full Day Leave", "Work From Home"].includes(this.leave.type_of_leave) ? this.leave.end_date : null,
-          reason: this.leave.reason,
-          contact_during_leave: this.leave.contact_during_leave,
-          status: this.leave.status,
-        };
+    // Ensure start_time and end_time are formatted correctly before submission
+    const formattedStartTime = this.formatTime(this.leave.start_time);
+    const formattedEndTime = this.formatTime(this.leave.end_time);
 
-        if (this.leave.type_of_leave === "Half Day Leave") {
-          leaveData.half = this.leave.half;
-        } else {
-          leaveData.half = null;
-        }
+    const leaveData = {
+      type_of_leave: this.leave.type_of_leave,
+      start_date: this.leave.start_date,
+      end_date: ["Full Day Leave", "Work From Home"].includes(this.leave.type_of_leave) ? this.leave.end_date : null,
+      reason: this.leave.reason,
+      contact_during_leave: this.leave.contact_during_leave,
+      status: this.leave.status,
+    };
 
-        if (this.leave.type_of_leave === "Short Leave") {
-          leaveData.start_time = this.leave.start_time;
-          leaveData.end_time = this.leave.end_time;
-        } else {
-          leaveData.start_time = null;
-          leaveData.end_time = null;
-        }
+    if (this.leave.type_of_leave === "Half Day Leave") {
+      leaveData.half = this.leave.half;
+    } else {
+      leaveData.half = null;
+    }
 
-        await axios.post(`/api/update-team-leaves/${this.leave.id}`, leaveData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    if (this.leave.type_of_leave === "Short Leave") {
+      leaveData.start_time = formattedStartTime;  // Use formatted start time
+      leaveData.end_time = formattedEndTime;  // Use formatted end time
+    } else {
+      leaveData.start_time = null;
+      leaveData.end_time = null;
+    }
 
-        toast.success("Leave updated successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-        this.$emit("leaveApplied");
+    await axios.post(`/api/update-team-leaves/${this.leave.id}`, leaveData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-        // Close the modal after successful submission
-        const modal = bootstrap.Modal.getInstance(document.getElementById("updateTeamLeavemodal"));
-        if (modal) modal.hide();
-      } catch (error) {
-        console.error("Error updating leave:", error);
-        toast.error("Failed to update leave. Please try again.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    toast.success("Leave updated successfully!", {
+      position: "top-right",
+      autoClose: 1000,
+    });
+    this.$emit("leaveApplied");
+
+    // Close the modal after successful submission
+    const modal = bootstrap.Modal.getInstance(document.getElementById("updateTeamLeavemodal"));
+    if (modal) modal.hide();
+  } catch (error) {
+    console.error("Error updating leave:", error);
+    toast.error("Failed to update leave. Please try again.", {
+      position: "top-right",
+      autoClose: 1000, // Set to 2 seconds
+    });
+  } finally {
+    this.isLoading = false;
+  }
+},
+
+// Helper function to format time as HH:mm (e.g., '08:30')
+formatTime(time) {
+  if (!time) return null;
+  const [hours, minutes] = time.split(":");
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+},
+
   },
 };
 </script>

@@ -459,88 +459,89 @@ public function search(Request $request)
     }
 
     public function showteamLeaves(Request $request)
-    {
-        // Get the authenticated user
-        $user = Auth::user();
-    
-        // Initialize the query
-        $query = Leave::query();
-    
-        // Apply search filters if provided
-        if ($request->filled('type')) {
-            $query->where('type_of_leave', 'like', '%' . $request->type . '%');
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    // Initialize the query
+    $query = Leave::query();
+
+    // Apply search filters if provided
+    if ($request->filled('type')) {
+        $query->where('type_of_leave', 'like', '%' . $request->type . '%');
+    }
+
+    if ($request->filled('status')) {
+        $query->where('leaves.status', $request->status);
+    }
+
+    if ($request->filled('created_date')) {
+        $query->whereDate('leaves.created_at', $request->created_date);
+    }
+
+    // Join with users and user_profiles tables
+    $query->join('users', 'leaves.user_id', '=', 'users.id')
+          ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+          ->select(
+              'leaves.*',
+              'users.name as employee_name',
+              'leaves.last_updated_by',
+              'user_profiles.user_image'
+          );
+
+    // Fetch the leaves
+    $leaves = $query->orderBy('leaves.created_at', 'asc')->get();
+
+    // Transform the data
+    $formattedLeaves = $leaves->map(function ($leave) {
+        // Icons for leave types
+        $leaveIcons = [
+            'Full Day Leave' => '<i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>',
+            'Half Day Leave' => '<i class="fas fa-hourglass-half" style="color: #ff6347;"></i>',
+            'Short Leave' => '<i class="fas fa-clock" style="color: #3498db;"></i>',
+            'Work From Home' => '<i class="fas fa-home" style="color: #2ecc71;"></i> '
+        ];
+
+        // Determine icon for type_of_leave
+        $icon = $leaveIcons[$leave->type_of_leave] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
+
+        // Format leave type with icon
+        $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
+
+        // Day of the week formatting
+        $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l');
+        $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek;
+
+        $typeFormatted .= " ({$startDayOfWeek} to {$endDayOfWeek})";
+
+        // Time range formatting (IST timezone) - Convert 24-hour to 12-hour format
+        if ($leave->start_time && $leave->end_time) {
+            // Parse the time and format to 12-hour with AM/PM
+            $startTimeIST = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('h:i A');
+            $endTimeIST = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('h:i A');
+            $typeFormatted .= " (from {$startTimeIST} to {$endTimeIST})";
         }
-    
-        if ($request->filled('status')) {
-            $query->where('leaves.status', $request->status);
-        }
-    
-        if ($request->filled('created_date')) {
-            $query->whereDate('leaves.created_at', $request->created_date);
-        }
-    
-        // Join with users and user_profiles tables
-        $query->join('users', 'leaves.user_id', '=', 'users.id')
-              ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-              ->select(
-                  'leaves.*',
-                  'users.name as employee_name',
-                  'leaves.last_updated_by',
-                  'user_profiles.user_image'
-              );
-    
-        // Fetch the leaves
-        $leaves = $query->orderBy('leaves.created_at', 'asc')->get();
-    
-        // Transform the data
-        $formattedLeaves = $leaves->map(function ($leave) {
-            // Icons for leave types
-            $leaveIcons = [
-                'Full Day Leave' => '<i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>',
-                'Half Day Leave' => '<i class="fas fa-hourglass-half" style="color: #ff6347;"></i>',
-                'Short Leave' => '<i class="fas fa-clock" style="color: #3498db;"></i>',
-                'Work From Home' => '<i class="fas fa-home" style="color: #2ecc71;"></i> '
-            ];
-    
-            // Determine icon for type_of_leave
-            $icon = $leaveIcons[$leave->type_of_leave] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
-    
-            // Format leave type with icon
-            $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
-    
-            // Day of the week formatting
-            $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l');
-            $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek;
-    
-            $typeFormatted .= " ({$startDayOfWeek} to {$endDayOfWeek})";
-    
-            // Time range formatting (IST timezone)
-            if ($leave->start_time && $leave->end_time) {
-                $startTimeIST = \Carbon\Carbon::parse($leave->start_time)->timezone('Asia/Kolkata')->format('g:i A');
-                $endTimeIST = \Carbon\Carbon::parse($leave->end_time)->timezone('Asia/Kolkata')->format('g:i A');
-                $typeFormatted .= " (from {$startTimeIST} to {$endTimeIST})";
-            }
-    
-            // User image URL
-            $userImageUrl = $leave->user_image ? asset('storage/' . $leave->user_image) : null;
-    
-            return [
-                'id' => $leave->id,
-                'employee_name' => $leave->employee_name,
-                'employee_image' => $userImageUrl,
-                'type' => $typeFormatted,
-                'duration' => $this->calculateDuration($leave),
-                'status' => ucfirst($leave->status),
-                'created_at' => $leave->created_at->format('F d, Y'),
-                'updated_by' => $leave->last_updated_by,
-            ];
-        });
-    
-        return response()->json([
-            'success' => true,
-            'data' => $formattedLeaves,
-        ]);
-    }    
+
+        // User image URL
+        $userImageUrl = $leave->user_image ? asset('storage/' . $leave->user_image) : null;
+
+        return [
+            'id' => $leave->id,
+            'employee_name' => $leave->employee_name,
+            'employee_image' => $userImageUrl,
+            'type' => $typeFormatted,
+            'duration' => $this->calculateDuration($leave),
+            'status' => ucfirst($leave->status),
+            'created_at' => $leave->created_at->format('F d, Y'),
+            'updated_by' => $leave->last_updated_by,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $formattedLeaves,
+    ]);
+}
     
 public function getUsersLeave(Request $request)
 {

@@ -226,7 +226,7 @@ export default {
     box-sizing: border-box;
     overflow: hidden;
     max-height: 91%;
-    border: 1px solid rgb(183, 111, 205);
+    border: 1px solid #ccc;
     border-radius: 8px; /* Smooth border corners */
 }
 
