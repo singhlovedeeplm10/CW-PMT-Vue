@@ -101,7 +101,7 @@ Route::middleware('auth:sanctum')->get('/weekly-hours', [AttendanceController::c
 Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceController::class, 'checkClockInStatus']);
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 Route::middleware('auth:sanctum')->get('/get-clockin-token', [AttendanceController::class, 'getClockinToken']);
-// Route::get('/auto-clockout', [AttendanceController::class, 'autoClockOut']);
+Route::get('/auto-clockout', [AttendanceController::class, 'autoClockOut']);
 
 
 // BREAKS API ROUTE
