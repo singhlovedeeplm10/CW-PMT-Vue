@@ -4,7 +4,6 @@
       <div class="header-left">
         <router-link to="/dashboard" class="sidebar-link header-logo">
           <img src="img/CWlogo2.svg" alt="Contriwhiz Logo" class="logo-image" />
-          <!-- <h1 class="logo-title">Contriwhiz</h1> -->
         </router-link>
       </div>
       <div class="header-right">
@@ -17,6 +16,10 @@
               <span v-if="!isLoggingOut">Logout</span>
               <span v-if="isLoggingOut" class="spinner-border spinner-border-sm"></span>
             </a>
+            <!-- <a  v-if="userRole === 'Admin'" href="javascript:void(0)" @click="clockOutusers" class="dropdown-item" :disabled="isClockingOut">
+              <span v-if="!isClockingOut">Clock Out User</span>
+              <span v-if="isClockingOut" class="spinner-border spinner-border-sm"></span>
+            </a> -->
           </div>
         </div>
       </div>
@@ -28,6 +31,7 @@
 import { mapGetters, mapActions } from "vuex";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 export default {
   name: "HeaderComponent",
@@ -40,6 +44,7 @@ export default {
   setup() {
     const router = useRouter();
     const isLoggingOut = ref(false);
+    const isClockingOut = ref(false);
 
     const logout = async () => {
       if (isLoggingOut.value) return;
@@ -66,10 +71,30 @@ export default {
       router.push("/myaccount");
     };
 
+    const clockOutusers = async () => {
+      if (isClockingOut.value) return;
+      isClockingOut.value = true;
+
+      try {
+        const response = await axios.get("/api/auto-clockout", {
+
+        });
+
+        alert(response.data.message || "Users clocked out successfully.");
+      } catch (error) {
+        console.error("Clock out failed:", error);
+        alert("An error occurred while clocking out users.");
+      } finally {
+        isClockingOut.value = false;
+      }
+    };
+
     return {
       logout,
       goToAccount,
+      clockOutusers,
       isLoggingOut,
+      isClockingOut,
     };
   },
   methods: {
@@ -80,6 +105,7 @@ export default {
   },
 };
 </script>
+
 
 
 
