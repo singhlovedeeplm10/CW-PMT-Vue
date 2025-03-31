@@ -18,65 +18,102 @@ use Carbon\Carbon;
 
 class LeaveController extends Controller
 {
-
     public function store(Request $request)
-{
-    // Validate the request data
-    $validatedData = $request->validate([
-        'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave,Work From Home',
-        'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
-        'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day Leave,Full Day Leave|date',
-        'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
-        'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
-        'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
-        'reason' => 'required|string',
-        'contact_during_leave' => 'required|string|max:50',
-    ]);
-
-    try {
-        // Save leave data in the database
-        $leave = Leave::create([
-            'user_id' => Auth::id(),
-            'type_of_leave' => $validatedData['type_of_leave'],
-            'half' => $validatedData['half_day'] ?? null,
-            'start_date' => $validatedData['start_date'] ?? null,
-            'end_date' => $validatedData['end_date'] ?? null,
-            'start_time' => $validatedData['start_time'] ?? null,
-            'end_time' => $validatedData['end_time'] ?? null,
-            'reason' => $validatedData['reason'],
-            'contact_during_leave' => $validatedData['contact_during_leave'],
-            'status' => 'pending', // Default status
-            'last_updated_by' => Auth::user()->name,
+    {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave,Work From Home',
+            'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+            'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day Leave,Full Day Leave|date',
+            'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+            'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+            'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+            'reason' => 'required|string',
+            'contact_during_leave' => 'required|string|max:50',
         ]);
-
-        // Retrieve admin user details (update as per your logic)
-        $adminUser = User::where('email', 'adbbharat@gmail.com')->first();
-        $adminName = $adminUser ? $adminUser->name : 'Admin';
-
-        // Prepare leave details for the email
-        $leaveDetails = [
-            'user_name' => Auth::user()->name,
-            'type_of_leave' => $leave->type_of_leave,
-            'reason' => $leave->reason,
-            'start_date' => $leave->start_date,
-            'end_date' => $leave->end_date,
-            'start_time' => $leave->start_time,
-            'end_time' => $leave->end_time,
-            'contact_during_leave' => $leave->contact_during_leave,
-            'admin_name' => $adminName, // Include admin name
-        ];
-
-        // Send email to the admin
-        Mail::to('adbbharat@gmail.com')->send(new LeaveApplicationMail($leaveDetails));
-
-        // Respond with success
-        return response()->json(['message' => 'Leave application submitted successfully!'], 201);
-
-    } catch (\Exception $e) {
-        Log::error('Leave submission failed: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to submit leave application.'], 500);
+    
+        try {
+            // Save leave data in the database
+            $leave = Leave::create([
+                'user_id' => Auth::id(),
+                'type_of_leave' => $validatedData['type_of_leave'],
+                'half' => $validatedData['half_day'] ?? null,
+                'start_date' => $validatedData['start_date'] ?? null,
+                'end_date' => $validatedData['end_date'] ?? null,
+                'start_time' => $validatedData['start_time'] ?? null,
+                'end_time' => $validatedData['end_time'] ?? null,
+                'reason' => $validatedData['reason'],
+                'contact_during_leave' => $validatedData['contact_during_leave'],
+                'status' => 'pending', // Default status
+                'last_updated_by' => Auth::user()->name,
+            ]);
+    
+            // Respond with success
+            return response()->json(['message' => 'Leave application submitted successfully!'], 201);
+    
+        } catch (\Exception $e) {
+            Log::error('Leave submission failed: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to submit leave application.'], 500);
+        }
     }
-}
+//     public function store(Request $request)
+// {
+//     // Validate the request data
+//     $validatedData = $request->validate([
+//         'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave,Work From Home',
+//         'half_day' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+//         'start_date' => 'nullable|required_if:type_of_leave,Short Leave,Half Day Leave,Full Day Leave|date',
+//         'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave|date|after_or_equal:start_date',
+//         'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+//         'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+//         'reason' => 'required|string',
+//         'contact_during_leave' => 'required|string|max:50',
+//     ]);
+
+//     try {
+//         // Save leave data in the database
+//         $leave = Leave::create([
+//             'user_id' => Auth::id(),
+//             'type_of_leave' => $validatedData['type_of_leave'],
+//             'half' => $validatedData['half_day'] ?? null,
+//             'start_date' => $validatedData['start_date'] ?? null,
+//             'end_date' => $validatedData['end_date'] ?? null,
+//             'start_time' => $validatedData['start_time'] ?? null,
+//             'end_time' => $validatedData['end_time'] ?? null,
+//             'reason' => $validatedData['reason'],
+//             'contact_during_leave' => $validatedData['contact_during_leave'],
+//             'status' => 'pending', // Default status
+//             'last_updated_by' => Auth::user()->name,
+//         ]);
+
+//         // Retrieve admin user details (update as per your logic)
+//         $adminUser = User::where('email', 'adbbharat@gmail.com')->first();
+//         $adminName = $adminUser ? $adminUser->name : 'Admin';
+
+//         // Prepare leave details for the email
+//         $leaveDetails = [
+//             'user_name' => Auth::user()->name,
+//             'type_of_leave' => $leave->type_of_leave,
+//             'reason' => $leave->reason,
+//             'start_date' => $leave->start_date,
+//             'end_date' => $leave->end_date,
+//             'start_time' => $leave->start_time,
+//             'end_time' => $leave->end_time,
+//             'contact_during_leave' => $leave->contact_during_leave,
+//             'admin_name' => $adminName, // Include admin name
+//         ];
+
+//         // Send email to the admin
+//         Mail::to('adbbharat@gmail.com')->send(new LeaveApplicationMail($leaveDetails));
+
+//         // Respond with success
+//         return response()->json(['message' => 'Leave application submitted successfully!'], 201);
+
+//     } catch (\Exception $e) {
+//         Log::error('Leave submission failed: ' . $e->getMessage());
+//         return response()->json(['error' => 'Failed to submit leave application.'], 500);
+//     }
+// }
 
     
 
@@ -275,8 +312,6 @@ public function update(Request $request, Leave $leave)
 }
 
      
-      
-
 public function updateTeamLeave(Request $request, Leave $leave)
 {
     try {
@@ -285,7 +320,7 @@ public function updateTeamLeave(Request $request, Leave $leave)
         // Validate request data
         $validatedData = $request->validate([
             'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave,Work From Home',
-'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+            'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
             'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave,Work From Home|date',
             'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Work From Home|date|after_or_equal:start_date',
             'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
@@ -295,7 +330,6 @@ public function updateTeamLeave(Request $request, Leave $leave)
             'status' => 'required|in:pending,approved,disapproved,hold,canceled',
         ]);
         
-
         // Handle 'Work From Home' leave type-specific logic
         if ($validatedData['type_of_leave'] === 'Work From Home') {
             $validatedData['half'] = null; // Not applicable
@@ -343,10 +377,6 @@ public function updateTeamLeave(Request $request, Leave $leave)
             }
         }
 
-        // Send email notification if the status is updated
-        $user = $leave->user;
-        Mail::to($user->email)->send(new LeaveStatusMail($leave));
-
         return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
     } catch (ModelNotFoundException $e) {
         return response()->json([
@@ -363,6 +393,93 @@ public function updateTeamLeave(Request $request, Leave $leave)
         return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
     }
 }
+
+// public function updateTeamLeave(Request $request, Leave $leave)
+// {
+//     try {
+//         \Log::info('Request to update leave:', $request->all());
+
+//         // Validate request data
+//         $validatedData = $request->validate([
+//             'type_of_leave' => 'required|in:Short Leave,Half Day Leave,Full Day Leave,Work From Home',
+// 'half' => 'nullable|required_if:type_of_leave,Half Day Leave|in:First Half,Second Half',
+//             'start_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Half Day Leave,Short Leave,Work From Home|date',
+//             'end_date' => 'nullable|required_if:type_of_leave,Full Day Leave,Work From Home|date|after_or_equal:start_date',
+//             'start_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i',
+//             'end_time' => 'nullable|required_if:type_of_leave,Short Leave|date_format:H:i|after:start_time',
+//             'reason' => 'required|string',
+//             'contact_during_leave' => 'required|string|max:15',
+//             'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+//         ]);
+        
+
+//         // Handle 'Work From Home' leave type-specific logic
+//         if ($validatedData['type_of_leave'] === 'Work From Home') {
+//             $validatedData['half'] = null; // Not applicable
+//             $validatedData['start_time'] = null; // Not applicable
+//             $validatedData['end_time'] = null; // Not applicable
+//         }
+
+//         // Update leave record
+//         $leave->update([
+//             'type_of_leave' => $validatedData['type_of_leave'],
+//             'half' => $validatedData['half'] ?? null,
+//             'start_date' => $validatedData['start_date'] ?? null,
+//             'end_date' => in_array($validatedData['type_of_leave'], ['Full Day Leave', 'Work From Home']) ? ($validatedData['end_date'] ?? null) : null,
+//             'start_time' => $validatedData['start_time'] ?? null,
+//             'end_time' => $validatedData['end_time'] ?? null,
+//             'reason' => $validatedData['reason'],
+//             'contact_during_leave' => $validatedData['contact_during_leave'],
+//             'status' => $validatedData['status'],
+//             'last_updated_by' => Auth::user()->name,
+//         ]);
+
+//         // If status is approved, handle daily_tasks logic
+//         if ($validatedData['status'] === 'approved' && in_array($validatedData['type_of_leave'], ['Short Leave', 'Half Day Leave'])) {
+//             $attendance = Attendance::where('user_id', $leave->user_id)
+//                 ->whereDate('clockin_time', $validatedData['start_date'])
+//                 ->first();
+
+//             if ($attendance) {
+//                 $hours = $validatedData['type_of_leave'] === 'Half Day Leave' 
+//                     ? 4 
+//                     : ($validatedData['type_of_leave'] === 'Short Leave'
+//                         ? (strtotime($validatedData['end_time']) - strtotime($validatedData['start_time'])) / 3600
+//                         : 8); // Default 8 hours for Work From Home
+
+//                 DailyTask::create([
+//                     'user_id' => $leave->user_id,
+//                     'attendance_id' => $attendance->id,
+//                     'project_id' => null,
+//                     'project_name' => $validatedData['type_of_leave'], // Leave type as project name
+//                     'leave_id' => $leave->id,
+//                     'task_description' => $validatedData['reason'], // Reason as description
+//                     'hours' => $hours,
+//                     'task_status' => 'pending', // Default status
+//                 ]);
+//             }
+//         }
+
+//         // Send email notification if the status is updated
+//         $user = $leave->user;
+//         Mail::to($user->email)->send(new LeaveStatusMail($leave));
+
+//         return response()->json(['message' => 'Leave updated successfully!', 'leave' => $leave], 200);
+//     } catch (ModelNotFoundException $e) {
+//         return response()->json([
+//             'message' => 'Leave not found',
+//             'error' => $e->getMessage()
+//         ], 404);
+//     } catch (\Illuminate\Validation\ValidationException $e) {
+//         \Log::error('Error occurred:', ['error' => $e->getMessage()]);
+//         \Log::error('Validation failed:', $e->errors());
+//         return response()->json(['errors' => $e->errors()], 422);
+//     } catch (\Exception $e) {
+//         \Log::error('Error occurred:', ['error' => $e->getMessage()]);
+//         \Log::error('Error updating leave:', ['exception' => $e]);
+//         return response()->json(['error' => 'An internal error occurred. Please try again later.'], 500);
+//     }
+// }
     
 
     
