@@ -20,47 +20,60 @@ use Carbon\Carbon;
 class AttendanceController extends Controller
 {
     public function autoClockOut()
-    {
-        // Get current time in Indian Standard Time (IST)
-        $currentTime = Carbon::now('Asia/Kolkata');
+{
+    // Get current time in Indian Standard Time (IST)
+    $currentTime = Carbon::now('Asia/Kolkata')->toDateString(); // Get only date
 
-        // Find users with null clockout_time and productive_hours
-        $users = DB::table('attendances')
-            ->whereNull('clockout_time')
-            ->whereNull('productive_hours')
-            ->get();
+    // Find users with null clockout_time and productive_hours
+    $users = DB::table('attendances')
+        ->whereNull('clockout_time')
+        ->whereNull('productive_hours')
+        ->get();
 
-        if ($users->isEmpty()) {
-            return response()->json(['message' => 'No users found to clock out.']);
-        }
-
-        // Update the records
-        foreach ($users as $user) {
-            // Get the corresponding token
-            $token = DB::table('personal_access_tokens')
-                ->where('tokenable_id', $user->user_id)
-                ->where('name', 'ClockinToken')
-                ->first();
-
-            if ($token) {
-                // Update attendance
-                DB::table('attendances')
-                    ->where('id', $user->id)
-                    ->update([
-                        'clockout_time' => $user->clockin_time,  // Same as clock-in time
-                        'productive_hours' => '00:00:00',
-                        'updated_at' => $currentTime,
-                    ]);
-
-                // Remove the ClockinToken
-                DB::table('personal_access_tokens')
-                    ->where('id', $token->id)
-                    ->delete();
-            }
-        }
-
-        return response()->json(['message' => 'User clock-out successfully.']);
+    if ($users->isEmpty()) {
+        return response()->json(['message' => 'No users found to clock out.']);
     }
+
+    // Update the records
+    foreach ($users as $user) {
+        // Get the corresponding ClockinToken
+        $clockinToken = DB::table('personal_access_tokens')
+            ->where('tokenable_id', $user->user_id)
+            ->where('name', 'ClockinToken')
+            ->first();
+
+        // Remove breaks for the same user on the same day
+        DB::table('breaks')
+            ->where('user_id', $user->user_id)
+            ->whereDate('start_time', $currentTime)
+            ->delete();
+
+        // Remove BreakinToken
+        DB::table('personal_access_tokens')
+            ->where('tokenable_id', $user->user_id)
+            ->where('name', 'BreakinToken')
+            ->delete();
+
+        // Update attendance
+        if ($clockinToken) {
+            DB::table('attendances')
+                ->where('id', $user->id)
+                ->update([
+                    'clockout_time' => $user->clockin_time, // Same as clock-in time
+                    'productive_hours' => '00:00:00',
+                    'updated_at' => now(),
+                ]);
+
+            // Remove the ClockinToken
+            DB::table('personal_access_tokens')
+                ->where('id', $clockinToken->id)
+                ->delete();
+        }
+    }
+
+    return response()->json(['message' => 'User clock-out successfully, and related break records removed.']);
+}
+
     
     public function clockIn(Request $request)
 {
