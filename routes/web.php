@@ -12,9 +12,13 @@ use App\Http\Controllers\AttendanceController;
 //     return view('welcome');
 // });
 
+Route::get('/', function () {
+    return redirect('/login');
+});
+
 Route::get('/{any}', function () {
     return view('master'); 
-})->where('any', '.*'); 
+})->where('any', '.*');
 
 Auth::routes();
 

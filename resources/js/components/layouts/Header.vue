@@ -58,7 +58,7 @@ export default {
         });
 
         localStorage.removeItem("authToken");
-        router.push("/");
+        router.push("/login");
       } catch (error) {
         console.error("Logout failed:", error);
         alert("An error occurred during logout.");

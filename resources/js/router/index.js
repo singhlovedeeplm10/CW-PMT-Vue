@@ -22,7 +22,7 @@ import EmployeesAttendances from '../components/EmployeesAttendances.vue';
 import EmployeesTimelogs from '../components/EmployeesTimelogs.vue';
 
 const routes = [
-  { path: '/', name: 'Login', component: Login },
+  { path: '/login', name: 'Login', component: Login },
   { path: '/projects', name: 'Projects', component: Project },
   { path: '/listing', name: 'Listings', component: Listings },
   { path: '/users', name: 'Users', component: Users },
