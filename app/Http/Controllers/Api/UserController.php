@@ -301,9 +301,11 @@ public function employeeAttendances(Request $request)
         'leaves' => function ($query) {
             $query->where('status', 'approved');
         },
-        'profile:user_id,user_image' // Only fetching user image from user_profiles
+        'profile:user_id,user_image'
     ])
+    ->where('id', '!=', 1) // This line excludes the user with ID 1
     ->orderBy('name', 'asc');
+    
 
     // Apply search filters
     if ($request->has('name')) {
