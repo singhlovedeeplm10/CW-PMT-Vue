@@ -200,10 +200,17 @@ public function getUserBreakDetails(Request $request)
         ->orderBy('end_time', 'asc')
         ->get()
         ->map(function ($break) {
-            // Calculate start_time by subtracting break_time from end_time
-            $startTime = $break->end_time ? Carbon::parse($break->end_time)->subSeconds($this->convertTimeToSeconds($break->break_time)) : null;
+            // If end_time exists, calculate start_time from it and break_time
+            if ($break->end_time) {
+                $startTime = Carbon::parse($break->end_time)
+                    ->subSeconds($this->convertTimeToSeconds($break->break_time));
+            } else {
+                // Otherwise use the existing start_time from the DB
+                $startTime = $break->start_time ? Carbon::parse($break->start_time) : null;
+            }
 
             return [
+                'id' => $break->id,
                 'start_time' => $startTime ? $startTime->toDateTimeString() : null,
                 'end_time' => $break->end_time,
                 'break_time' => $break->break_time,
@@ -213,6 +220,7 @@ public function getUserBreakDetails(Request $request)
 
     return response()->json($userBreaks);
 }
+
 
 /**
  * Convert break_time (HH:MM:SS) to total seconds.

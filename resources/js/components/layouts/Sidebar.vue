@@ -27,10 +27,12 @@
             <router-link to="/users" class="sidebar-sublink" active-class="active-link">View</router-link>
           </li>
           <li class="sidebar-subitem">
-            <router-link to="/employees-attendances" class="sidebar-sublink" active-class="active-link">Attendance</router-link>
+            <router-link to="/employees-attendances" class="sidebar-sublink"
+              active-class="active-link">Attendance</router-link>
           </li>
           <li class="sidebar-subitem">
-            <router-link to="/employees-timelogs" class="sidebar-sublink" active-class="active-link">Time Logs</router-link>
+            <router-link to="/employees-timelogs" class="sidebar-sublink" active-class="active-link">Time
+              Logs</router-link>
           </li>
         </ul>
       </li>
@@ -93,7 +95,8 @@
             <router-link to="/timeline" class="sidebar-sublink" active-class="active-link">View TimeLine</router-link>
           </li>
           <li v-if="userRole === 'Admin'" class="sidebar-subitem">
-            <router-link to="/uploadtimeline" class="sidebar-sublink" active-class="active-link">Upload TimeLine</router-link>
+            <router-link to="/uploadtimeline" class="sidebar-sublink" active-class="active-link">Upload
+              TimeLine</router-link>
           </li>
         </ul>
       </li>
@@ -144,7 +147,7 @@ export default {
     userRole() {
       return this.getUserRole;
     },
-    
+
     // Check if a sub-tab is active
     isActiveEmployees() {
       return ["/users", "/employees-attendances", "/employees-timelogs"].includes(this.$route.path);
@@ -161,14 +164,14 @@ export default {
   },
   methods: {
     ...mapActions(["fetchUserDetails", "fetchUserRole"]),
-    
+
     toggleDropdown(dropdownName) {
       this.dropdowns = {
         ...this.dropdowns,
         [dropdownName]: !this.dropdowns[dropdownName],
       };
     },
-    
+
     keepDropdownOpen() {
       if (this.isActiveEmployees) this.dropdowns.employees = true;
       if (this.isActiveTimelines) this.dropdowns.timelines = true;
@@ -181,7 +184,7 @@ export default {
       this.fetchUserDetails();
       this.fetchUserRole();
     }
-    
+
     this.keepDropdownOpen();
   },
   watch: {
@@ -195,14 +198,36 @@ export default {
 
 <style scoped>
 .sidebar {
+  position: fixed;
   width: 190px;
-  min-height: 100vh;
+  height: calc(100vh - 75px);
+  /* Subtract header height */
   background: #24292e;
   color: #ecf0f1;
   padding: 20px 10px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0; /* Prevents resizing */
+  flex-shrink: 0;
+  /* Prevents resizing */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  /* Custom scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: #16a085 #24292e;
+}
+
+/* For Webkit browsers (Chrome, Safari) */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #24292e;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #16a085;
+  border-radius: 3px;
 }
 
 .sidebar-header {
@@ -273,14 +298,16 @@ export default {
 
 .sidebar-link:hover,
 .active-link {
-  background-color: #16a085; /* Highlight on hover/active */
+  background-color: #16a085;
+  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
 
 .sidebar-sublink:hover,
 .active-link {
-  background-color: #16a085; /* Highlight on hover/active */
+  background-color: #16a085;
+  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
@@ -295,13 +322,15 @@ export default {
   padding: 10px 15px;
   border-radius: 8px;
   transition: background-color 0.3s ease;
-  height: 40px; /* Fixed height for consistent alignment */
+  height: 40px;
+  /* Fixed height for consistent alignment */
 }
 
 .timelines-header:hover,
 .leaves-header:hover,
 .tasks-header:hover {
-  background-color: #16a085; /* Highlight on hover/active */
+  background-color: #16a085;
+  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
@@ -309,7 +338,8 @@ export default {
 .sidebar-subtitle {
   font-size: 1rem;
   color: #ecf0f1;
-  margin: 0; /* Remove default margin */
+  margin: 0;
+  /* Remove default margin */
 }
 
 .sidebar-submenu {

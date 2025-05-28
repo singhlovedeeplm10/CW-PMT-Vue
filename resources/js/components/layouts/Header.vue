@@ -3,7 +3,7 @@
     <nav class="nav">
       <div class="header-left">
         <router-link to="/dashboard" class="sidebar-link header-logo">
-          <img src="img/CWlogo2.svg" alt="Contriwhiz Logo" class="logo-image" />
+          <img src="img/CWlogo1.svg" alt="Contriwhiz Logo" class="logo-image" />
         </router-link>
       </div>
       <div class="header-right">
@@ -119,10 +119,12 @@ body {
 
 /* Header Container */
 .header {
+  position: fixed;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #24292e; /* Modern dark shade */
+  background-color: white;
   padding: 10px 20px;
   color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -150,7 +152,7 @@ body {
 }
 
 .logo-image {
-  width: 14%;
+  /* width: 14%; */
   height: 50%;
   transition: transform 0.3s ease;
   margin: 0px 18px;
@@ -159,12 +161,14 @@ body {
 .logo-title {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #f1c40f; /* Golden accent color */
+  color: #f1c40f;
+  /* Golden accent color */
   transition: color 0.3s ease;
 }
 
 .header-logo:hover .logo-title {
-  color: #3498db; /* Light blue accent on hover */
+  color: #3498db;
+  /* Light blue accent on hover */
 }
 
 /* User Profile Section */
@@ -196,15 +200,24 @@ body {
 
 /* Dropdown Menu */
 .profile-dropdown {
-  position: absolute; /* Positions the dropdown relative to the container */
-  top: 100%; /* Ensures the dropdown appears below the profile image */
-  right: 0; /* Aligns the dropdown to the right of the container */
-  z-index: 1000; /* High enough to ensure it appears above other elements */
-  background: white; /* Optional: Dropdown background */
-  border: 1px solid #ccc; /* Optional: Border for the dropdown */
-  border-radius: 4px; /* Optional: Rounded corners */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds shadow for better visibility */
-  display: none; /* Initially hidden */
+  position: absolute;
+  /* Positions the dropdown relative to the container */
+  top: 100%;
+  /* Ensures the dropdown appears below the profile image */
+  right: 0;
+  /* Aligns the dropdown to the right of the container */
+  z-index: 1000;
+  /* High enough to ensure it appears above other elements */
+  background: white;
+  /* Optional: Dropdown background */
+  border: 1px solid #ccc;
+  /* Optional: Border for the dropdown */
+  border-radius: 4px;
+  /* Optional: Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Optional: Adds shadow for better visibility */
+  display: none;
+  /* Initially hidden */
 }
 
 .profile-container:hover .profile-dropdown {
@@ -219,7 +232,7 @@ body {
   font-size: 0.9rem;
   transition: background 0.3s ease, color 0.3s ease;
   border-radius: 4px;
-  white-space: nowrap; 
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {

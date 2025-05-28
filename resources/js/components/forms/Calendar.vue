@@ -3,12 +3,8 @@
     <div v-if="showHeader" class="calendar-header">
     </div>
 
-    <input
-      type="date"
-      :value="formattedSelectedDate"
-      @input="updateSelectedDate($event.target.value)"
-      class="form-control"
-    />
+    <input type="date" :value="formattedSelectedDate" @input="updateSelectedDate($event.target.value)"
+      class="form-control" />
 
   </div>
 </template>
@@ -57,10 +53,10 @@ export default {
     };
 
     const updateSelectedDate = (newDate) => {
-  const formattedDate = new Date(newDate); // Convert to Date object
-  date.value = formattedDate;
-  emit("dateSelected", formattedDate); // Emit the Date object
-};
+      const formattedDate = new Date(newDate); // Convert to Date object
+      date.value = formattedDate;
+      emit("dateSelected", formattedDate); // Emit the Date object
+    };
 
     return {
       today,

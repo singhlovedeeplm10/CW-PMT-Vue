@@ -38,13 +38,8 @@
         </div>
 
         <div class="modal-actions">
-          <ButtonComponent
-            :isLoading="isLoading"
-            :label="'Save'"
-            :loadingText="'Saving...'"
-            :buttonClass="'save-btn'"
-            @click="updateNotice"
-          />
+          <ButtonComponent :isLoading="isLoading" :label="'Save'" :loadingText="'Saving...'" :buttonClass="'save-btn'"
+            @click="updateNotice" />
         </div>
       </form>
     </div>
@@ -74,7 +69,7 @@ export default {
   data() {
     return {
       form: {
-        title: this.notice.title,
+        title: this.decodeHtml(this.notice.title),
         order: this.notice.order,
         description: this.notice.description,
         start_date: this.notice.start_date,
@@ -83,7 +78,13 @@ export default {
       isLoading: false,
     };
   },
+
   methods: {
+    decodeHtml(html) {
+      const txt = document.createElement("textarea");
+      txt.innerHTML = html;
+      return txt.value;
+    },
     async updateNotice() {
       this.isLoading = true;
       this.form.description = $("#description-editor").summernote("code");
@@ -139,17 +140,18 @@ export default {
 
 
 <style scoped>
-   .close-modal {
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    cursor: pointer;
-  }
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  cursor: pointer;
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -168,7 +170,8 @@ export default {
 .modal-content {
   background: white;
   border-radius: 12px;
-  width: 700px; /* Increased width for horizontal layout */
+  width: 700px;
+  /* Increased width for horizontal layout */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   max-height: 100%;
   overflow-y: auto;

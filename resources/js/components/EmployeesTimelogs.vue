@@ -1,238 +1,154 @@
 <template>
-    <master-component>
-      <div class="attendance-container">
-        <h2 class="title_heading">Time Logs</h2>
-  
-        <div class="filters">
-  <div class="filter-container" v-if="userRole === 'Admin'">
-    <input 
-      type="text" 
-      placeholder="Search by Name" 
-      class="filter-input" 
-      v-model="searchQuery" 
-       @input="fetchUserSuggestions"
-    />
-    
-    <!-- Suggestions Dropdown -->
-    <ul v-if="searchResults.length > 0" class="suggestions-list">
-      <li 
-        v-for="user in searchResults" 
-        :key="user.id" 
-        @click="selectUser(user)"
-      >
-        <img :src="user.user_image" class="user-avatar" alt="User Image">
-        {{ user.name }}
-      </li>
-    </ul>
-  </div>
+  <master-component>
+    <div class="attendance-container">
+      <h2 class="title_heading">Time Logs</h2>
 
-  <input 
-    type="month" 
-    class="filter-input" 
-    v-model="selectedMonth"
-  />
+      <div class="filters">
+        <div class="filter-container" v-if="userRole === 'Admin'">
+          <input type="text" placeholder="Search by Name" class="filter-input" v-model="searchQuery"
+            @input="fetchUserSuggestions" />
 
-  <button class="search-btn" @click="fetchTimeLogs">
-    <span v-if="loading">Searching...</span>
-    <span v-else>Search</span>
-  </button>
-</div>
-
-
-  
-        <!-- Loader Spinner -->
-        <div v-if="loading" class="loader-container">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-  
-        <!-- Message if no data is available -->
-        <div v-if="!loading && timeLogs.length === 0" class="no-data-message">
-          {{ noDataMessage }}
+          <!-- Suggestions Dropdown -->
+          <ul v-if="searchResults.length > 0" class="suggestions-list">
+            <li v-for="user in searchResults" :key="user.id" @click="selectUser(user)">
+              <img :src="user.user_image" class="user-avatar" alt="User Image">
+              {{ user.name }}
+            </li>
+          </ul>
         </div>
 
-<!-- Display employee details after search -->
-<div v-if="employeeDetails" class="employee-details">
-  <div class="employee-info">
-    <img :src="employeeDetails.image" alt="Employee Image" class="employee-image" />
-    <h3>{{ employeeDetails.name }}</h3>
-  </div>
-</div>
+        <input type="month" class="filter-input" v-model="selectedMonth" />
 
+        <button class="search-btn" @click="fetchTimeLogs">
+          <span v-if="loading">Searching...</span>
+          <span v-else>Search</span>
+        </button>
+      </div>
 
+      <!-- Loader Spinner -->
+      <div v-if="loading" class="loader-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
 
-        <!-- Table -->
-        <table v-if="!loading && timeLogs.length > 0" class="time-logs-table">
-          <thead>
-            <tr>
+      <!-- Message if no data is available -->
+      <div v-if="!loading && timeLogs.length === 0" class="no-data-message">
+        {{ noDataMessage }}
+      </div>
 
-              <!-- <th>Name</th> -->
-              <th>Date</th>
-              <th>Clock In/Out</th>
-              <th>Total Break</th>
-              <th>Total Hours</th>
-              <th>Total Productive Hours</th>
-            </tr>
-          </thead>
-          <tbody>
-  <tr 
-    v-for="log in filteredTimeLogs" 
-    :key="log.employee_code + log.date"
-    :class="getRowClass(log.total_productive_hours)"
-  >
-    <!-- <td>{{ log.name }}</td> -->
-    <td>{{ formatDate(log.date) }}</td>
-    <td @click="openModal(log.id, log.date)" class="clickable-time">
-      {{ log.clock_in_out }}
-</td>
+      <!-- Display employee details after search -->
+      <div v-if="employeeDetails" class="employee-details">
+        <div class="employee-info">
+          <img :src="employeeDetails.image" alt="Employee Image" class="employee-image" />
+          <h3>{{ employeeDetails.name }}</h3>
+        </div>
+      </div>
 
-<td @click="openBreakModal(log.id, log.date)" class="clickable-time">
-  {{ log.total_break }}
-</td>
-
-
-    <td>{{ log.total_hours }}</td>
-    <td>{{ log.total_productive_hours }}</td>
-  </tr>
-</tbody>
-        </table>
-  
- <!-- Modal -->
-<div v-if="showModal" class="modal-overlay">
-  <div class="modal-content">
-    <!-- Close button at the top -->
-     <span>{{ formatDate(selectedDate) }}</span>
-    <!-- <h3>Detailed Time Logs for {{ selectedEmployeeCode }} on {{ formatDate(selectedDate) }}</h3> -->
-    
-    <div class="modal-body">
-      <table class="detailed-logs-table">
+      <!-- Table -->
+      <table v-if="!loading && timeLogs.length > 0" class="time-logs-table">
         <thead>
           <tr>
-            <th>Clock In</th>
-            <th>Clock Out</th>
+            <th>Date</th>
+            <th>Clock In/Out</th>
+            <th>Total Break</th>
             <th>Total Hours</th>
+            <th>Total Productive Hours</th>
           </tr>
         </thead>
         <tbody>
-  <tr v-for="entry in detailedLogs" :key="entry.id">
-    
-    <td>{{ formatTime(entry.clockin_time) }}</td>
-    <td>{{ formatTime(entry.clockout_time) }}</td>
-    <td>{{ entry.productive_hours }}</td>
-  </tr>
-</tbody>
-
-      </table>
-    </div>
-
-    <!-- Close button at the bottom -->
-    <div class="modal-footer">
-      <button class="close-modal-btn" @click="closeModal">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Breaks Modal -->
-<div v-if="showBreakModal" class="modal-overlay">
-  <div class="modal-content">
-    <span>{{ formatDate(selectedDate) }}</span>
-
-    <div class="modal-body">
-      <table v-if="breakLogs.length > 0" class="detailed-logs-table">
-        <thead>
-          <tr>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Break Time</th>
-            <th>Reason</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="breakEntry in breakLogs" :key="breakEntry.id">
-            <td>{{ formatTime(breakEntry.start_time) }}</td>
-            <td>{{ formatTime(breakEntry.end_time) || 'N/A' }}</td>
-            <td>{{ breakEntry.break_time || 'N/A' }}</td>
-            <td>{{ breakEntry.reason }}</td>
+          <tr v-for="log in filteredTimeLogs" :key="log.employee_code + log.date"
+            :class="getRowClass(log.total_productive_hours)">
+            <td>{{ formatDate(log.date) }}</td>
+            <td @click="openAttendancesModal(log.id, log.date)" class="clickable-time">
+              {{ log.clock_in_out }}
+            </td>
+            <td @click="openBreaksModal(log.id, log.date)" class="clickable-time">
+              {{ log.total_break }}
+            </td>
+            <td>{{ log.total_hours }}</td>
+            <td>{{ log.total_productive_hours }}</td>
           </tr>
         </tbody>
       </table>
-      <p v-if="noBreakDataMessage" class="no-data-message">{{ noBreakDataMessage }}</p>
+
+      <!-- Attendances Modal -->
+      <attendances-timelogs-modal v-if="showAttendancesModal" :logs="attendancesLogs" @close="closeAttendancesModal" />
+
+      <!-- Breaks Modal -->
+      <breaks-timelogs-modal v-if="showBreaksModal" :breaks="breaksLogs" @close="closeBreaksModal" />
     </div>
+  </master-component>
+</template>
 
-    <div class="modal-footer">
-      <button class="close-modal-btn" @click="closeBreakModal">Close</button>
-    </div>
-  </div>
-</div>
+<script>
+import MasterComponent from './layouts/Master.vue';
+import AttendancesTimelogsModal from "@/components/modals/AttendancesTimelogsModal.vue";
+import BreaksTimelogsModal from "@/components/modals/BreaksTimelogsModal.vue";
+import axios from 'axios';
 
+export default {
+  name: "EmployeesTimelogs",
+  components: {
+    MasterComponent,
+    AttendancesTimelogsModal,
+    BreaksTimelogsModal
+  },
+  data() {
+    return {
+      userRole: null,
+      searchQuery: '',
+      searchTerm: '',
+      searchResults: [],
+      selectedMonth: new Date().toISOString().slice(0, 7),
+      timeLogs: [],
+      loading: false,
+      employeeDetails: null,
+      noDataMessage: "",
 
+      // Attendances modal data
+      showAttendancesModal: false,
+      attendancesLogs: [],
 
-      </div>
-    </master-component>
-  </template>
-  
-  <script>
-  import MasterComponent from './layouts/Master.vue';
-  
-  export default {
-    name: "EmployeesTimelogs",
-    components: {
-      MasterComponent,
-    },
-    data() {
-  return {
-    userRole: null,
-    searchQuery: '',  // This will hold the search term
-    searchTerm: '',    // This term will be used for actual search when search button is clicked
-    searchResults: [],
-    selectedMonth: new Date().toISOString().slice(0, 7),
-    timeLogs: [],
-    loading: false,
-    employeeDetails: null,  
-    showModal: false,
-    detailedLogs: [],
-    selectedEmployeeCode: '',
-    selectedDate: '',
-    showBreakModal: false,
-    breakLogs: [],
-    noBreakDataMessage: "",
-  };
-},
-computed: {
-  filteredTimeLogs() {
-    // Filter data only based on the searchTerm (updated when search button is clicked)
-    if (!this.searchTerm) return this.timeLogs;
-    return this.timeLogs.filter(log => 
-      log.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
-  }
-},
-
-    methods: {
-      async fetchUserSuggestions() {
-    if (this.searchQuery.length < 2) {
-      this.searchResults = [];
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/users/search?query=${this.searchQuery}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      const data = await response.json();
-      this.searchResults = data;
-    } catch (error) {
-      console.error('Error fetching user suggestions:', error);
+      // Breaks modal data
+      showBreaksModal: false,
+      breaksLogs: [],
+      noBreakDataMessage: ""
+    };
+  },
+  computed: {
+    filteredTimeLogs() {
+      if (!this.searchTerm) return this.timeLogs;
+      return this.timeLogs.filter(log =>
+        log.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
     }
   },
-  selectUser(user) {
-  this.searchQuery = user.name;
-  this.searchResults = [];
-},
-      async fetchUserRole() {
+  methods: {
+    async fetchUserSuggestions() {
+      if (this.searchQuery.length < 2) {
+        this.searchResults = [];
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/api/users/search?query=${this.searchQuery}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.searchResults = response.data;
+      } catch (error) {
+        console.error('Error fetching user suggestions:', error);
+      }
+    },
+
+    selectUser(user) {
+      this.searchQuery = user.name;
+      this.searchResults = [];
+    },
+
+    async fetchUserRole() {
       try {
         const response = await axios.get("/api/user-role", {
           headers: {
@@ -244,142 +160,129 @@ computed: {
         console.error("Error fetching user role:", error);
       }
     },
-    async openBreakModal(userId, date) {
-  this.selectedUserId = userId;
-  this.selectedDate = date;
-  this.showBreakModal = true;
-  this.noBreakDataMessage = ""; // Reset message before fetching
 
-  try {
-    const response = await fetch(`/api/employee-breaks?user_id=${userId}&date=${date}`);
-    const data = await response.json();
-    this.breakLogs = data;
+    formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+      }).format(date);
+    },
 
-    if (this.breakLogs.length === 0) {
-      this.noBreakDataMessage = "No break records available for this date.";
-    }
-  } catch (error) {
-    console.error('Error fetching break details:', error);
-    this.noBreakDataMessage = "Failed to fetch break details.";
-  }
-},
-
-
-
-  closeBreakModal() {
-    this.showBreakModal = false;
-    this.breakLogs = [];
-  },
-        formatTime(datetime) {
-    if (!datetime) return 'N/A';
-    return new Date(datetime).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-  },
-      formatDate(dateString) {
-        if (!dateString) return 'N/A';
-  
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('en-US', {
-          month: 'short',
-          day: '2-digit',
-          year: 'numeric'
-        }).format(date);
-      },
-      getRowClass(totalProductiveHours) {
-        if (totalProductiveHours === '00:00:00') {
-          return 'bg-orange';
-        }
-  
-        const [hours, minutes, seconds] = totalProductiveHours.split(':').map(Number);
-        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-  
-        if (totalSeconds >= 28800) {
-          return 'bg-green';
-        }
-  
-        return 'bg-red';
-      },
-      async fetchTimeLogs() {
-    this.loading = true;
-    this.timeLogs = [];
-    this.employeeDetails = null;
-    this.noDataMessage = "";
-
-    // Use searchQuery as the search term when the button is clicked
-    this.searchTerm = this.searchQuery;
-
-    try {
-      const response = await fetch(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchTerm}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
+    formatTime(datetime) {
+      if (!datetime) return 'N/A';
+      return new Date(datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
       });
+    },
 
-      const data = await response.json();
+    getRowClass(totalProductiveHours) {
+      if (totalProductiveHours === '00:00:00') {
+        return 'bg-orange';
+      }
 
-      if (data.length > 0) {
-        this.timeLogs = data;
+      const [hours, minutes, seconds] = totalProductiveHours.split(':').map(Number);
+      const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-        // Find the employee that matches the search query
-        const matchedEmployee = data.find(employee => 
-          employee.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-        );
-        
-        if (matchedEmployee) {
-          this.employeeDetails = {
-            name: matchedEmployee.name,
-            image: matchedEmployee.image,
-          };
+      if (totalSeconds >= 28800) {
+        return 'bg-green';
+      }
+
+      return 'bg-red';
+    },
+
+    async fetchTimeLogs() {
+      this.loading = true;
+      this.timeLogs = [];
+      this.employeeDetails = null;
+      this.noDataMessage = "";
+      this.searchTerm = this.searchQuery;
+
+      try {
+        const response = await axios.get(`/api/employee-time-logs?month=${this.selectedMonth}&search=${this.searchTerm}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        if (response.data.length > 0) {
+          this.timeLogs = response.data;
+          const matchedEmployee = this.timeLogs.find(employee =>
+            employee.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+          );
+
+          if (matchedEmployee) {
+            this.employeeDetails = {
+              name: matchedEmployee.name,
+              image: matchedEmployee.image,
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching time logs:', error);
+        this.noDataMessage = "Error fetching data";
+      } finally {
+        this.loading = false;
+        if (this.timeLogs.length === 0) {
+          this.noDataMessage = "No data available for the selected month or employee.";
         }
       }
-    } catch (error) {
-      console.error('Error fetching time logs:', error);
-      this.noDataMessage = "Error fetching data";
-    } finally {
-      this.loading = false;
+    },
 
-      if (this.timeLogs.length === 0) {
-        this.noDataMessage = "No data available for the selected month or employee.";
+    async openAttendancesModal(userId, date) {
+      this.showAttendancesModal = true;
+      try {
+        const response = await axios.get(`/api/employee-detailed-time-logs?user_id=${userId}&date=${date}`);
+        this.attendancesLogs = response.data;
+      } catch (error) {
+        console.error('Error fetching detailed time logs:', error);
       }
+    },
+
+    closeAttendancesModal() {
+      this.showAttendancesModal = false;
+      this.attendancesLogs = [];
+    },
+
+    async openBreaksModal(userId, date) {
+      this.showBreaksModal = true;
+      this.noBreakDataMessage = "";
+      try {
+        const response = await axios.get(`/api/employee-breaks?user_id=${userId}&date=${date}`);
+        this.breaksLogs = response.data;
+        if (this.breaksLogs.length === 0) {
+          this.noBreakDataMessage = "No break records available for this date.";
+        }
+      } catch (error) {
+        console.error('Error fetching break details:', error);
+        this.noBreakDataMessage = "Failed to fetch break details.";
+      }
+    },
+
+    closeBreaksModal() {
+      this.showBreaksModal = false;
+      this.breaksLogs = [];
     }
   },
+  mounted() {
+    this.fetchTimeLogs();
+    this.fetchUserRole();
+  },
+};
+</script>
 
-      async openModal(userId, date) {
-    this.selectedUserId = userId;
-    this.selectedDate = date;
-    this.showModal = true;
-
-    try {
-        const response = await fetch(`/api/employee-detailed-time-logs?user_id=${userId}&date=${date}`);
-        const data = await response.json();
-        this.detailedLogs = data;
-    } catch (error) {
-        console.error('Error fetching detailed time logs:', error);
-    }
-},
-
-      closeModal() {
-        this.showModal = false;
-        this.detailedLogs = [];
-      },
-    },
-    mounted() {
-      this.fetchTimeLogs();
-      this.fetchUserRole();
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .suggestions-list {
+<style scoped>
+.suggestions-list {
   position: absolute;
   background: white;
   border: 1px solid #ccc;
-  width: 100%; /* Match input width */
+  width: 100%;
+  /* Match input width */
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -410,7 +313,8 @@ computed: {
 
 .filter-container {
   position: relative;
-  width: 250px; /* Adjust width based on your layout */
+  width: 250px;
+  /* Adjust width based on your layout */
 }
 
 .filter-input {
@@ -420,7 +324,7 @@ computed: {
   border-radius: 5px;
 }
 
-  .employee-details {
+.employee-details {
   margin-top: 20px;
   padding: 10px;
   background-color: #f9f9f9;
@@ -451,24 +355,27 @@ computed: {
   font-weight: bold;
 }
 
-  .clickable-time {
-    cursor: pointer;
-    text-decoration: underline; /* Underline effect */
+.clickable-time {
+  cursor: pointer;
+  text-decoration: underline;
+  /* Underline effect */
 }
 
-  .clickable-time {
+.clickable-time {
   cursor: pointer;
-  text-decoration: underline; /* Underline effect */
+  text-decoration: underline;
+  /* Underline effect */
 }
+
 .modal-footer {
   text-align: right;
 }
 
 
 .modal-body {
-    position: relative;
-    flex: 1 1 auto;
-    padding: 0px;
+  position: relative;
+  flex: 1 1 auto;
+  padding: 0px;
 }
 
 .close-modal-btn {
@@ -485,11 +392,12 @@ computed: {
   background-color: #c82333;
 }
 
-  .clock-icon {
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  .modal-overlay {
+.clock-icon {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -508,8 +416,10 @@ computed: {
   border-radius: 10px;
   width: 60%;
   max-width: 700px;
-  max-height: 80vh; /* Limit height */
-  overflow-y: auto; /* Scrollable content */
+  max-height: 80vh;
+  /* Limit height */
+  overflow-y: auto;
+  /* Scrollable content */
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -519,6 +429,7 @@ computed: {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -551,25 +462,30 @@ computed: {
   background-color: #f8f9fa;
 }
 
-  .bg-green {
-    background-color: #2eb62e; /* Light green */
+.bg-green {
+  background-color: #2eb62e;
+  /* Light green */
   color: white;
   font-weight: bold;
 }
 
 .bg-red {
-  background-color: rgb(243, 62, 62); /* Light red */
+  background-color: rgb(243, 62, 62);
+  /* Light red */
   color: white;
   font-weight: bold;
 }
 
 .bg-orange {
-  background-color: rgb(205, 156, 65); /* Light orange */
+  background-color: rgb(205, 156, 65);
+  /* Light orange */
   color: white;
   font-weight: bold;
 }
 
-.filter-input, .filter-select, .search-btn {
+.filter-input,
+.filter-select,
+.search-btn {
   margin: 10px 5px;
   padding: 8px;
 }
@@ -598,6 +514,7 @@ computed: {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -609,109 +526,111 @@ computed: {
   font-size: 1.2em;
   color: #666;
 }
-  .attendance-container {
-      padding: 20px;
-      max-width: 100%;
-      margin: 0 auto;
-  }
-  
-  .title {
-      color: #333;
-      margin-bottom: 20px;
-  }
-  h2{
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-  }
-  .filters {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-  }
-  
-  .filter-input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      flex: 1;
-      max-width: 300px;
-  }
-  
-  .filter-select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      flex: 1;
-      max-width: 200px;
-  }
-  
-  .search-btn {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-      font-weight: bold;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-  }
-  
-  .search-btn:hover {
-    background: linear-gradient(135deg, #0056b3, #003d82);
-  }
-  
-  .time-logs-table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #fff;
-      border-bottom-right-radius: 5px;
-      border-bottom-left-radius: 5px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .time-logs-table th {
-    background: linear-gradient(10deg, #2a5298, #2a5298);
-      color: white;
-      font-weight: bold;
-      text-transform: uppercase;
-      font-size: 0.9rem;
-      padding: 15px;
-      text-align: left;
-  }
-  
-  .time-logs-table td {
-      padding: 12px 15px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-      font-size: 0.9rem;
-  }
-  
-  .table-row:hover {
-      background-color: #f9f9f9;
-      transition: background-color 0.3s;
-  }
-  
-  .employee-image {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-  }
-  
-  .status-active {
-      color: #28a745;
-      font-weight: bold;
-  }
-  
-  .status-inactive {
-      color: #dc3545;
-      font-weight: bold;
-  }
-  </style>
-  
+
+.attendance-container {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.title {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  flex: 1;
+  max-width: 300px;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  flex: 1;
+  max-width: 200px;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  font-weight: bold;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+.time-logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.time-logs-table th {
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  padding: 15px;
+  text-align: left;
+}
+
+.time-logs-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.table-row:hover {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s;
+}
+
+.employee-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.status-inactive {
+  color: #dc3545;
+  font-weight: bold;
+}
+</style>

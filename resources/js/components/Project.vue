@@ -3,24 +3,13 @@
     <div class="project-page">
       <h2 class="title_heading">Projects</h2>
       <!-- Add Project Button using ButtonComponent -->
-      <ButtonComponent
-        label="Add New Project"
-        buttonClass="btn-primary"
-        @click="openAddProjectModal"
-      />
+      <ButtonComponent label="Add New Project" buttonClass="btn-primary" @click="openAddProjectModal" />
 
       <!-- Search Fields -->
       <div class="search-container">
-        <input
-          type="text"
-          v-model="searchName"
-          placeholder="Search by Project Name"
-          class="form-control search-input"
-        />
-        <select
-          v-model="searchStatus"
-          class="form-control search-select"
-        >
+        <input type="text" v-model="searchName" placeholder="Search by Project Name"
+          class="form-control search-input" />
+        <select v-model="searchStatus" class="form-control search-select">
           <option value="">All Status</option>
           <option value="Started">Started</option>
           <option value="Awaiting">Awaiting</option>
@@ -37,10 +26,10 @@
       </div>
 
 
-<!-- No Data Message -->
-<div v-else-if="filteredProjects.length === 0" class="text-center">
-  <p>No projects available</p>
-</div>
+      <!-- No Data Message -->
+      <div v-else-if="filteredProjects.length === 0" class="text-center">
+        <p>No projects available</p>
+      </div>
 
       <!-- Project Table -->
       <table v-else class="project-table">
@@ -78,19 +67,11 @@
       </table>
 
       <!-- Add Project Modal -->
-      <add-project-modal
-        v-if="showAddProjectModal"
-        @close="closeAddProjectModal"
-        @project-added="fetchProjects"
-      />
+      <add-project-modal v-if="showAddProjectModal" @close="closeAddProjectModal" @project-added="fetchProjects" />
 
       <!-- Edit Project Modal -->
-      <edit-project-modal
-        v-if="showEditProjectModal"
-        :project="selectedProject"
-        @close="closeEditProjectModal"
-        @project-updated="fetchProjects"
-      />
+      <edit-project-modal v-if="showEditProjectModal" :project="selectedProject" @close="closeEditProjectModal"
+        @project-updated="fetchProjects" />
     </div>
   </master-component>
 </template>
@@ -185,22 +166,26 @@ export default {
 </script>
 
 <style scoped>
-h2{
+h2 {
   font-family: 'Poppins', sans-serif;
-    font-weight: 600;
+  font-weight: 600;
 }
+
 .text-success {
   color: green;
   font-weight: bold;
 }
+
 .text-warning {
   color: orange;
   font-weight: bold;
 }
+
 .text-primary {
   color: blue;
   font-weight: bold;
 }
+
 .text-danger {
   color: red;
   font-weight: bold;
@@ -228,10 +213,12 @@ h2{
     transform: rotate(360deg);
   }
 }
+
 .project-page {
   padding: 20px;
   position: relative;
 }
+
 p {
   font-size: 1em;
   color: #6c757d;
@@ -265,7 +252,8 @@ p {
 
 .search-input,
 .search-select {
-  width: 200px; /* Reduced width */
+  width: 200px;
+  /* Reduced width */
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -341,6 +329,7 @@ edit-project-modal {
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 /* Add Project Button */
 .btn-primary {
   position: absolute;
@@ -375,5 +364,4 @@ edit-project-modal {
 .btn-secondary:hover {
   background: linear-gradient(135deg, #0056b3, #003d82);
 }
-
 </style>

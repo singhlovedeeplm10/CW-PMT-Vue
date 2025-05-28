@@ -16,76 +16,117 @@ use Illuminate\Support\Facades\Validator;
 class TimelineController extends Controller
 {
     public function uploadTimeline(Request $request)
-    {
-        // Validate the incoming request
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'uploadMedia' => 'nullable|array|max:10',  // Maximum 10 images/videos
-            'uploadMedia.*' => 'nullable|mimes:jpg,jpeg,png,mp4|max:10240', // Max 10MB for each file
-            'uploadLink' => 'nullable|url',
-        ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-    
-        // Create the timeline entry
-        $timeline = Timeline::create([
-            'user_id' => Auth::id(),
-            'title' => $request->title,
-            'description' => $request->description,
-            'timeline_uploads_ids' => json_encode([]), // Placeholder for now
-        ]);
-    
-        // Prepare to store file uploads
-        $filePaths = [];
-        $fileIds = [];
-    
-        // Handle media uploads (images/videos)
-        if ($request->hasFile('uploadMedia')) {
-            foreach ($request->file('uploadMedia') as $file) {
-                $filePath = $file->store('timelines', 'public');
-                $fileType = in_array($file->getClientOriginalExtension(), ['mp4', 'mov']) ? 'video' : 'image';
-                $fileUpload = TimelineUpload::create([
-                    'timeline_id' => $timeline->id,
-                    'file_path' => $filePath,
-                    'file_type' => $fileType,
-                    'file_link' => null,
-                ]);
-                $filePaths[] = $filePath;
-                $fileIds[] = $fileUpload->id;
+{
+    // Validate the incoming request
+    $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'uploadMedia' => 'nullable|array|max:10',  // Maximum 10 images/videos
+        'uploadMedia.*' => 'nullable|mimes:jpg,jpeg,png,mp4|max:10240', // Max 10MB each
+        'uploadLink' => 'nullable|url',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+ $title = $request->input('title');
+    if ($title) {
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        @$dom->loadHTML(mb_convert_encoding('<div>' . $title . '</div>', 'HTML-ENTITIES', 'UTF-8'), 
+                        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $title = strip_tags($dom->saveHTML());
+        $title = str_replace(["\n", "\r"], '', $title); // Clean up any newlines added by DOMDocument
+    }
+    // Process the description to store emojis and images
+    $description = $request->input('description');
+    $dom = new \DOMDocument('1.0', 'UTF-8');
+    @$dom->loadHTML(mb_convert_encoding($description, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+    $images = $dom->getElementsByTagName('img');
+
+    foreach ($images as $image) {
+        $src = $image->getAttribute('src');
+
+        if (preg_match('/^data:image\/(\w+);base64,/', $src, $type)) {
+            $data = substr($src, strpos($src, ',') + 1);
+            $data = base64_decode($data);
+            $extension = $type[1];
+            $fileName = uniqid() . '.' . $extension;
+            $uploadPath = public_path('uploads/timelines');
+
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
             }
+
+            $filePath = $uploadPath . '/' . $fileName;
+            file_put_contents($filePath, $data);
+
+            $image->setAttribute('src', url('uploads/timelines/' . $fileName));
         }
-    
-        // Handle the external media link (if any)
-        if ($request->uploadLink) {
+    }
+
+    // Save cleaned and processed HTML
+    $description = $dom->saveHTML();
+
+    // Create timeline
+    $timeline = Timeline::create([
+        'user_id' => Auth::id(),
+        'title' => $title,
+        'description' => $description, // With emojis and updated img src
+        'timeline_uploads_ids' => json_encode([]),
+    ]);
+
+    $filePaths = [];
+    $fileIds = [];
+
+    // Handle media uploads
+    if ($request->hasFile('uploadMedia')) {
+        foreach ($request->file('uploadMedia') as $file) {
+            $filePath = $file->store('timelines', 'public');
+            $fileType = in_array($file->getClientOriginalExtension(), ['mp4', 'mov']) ? 'video' : 'image';
             $fileUpload = TimelineUpload::create([
                 'timeline_id' => $timeline->id,
-                'file_path' => null, // No file path for external links
-                'file_type' => null, // File type is null for links
-                'file_link' => $request->uploadLink,
+                'file_path' => $filePath,
+                'file_type' => $fileType,
+                'file_link' => null,
             ]);
+            $filePaths[] = $filePath;
             $fileIds[] = $fileUpload->id;
         }
-    
-        // Update the timeline entry with the uploaded file IDs
-        $timeline->update([
-            'timeline_uploads_ids' => json_encode($fileIds),
-        ]);
-    
-        return response()->json([
-            'message' => 'Timeline uploaded successfully!',
-            'timeline' => $timeline,
-            'uploads' => $filePaths,
-        ], 201);
     }
+
+    // Handle external media link
+    if ($request->uploadLink) {
+        $fileUpload = TimelineUpload::create([
+            'timeline_id' => $timeline->id,
+            'file_path' => null,
+            'file_type' => null,
+            'file_link' => $request->uploadLink,
+        ]);
+        $fileIds[] = $fileUpload->id;
+    }
+
+    // Update file IDs
+    $timeline->update([
+        'timeline_uploads_ids' => json_encode($fileIds),
+    ]);
+
+    return response()->json([
+        'message' => 'Timeline uploaded successfully!',
+        'timeline' => $timeline,
+        'uploads' => $filePaths,
+    ], 201);
+}
+
     
 
     public function getTimelineData()
     {
         // Retrieve timelines with associated uploads and user
-        $timelines = Timeline::with(['timelineUploads', 'user'])->get();
+       $timelines = Timeline::with(['timelineUploads', 'user'])
+    ->orderBy('created_at', 'desc')
+    ->get();
+
         
         foreach ($timelines as $timeline) {
             // Calculate the total likes count for each timeline
@@ -255,34 +296,71 @@ public function fetchComments(Request $request)
     return response()->json(['comments' => $comments]);
 }
 
+public function updateTimeline(Request $request, $id)
+{
+    // Find the timeline post by its ID
+    $timeline = Timeline::find($id);
 
-         
-    public function updateTimeline(Request $request, $id)
-    {
-        // Find the timeline post by its ID
-        $timeline = Timeline::find($id);
-
-        // Check if the timeline exists
-        if (!$timeline) {
-            return response()->json(['error' => 'Timeline not found'], 404);
-        }
-
-        // Validate the incoming data
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-        ]);
-
-        // Update the timeline's title and description
-        $timeline->title = $validatedData['title'];
-        $timeline->description = $validatedData['description'];
-
-        // Save the changes to the database
-        $timeline->save();
-
-        // Return a success response
-        return response()->json(['success' => true, 'timeline' => $timeline]);
+    // Check if the timeline exists
+    if (!$timeline) {
+        return response()->json(['error' => 'Timeline not found'], 404);
     }
+
+    // Validate the incoming data
+    $validatedData = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+    ]);
+
+    // Process the title to retain emojis and strip unwanted tags
+    $title = $validatedData['title'];
+    if ($title) {
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        @$dom->loadHTML(mb_convert_encoding('<div>' . $title . '</div>', 'HTML-ENTITIES', 'UTF-8'), 
+                        LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $title = strip_tags($dom->saveHTML());
+        $title = str_replace(["\n", "\r"], '', $title);
+    }
+
+    // Process the description to store emojis and base64 image uploads
+    $description = $validatedData['description'];
+    $dom = new \DOMDocument('1.0', 'UTF-8');
+    @$dom->loadHTML(mb_convert_encoding($description, 'HTML-ENTITIES', 'UTF-8'), 
+                    LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+    $images = $dom->getElementsByTagName('img');
+    foreach ($images as $image) {
+        $src = $image->getAttribute('src');
+
+        if (preg_match('/^data:image\/(\w+);base64,/', $src, $type)) {
+            $data = substr($src, strpos($src, ',') + 1);
+            $data = base64_decode($data);
+            $extension = $type[1];
+            $fileName = uniqid() . '.' . $extension;
+            $uploadPath = public_path('uploads/timelines');
+
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            $filePath = $uploadPath . '/' . $fileName;
+            file_put_contents($filePath, $data);
+
+            $image->setAttribute('src', url('uploads/timelines/' . $fileName));
+        }
+    }
+
+    $description = $dom->saveHTML();
+
+    // Update timeline
+    $timeline->title = $title;
+    $timeline->description = $description;
+    $timeline->save();
+
+    // Return success response
+    return response()->json(['success' => true, 'timeline' => $timeline]);
+}
+
 
     public function deleteTimeline($id)
 {

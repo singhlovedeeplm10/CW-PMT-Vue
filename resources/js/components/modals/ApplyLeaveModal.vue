@@ -1,105 +1,51 @@
 <template>
-  <div
-    class="modal fade"
-    id="applyleavemodal"
-    tabindex="-1"
-    aria-labelledby="applyleavemodalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" id="applyleavemodal" tabindex="-1" aria-labelledby="applyleavemodalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content custom-modal">
         <div class="modal-header custom-header">
           <h5 class="modal-title" id="applyleavemodalLabel">Apply for Leave</h5>
-          <button
-            type="button"
-            class="close-modal"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          >&times;</button>
+          <button type="button" class="close-modal" data-bs-dismiss="modal" aria-label="Close">&times;</button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="validateAndSubmit">
             <div class="mb-3">
-              <SelectInput
-                :options="leaveTypeOptions"
-                v-model="form.type_of_leave"
-                label="Type"
-                id="leaveType"
-                name="type_of_leave"
-                :error="leaveTypeError"
-                @change="handleLeaveTypeChange"
-              />
+              <SelectInput :options="leaveTypeOptions" v-model="form.type_of_leave" label="Type" id="leaveType"
+                name="type_of_leave" :error="leaveTypeError" @change="handleLeaveTypeChange" />
               <!-- <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span> -->
             </div>
 
-            
+
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
-                <DateInput
-                  v-model="form.start_date"
-                  label="Start Date"
-                  id="startDateHalfDay"
-                  name="start_date"
-                  :minDate="minDate"
-                  :error="startDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.start_date" label="Start Date" id="startDateHalfDay" name="start_date"
+                  :minDate="minDate" :error="startDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
             <!-- Dynamic Fields for Half Day -->
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <SelectInput
-                :options="halfDayOptions"
-                v-model="form.half_day"
-                label="Select Half"
-                id="halfDayOption"
-                name="half_day"
-                :error="halfDayError"
-              />
+              <SelectInput :options="halfDayOptions" v-model="form.half_day" label="Select Half" id="halfDayOption"
+                name="half_day" :error="halfDayError" />
               <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
             </div>
 
             <!-- Dynamic Fields for Short Leave -->
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
               <div class="col">
-                <DateInput
-                  v-model="form.start_date"
-                  label="Start Date"
-                  id="startDateShort"
-                  name="start_date"
-                  :minDate="minDate"
-                  :error="startDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.start_date" label="Start Date" id="startDateShort" name="start_date"
+                  :minDate="minDate" :error="startDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
               <div class="col">
-                <TimeInput
-                  v-model="form.start_time"
-                  label="Start Time"
-                  id="startTimeShort"
-                  name="start_time"
-                  :minTime="'09:00'"
-                  :maxTime="'18:00'"
-                  :error="startTimeError"
-                  @change="validateShortLeaveTime"
-                />
+                <TimeInput v-model="form.start_time" label="Start Time" id="startTimeShort" name="start_time"
+                  :minTime="'09:00'" :maxTime="'18:00'" :error="startTimeError" @change="validateShortLeaveTime" />
                 <!-- <span v-if="startTimeError" class="text-danger">{{ startTimeError }}</span> -->
               </div>
               <div class="col">
-                <TimeInput
-                  v-model="form.end_time"
-                  label="End Time"
-                  id="endTimeShort"
-                  name="end_time"
-                  :minTime="'09:00'"
-                  :maxTime="'18:00'"
-                  :error="endTimeError"
-                  @change="validateShortLeaveTime"
-                />
+                <TimeInput v-model="form.end_time" label="End Time" id="endTimeShort" name="end_time" :minTime="'09:00'"
+                  :maxTime="'18:00'" :error="endTimeError" @change="validateShortLeaveTime" />
                 <!-- <span v-if="endTimeError" class="text-danger">{{ endTimeError }}</span> -->
               </div>
             </div>
@@ -107,93 +53,62 @@
             <!-- Dynamic Fields for Full Day -->
             <div v-if="form.type_of_leave === 'Full Day Leave'" class="row mb-3">
               <div class="col">
-                <DateInput
-                  v-model="form.start_date"
-                  label="Start Date"
-                  id="fromDate"
-                  name="start_date"
-                  :minDate="minDate"
-                  :error="startDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.start_date" label="Start Date" id="fromDate" name="start_date"
+                  :minDate="minDate" :error="startDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
-                <DateInput
-                  v-model="form.end_date"
-                  label="End Date"
-                  id="toDate"
-                  name="end_date"
-                  :minDate="form.start_date"
-                  :error="endDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date"
+                  :minDate="form.start_date" :error="endDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
             <!-- Dynamic Fields for Work From Home -->
-            <div v-if="form.type_of_leave === 'Work From Home'" class="row mb-3">
+            <div v-if="form.type_of_leave === 'Work From Home Full Day'" class="row mb-3">
               <div class="col">
-                <DateInput
-                  v-model="form.start_date"
-                  label="Start Date"
-                  id="fromDate"
-                  name="start_date"
-                  :minDate="minDate"
-                  :error="startDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.start_date" label="Start Date" id="fromDate" name="start_date"
+                  :minDate="minDate" :error="startDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
-                <DateInput
-                  v-model="form.end_date"
-                  label="End Date"
-                  id="toDate"
-                  name="end_date"
-                  :minDate="form.start_date"
-                  :error="endDateError"
-                  @change="validateStartAndEndDate"
-                />
+                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date"
+                  :minDate="form.start_date" :error="endDateError" @change="validateStartAndEndDate" />
                 <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
 
+            <div v-if="form.type_of_leave === 'Work From Home Half Day'" class="row mb-3">
+              <div class="col">
+                <DateInput v-model="form.start_date" label="Start Date" id="startDateHalfDay" name="start_date"
+                  :minDate="minDate" :error="startDateError" @change="validateStartAndEndDate" />
+                <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
+              </div>
+            </div>
+            <!-- Dynamic Fields for Half Day -->
+            <div v-if="form.type_of_leave === 'Work From Home Half Day'" class="mb-3">
+              <SelectInput :options="halfDayOptions" v-model="form.half_day" label="Select Half" id="halfDayOption"
+                name="half_day" :error="halfDayError" />
+              <!-- <span v-if="halfDayError" class="text-danger">{{ halfDayError }}</span> -->
+            </div>
+
             <!-- Reason Field with TextArea -->
             <div class="mb-3">
-              <TextArea
-                v-model="form.reason"
-                label="Reason"
-                id="reason"
-                placeholder="Enter your reason for leave"
-                :rows="3"
-                :isRequired="true"
-              />
+              <TextArea v-model="form.reason" label="Reason" id="reason" placeholder="Enter your reason for leave"
+                :rows="3" :isRequired="true" />
               <span v-if="reasonError" class="text-danger">{{ reasonError }}</span>
             </div>
 
             <!-- Contact During Leave Field -->
             <div class="mb-3">
-              <InputField
-                v-model="form.contact_during_leave"
-                label="Contact During Leave"
-                id="contact"
-                placeholder="Enter contact details"
-                :isRequired="true"
-              />
+              <InputField v-model="form.contact_during_leave" label="Contact During Leave" id="contact"
+                placeholder="Enter contact details" :isRequired="true" />
               <span v-if="contactError" class="text-danger">{{ contactError }}</span>
             </div>
 
             <div class="modal-footer d-flex justify-content-end gap-2">
-  <ButtonComponent
-    :label="'Apply'"
-    :buttonClass="'btn-success'"
-    :isDisabled="loading"
-    :isLoading="loading"
-    :loadingText="'Applying...'"
-    @click="validateAndSubmit"
-  />
-</div>
+              <ButtonComponent :label="'Apply'" :buttonClass="'btn-success'" :isDisabled="loading" :isLoading="loading"
+                :loadingText="'Applying...'" @click="validateAndSubmit" />
+            </div>
 
           </form>
         </div>
@@ -240,7 +155,8 @@ export default {
         { label: "Full Day Leave", value: "Full Day Leave" },
         { label: "Half Day Leave", value: "Half Day Leave" },
         { label: "Short Leave", value: "Short Leave" },
-        { label: "Work From Home", value: "Work From Home" },
+        { label: "Work From Home Full Day", value: "Work From Home Full Day" },
+        { label: "Work From Home Half Day", value: "Work From Home Half Day" },
       ],
       halfDayOptions: [
         { label: "Select Half", value: "" },
@@ -318,7 +234,7 @@ export default {
         ? null
         : "Contact during leave is required.";
 
-      if (this.form.type_of_leave === "Half Day Leave") {
+      if (this.form.type_of_leave === "Half Day Leave" || this.form.type_of_leave === "Work From Home Half Day") {
         this.halfDayError = this.form.half_day
           ? null
           : "Please select which half of the day.";
@@ -333,7 +249,7 @@ export default {
           : "End time is required.";
       }
 
-      if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home") {
+      if (this.form.type_of_leave === "Full Day Leave" || this.form.type_of_leave === "Work From Home Full Day") {
         this.endDateError = this.form.end_date ? null : "End date is required.";
       }
 
@@ -421,18 +337,20 @@ export default {
 </script>
 
 
-  
+
 <style scoped>
-.col{
+.col {
   margin-bottom: -16px;
 }
-.close-modal{
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-  }
+
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
 /* Modal CSS */
 .custom-modal {
   border-radius: 10px;

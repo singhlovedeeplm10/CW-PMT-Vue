@@ -2,16 +2,16 @@
   <master-component>
     <div class="timeline-container">
       <h2 class="timeline-heading">Activity Timeline</h2>
-       <!-- Loader Spinner -->
-    <div v-if="loading" class="loader-container">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+      <!-- Loader Spinner -->
+      <div v-if="loading" class="loader-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
-    </div>
-     <!-- Message when there is no data -->
-     <div v-if="!loading && events.length === 0" class="no-data-message">
-      <p>No activity timelines available to show.</p>
-    </div>
+      <!-- Message when there is no data -->
+      <div v-if="!loading && events.length === 0" class="no-data-message">
+        <p>No activity timelines available to show.</p>
+      </div>
       <div class="timeline">
         <div v-for="(event, index) in events" :key="index" class="timeline-item">
           <div class="timeline-icon" :class="event.type">
@@ -22,9 +22,10 @@
           <div class="timeline-content">
             <div class="timeline-date">{{ formatDate(event.date) }}</div>
             <div class="timeline-card">
-              <h3 class="timeline-head">{{ event.timeline }}</h3>
-              <h2 class="timeline-title">{{ event.title }}</h2>
-              <p class="timeline-description">{{ event.description }}</p>
+              <!-- <h3 class="timeline-head">{{ event.timeline }}</h3> -->
+              <h2 class="timeline-title" v-html="event.title"></h2>
+              <p class="timeline-description" v-html="event.description"></p>
+
 
               <!-- External Link Display (YouTube Thumbnails) -->
               <template v-if="event.externalLinks && event.externalLinks.length">
@@ -43,86 +44,69 @@
               <!-- Local Media Display -->
               <template v-if="event.type === 'photos'">
                 <div class="photo-gallery">
-                  <img
-                    v-for="(photo, index) in event.photos"
-                    :key="index"
-                    :src="photo"
-                    alt="Photo"
-                    @click="viewImage(photo)"
-                    class="clickable-image"
-                  />
+                  <img v-for="(photo, index) in event.photos" :key="index" :src="photo" alt="Photo"
+                    @click="viewImage(photo)" class="clickable-image" />
                 </div>
               </template>
 
               <!-- Video or Other Content -->
               <template v-else-if="event.type === 'video'">
                 <div class="video-wrapper">
-                  <video
-                    v-if="event.videoUrl"
-                    :src="event.videoUrl"
-                    controls
-                    class="video-player"
-                  ></video>
+                  <video v-if="event.videoUrl" :src="event.videoUrl" controls class="video-player"></video>
                   <p v-else>No video available</p>
                 </div>
               </template>
-
+              <!-- <h3 class="timeline-head">{{ event.timeline }}</h3> -->
               <!-- Like and Comment Icons -->
               <div class="post-actions">
-                <i
-  class="fas fa-thumbs-up action-icon"
-  :class="{'liked': event.likedByUser}"
-  @click="likePost(index)"
-></i>
-   <!-- Likes Count -->
-   <span class="likes-count" @click="openLikesModal(event)">
-      {{ event.likes_count }}
-    </span>
+                <i class="fas fa-thumbs-up action-icon" :class="{ 'liked': event.likedByUser }"
+                  @click="likePost(index)"></i>
+                <!-- Likes Count -->
+                <span class="likes-count" @click="openLikesModal(event)">
+                  {{ event.likes_count }}
+                </span>
 
-<!-- Modal -->
-<div v-if="isLikesModalOpen" class="modal-overlay-likes" @click.self="closeLikesModal">
-  <div class="modal-content-likes">
-    <h5 class="modal-title">Liked by</h5>
-    <ul class="user-list">
-      <li v-for="user in selectedLikedUsers" :key="user.name" class="user-item">
-        <!-- User profile image in a circular format -->
-        <img v-if="user.user_image_url" :src="user.user_image_url" alt="User Image" class="user-image">
-        <span class="user-name">{{ user.name }}</span>
-      </li>
-    </ul>
-    <button class="close-button-likes" @click="closeLikesModal">Close</button>
-  </div>
-</div>
+                <!-- Modal -->
+                <div v-if="isLikesModalOpen" class="modal-overlay-likes" @click.self="closeLikesModal">
+                  <div class="modal-content-likes">
+                    <h5 class="modal-title">Liked by</h5>
+                    <ul class="user-list">
+                      <li v-for="user in selectedLikedUsers" :key="user.name" class="user-item">
+                        <!-- User profile image in a circular format -->
+                        <img v-if="user.user_image_url" :src="user.user_image_url" alt="User Image" class="user-image">
+                        <span class="user-name">{{ user.name }}</span>
+                      </li>
+                    </ul>
+                    <button class="close-button-likes" @click="closeLikesModal">Close</button>
+                  </div>
+                </div>
 
-<i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
+                <i class="fas fa-comment action-icon" @click="commentOnPost(index)"></i>
 
 
                 <!-- Delete Button -->
-                <button v-if="userRole === 'Admin'" class="delete-button top-right" @click="deleteTimeline(event.timeline_id, index)">
-  <i class="fas fa-trash"></i>
-</button>
+                <button v-if="userRole === 'Admin'" class="delete-button top-right"
+                  @click="deleteTimeline(event.timeline_id, index)">
+                  <i class="fas fa-trash"></i>
+                </button>
 
 
-<!-- Comment Input Section -->
-<div v-if="event.showCommentInput" class="comment-input-container">
-  <textarea
-    v-model="event.newComment"
-    class="comment-input full-width-textarea"
-    placeholder="Add a comment..."
-    rows="3"
-  ></textarea>
-  <button @click="postComment(index)" class="post-button">Post</button>
-  <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
-    <div class="comment-author-info">
-      <img v-if="comment.user_image" :src="comment.user_image" alt="User Image" class="user-image">
-      <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} </strong>
-    </div>
-    <p class="comment-text">
-      <span v-if="comment.user_name">{{ comment.comment }}</span>
-      <span v-else>{{ comment.comment }}</span>
-    </p>
-  </div>
-</div>
+                <!-- Comment Input Section -->
+                <div v-if="event.showCommentInput" class="comment-input-container">
+                  <textarea v-model="event.newComment" class="comment-input full-width-textarea"
+                    placeholder="Add a comment..." rows="3"></textarea>
+                  <button @click="postComment(index)" class="post-button">Post</button>
+                  <div v-for="(comment, idx) in event.comments || []" :key="idx" class="comment">
+                    <div class="comment-author-info">
+                      <img v-if="comment.user_image" :src="comment.user_image" alt="User Image" class="user-image">
+                      <strong v-if="comment.user_name" class="comment-author">{{ comment.user_name }} </strong>
+                    </div>
+                    <p class="comment-text">
+                      <span v-if="comment.user_name">{{ comment.comment }}</span>
+                      <span v-else>{{ comment.comment }}</span>
+                    </p>
+                  </div>
+                </div>
 
 
                 <button v-if="userRole === 'Admin'" @click="editPost(event, index)" class="edit-button top-right">
@@ -131,12 +115,8 @@
 
 
 
-                <EditPostModal
-                  :show="showEditModal"
-                  :editData="editData"
-                  @save-edit="savePostEdit"
-                  @close="closeEditModal"
-                />
+                <EditPostModal :show="showEditModal" :editData="editData" @save-edit="savePostEdit"
+                  @close="closeEditModal" />
               </div>
             </div>
           </div>
@@ -149,16 +129,8 @@
           <button class="close-btn" @click="closeVideoModal">
             <i class="fas fa-times"></i>
           </button>
-          <iframe
-            v-if="videoUrl"
-            :src="videoUrl"
-            frameborder="0"
-            allow="autoplay; encrypted-media"
-            allowfullscreen
-            width="100%"
-            height="315px"
-            class="video-iframe"
-          ></iframe>
+          <iframe v-if="videoUrl" :src="videoUrl" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
+            width="100%" height="315px" class="video-iframe"></iframe>
         </div>
       </div>
 
@@ -220,9 +192,9 @@ export default {
       userRole: null,  // Add the userRole property
       isVideoModalVisible: false,
       videoUrl: null,  // Holds the YouTube video URL
-      isLikesModalOpen: false, 
-      selectedLikedUsers: [], 
-      loading: true,  
+      isLikesModalOpen: false,
+      selectedLikedUsers: [],
+      loading: true,
     };
   },
   created() {
@@ -260,35 +232,35 @@ export default {
         });
 
         this.events = response.data.map((timeline) => ({
-  date: timeline.created_at,
-  type: timeline.timeline_uploads.some((upload) => upload.file_type === 'video') ? 'video' : 'photos',
-  timeline: `${timeline.user ? timeline.user.name : 'Unknown User'} shared a new post`,
-  title: timeline.title,
-  description: timeline.description,
-  photos: timeline.timeline_uploads.filter((upload) => upload.file_type === 'image' && upload.file_path)
-    .map((upload) => `/storage/${upload.file_path}`) || [],
-  videoUrl: timeline.timeline_uploads.find((upload) => upload.file_type === 'video' && upload.file_path)
-    ? `/storage/${timeline.timeline_uploads.find((upload) => upload.file_type === 'video').file_path}` 
-    : null,
-  externalLinks: timeline.timeline_uploads
-    .filter((upload) => upload.file_link)
-    .map((upload) => ({
-      url: upload.file_link,
-      thumbnail: upload.thumbnail || null,
-      icon: upload.icon || 'fas fa-link',
-    })) || [],
-  likes_count: timeline.likes_count || 0,
-  liked_users: timeline.liked_users || [], // Add liked_users
-  timeline_id: timeline.id,
-  timeline_uploads_id: timeline.timeline_uploads[0]?.id || null,
-  likedByUser: timeline.likedByUser || false,
-  comments: [],
-}));
-this.loading = false;
+          date: timeline.created_at,
+          type: timeline.timeline_uploads.some((upload) => upload.file_type === 'video') ? 'video' : 'photos',
+          timeline: `Posted by ${timeline.user ? timeline.user.name : 'Unknown User'}`,
+          title: timeline.title,
+          description: timeline.description,
+          photos: timeline.timeline_uploads.filter((upload) => upload.file_type === 'image' && upload.file_path)
+            .map((upload) => `/storage/${upload.file_path}`) || [],
+          videoUrl: timeline.timeline_uploads.find((upload) => upload.file_type === 'video' && upload.file_path)
+            ? `/storage/${timeline.timeline_uploads.find((upload) => upload.file_type === 'video').file_path}`
+            : null,
+          externalLinks: timeline.timeline_uploads
+            .filter((upload) => upload.file_link)
+            .map((upload) => ({
+              url: upload.file_link,
+              thumbnail: upload.thumbnail || null,
+              icon: upload.icon || 'fas fa-link',
+            })) || [],
+          likes_count: timeline.likes_count || 0,
+          liked_users: timeline.liked_users || [], // Add liked_users
+          timeline_id: timeline.id,
+          timeline_uploads_id: timeline.timeline_uploads[0]?.id || null,
+          likedByUser: timeline.likedByUser || false,
+          comments: [],
+        }));
+        this.loading = false;
 
       } catch (error) {
         console.error('There was an error fetching the timeline data:', error);
-        this.loading = false; 
+        this.loading = false;
       }
     },
 
@@ -339,25 +311,25 @@ this.loading = false;
     },
 
     closeImage() {
-    this.selectedImage = null;
-    this.images = [];
-  },
+      this.selectedImage = null;
+      this.images = [];
+    },
 
     // Navigate to the next image
     nextImage() {
-    if (this.currentImageIndex < this.images.length - 1) {
-      this.currentImageIndex++;
-      this.selectedImage = this.images[this.currentImageIndex];
-    }
-  },
+      if (this.currentImageIndex < this.images.length - 1) {
+        this.currentImageIndex++;
+        this.selectedImage = this.images[this.currentImageIndex];
+      }
+    },
 
-  // Navigate to the previous image
-  prevImage() {
-    if (this.currentImageIndex > 0) {
-      this.currentImageIndex--;
-      this.selectedImage = this.images[this.currentImageIndex];
-    }
-  },
+    // Navigate to the previous image
+    prevImage() {
+      if (this.currentImageIndex > 0) {
+        this.currentImageIndex--;
+        this.selectedImage = this.images[this.currentImageIndex];
+      }
+    },
 
 
     async likePost(index) {
@@ -481,7 +453,7 @@ this.loading = false;
       const updatedEvent = this.editData;
 
       try {
-        const response = await axios.put(`/api/timelines/${this.events[eventIndex].timeline_id}`, {
+        const response = await axios.put(`/api/update-timelines/${this.events[eventIndex].timeline_id}`, {
           title: updatedEvent.title,
           description: updatedEvent.description
         }, {
@@ -501,47 +473,49 @@ this.loading = false;
       }
     },
     async deleteTimeline(timelineId, index) {
-    if (confirm('Are you sure you want to delete this timeline?')) {
-      try {
-        // Send delete request to the backend
-        const response = await axios.delete(`/api/delete/timelines/${timelineId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+      if (confirm('Are you sure you want to delete this timeline?')) {
+        try {
+          // Send delete request to the backend
+          const response = await axios.delete(`/api/delete/timelines/${timelineId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
 
-        if (response.data.success) {
-          // Remove the timeline from the events array
-          this.events.splice(index, 1);
-          alert('Timeline deleted successfully');
-        } else {
-          alert('Error deleting timeline');
+          if (response.data.success) {
+            // Remove the timeline from the events array
+            this.events.splice(index, 1);
+            alert('Timeline deleted successfully');
+          } else {
+            alert('Error deleting timeline');
+          }
+        } catch (error) {
+          console.error('Error deleting timeline:', error);
+          alert('An error occurred while deleting the timeline');
         }
-      } catch (error) {
-        console.error('Error deleting timeline:', error);
-        alert('An error occurred while deleting the timeline');
       }
-    }
-  },
-    
+    },
+
   },
 };
 </script>
 
-  <style scoped>
-  .no-data-message {
+<style scoped>
+.no-data-message {
   text-align: center;
   margin: 20px;
   font-size: 1.2em;
   color: #666;
 }
-  .loader-container {
+
+.loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100px;
 }
-  .video-modal-overlay {
+
+.video-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -568,6 +542,7 @@ this.loading = false;
   height: 500px;
   border-radius: 8px;
 }
+
 .comment-input-container {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
@@ -577,6 +552,7 @@ this.loading = false;
   margin-top: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 .comment-input-container h4 {
   margin-bottom: 10px;
   color: #2c3e50;
@@ -599,14 +575,17 @@ this.loading = false;
 }
 
 .full-width-textarea {
-  width: 100%; /* Make the textarea full width */
-  resize: none; /* Disable resizing if needed */
+  width: 100%;
+  /* Make the textarea full width */
+  resize: none;
+  /* Disable resizing if needed */
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
   box-sizing: border-box;
 }
+
 .post-button {
   margin-top: 5px;
   padding: 5px 10px;
@@ -620,13 +599,15 @@ this.loading = false;
 .post-button:hover {
   background-color: #0056b3;
 }
-  /* Like and Comment Icons */
-  .post-actions {
+
+/* Like and Comment Icons */
+.post-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 10px;
 }
+
 .action-icon {
   font-size: 20px;
   color: #7f8c8d;
@@ -661,10 +642,12 @@ this.loading = false;
 .comment:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 .comment strong {
   color: #3498db;
   font-weight: 600;
 }
+
 .comments-list {
   margin-top: 15px;
 }
@@ -672,7 +655,7 @@ this.loading = false;
 .comment:not(:last-child) {
   margin-bottom: 10px;
 }
-  
+
 /* Image Viewer Modal Styles */
 .image-viewer {
   position: fixed;
@@ -686,6 +669,7 @@ this.loading = false;
   align-items: center;
   z-index: 1000;
 }
+
 .image-viewer[style*="display: flex"] {
   opacity: 1;
   visibility: visible;
@@ -703,6 +687,7 @@ this.loading = false;
   justify-content: center;
   align-items: center;
 }
+
 .enlarged-image {
   max-width: 100%;
   max-height: 70vh;
@@ -714,8 +699,10 @@ this.loading = false;
   bottom: 10px;
   width: 100%;
   display: flex;
-  justify-content: center; /* Center the buttons */
-  gap: 15px; /* Space between buttons */
+  justify-content: center;
+  /* Center the buttons */
+  gap: 15px;
+  /* Space between buttons */
 }
 
 .prev-btn,
@@ -752,239 +739,285 @@ this.loading = false;
 .close-btn:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
-  
-  .clickable-image {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-  }
-  
-  .clickable-image:hover {
-    transform: scale(1.05);
-  }
-  .timeline-container {
-    max-width: 100%; /* Reduced max width */
-    margin: 30px auto;
-    padding: 20px; /* Reduced padding */
-  }
-  
-  .timeline-heading {
-    text-align: center;
-    font-size: 24px; /* Smaller heading font size */
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 30px; /* Reduced margin */
-  }
-  
-  .timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Reduced gap */
-  }
-  
-  /* Timeline Item */
-  .timeline-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px; /* Reduced gap */
-    position: relative;
-  }
-  
-  .timeline-icon {
-    width: 50px; /* Reduced size */
-    height: 50px; /* Reduced size */
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 18px; /* Smaller icon font size */
-    font-weight: bold;
-    flex-shrink: 0;
-  }
-  
-  h3 {
-    font-size: 1.4rem; /* Smaller title font size */
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .timeline-icon.email {
-    background-color: #3498db;
-  }
-  
-  .timeline-icon.comment {
-    background-color: #e67e22;
-  }
-  
-  .timeline-icon.photos {
-    background-color: #9b59b6;
-  }
-  
-  .timeline-icon.video {
-    background-color: #2ecc71;
-  }
-  
-  /* Timeline Content */
-  .timeline-content {
-    flex-grow: 1;
-    background: #fff;
-    padding: 20px; /* Reduced padding */
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  }
-  
-  .timeline-date {
-    font-size: 14px; /* Smaller date font size */
-    color: #7f8c8d;
-    margin-bottom: 10px; /* Reduced margin */
-    font-weight: 500;
-  }
-  
-  .timeline-card {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-  
-  .timeline-title {
-    font-size: 1.3rem; /* Reduced title font size */
-    font-weight: 700;
-    color: #34495e;
-    margin-bottom: 10px; /* Reduced margin */
-  }
-  .timeline-head {
-    font-size: 1.3rem; /* Reduced title font size */
-    font-weight: 700;
-    color: #34495e;
-    margin-bottom: 10px; /* Reduced margin */
-  }
-  
-  .timeline-description {
-    font-size: 0.9rem; /* Reduced description font size */
-    color: darkcyan;
-    margin-bottom: 15px; /* Reduced margin */
-    line-height: 1.4;
-  }
-  .timeline-title {
-    font-size: 1.3rem; /* Reduced title font size */
-    font-weight: 700;
-    color: #34495e;
-    margin-bottom: 10px; /* Reduced margin */
-  }
-  
-  /* Actions & Buttons */
-  .timeline-actions {
-    display: flex;
-    gap: 10px; /* Reduced gap */
-  }
-  
-  .btn {
-    padding: 8px 16px; /* Reduced padding */
-    font-size: 14px; /* Smaller font size */
-    font-weight: 500;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-  }
-  
-  .btn-primary {
-    background-color: #3498db;
-    color: #fff;
-  }
-  
-  .btn-primary:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-  }
-  
-  .btn-danger {
-    background-color: #e74c3c;
-    color: #fff;
-  }
-  
-  .btn-danger:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-  }
-  
-  /* Photo Gallery */
-  .photo-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Create a flexible grid layout */
-  gap: 15px; /* Space between images */
-  margin-top: 20px; /* Top margin for better spacing */
+
+.clickable-image {
+  cursor: pointer;
   transition: transform 0.3s ease;
 }
-  
-.photo-gallery img {
-  width: 100%; /* Ensure the images take the full width of their container */
-  height: 100%; /* Ensure the images take the full height of their container */
-  border-radius: 10px; /* Rounded corners for images */
-  object-fit: cover; /* Make sure the image fills the space without stretching */
-  transition: transform 0.3s ease; /* Smooth transition for hover effect */
+
+.clickable-image:hover {
+  transform: scale(1.05);
 }
-  
-.photo-gallery img:hover {
-  transform: scale(1.1); /* Slight zoom effect when hovering over the image */
+
+.timeline-container {
+  max-width: 100%;
+  /* Reduced max width */
+  margin: 30px auto;
+  padding: 20px;
+  /* Reduced padding */
 }
-  
-  .video-wrapper {
+
+.timeline-heading {
+  text-align: center;
+  font-size: 24px;
+  /* Smaller heading font size */
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  /* Reduced margin */
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Reduced gap */
+}
+
+/* Timeline Item */
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  /* Reduced gap */
   position: relative;
-  width: 450px; /* Fixed width */
-  height: 350px; /* Fixed height (16:9 aspect ratio) */
-  
+}
+
+.timeline-icon {
+  width: 50px;
+  /* Reduced size */
+  height: 50px;
+  /* Reduced size */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  /* Smaller icon font size */
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.timeline-icon.email {
+  background-color: #3498db;
+}
+
+.timeline-icon.comment {
+  background-color: #e67e22;
+}
+
+.timeline-icon.photos {
+  background-color: #9b59b6;
+}
+
+.timeline-icon.video {
+  background-color: #2ecc71;
+}
+
+/* Timeline Content */
+.timeline-content {
+  flex-grow: 1;
+  background: #fff;
+  padding: 20px;
+  /* Reduced padding */
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.timeline-date {
+  font-size: 14px;
+  /* Smaller date font size */
+  color: #7f8c8d;
+  margin-bottom: 10px;
+  /* Reduced margin */
+  font-weight: 500;
+}
+
+.timeline-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.timeline-title {
+  font-size: 1.3rem;
+  /* Reduced title font size */
+  font-weight: 700;
+  color: #34495e;
+  margin-bottom: 10px;
+  /* Reduced margin */
+}
+
+.timeline-head {
+  font-size: 14px;
+  font-weight: 700;
+  color: #667d95;
+  font-style: italic;
+  text-align: left;
+  margin: 0;
+  /* remove auto-centering unless needed for layout */
+}
+
+
+.timeline-description {
+  font-size: 0.9rem;
+  /* Reduced description font size */
+  color: darkcyan;
+  margin-bottom: 15px;
+  /* Reduced margin */
+  line-height: 1.4;
+}
+
+.timeline-title {
+  font-size: 1.3rem;
+  /* Reduced title font size */
+  font-weight: 700;
+  color: #34495e;
+  margin-bottom: 10px;
+  /* Reduced margin */
+}
+
+/* Actions & Buttons */
+.timeline-actions {
+  display: flex;
+  gap: 10px;
+  /* Reduced gap */
+}
+
+.btn {
+  padding: 8px 16px;
+  /* Reduced padding */
+  font-size: 14px;
+  /* Smaller font size */
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Photo Gallery */
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  /* Create a flexible grid layout */
+  gap: 15px;
+  /* Space between images */
+  margin-top: 20px;
+  /* Top margin for better spacing */
+  transition: transform 0.3s ease;
+}
+
+.photo-gallery img {
+  width: 100%;
+  /* Ensure the images take the full width of their container */
+  height: 100%;
+  /* Ensure the images take the full height of their container */
+  border-radius: 10px;
+  /* Rounded corners for images */
+  object-fit: cover;
+  /* Make sure the image fills the space without stretching */
+  transition: transform 0.3s ease;
+  /* Smooth transition for hover effect */
+}
+
+.photo-gallery img:hover {
+  transform: scale(1.1);
+  /* Slight zoom effect when hovering over the image */
+}
+
+.video-wrapper {
+  position: relative;
+  width: 450px;
+  /* Fixed width */
+  height: 350px;
+  /* Fixed height (16:9 aspect ratio) */
+
 }
 
 .video-wrapper video {
   width: 100%;
-  height: 100%; /* Fill the wrapper */
+  height: 100%;
+  /* Fill the wrapper */
   border-radius: 8px;
-  object-fit: cover; /* Ensures the video covers the area */
+  object-fit: cover;
+  /* Ensures the video covers the area */
 }
 
-  
-  .video-wrapper iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .timeline-container {
+    padding: 15px;
+    /* Reduced padding */
   }
-  
-  /* Responsiveness */
-  @media (max-width: 768px) {
-    .timeline-container {
-      padding: 15px; /* Reduced padding */
-    }
-    .photo-gallery {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Fewer columns on smaller screens */
-    gap: 10px; /* Reduced gap between images on smaller screens */
-  }
-  .photo-gallery img {
-    border-radius: 8px; /* Smaller border radius for smaller screens */
-  }
-  
-    .timeline-item {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .timeline-icon {
-      margin-bottom: 10px;
-    }
-  
-    .timeline-content {
-      padding: 15px; /* Reduced padding */
-    }
-  }
-  @media (max-width: 480px) {
+
   .photo-gallery {
-    grid-template-columns: 1fr; /* Only one column on very small screens */
-    gap: 8px; /* Further reduce the gap between images */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    /* Fewer columns on smaller screens */
+    gap: 10px;
+    /* Reduced gap between images on smaller screens */
+  }
+
+  .photo-gallery img {
+    border-radius: 8px;
+    /* Smaller border radius for smaller screens */
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .timeline-icon {
+    margin-bottom: 10px;
+  }
+
+  .timeline-content {
+    padding: 15px;
+    /* Reduced padding */
   }
 }
+
+@media (max-width: 480px) {
+  .photo-gallery {
+    grid-template-columns: 1fr;
+    /* Only one column on very small screens */
+    gap: 8px;
+    /* Further reduce the gap between images */
+  }
+}
+
 .thumbnail {
   width: 450px;
   height: 350px;
@@ -1010,6 +1043,7 @@ this.loading = false;
   margin-top: 5px;
   font-size: 0.9rem;
 }
+
 .thumbnail-link {
   position: relative;
   display: inline-block;
@@ -1030,41 +1064,53 @@ this.loading = false;
   color: white;
   text-shadow: 0 0 5px black;
 }
+
 .edit-button {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 16px;
   color: #666;
-  position: absolute; /* Absolute positioning for flexibility */
+  position: absolute;
+  /* Absolute positioning for flexibility */
 }
 
 .edit-button.top-right {
-  top: 10px; /* Adjust as needed */
-  right: 20px; /* Adjust as needed */
+  top: 10px;
+  /* Adjust as needed */
+  right: 20px;
+  /* Adjust as needed */
 }
+
 .delete-button {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 16px;
   color: #666;
-  position: absolute; /* Absolute positioning for flexibility */
+  position: absolute;
+  /* Absolute positioning for flexibility */
 }
 
 .delete-button.top-right {
-  top: 10px; /* Adjust as needed */
-  right: 40px; /* Adjust as needed */
+  top: 10px;
+  /* Adjust as needed */
+  right: 40px;
+  /* Adjust as needed */
 }
+
 .liked {
-  color: blue; /* Change the color of the like icon when it's liked */
+  color: blue;
+  /* Change the color of the like icon when it's liked */
 }
+
 .likes-count {
   cursor: pointer;
   color: black;
   font-size: 16px;
   border-radius: 4px;
 }
+
 /* Modal Overlay */
 .modal-overlay-likes {
   position: fixed;
@@ -1182,11 +1228,10 @@ this.loading = false;
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
-
-  </style>
-  
+</style>

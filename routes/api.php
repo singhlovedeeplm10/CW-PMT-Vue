@@ -81,6 +81,9 @@ Route::post('/users/{id}/assign-role', [UserController::class, 'assignUserRole']
 Route::middleware('auth:sanctum')->get('/employee-time-logs', [UserController::class, 'getEmployeeTimeLogsById']);
 Route::get('/employee-detailed-time-logs', [UserController::class, 'getEmployeeAttendanceTimelogs']);
 Route::get('/employee-breaks', [UserController::class, 'getEmployeeBreaksTimelogs']);
+Route::middleware('auth:sanctum')->get('/time-logs/all', [UserController::class, 'getAllEmployeeTimeLogs']);
+Route::get('/employee-detailed-time-logs', [UserController::class, 'getEmployeeAttendanceTimelogs']);
+Route::get('/employee-breaks', [UserController::class, 'getEmployeeBreaksTimelogs']);
 
 
 // TECHNOLOGIES API ROUTE
@@ -129,7 +132,7 @@ Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class,
 Route::middleware('auth:sanctum')->post('/like-post', [TimelineController::class, 'likePost']);
 Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController::class, 'postComment']);
 Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
-Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
+Route::middleware('auth:sanctum')->put('/update-timelines/{id}', [TimelineController::class, 'updateTimeline']);
 Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);
 
 

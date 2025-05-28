@@ -36,7 +36,8 @@ class PolicyController extends Controller
 
 public function getPolicies()
 {
-    $policies = Policy::all();
+    // Fetch policies sorted alphabetically by title
+    $policies = Policy::orderBy('policy_title', 'asc')->get();
 
     // Add the full document URL to each policy
     foreach ($policies as $policy) {
@@ -45,6 +46,7 @@ public function getPolicies()
 
     return response()->json($policies);
 }
+
 
 public function deletePolicies($id)
     {

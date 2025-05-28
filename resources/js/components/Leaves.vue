@@ -5,11 +5,7 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="title_heading">My Leaves</h2>
         <!-- Button to open Apply Leave Modal -->
-        <ButtonComponent 
-          label="Apply Leave" 
-          buttonClass="add-leave-btn"
-          :clickEvent="openApplyLeaveModal"  
-        />
+        <ButtonComponent label="Apply Leave" buttonClass="add-leave-btn" :clickEvent="openApplyLeaveModal" />
       </div>
 
       <!-- Search Input Fields -->
@@ -27,29 +23,15 @@
           <tr>
             <th style="background: none;"></th>
             <th style="background: none;">
-              <input
-                type="text"
-                class="form-control" 
-                v-model="search.type"
-                placeholder="Search Type"
-                @input="fetchLeaves"
-              />
+              <input type="text" class="form-control" v-model="search.type" placeholder="Search Type"
+                @input="fetchLeaves" />
             </th>
             <th style="background: none;">
-              <input
-                type="text"
-                class="form-control"
-                v-model="search.duration"
-                placeholder="Search Duration"
-                @input="fetchLeaves"
-              />
+              <input type="text" class="form-control" v-model="search.duration" placeholder="Search Duration"
+                @input="fetchLeaves" />
             </th>
             <th style="background: none;">
-              <select
-                class="form-select"
-                v-model="search.status"
-                @change="fetchLeaves"
-              >
+              <select class="form-select" v-model="search.status" @change="fetchLeaves">
                 <option value="">All</option>
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
@@ -59,42 +41,31 @@
               </select>
             </th>
             <th style="background: none;">
-              <input
-                type="date"
-                class="form-control"
-                v-model="search.created_date"
-                @change="fetchLeaves"
-              />
+              <input type="date" class="form-control" v-model="search.created_date" @change="fetchLeaves" />
             </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(leave, index) in leaves" :key="leave.id">
-            <td>{{ leave.id }}</td>
+            <td>{{ index + 1 }}</td>
             <td v-html="leave.type"></td>
             <td>{{ leave.duration }}</td>
             <td>
-              <span
-                :class="{
-                  'text-warning': leave.status === 'Pending',
-                  'text-success': leave.status === 'Approved',
-                  'text-danger': leave.status === 'Disapproved',
-                  'text-secondary': leave.status === 'Hold',
-                  'text-danger': leave.status === 'Canceled'
-                }"
-              >
+              <span :class="{
+                'text-warning': leave.status === 'Pending',
+                'text-success': leave.status === 'Approved',
+                'text-danger': leave.status === 'Disapproved',
+                'text-secondary': leave.status === 'Hold',
+                'text-danger': leave.status === 'Canceled'
+              }">
                 {{ leave.status }}
               </span>
             </td>
             <td>{{ leave.created_at }}</td>
             <td>{{ leave.updated_by }}</td>
             <td>
-              <ButtonComponent 
-                label="" 
-                buttonClass="btn-info"
-                iconClass="fas fa-eye"
-                :clickEvent="() => viewLeaveDetails(leave)"
-              />
+              <ButtonComponent label="" buttonClass="btn-info" iconClass="fas fa-eye"
+                :clickEvent="() => viewLeaveDetails(leave)" />
             </td>
           </tr>
           <tr v-if="loading">
@@ -112,14 +83,10 @@
     </div>
     <!-- Include the ApplyLeaveModal component -->
     <apply-leave-modal @leaveApplied="fetchLeaves" ref="applyLeaveModal"></apply-leave-modal>
-    
+
     <!-- UpdateLeaveModal -->
-    <update-leave-modal 
-      v-if="showModal" 
-      :leave="selectedLeave" 
-      @leaveApplied="fetchLeaves"
-      ref="updateLeaveModal"
-    ></update-leave-modal>
+    <update-leave-modal v-if="showModal" :leave="selectedLeave" @leaveApplied="fetchLeaves"
+      ref="updateLeaveModal"></update-leave-modal>
   </master-component>
 </template>
 
@@ -141,7 +108,7 @@ export default {
   },
   data() {
     return {
-      loading: false, 
+      loading: false,
       leaves: [],
       search: {
         type: "",
@@ -149,8 +116,8 @@ export default {
         status: "",
         created_date: "",
       },
-      showModal: false,  
-      selectedLeave: null,  
+      showModal: false,
+      selectedLeave: null,
     };
   },
   methods: {
@@ -243,24 +210,28 @@ export default {
 
 
 <style scoped>
-h2{
+h2 {
   font-family: 'Poppins', sans-serif;
-    font-weight: 600;
+  font-weight: 600;
 }
-.add-leave-btn{
+
+.add-leave-btn {
   padding: 10px 16px;
   font-size: 1em;
-  background: linear-gradient(135deg, #007bff, #0056b3);background-color: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  background-color: #007bff;
   border: none;
   font-weight: bold;
   color: white;
   border-radius: 8px;
   transition: all 0.3s ease-in-out;
 }
-.add-leave-btn:hover{
+
+.add-leave-btn:hover {
   background: linear-gradient(135deg, #0056b3, #003d80);
   color: white;
 }
+
 .leaves-page {
   padding: 20px;
 }
@@ -269,6 +240,7 @@ h2{
 .leave-table td {
   vertical-align: middle;
 }
+
 .leave-table th {
   background: linear-gradient(10deg, #2a5298, #2a5298);
   color: white;
@@ -281,6 +253,7 @@ h2{
 .invalid-feedback {
   color: red;
 }
+
 .text-warning {
   color: yellow;
   font-weight: bold;
@@ -295,14 +268,17 @@ h2{
   color: red;
   font-weight: bold;
 }
-.text-secondary{
+
+.text-secondary {
   color: rgb(144, 237, 237);
   font-weight: bold;
 }
+
 .spinner-border {
   width: 2rem;
   height: 2rem;
 }
+
 .btn-info {
   background: linear-gradient(135deg, #28a745, #218838);
   color: white;

@@ -147,13 +147,13 @@ class ProjectController extends Controller
             ], 500);
         }
     }
-    public function getAllProjects()
+public function getAllProjects()
 {
     try {
-        $projects = Project::all()->map(function ($project) {
+        $projects = Project::orderBy('created_at', 'desc')->get()->map(function ($project) {
             $developerIds = json_decode($project->developer_assign_list, true);
-            $developers = User::whereIn('id', $developerIds)->get(['id', 'name']);
-            $project->assigned_developers = $developers; // Include both ID and name
+            $developers = User::whereIn('id', $developerIds ?? [])->get(['id', 'name']);
+            $project->assigned_developers = $developers;
             return $project;
         });
 
@@ -162,6 +162,7 @@ class ProjectController extends Controller
         return response()->json(['error' => 'Failed to fetch projects'], 500);
     }
 }
+
 
     public function removeDeveloper(Request $request, $projectId)
 {

@@ -34,12 +34,18 @@ export default {
       email: '',
       password: '',
       error: null,
-      loading: false, // State for loader
+      loading: false,
     };
+  },
+  created() {
+    // Redirect to dashboard if already logged in
+    if (localStorage.getItem('authToken')) {
+      this.$router.push({ name: 'Dashboard' });
+    }
   },
   methods: {
     async login() {
-      this.loading = true; // Start loader
+      this.loading = true;
       this.error = null;
 
       try {
@@ -49,21 +55,20 @@ export default {
         });
 
         if (response.data.success) {
-          // Store the token in local storage
           localStorage.setItem('authToken', response.data.token);
-
-          // Store the last login date in local storage
           localStorage.setItem('lastLoginDate', response.data.lastLoginDate);
 
-          // Redirect to the Dashboard
-          this.$router.push({ name: 'Dashboard' });
+          // Redirect to intended route or dashboard
+          const redirectTo = this.$route.query.redirect || 'Dashboard';
+          this.$router.push({ name: redirectTo });
         } else {
-          this.error = response.data.message; // Display the message from the API
+          this.error = response.data.message;
         }
       } catch (error) {
-        this.error = 'Your account is inactive. Please contact support.';
+        this.error = error.response?.data?.message ||
+          'Your account is inactive. Please contact support.';
       } finally {
-        this.loading = false; // Stop loader
+        this.loading = false;
       }
     },
   },
@@ -188,9 +193,9 @@ export default {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
 </style>
-
