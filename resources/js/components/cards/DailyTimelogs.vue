@@ -208,13 +208,9 @@ export default {
 
 .task-card-body {
   overflow-x: auto;
-  /* Horizontal scroll for wide content */
   overflow-y: auto;
-  /* Vertical scroll to see all rows */
   white-space: nowrap;
-  /* Prevent wrapping */
   max-height: 300px;
-  /* Adjust as needed for height */
   padding-right: 4px;
   box-sizing: border-box;
 }

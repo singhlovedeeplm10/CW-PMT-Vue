@@ -138,7 +138,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .close-modal {
   background: none;

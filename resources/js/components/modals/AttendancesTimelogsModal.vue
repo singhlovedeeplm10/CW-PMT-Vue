@@ -39,6 +39,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 .detail-timelogs {
   cursor: pointer;

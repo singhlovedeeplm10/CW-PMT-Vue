@@ -417,9 +417,7 @@ export default {
   width: 60%;
   max-width: 700px;
   max-height: 80vh;
-  /* Limit height */
   overflow-y: auto;
-  /* Scrollable content */
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.3s ease-in-out;
 }
