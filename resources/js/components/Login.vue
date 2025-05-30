@@ -55,10 +55,25 @@ export default {
         });
 
         if (response.data.success) {
-          localStorage.setItem('authToken', response.data.token);
-          localStorage.setItem('lastLoginDate', response.data.lastLoginDate);
+          // === 1. Store token and expiration time ===
+          const now = Date.now();
+          const expirationInHours = 24;
+          const expiresAt = now + expirationInHours * 60 * 60 * 1000;
 
-          // Redirect to intended route or dashboard
+          localStorage.setItem('authToken', response.data.token);
+          localStorage.setItem('expiresAt', expiresAt);
+
+
+          // === 2. Set timeout to auto-logout ===
+          const expiresIn = expiresAt - now;
+          setTimeout(() => {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('expiresAt');
+            alert('Session expired. Please log in again.');
+            this.$router.push('/login');
+          }, expiresIn);
+
+          // === 3. Redirect user ===
           const redirectTo = this.$route.query.redirect || 'Dashboard';
           this.$router.push({ name: redirectTo });
         } else {

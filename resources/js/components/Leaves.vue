@@ -49,7 +49,7 @@
           <tr v-for="(leave, index) in leaves" :key="leave.id">
             <td>{{ index + 1 }}</td>
             <td v-html="leave.type"></td>
-            <td>{{ leave.duration }}</td>
+            <td v-html="leave.duration"></td>
             <td>
               <span :class="{
                 'text-warning': leave.status === 'Pending',

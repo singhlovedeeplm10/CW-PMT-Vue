@@ -70,7 +70,7 @@
 
             </td>
             <td v-html="leave.type"></td>
-            <td>{{ leave.duration }}</td>
+            <td v-html="leave.duration"></td>
             <td>
               <span :class="{
                 'text-warning': leave.status === 'Pending',

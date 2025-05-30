@@ -115,14 +115,9 @@ class LeaveController extends Controller
 //     }
 // }
 
-    
-
 public function showLeaves(Request $request)
 {
-    // Get the authenticated user
     $user = Auth::user();
-
-    // Initialize the query
     $query = Leave::where('user_id', $user->id);
 
     // Apply search filters if provided
@@ -138,14 +133,9 @@ public function showLeaves(Request $request)
         $query->whereDate('created_at', $request->created_date);
     }
 
-    // Fetch the leaves
     $leaves = $query->orderBy('created_at', 'desc')->get();
 
-    // Transform the data to match the desired format
     $formattedLeaves = $leaves->map(function ($leave) {
-        // Calculate duration
-        $duration = $this->calculateDuration($leave);
-
         // Determine icon based on reason
         $reasonIcons = [
             'Full Day Leave' => '<i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>',
@@ -155,18 +145,11 @@ public function showLeaves(Request $request)
         ];
         $icon = $reasonIcons[$leave->type_of_leave] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
 
-        // Format the Type field with the icon
-        $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
-
-        // Format the week of the day (e.g., "Monday to Friday")
-        $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l');
-        $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek;
-
-        // Append the week range to the formatted type
-        $typeFormatted .= ' (' . $startDayOfWeek . ' to ' . $endDayOfWeek . ')';
+        // Format leave type with just the icon and type name
+        $typeFormatted = $icon . ' ' . $leave->type_of_leave;
 
         // Convert and append time range in 12-hour format if times exist
-        if ($leave->start_time && $leave->end_time) {
+        if ($leave->start_time && $leave->end_time && $leave->type_of_leave === 'Short Leave') {
             $startTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
             $endTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
             $typeFormatted .= " (from $startTime12hr to $endTime12hr)";
@@ -176,7 +159,7 @@ public function showLeaves(Request $request)
             'id' => $leave->id,
             'type' => $typeFormatted,
             'half' => $leave->half,
-            'duration' => $duration,
+            'duration' => $this->calculateDuration($leave),
             'status' => ucfirst($leave->status),
             'created_at' => $leave->created_at->format('F d, Y'),
             'updated_by' => $leave->last_updated_by,
@@ -191,25 +174,25 @@ public function showLeaves(Request $request)
 
 private function calculateDuration(Leave $leave)
 {
+    $start = \Carbon\Carbon::parse($leave->start_date);
+    $end = \Carbon\Carbon::parse($leave->end_date);
+    
+    // Format the date range part that will be common for most leave types
+    $dateRange = '(' . strtoupper($start->format('D')) . ' ' . $start->format('M d, Y') . ' - ' . $end->format('M d, Y') . ' ' . strtoupper($end->format('D')) . ')';
+
     if ($leave->type_of_leave === 'Full Day Leave') {
-        $start = $leave->start_date;
-        $end = $leave->end_date;
-        $days = \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)) + 1;
-        return $days . ' day(s)';
+        $days = $start->diffInDays($end) + 1;
+        return $days . ' day(s) '. '<br>' . $dateRange;
     } elseif ($leave->type_of_leave === 'Half Day Leave' || $leave->type_of_leave === 'Work From Home Half Day') {
-        return $leave->half; // 'First Half' or 'Second Half'
+        return $leave->half . ' ' . $dateRange; // 'First Half' or 'Second Half'
     } elseif ($leave->type_of_leave === 'Short Leave') {
-        $start = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time);
-        $end = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time);
+        $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time);
+        $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time);
         
-        // Get the total difference in minutes
-        $totalMinutes = $start->diffInMinutes($end);
-        
-        // Calculate hours and minutes
+        $totalMinutes = $startTime->diffInMinutes($endTime);
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;
         
-        // Format duration in a readable way
         $duration = '';
         if ($hours > 0) {
             $duration .= $hours . ' hour' . ($hours > 1 ? 's' : '');
@@ -220,19 +203,18 @@ private function calculateDuration(Leave $leave)
             }
             $duration .= $minutes . ' minute' . ($minutes > 1 ? 's' : '');
         }
-        return $duration ?: '0 minutes'; // Handle case when duration is 0
+        
+        return ($duration ?: '0 minutes') . ' ' . $dateRange;
     } elseif ($leave->type_of_leave === 'Work From Home Full Day') {
-        $start = $leave->start_date;
-        $end = $leave->end_date;
-        $days = \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)) + 1;
-
+        $days = $start->diffInDays($end) + 1;
+        
         if ($leave->start_time && $leave->end_time) {
-            $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
-            $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
-            return $days . ' day(s) (from ' . $startTime . ' to ' . $endTime . ')';
+            $startTime = $startTime->format('g:i A');
+            $endTime = $endTime->format('g:i A');
+            return $days . ' day(s) ' . $dateRange . ' (from ' . $startTime . ' to ' . $endTime . ')';
         }
-
-        return $days . ' day(s) of Work From Home Full Day';
+        
+        return $days . ' day(s)' . '<br>' . $dateRange . '<br>Work From Home Full Day';
     }
 
     return '';
@@ -660,13 +642,15 @@ public function teamLeave(Request $request)
         $icon = $leaveIcons[$leave->type_of_leave] ?? '<i class="fas fa-briefcase" style="color: #4682b4;"></i>';
 
         // Format leave type with icon
-        $typeFormatted = $icon . ' ' . $leave->type_of_leave . ' (' . \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . ')';
+       $start = \Carbon\Carbon::parse($leave->start_date);
+$end = \Carbon\Carbon::parse($leave->end_date);
+
+$typeFormatted = $icon . ' ' . $leave->type_of_leave;
+
 
         // Day of the week formatting
         $startDayOfWeek = \Carbon\Carbon::parse($leave->start_date)->format('l');
         $endDayOfWeek = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->format('l') : $startDayOfWeek;
-
-        $typeFormatted .= " ({$startDayOfWeek} to {$endDayOfWeek})";
 
         // Time range formatting (IST timezone) - Convert 24-hour to 12-hour format
         if ($leave->start_time && $leave->end_time) {

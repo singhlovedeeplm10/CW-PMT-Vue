@@ -53,20 +53,28 @@ const router = createRouter({
 });
 // Add navigation guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
+  const expiresAt = localStorage.getItem('expiresAt');
 
-  // If route requires auth and user isn't authenticated
+  const isAuthenticated = token && expiresAt && Date.now() < parseInt(expiresAt);
+
+  // If token is expired, remove it and redirect
+  if (token && expiresAt && Date.now() >= parseInt(expiresAt)) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiresAt');
+    return next('/login');
+  }
+
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login');
   }
 
-  // If user is authenticated but tries to access login page
   if (to.name === 'Login' && isAuthenticated) {
     return next('/dashboard');
   }
 
-  // Otherwise proceed
   next();
 });
+
 
 export default router;
