@@ -79,7 +79,7 @@ import InputField from "@/components/inputs/InputField.vue";
 import TextArea from "@/components/inputs/TextArea.vue";
 import { Modal } from 'bootstrap';
 import axios from 'axios';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import { toast } from 'vue3-toastify';
 
 export default {
@@ -99,11 +99,12 @@ export default {
       default: false,
     },
   },
-  emits: ['taskAdded'],
+  emits: ['taskUpdated'],
   setup(props, { emit }) {
     const tasks = ref(props.tasks || [{ project_id: '', hours: '', task_description: '' }]);
     const taskErrors = ref(tasks.value.map(() => ({ project_id: false, hours: false, task_description: false })));
     const projects = ref([]);
+    let intervalId = null;
     const isSaving = ref(false);
 
     // Allowed hours formats
@@ -120,13 +121,17 @@ export default {
 
     const fetchProjects = async () => {
       try {
-        const response = await axios.get('/api/user-projects');
+        const response = await axios.get('/api/user-projects', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
         projects.value = response.data.projects;
       } catch (error) {
         console.error("Error fetching projects:", error);
         toast.error('Error loading projects.', {
           position: "top-right",
-          autoClose: 1000, // Set to 2 seconds
+          autoClose: 1000,
         });
       }
     };
@@ -172,7 +177,7 @@ export default {
             position: "top-right",
             autoClose: 1000, // Set to 2 seconds
           });
-          emit('taskAdded');
+          emit('taskUpdated');
           closeModal();
         } else {
           toast.error('Unexpected response. Please try again.', {
@@ -230,6 +235,7 @@ export default {
             autoClose: 1000, // Set to 2 seconds
           });
           tasks.value.splice(index, 1);
+          emit('taskUpdated');
         } else {
           toast.error('Unexpected response. Please try again.', {
             position: "top-right",
@@ -249,7 +255,18 @@ export default {
       tasks.value = newTasks.length === 0 ? [{ project_id: '', hours: '', task_description: '' }] : newTasks;
     }, { deep: true });
 
-    onMounted(fetchProjects);
+    onMounted(() => {
+      fetchProjects();
+
+      // Auto-refresh every 30 seconds
+      intervalId = setInterval(fetchProjects, 30000);
+    });
+
+    onBeforeUnmount(() => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    });
 
     return {
       tasks,
@@ -297,14 +314,12 @@ export default {
 
 .form-control-project-name {
   width: 100%;
-  /* Width handled by table column */
   padding: 10px;
   border-radius: 8px;
 }
 
 .form-control-hours {
   width: 100%;
-  /* Width handled by table column */
   padding: 10px;
   border-radius: 8px;
   text-align: center;
@@ -312,9 +327,7 @@ export default {
 
 .custom-textarea {
   width: 80%;
-  /* Width handled by table column */
   height: 120px;
-  /* Increased height */
   padding: 12px;
   border-radius: 8px;
   font-size: 14px;

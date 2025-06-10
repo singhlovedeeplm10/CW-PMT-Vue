@@ -220,44 +220,47 @@ class AttendanceController extends Controller
     }
     
 
-    public function getWeeklyHours(Request $request)
+  public function getWeeklyHours(Request $request)
 {
     $user = Auth::user();
 
     try {
+        // Get the current week's range (Monday to Sunday)
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SUNDAY);
+
         // Calculate total productive hours for the week
         $weeklyProductiveSeconds = Attendance::where('user_id', $user->id)
-            ->whereBetween('clockin_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->whereBetween('clockin_time', [$startOfWeek, $endOfWeek])
+            ->whereNotNull('productive_hours')
             ->get()
             ->sum(function ($attendance) {
-                if ($attendance->productive_hours) {
-                    $time = explode(':', $attendance->productive_hours);
-                    return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
-                }
-                return 0; // Return 0 if productive_hours is null
+                $time = explode(':', $attendance->productive_hours);
+                return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
             });
 
         // Calculate total break time for the week
         $weeklyBreakSeconds = Breaks::where('user_id', $user->id)
-            ->whereBetween('break_time', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])
+            ->whereBetween('start_time', [$startOfWeek, $endOfWeek])
+            ->whereNotNull('break_time')
             ->get()
             ->sum(function ($break) {
-                if ($break->break_time) {
-                    $time = explode(':', $break->break_time);
-                    return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
-                }
-                return 0; // Return 0 if break_time is null
+                $time = explode(':', $break->break_time);
+                return ($time[0] * 3600) + ($time[1] * 60) + $time[2];
             });
 
         // Subtract total break time from total productive hours
         $weeklyNetProductiveSeconds = max(0, $weeklyProductiveSeconds - $weeklyBreakSeconds);
 
         return response()->json([
-            'weekly_hours' => $weeklyNetProductiveSeconds, // Return net productive hours in seconds
+            'weekly_hours' => $weeklyNetProductiveSeconds, // in seconds
+            'productive_hours' => $weeklyProductiveSeconds, // in seconds
+            'break_hours' => $weeklyBreakSeconds, // in seconds
         ]);
     } catch (\Exception $e) {
         return response()->json([
             'error' => 'Failed to fetch weekly hours. Please try again later.',
+            'details' => $e->getMessage()
         ], 500);
     }
 }

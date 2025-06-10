@@ -10,11 +10,13 @@ class TimelineUpload extends Model
     use HasFactory;
 
     protected $fillable = [
-        'timeline_id',
-        'file_path',
-        'file_type',
-        'file_link',
-    ];
+    'timeline_id',
+    'file_path',
+    'file_type',
+    'file_link',
+    'file_order', 
+];
+
 
     /**
      * Get the timeline associated with the upload.

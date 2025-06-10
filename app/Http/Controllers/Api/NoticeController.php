@@ -297,8 +297,14 @@ public function upcomingBirthdays(Request $request)
 
     // Add the full URL for the images
     $birthdays = $birthdays->map(function ($user) {
-        // Assuming images are stored in the 'public/profile_images' directory
-        $user->user_image = $user->user_image ? Storage::url($user->user_image) : null; // Generate public URL or set to null
+        if ($user->user_image) {
+            // Remove 'public/' or 'uploads/' if it's part of the stored path
+            $imagePath = ltrim($user->user_image, 'public/');
+            $imagePath = ltrim($imagePath, 'uploads/');
+            $user->user_image = asset('uploads/profile_images/' . basename($imagePath));
+        } else {
+            $user->user_image = null;
+        }
         return $user;
     });
 

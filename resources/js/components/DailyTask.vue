@@ -36,8 +36,8 @@
           <tr v-for="(task, index) in tasks" :key="index">
             <td>
               <div class="d-flex align-items-center">
-                <img v-if="task.user.image" :src="`/storage/${task.user.image}`" alt="User Image" class="rounded-circle"
-                  style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;" />
+                <img :src="task.user.image ? `/uploads/${task.user.image}` : 'img/CWlogo.jpeg'" alt="User Image"
+                  class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;" />
                 {{ task.user.name }}
               </div>
             </td>
@@ -201,7 +201,11 @@ export default {
 
     async fetchProjects() {
       try {
-        const response = await axios.get('/api/user-projects');
+        const response = await axios.get('/api/user-projects', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
         this.projects = response.data.projects;
       } catch (error) {
         console.error('Error fetching projects:', error);

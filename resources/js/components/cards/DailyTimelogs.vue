@@ -248,6 +248,7 @@ thead th {
   padding: 11px 10px;
   border: none;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 tbody td {
@@ -259,11 +260,12 @@ tbody td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 td img {
-  width: 20px;
-  height: 20px;
+  width: 45px;
+  height: 45px;
   margin-right: 5px;
   vertical-align: middle;
   border-radius: 50%;
@@ -273,7 +275,6 @@ td img {
   border: 1px solid #ccc;
   border-radius: 8px;
 }
-
 
 /* Loader Styling */
 .loader {

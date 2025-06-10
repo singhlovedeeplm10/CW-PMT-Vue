@@ -34,7 +34,12 @@ export default {
   methods: {
     formatDate(datetime) {
       if (!datetime) return 'N/A';
-      return new Date(datetime).toLocaleTimeString();
+      return new Date(datetime).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
     }
   }
 };
@@ -107,18 +112,13 @@ export default {
 
 .task-card-body {
   overflow-x: auto;
-  /* Horizontal scroll for wide content */
   overflow-y: auto;
-  /* Vertical scroll to see all rows */
   white-space: nowrap;
-  /* Prevent wrapping */
   max-height: 300px;
-  /* Adjust as needed for height */
   padding-right: 4px;
   box-sizing: border-box;
 }
 
-/* Scrollbar styling */
 .task-card-body::-webkit-scrollbar {
   height: 6px;
   width: 6px;
@@ -177,8 +177,6 @@ td img {
   border-radius: 8px;
 }
 
-
-/* Loader Styling */
 .loader {
   width: 50px;
   height: 50px;

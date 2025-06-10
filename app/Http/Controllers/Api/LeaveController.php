@@ -18,7 +18,7 @@ use Carbon\Carbon;
 
 class LeaveController extends Controller
 {
-   public function store(Request $request)
+   public function applyLeave(Request $request)
 {
     // Validate the request data
     $validatedData = $request->validate([
@@ -56,7 +56,7 @@ class LeaveController extends Controller
         return response()->json(['error' => 'Failed to submit leave application.'], 500);
     }
 }
-//     public function store(Request $request)
+//     public function applyLeave(Request $request)
 // {
 //     // Validate the request data
 //     $validatedData = $request->validate([
@@ -115,7 +115,7 @@ class LeaveController extends Controller
 //     }
 // }
 
-public function showLeaves(Request $request)
+public function showLeavesUser(Request $request)
 {
     $user = Auth::user();
     $query = Leave::where('user_id', $user->id);
@@ -152,7 +152,7 @@ public function showLeaves(Request $request)
         if ($leave->start_time && $leave->end_time && $leave->type_of_leave === 'Short Leave') {
             $startTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
             $endTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
-            $typeFormatted .= " (from $startTime12hr to $endTime12hr)";
+            $typeFormatted .= "";
         }
 
         return [
@@ -180,14 +180,19 @@ private function calculateDuration(Leave $leave)
     // Format the date range part that will be common for most leave types
     $dateRange = '(' . strtoupper($start->format('D')) . ' ' . $start->format('M d, Y') . ' - ' . $end->format('M d, Y') . ' ' . strtoupper($end->format('D')) . ')';
 
+    $dateRangehalfdaylleaves = '(' . strtoupper($start->format('D')) . ' ' . $start->format('M d, Y') . ')';
+
     if ($leave->type_of_leave === 'Full Day Leave') {
         $days = $start->diffInDays($end) + 1;
         return $days . ' day(s) '. '<br>' . $dateRange;
     } elseif ($leave->type_of_leave === 'Half Day Leave' || $leave->type_of_leave === 'Work From Home Half Day') {
-        return $leave->half . ' ' . $dateRange; // 'First Half' or 'Second Half'
+        return $leave->half . '<br>' . $dateRangehalfdaylleaves; // 'First Half' or 'Second Half'
     } elseif ($leave->type_of_leave === 'Short Leave') {
         $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time);
         $endTime = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time);
+
+        $startTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('g:i A');
+        $endTime12hr = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('g:i A');
         
         $totalMinutes = $startTime->diffInMinutes($endTime);
         $hours = floor($totalMinutes / 60);
@@ -204,7 +209,8 @@ private function calculateDuration(Leave $leave)
             $duration .= $minutes . ' minute' . ($minutes > 1 ? 's' : '');
         }
         
-        return ($duration ?: '0 minutes') . ' ' . $dateRange;
+       return ($duration ?: '0 minutes') . " (from $startTime12hr to $endTime12hr)<br>" . $dateRangehalfdaylleaves;
+
     } elseif ($leave->type_of_leave === 'Work From Home Full Day') {
         $days = $start->diffInDays($end) + 1;
         
@@ -214,14 +220,14 @@ private function calculateDuration(Leave $leave)
             return $days . ' day(s) ' . $dateRange . ' (from ' . $startTime . ' to ' . $endTime . ')';
         }
         
-        return $days . ' day(s)' . '<br>' . $dateRange . '<br>Work From Home Full Day';
+        return $days . ' day(s)' . '<br>' . $dateRange . '<br>';
     }
 
     return '';
 }
 
 
-public function update(Request $request, Leave $leave)
+public function updateLeaveUser(Request $request, Leave $leave)
 {
     try {
         // Log the incoming request data for debugging
@@ -495,7 +501,7 @@ public function updateTeamLeave(Request $request, Leave $leave)
     
 
     
-public function search(Request $request)
+public function searchUser(Request $request)
 {
     $searchTerm = $request->input('query', '');
 
@@ -511,7 +517,7 @@ public function search(Request $request)
     // Format user image URL
     $users->transform(function ($user) {
         $user->user_image = $user->user_image 
-            ? asset('storage/' . $user->user_image) 
+            ? asset('uploads/' . $user->user_image) 
             : asset('img/CWlogo.jpeg'); // Fallback image
         return $user;
     });
@@ -521,7 +527,7 @@ public function search(Request $request)
 
     
 
-public function teamLeave(Request $request)
+public function applyTeamLeave(Request $request)
 {
     // Validate the incoming request data
     $validator = Validator::make($request->all(), [
@@ -657,11 +663,11 @@ $typeFormatted = $icon . ' ' . $leave->type_of_leave;
             // Parse the time and format to 12-hour with AM/PM
             $startTimeIST = \Carbon\Carbon::createFromFormat('H:i:s', $leave->start_time)->format('h:i A');
             $endTimeIST = \Carbon\Carbon::createFromFormat('H:i:s', $leave->end_time)->format('h:i A');
-            $typeFormatted .= " (from {$startTimeIST} to {$endTimeIST})";
+            $typeFormatted .= "";
         }
 
         // User image URL
-        $userImageUrl = $leave->user_image ? asset('storage/' . $leave->user_image) : null;
+        $userImageUrl = $leave->user_image ? asset('uploads/' . $leave->user_image) : null;
 
         return [
             'id' => $leave->id,
@@ -714,7 +720,7 @@ public function getUsersLeave(Request $request)
             }
 
             $userImage = $user->profile->user_image ?? null; // Fetch user image
-            $userImageUrl = $userImage ? asset('storage/' . $userImage) : null; // Generate full image URL
+            $userImageUrl = $userImage ? asset('uploads/' . $userImage) : null; // Generate full image URL
 
             // Determine the leave description
             $leaveDescription = $leave->type_of_leave;
@@ -788,7 +794,7 @@ public function getMembersOnWFH(Request $request)
     $formattedLeaves = $leaves->map(function ($leave) {
         return [
             'user_name' => $leave->user_name,
-            'user_image' => $leave->user_image ? asset('storage/' . $leave->user_image) : asset('img/CWlogo.jpeg'),
+            'user_image' => $leave->user_image ? asset('uploads/' . $leave->user_image) : asset('img/CWlogo.jpeg'),
  // Generate full URL for the image
             'date_range' => \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . 
                 ' to ' . 

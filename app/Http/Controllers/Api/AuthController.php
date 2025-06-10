@@ -40,15 +40,7 @@ class AuthController extends Controller
         'lastLoginDate' => now()->toDateString(),
     ]);
 }
- 
 
-    public function getUser(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'user' => $request->user()
-        ]);
-    }
 
     public function getUserDetails()
     {
@@ -58,7 +50,7 @@ class AuthController extends Controller
         return response()->json([
             'user_name' => $user->name,
             'user_image' => $userProfile && $userProfile->user_image 
-                ? asset('storage/' . $userProfile->user_image) 
+                ? asset('uploads/' . $userProfile->user_image) 
                 : null, // Return full URL for the image
         ]);
     }

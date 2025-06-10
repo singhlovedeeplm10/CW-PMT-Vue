@@ -132,8 +132,6 @@
                 <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 Update
               </button>
-              <!-- Close Button with data-bs-dismiss -->
-
             </div>
           </form>
         </div>
@@ -208,7 +206,6 @@ export default {
         }
       }
     },
-
 
     async submitLeaveUpdate() {
       this.validateShortLeaveTime(); // Ensure validation runs before submitting
@@ -296,7 +293,6 @@ export default {
   font-family: math;
 }
 
-/* Modal Content Styling */
 .custom-modal {
   border-radius: 10px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
@@ -337,18 +333,14 @@ export default {
   align-items: center;
   justify-content: center;
   min-width: 70px;
-  /* Ensures consistent width */
   height: 24px;
-  /* Adjust height to center the text properly */
 }
-
 
 .modal-body {
   padding: 20px;
   background-color: #f9f9f9;
 }
 
-/* Input Fields */
 .form-control {
   border-radius: 5px;
   border: 1px solid #ced4da;
@@ -362,7 +354,6 @@ export default {
   box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
 }
 
-/* Display start_date and end_date in a single row */
 .date-time-row {
   display: flex;
   gap: 15px;
@@ -372,7 +363,6 @@ export default {
   flex: 1;
 }
 
-/* Display start_time and end_time in a single row */
 .time-row {
   display: flex;
   gap: 15px;
@@ -382,7 +372,6 @@ export default {
   flex: 1;
 }
 
-/* Buttons */
 .modal-footer .btn {
   padding: 10px 20px;
   font-size: 14px;

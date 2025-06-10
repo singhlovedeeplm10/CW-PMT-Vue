@@ -9,44 +9,23 @@
         <div class="form-container">
           <div class="form-group">
             <label for="name" class="form-label">Name</label>
-            <input
-              id="name"
-              type="text"
-              v-model="formData.name"
-              class="form-control custom-input"
-              placeholder="Enter employee's name"
-            />
+            <input id="name" type="text" v-model="formData.name" class="form-control custom-input"
+              placeholder="Enter employee's name" />
           </div>
           <div class="form-group">
             <label for="email" class="form-label">Email</label>
-            <input
-              id="email"
-              type="email"
-              v-model="formData.email"
-              class="form-control custom-input"
-              placeholder="Enter employee's email"
-              :readonly="true" 
-            />
+            <input id="email" type="email" v-model="formData.email" class="form-control custom-input"
+              placeholder="Enter employee's email" :readonly="true" />
           </div>
           <div class="form-group">
             <label for="password" class="form-label">Password</label>
-            <input
-              id="password"
-              type="password"
-              v-model="formData.password"
-              class="form-control custom-input"
-              placeholder="Enter new password (optional)"
-            />
+            <input id="password" type="password" v-model="formData.password" class="form-control custom-input"
+              placeholder="Enter new password (optional)" />
           </div>
           <div class="form-group">
             <label for="address" class="form-label">Address</label>
-            <input
-              id="address"
-              type="text"
-              v-model="formData.address"
-              class="form-control custom-input"
-              placeholder="Enter address"
-            />
+            <input id="address" type="text" v-model="formData.address" class="form-control custom-input"
+              placeholder="Enter address" />
           </div>
           <div class="form-group">
             <label for="gender" class="form-label">Gender</label>
@@ -57,71 +36,38 @@
           </div>
           <div class="form-group">
             <label for="contact" class="form-label">Contact</label>
-            <input
-              id="contact"
-              type="text"
-              v-model="formData.contact"
-              class="form-control custom-input"
-              placeholder="Enter contact number"
-              @input="validateContact"
-            />
+            <input id="contact" type="text" v-model="formData.contact" class="form-control custom-input"
+              placeholder="Enter contact number" @input="validateContact" />
             <small v-if="contactError" class="text-danger">{{ contactError }}</small>
           </div>
           <div class="form-group">
             <label for="qualifications" class="form-label">Qualifications</label>
-            <input
-              id="qualifications"
-              type="text"
-              v-model="formData.qualifications"
-              class="form-control custom-input"
-              placeholder="Enter qualifications"
-            />
+            <input id="qualifications" type="text" v-model="formData.qualifications" class="form-control custom-input"
+              placeholder="Enter qualifications" />
           </div>
           <div class="form-group">
             <label for="employee_code" class="form-label">Employee Code</label>
-            <input
-              id="employee_code"
-              type="text"
-              v-model="formData.employee_code"
-              class="form-control custom-input"
-              placeholder="Employee Code"
-              :readonly="true" 
-            />
+            <input id="employee_code" type="text" v-model="formData.employee_code" class="form-control custom-input"
+              placeholder="Employee Code" :readonly="true" />
           </div>
           <div class="form-group">
             <label for="user_DOB" class="form-label">Date of Birth</label>
-            <input
-              id="user_DOB"
-              type="date"
-              v-model="formData.user_DOB"
-              class="form-control custom-input"
-            />
+            <input id="user_DOB" type="date" v-model="formData.user_DOB" class="form-control custom-input" />
           </div>
           <div class="form-group">
-  <label for="user_image" class="form-label">Profile Image</label>
-  <input
-    id="user_image"
-    type="file"
-    accept="image/png, image/jpeg, image/jpg, image/webp"
-    @change="handleImageUpload"
-    class="form-control custom-input"
-  />
-</div>
+            <label for="user_image" class="form-label">Profile Image</label>
+            <input id="user_image" type="file" accept="image/png, image/jpeg, image/jpg, image/webp"
+              @change="handleImageUpload" class="form-control custom-input" />
+          </div>
 
         </div>
 
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            :label="loading ? '' : 'Save Changes'"
-            :iconClass="loading ? 'spinner-border spinner-border-sm' : null"
-            :buttonClass="'custom-btn-submit'"
-            :isDisabled="loading"
-            :clickEvent="updateEmployee"
-          >
+          <ButtonComponent :label="loading ? '' : 'Save Changes'"
+            :iconClass="loading ? 'spinner-border spinner-border-sm' : null" :buttonClass="'custom-btn-submit'"
+            :isDisabled="loading" :clickEvent="updateEmployee">
             <span v-if="loading">Loading...</span>
           </ButtonComponent>
-
-         
         </div>
       </form>
     </div>
@@ -144,8 +90,8 @@ export default {
   data() {
     return {
       formData: { ...this.user, password: "", user_image: null, employee_code: '' },
-      contactError: "", // Store contact validation error
-      loading: false, // Track loading state 
+      contactError: "",
+      loading: false,
     };
   },
   mounted() {
@@ -155,27 +101,27 @@ export default {
     document.removeEventListener("keydown", this.handleEscKey);
   },
   created() {
-  const formatEmployeeCode = (id) => {
-    return `CW${String(id).padStart(3, '0')}`;
-  };
+    const formatEmployeeCode = (id) => {
+      return `CW${String(id).padStart(3, '0')}`;
+    };
 
-  if (this.user.profile) {
-    this.formData = {
-      ...this.user,
-      ...this.user.profile,
-      password: "", 
-      user_image: null,
-      employee_code: formatEmployeeCode(this.user.id) // Format employee_code based on ID
-    };
-  } else {
-    this.formData = {
-      ...this.user,
-      password: "", 
-      user_image: null,
-      employee_code: formatEmployeeCode(this.user.id) // Format employee_code based on ID
-    };
-  }
-},
+    if (this.user.profile) {
+      this.formData = {
+        ...this.user,
+        ...this.user.profile,
+        password: "",
+        user_image: null,
+        employee_code: formatEmployeeCode(this.user.id)
+      };
+    } else {
+      this.formData = {
+        ...this.user,
+        password: "",
+        user_image: null,
+        employee_code: formatEmployeeCode(this.user.id)
+      };
+    }
+  },
 
   methods: {
     handleEscKey(event) {
@@ -196,20 +142,20 @@ export default {
       }
     },
     handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Only image files (PNG, JPG, JPEG, WEBP) are allowed.");
-      event.target.value = ""; // Clear the input field
-      return;
-    }
-    this.formData.user_image = file;
-  }
-},
+      const file = event.target.files[0];
+      if (file) {
+        const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+        if (!validTypes.includes(file.type)) {
+          toast.error("Only image files (PNG, JPG, JPEG, WEBP) are allowed.");
+          event.target.value = "";
+          return;
+        }
+        this.formData.user_image = file;
+      }
+    },
 
     async updateEmployee() {
-      this.loading = true; // Show loader when the form starts submitting
+      this.loading = true;
       try {
         const formData = new FormData();
         Object.keys(this.formData).forEach((key) => {
@@ -227,9 +173,9 @@ export default {
 
         // Show a success toast notification
         toast.success("Employee updated successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
 
         this.$emit("employee-updated");
         this.$emit("close");
@@ -239,7 +185,7 @@ export default {
 
         console.error("Error updating employee:", error);
       } finally {
-        this.loading = false; // Hide loader after the request finishes
+        this.loading = false;
       }
     },
   },
@@ -247,18 +193,18 @@ export default {
 
 </script>
 
-  <style scoped>
-   .close-modal{
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-  }
-/* Modal Content */
+<style scoped>
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
 .modal-content {
   background: #fff;
-  width: 800px; /* Wider modal for horizontal layout */
+  width: 800px;
   margin: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -266,7 +212,6 @@ export default {
   justify-content: space-between;
 }
 
-/* Modal Header */
 .custom-modal-header {
   background-color: #4e73df;
   color: white;
@@ -284,23 +229,20 @@ export default {
   cursor: pointer;
 }
 
-/* Form Layout */
 .form-container {
   display: flex;
-  flex-wrap: wrap; /* Allows items to wrap */
-  gap: 15px; /* Space between inputs */
+  flex-wrap: wrap;
+  gap: 15px;
   justify-content: space-between;
   padding: 20px;
 }
 
-/* Form Groups (2 per row) */
 .form-group {
-  flex: 0 0 48%; /* Set form fields to take up half the modal width */
+  flex: 0 0 48%;
   display: flex;
   flex-direction: column;
 }
 
-/* Input Styling */
 .custom-input {
   border-radius: 5px;
   border: 1px solid #ddd;
@@ -316,7 +258,6 @@ export default {
   box-shadow: 0 0 5px rgba(78, 115, 223, 0.5);
 }
 
-/* Modal Footer */
 .custom-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -326,7 +267,6 @@ export default {
   padding: 10px 15px;
 }
 
-/* Buttons */
 .custom-btn-submit,
 .custom-btn-close {
   padding: 10px 15px;
@@ -355,4 +295,3 @@ export default {
   transform: translateY(-2px);
 }
 </style>
-  

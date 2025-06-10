@@ -181,7 +181,7 @@ public function getBreakEntries(Request $request)
     foreach ($breakEntries as $break) {
         $break->user_name = $break->user->name ?? 'Unknown User';
         $break->user_image = $break->user->user_image 
-            ? asset('storage/' . $break->user->user_image) 
+            ? asset('uploads/' . $break->user->user_image) 
             : asset('img/CWlogo.jpeg'); // Default image
     }
 

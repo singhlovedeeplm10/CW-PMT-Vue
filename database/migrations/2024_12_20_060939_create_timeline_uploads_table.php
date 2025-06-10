@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('file_path')->nullable(); // Made nullable
             $table->enum('file_type', ['image', 'video'])->nullable(); // Made nullable
             $table->string('file_link')->nullable();
+            $table->integer('file_order')->nullable();
             $table->timestamps();
         
             $table->foreign('timeline_id')->references('id')->on('timelines')->onDelete('cascade');

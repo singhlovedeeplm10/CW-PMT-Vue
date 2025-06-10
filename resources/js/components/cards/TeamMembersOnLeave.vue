@@ -2,12 +2,7 @@
   <div class="card flex-fill me-3 shadow-sm" id="card2">
     <div class="task-card-header d-flex justify-content-between align-items-center">
       <h4 class="card_heading">Team Members on Leave</h4>
-      <Calendar
-        :selectedDate="date"
-        @dateSelected="onDateSelected"
-        :showHeader="true"
-        :highlightToday="true"
-      />
+      <Calendar :selectedDate="date" @dateSelected="onDateSelected" :showHeader="true" :highlightToday="true" />
     </div>
     <div class="task-card-body">
       <div v-if="loadingUsersOnLeave" class="loader-container">
@@ -26,11 +21,7 @@
           <tbody>
             <tr v-for="user in usersOnLeave" :key="user.id">
               <td class="d-flex align-items-center">
-                <img 
-                  :src="user.user_image || 'img/CWlogo.jpeg'" 
-                  alt="Team Member" 
-                  class="user-image me-2"
-                >
+                <img :src="user.user_image || 'img/CWlogo.jpeg'" alt="Team Member" class="user-image me-2">
                 {{ user.name }}
               </td>
               <td style="padding: 16px 50px;">{{ user.type_of_leave }}</td>
@@ -90,7 +81,6 @@ export default {
 </script>
 
 <style scoped>
-/* Circular Image Styling */
 .user-image {
   width: 40px;
   height: 40px;
@@ -99,38 +89,39 @@ export default {
   border: 2px solid #ddd;
 }
 
-/* Table Styling */
 .table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* Ensures the table respects the width */
+  table-layout: fixed;
 }
-.table th, .table td {
-  padding: 12px 15px; /* Adjusted padding for better spacing */
+
+.table th,
+.table td {
   text-align: left;
   font-family: 'Poppins', sans-serif;
   border: none;
 }
+
 .table th {
+  padding: 9px;
   background-color: #3498db;
   color: white;
   font-size: 16px;
   font-weight: 600;
 }
+
 .table tbody tr:hover {
-  background-color: #f5f5f5; /* Added hover effect for better interactivity */
+  background-color: #f5f5f5;
 }
 
-/* Loader Container */
 .loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
-  margin: 0 auto; /* Center the loader */
+  margin: 0 auto;
 }
 
-/* Card Styling */
 #card2 {
   max-height: 350px;
   overflow-y: auto;
@@ -141,17 +132,16 @@ export default {
   border-radius: 8px;
 }
 
-/* Adjusting column widths */
 .table th:nth-child(1),
 .table td:nth-child(1) {
-  width: 60%; /* Adjust the width of the Name column */
+  width: 60%;
   margin: auto;
   text-align: center;
 }
 
 .table th:nth-child(2),
 .table td:nth-child(2) {
-  width: 66%; /* Adjust the width of the Leave column */
+  width: 66%;
   margin: auto;
   text-align: center;
 }

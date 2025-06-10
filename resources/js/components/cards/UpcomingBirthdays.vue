@@ -1,106 +1,107 @@
 <template>
-  <div class="d-flex justify-content-between task-card-container" style="width: 612px; height: 430px;">
-      <!-- Task List Card -->
-      <div class="task-card flex-fill shadow-sm position-relative" id="card2">
-          <div class="task-card-header d-flex justify-content-between align-items-center">
-              <h4 class="card_heading">Upcoming Birthdays</h4>
-              <Calendar 
-                  :selectedDate="tomorrowDate" 
-                  @dateSelected="fetchBirthdays" 
-              />
-          </div>
+    <div class="d-flex justify-content-between task-card-container" style="width: 612px; height: 430px;">
+        <!-- Task List Card -->
+        <div class="task-card flex-fill shadow-sm position-relative" id="card2">
+            <div class="task-card-header d-flex justify-content-between align-items-center">
+                <h4 class="card_heading">Upcoming Birthdays</h4>
+                <Calendar :selectedDate="tomorrowDate" @dateSelected="fetchBirthdays" />
+            </div>
 
-          <div class="birthday-card-body d-flex justify-content-center align-items-center">
-              <div v-if="isLoading" class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
-              </div>
+            <div class="birthday-card-body d-flex justify-content-center align-items-center">
+                <div v-if="isLoading" class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
 
-              <div v-else-if="users.length" class="mt-3 w-100">
-                  <h5>Birthdays:</h5>
-                  <table class="table table-striped">
-                      <thead>
-                          <tr>
-                              <th>Name</th>
-                              <th>Date of Birth</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          <tr v-for="user in users" :key="user.id">
-                            <td class="align-middle">
-    <div class="d-flex flex-column">
-        <div class="d-flex align-items-center">
-            <img 
-                :src="user.user_image" 
-                alt="User Image" 
-                class="rounded-circle user-avatar me-2"
-            />
-            <span class="user-name">{{ user.name }}</span>
+                <div v-else-if="users.length" class="mt-3 w-100">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date of Birth</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in users" :key="user.id">
+                                <td>
+                                    <div class="birthday-profile">
+                                        <img :src="user.user_image" alt="User Image" class="user-avatar" />
+                                        <span class="user-name">{{ user.name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ user.user_DOB }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-else class="mt-3">
+                    <p>No Member Exist.</p>
+                </div>
+            </div>
         </div>
-        <!-- <span class="birthday-message">
-          Wishing you the happiest of birthdays, filled with love, laughter, and all your favorite things.
-        </span> -->
     </div>
-</td>
-
-                              <td class="align-middle">{{ user.user_DOB }}</td>
-                          </tr>
-                      </tbody>
-                  </table>
-              </div>
-
-              <div v-else class="mt-3">
-                  <p>No Member Exist.</p>
-              </div>
-          </div>
-      </div>
-  </div>
 </template>
-  
-  <script>
+
+<script>
 import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
-  import { ref } from "vue";
-  
-  export default {
+import { ref } from "vue";
+
+export default {
     name: "UpcomingBirthdays",
     components: { Calendar },
     setup() {
-      const users = ref([]);
-      const isLoading = ref(false);
-      const tomorrowDate = new Date();
-      tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  
-      const fetchBirthdays = async (date) => {
-        isLoading.value = true;
-        try {
-          const response = await axios.get("/api/upcoming-birthdays", {
-            params: { date },
-          });
-          users.value = response.data;
-        } catch (error) {
-          console.error("Error fetching birthdays:", error);
-        } finally {
-          isLoading.value = false;
-        }
-      };
-  
-      // Fetch birthdays initially for tomorrow's date
-      fetchBirthdays(tomorrowDate.toISOString().split("T")[0]);
-  
-      return { users, tomorrowDate, fetchBirthdays, isLoading };
+        const users = ref([]);
+        const isLoading = ref(false);
+        const tomorrowDate = new Date();
+        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+        const fetchBirthdays = async (date) => {
+            isLoading.value = true;
+            try {
+                const response = await axios.get("/api/upcoming-birthdays", {
+                    params: { date },
+                });
+                users.value = response.data;
+            } catch (error) {
+                console.error("Error fetching birthdays:", error);
+            } finally {
+                isLoading.value = false;
+            }
+        };
+
+        fetchBirthdays(tomorrowDate.toISOString().split("T")[0]);
+        return { users, tomorrowDate, fetchBirthdays, isLoading };
     },
-  };
-  </script>
-  
-  
+};
+</script>
+
 <style scoped>
+.birthday-profile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.user-name {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
 .birthday-message {
     font-size: 14px;
-    color: #888; /* Light gray color */
-    margin-left: 50px; /* Align properly under the name */
+    color: #888;
+    margin-left: 50px;
     font-style: italic;
     display: block;
-    max-width: 300px; /* Limit width for better readability */
+    max-width: 300px;
     line-height: 1.4;
 }
 
@@ -108,12 +109,13 @@ import axios from "axios";
     width: 3rem;
     height: 3rem;
 }
+
 .task-card {
     display: flex;
     flex-direction: column;
     background: #ffffff;
     border-radius: 8px;
-    padding: 16px;
+    padding: 10px;
     box-sizing: border-box;
     overflow: hidden;
     max-height: 100%;
@@ -132,19 +134,18 @@ import axios from "axios";
     width: 100%;
 }
 
-/* Custom scrollbar styling */
 .birthday-card-body::-webkit-scrollbar {
-    width: 6px; /* Scrollbar width */
-    background-color: #f1f1f1; /* Scrollbar track color */
+    width: 6px;
+    background-color: #f1f1f1;
 }
 
 .birthday-card-body::-webkit-scrollbar-thumb {
-    background-color: #c1c1c1; /* Scrollbar thumb color */
-    border-radius: 10px; /* Rounded scrollbar thumb */
+    background-color: #c1c1c1;
+    border-radius: 10px;
 }
 
 .birthday-card-body::-webkit-scrollbar-thumb:hover {
-    background-color: #a1a1a1; /* Thumb color on hover */
+    background-color: #a1a1a1;
 }
 
 table {
@@ -153,12 +154,13 @@ table {
 }
 
 thead th {
-    text-align: left;
-    padding: 10px;
+    padding: 10px 35px;
     font-size: 16px;
     font-weight: 600;
     background-color: #3498db;
-  color: white;
+    color: white;
+    text-align: center;
+    vertical-align: middle;
 }
 
 tbody td {
@@ -167,9 +169,9 @@ tbody td {
     font-family: 'Poppins', sans-serif;
     border-bottom: 1px solid #f1f1f1;
     word-break: break-word;
-    vertical-align: middle; /* Ensure content is vertically aligned */
+    text-align: center;
+    vertical-align: middle;
 }
-
 
 .profile {
     display: flex;
@@ -183,7 +185,6 @@ tbody td {
     margin-right: 8px;
 }
 
-/* Specific card border and header styles */
 #card2 {
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -193,22 +194,26 @@ tbody td {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Loader Style */
 .loader {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3; /* Light background */
-    border-top: 5px solid #3498db; /* Blue color */
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto; /* Center the loader */
+    margin: 0 auto;
 }
 
-/* Loader spin animation */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
+
 .user-avatar {
     width: 40px;
     height: 40px;

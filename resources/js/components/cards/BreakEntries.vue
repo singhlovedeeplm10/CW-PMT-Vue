@@ -8,72 +8,63 @@
             </div>
             <div class="task-card-body mt-3">
                 <div v-if="loading" class="loader"></div>
-
                 <!-- Break Entries Table -->
-<table v-else>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Total Breaks</th>
-            <th>Break Time</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr v-if="breakEntries.length === 0">
-            <td colspan="3" class="text-center">No break entries available for the selected date.</td>
-        </tr>
-        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id">
-            <td>
-                <div class="profile">
-                    <img 
-                        :src="breakEntry.user_image" 
-                        alt="User Image" 
-                        class="rounded-circle"
-                    >
-                    <span>{{ breakEntry.user_name }}</span>
-                </div>
-            </td>
-            <td>{{ breakEntry.total_breaks }}</td>
-            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">
-                {{ formatBreakTime(breakEntry.total_break_time) }}
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-            </div>
-            <!-- Break Details Modal -->
-        <div v-if="showModal" class="modal-overlay">
-            <div class="modal-content">
-                <!-- <span class="close-button" @click="closeBreakDetailsModal">&times;</span> -->
-                <h4>Break Details</h4>
-                <table>
+                <table v-else>
                     <thead>
                         <tr>
-                            <th>Start Time</th>
-                            <th>End Time</th>
+                            <th>Name</th>
+                            <th>Total Breaks</th>
                             <th>Break Time</th>
-                            <th>Reason</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="breakDetail in userBreakDetails" :key="breakDetail.id">
-                            <td>{{ formatDateTime(breakDetail.start_time) }}</td>
-                            <td>{{ formatDateTime(breakDetail.end_time) }}</td>
-                            <td>{{ formatBreakTime(breakDetail.break_time) }}</td>
-                            <td>{{ breakDetail.reason }}</td>
+                        <tr v-if="breakEntries.length === 0">
+                            <td colspan="3" class="text-center">No break entries available for the selected date.</td>
+                        </tr>
+                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id">
+                            <td>
+                                <div class="profile">
+                                    <img :src="breakEntry.user_image" alt="User Image" class="rounded-circle">
+                                    <span>{{ breakEntry.user_name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ breakEntry.total_breaks }}</td>
+                            <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">
+                                {{ formatBreakTime(breakEntry.total_break_time) }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
-                <div class="modal-footer">
-      <button class="close-modal-btn" @click="closeBreakDetailsModal">Close</button>
-    </div>
             </div>
-    
+            <!-- Break Details Modal -->
+            <div v-if="showModal" class="modal-overlay">
+                <div class="modal-content">
+                    <!-- <span class="close-button" @click="closeBreakDetailsModal">&times;</span> -->
+                    <h4>Break Details</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Break Time</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="breakDetail in userBreakDetails" :key="breakDetail.id">
+                                <td>{{ formatDateTime(breakDetail.start_time) }}</td>
+                                <td>{{ formatDateTime(breakDetail.end_time) }}</td>
+                                <td>{{ formatBreakTime(breakDetail.break_time) }}</td>
+                                <td>{{ breakDetail.reason }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="modal-footer">
+                        <button class="close-modal-btn" @click="closeBreakDetailsModal">Close</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        </div>
-
-        
     </div>
 </template>
 
@@ -136,20 +127,19 @@ export default {
         },
 
         formatDateTime(dateTime) {
-    if (!dateTime) return "N/A";
+            if (!dateTime) return "N/A";
 
-    // Format the time in 12-hour format with AM/PM
-    const formattedTime = new Date(dateTime).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit", // Include seconds
-        hour12: true, // Use 12-hour format
-    });
+            // Format the time in 12-hour format with AM/PM
+            const formattedTime = new Date(dateTime).toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit", // Include seconds
+                hour12: true, // Use 12-hour format
+            });
 
-    // Convert the AM/PM part to uppercase
-    return formattedTime.replace(/(am|pm)/i, (match) => match.toUpperCase());
-},
-
+            // Convert the AM/PM part to uppercase
+            return formattedTime.replace(/(am|pm)/i, (match) => match.toUpperCase());
+        },
 
         onDateSelected(newDate) {
             this.selectedDate = newDate;
@@ -163,53 +153,56 @@ export default {
 </script>
 
 <style scoped>
-
 .profile span {
     font-weight: 400;
 }
-  .clickable-time {
+
+.clickable-time {
     cursor: pointer;
-    text-decoration: underline; /* Underline effect */
+    text-decoration: underline;
 }
+
 .modal-footer {
-  text-align: right;
+    text-align: right;
 }
+
 .close-modal-btn {
-  background-color: #dc3545;
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s;
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
 .close-modal-btn:hover {
-  background-color: #c82333;
+    background-color: #c82333;
 }
- .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 60%;
-  max-width: 700px;
-  max-height: 80vh; /* Limit height */
-  overflow-y: auto; /* Scrollable content */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease-in-out;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 60%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
 }
 
 .close-button {
@@ -217,6 +210,7 @@ export default {
     font-size: 20px;
     cursor: pointer;
 }
+
 .task-card {
     display: flex;
     flex-direction: column;
@@ -227,36 +221,34 @@ export default {
     overflow: hidden;
     max-height: 91%;
     border: 1px solid #ccc;
-    border-radius: 8px; /* Smooth border corners */
+    border-radius: 8px;
 }
 
 .task-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
 }
 
 .task-card-body {
-    overflow-y: auto; /* Enables vertical scrolling */
-    max-height: 300px; /* Restricts the content area height */
-    padding-right: 10px; /* Adds padding for better readability */
-    box-sizing: border-box; /* Ensures padding is included in width/height */
+    overflow-y: auto;
+    max-height: 300px;
+    padding-right: 10px;
+    box-sizing: border-box;
 }
 
-/* Custom scrollbar styling */
 .task-card-body::-webkit-scrollbar {
-    width: 6px; /* Scrollbar width */
-    background-color: #f1f1f1; /* Scrollbar track color */
+    width: 6px;
+    background-color: #f1f1f1;
 }
 
 .task-card-body::-webkit-scrollbar-thumb {
-    background-color: #c1c1c1; /* Scrollbar thumb color */
-    border-radius: 10px; /* Rounded scrollbar thumb */
+    background-color: #c1c1c1;
+    border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb:hover {
-    background-color: #a1a1a1; /* Thumb color on hover */
+    background-color: #a1a1a1;
 }
 
 table {
@@ -265,27 +257,28 @@ table {
 }
 
 thead th {
-    text-align: center;
-    padding: 10px;
     font-size: 16px;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  background-color: #3498db;
-  color: white;
-    
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    background-color: #3498db;
+    color: white;
+
 }
 
+thead th,
 tbody td {
-    text-align: center;
+    text-align: center !important;
+    vertical-align: middle;
     padding: 10px;
     font-size: 15px;
-  font-family: 'Poppins', sans-serif;
-    border-bottom: 1px solid #f1f1f1; /* Adds spacing between rows */
-    word-break: break-word; /* Ensures long words break properly */
+    font-family: 'Poppins', sans-serif;
+    border-bottom: 1px solid #f1f1f1;
+    word-break: break-word;
 }
 
 .profile {
     display: flex;
+    justify-content: center;
     align-items: center;
 }
 
@@ -296,31 +289,32 @@ tbody td {
     margin-right: 8px;
 }
 
-/* Specific card border and header styles */
 #card2 {
     border: 1px solid rgb(112, 165, 245);
-    border-radius: 8px; /* Smooth border corners */
+    border-radius: 8px;
 }
 
 .task-card-header h4 {
     font-family: 'Poppins', sans-serif;
 }
 
-/* Loader Style */
 .loader {
     width: 50px;
     height: 50px;
-    border: 5px solid #f3f3f3; /* Light background */
-    border-top: 5px solid #3498db; /* Blue color */
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto; /* Center the loader */
+    margin: 0 auto;
 }
 
-/* Loader spin animation */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>
-

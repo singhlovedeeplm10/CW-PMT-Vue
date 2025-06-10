@@ -88,13 +88,41 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
-    public function fetchProjects()
+ public function fetchProjects()
 {
-    // Fetch projects with 'Started' status only
-    $projects = Project::where('status', 'Started')->get(['id', 'name']);
-    
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['projects' => []]);
+    }
+
+    // Get the first role name of the user (assumes one role per user)
+    $role = $user->roles->pluck('name')->first();
+
+    // If the user is an Admin, return all "Started" projects
+    if ($role === 'Admin') {
+        $projects = Project::where('status', 'Started')
+            ->get(['id', 'name', 'user_id', 'developer_assign_list']);
+        
+        return response()->json(['projects' => $projects]);
+    }
+
+    // For non-admin users, filter based on assignment or ownership
+    $projects = Project::where('status', 'Started')
+        ->get(['id', 'name', 'user_id', 'developer_assign_list'])
+        ->map(function ($project) {
+            $project->developer_assign_list = json_decode($project->developer_assign_list, true) ?? [];
+            return $project;
+        })
+        ->filter(function ($project) use ($user) {
+            return in_array($user->id, $project->developer_assign_list) ||
+                   $project->user_id == $user->id;
+        })
+        ->values();
+
     return response()->json(['projects' => $projects]);
 }
+
    
     
 
@@ -174,7 +202,7 @@ public function getDailyTasks(Request $request)
                 'user' => [
                     'id' => $tasks->first()->user->id,
                     'name' => $tasks->first()->user->name,
-                    'image' => $tasks->first()->user->profile->user_image ?? null, // Fetch user image
+                    'image' => $tasks->first()->user->profile->user_image ?? null,
                 ],
                 'projects' => $tasks->map(function ($task) {
                     return [

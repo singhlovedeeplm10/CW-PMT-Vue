@@ -8,9 +8,10 @@ import 'vue3-toastify/dist/index.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-// import 'vue-select/dist/vue-select.css';
 import MasterComponent from './components/layouts/Master.vue';
 import store from './store';
+import '../css/fonts.css';
+
 
 const app = createApp({});
 

@@ -336,8 +336,6 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 .col {
   margin-bottom: -16px;
@@ -376,7 +374,6 @@ export default {
   opacity: 1;
 }
 
-/* Form Fields */
 .form-control {
   border: 1px solid #ced4da;
   border-radius: 5px;
@@ -387,7 +384,6 @@ export default {
   box-shadow: 0 0 5px rgba(0, 122, 255, 0.5);
 }
 
-/* Buttons */
 .btn-success {
   background-color: #4e73df;
   color: white;
@@ -411,7 +407,6 @@ export default {
   background-color: #5a6268;
 }
 
-/* Modal Body */
 .modal-body {
   padding: 20px;
 }
@@ -422,7 +417,6 @@ export default {
   padding: 10px 0;
 }
 
-/* Text Area and Inputs */
 textarea.form-control {
   resize: none;
 }
@@ -435,7 +429,6 @@ select {
   margin-bottom: 15px;
 }
 
-/* Responsiveness */
 @media (max-width: 768px) {
   .custom-modal {
     padding: 10px;

@@ -20,7 +20,7 @@
         <div v-for="user in usersWithoutTasks" :key="user.id" class="employee-card">
 
           <div class="employee-avatar">
-            <img :src="user.user_image ? `/storage/${user.user_image}` : 'img/CWlogo.jpeg'" alt="Team Member"
+            <img :src="user.user_image ? `/uploads/${user.user_image}` : 'img/CWlogo.jpeg'" alt="Team Member"
               class="user-image">
           </div>
           <div class="employee-details">

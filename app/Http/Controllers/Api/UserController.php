@@ -41,7 +41,7 @@ class UserController extends Controller
         return view('test');
     }
 
-    public function index(Request $request, $page = 1)
+    public function showUsers(Request $request, $page = 1)
 {
     $loggedInUserId = auth()->id(); // Get the ID of the logged-in user
 
@@ -156,7 +156,7 @@ public function addUser(Request $request)
     return response()->json(['message' => 'User created successfully!', 'user' => $user], 201);
 }
 
-    public function updateUser(Request $request, $id)
+   public function updateUser(Request $request, $id)
 {
     // Define the rule for email validation with the exception for the current user's email
     $emailRule = 'required|email|unique:users,email,' . $id;
@@ -164,16 +164,16 @@ public function addUser(Request $request)
     // Validate the request
     $validated = $request->validate([
         'name' => 'required|string|max:255',
-        'email' => $emailRule, // Use the rule with the exception for the current user's email
+        'email' => $emailRule,
         'status' => 'required|in:0,1',
         'password' => 'nullable|min:6',
         'address' => 'nullable|string|max:255',
         'qualifications' => 'nullable|string|max:255',
         'employee_code' => 'nullable|string|max:255',
         'user_DOB' => 'nullable|date',
-        'user_image' => 'nullable|image|mimes:jpeg,png,jpg', // Image validation
-        'gender' => 'nullable|in:male,female', // Validation for gender
-        'contact' => 'nullable|digits:10', // Validation for contact
+        'user_image' => 'nullable|image|mimes:jpeg,png,jpg',
+        'gender' => 'nullable|in:male,female',
+        'contact' => 'nullable|digits:10',
     ]);
 
     // Find the user by ID
@@ -197,10 +197,30 @@ public function addUser(Request $request)
         'contact' => $validated['contact'] ?? null,
     ];
 
-    // Handle image upload
+    // Handle image upload - Updated to use custom path
     if ($request->hasFile('user_image')) {
-        $imagePath = $request->file('user_image')->store('profile_images', 'public');
-        $profileData['user_image'] = $imagePath;
+        // Create directory if it doesn't exist
+        $uploadPath = public_path('uploads/profile_images');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        // Generate unique filename
+        $imageName = time().'_'.$request->file('user_image')->getClientOriginalName();
+        
+        // Move the file to the desired location
+        $request->file('user_image')->move($uploadPath, $imageName);
+        
+        // Store relative path in database
+        $profileData['user_image'] = 'profile_images/'.$imageName;
+
+        // Delete old image if exists
+        if ($user->profile && $user->profile->user_image) {
+            $oldImagePath = public_path($user->profile->user_image);
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
     }
 
     // Update or create the user's profile
@@ -249,7 +269,7 @@ public function updateStatus(Request $request, $id)
         ]);
     }
 
-    public function getUserProfile()
+    public function userAccountDetails()
     {
         $user = auth()->user(); // Get logged-in user
         $profile = $user->profile; // Use the relationship to get profile data
@@ -474,7 +494,7 @@ public function employeeAttendances(Request $request)
         return [
             'id' => $employeeCode,
             'image' => $user->profile && $user->profile->user_image 
-                ? asset('storage/' . $user->profile->user_image) 
+                ? asset('uploads/' . $user->profile->user_image) 
                 : asset('img/CWlogo.jpeg'),
             'name' => $user->name,
             'status' => $user->status,
@@ -552,7 +572,7 @@ public function getEmployeeTimeLogsById(Request $request)
             $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
             $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
             $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-            $imagePath = $user->user_image ? asset('storage/' . $user->user_image) : asset('img/CWlogo.jpeg');
+            $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
 
             $timeLogs[] = [
                 'id' => $user->id,
@@ -656,7 +676,7 @@ public function getAllEmployeeTimeLogs()
 
             $productiveSeconds = max(0, $totalHoursSeconds - $totalBreakSeconds);
 
-            $imagePath = $user->user_image ? asset('storage/' . $user->user_image) : asset('img/CWlogo.jpeg');
+            $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
 
             $timeLogs[] = [
                 'id' => $user->id,

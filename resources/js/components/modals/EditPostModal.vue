@@ -11,13 +11,41 @@
           <button type="button" class="close-modal" @click="closeModal">&times;</button>
         </div>
         <div class="modal-body">
-          <input type="text" :value="decodeHtml(editData.title)"
-            @input="editData.title = encodeHtml($event.target.value)" placeholder="Edit Title" class="modal-input" />
-          <textarea :value="stripHtmlTags(editData.description)"
-            @input="editData.description = encodeHtmlWithFormatting($event.target.value)" placeholder="Edit Description"
-            class="modal-input"></textarea>
+          <!-- Title Input -->
+          <input type="text" :value="decodeHtml(localEditData.title)"
+            @input="localEditData.title = encodeHtml($event.target.value)" placeholder="Edit Title"
+            class="modal-input" />
+
+          <!-- Description Input -->
+          <textarea :value="stripHtmlTags(localEditData.description)"
+            @input="localEditData.description = encodeHtmlWithFormatting($event.target.value)"
+            placeholder="Edit Description" class="modal-input"></textarea>
+
+          <!-- Image Editing Section -->
+          <div class="image-edit-section">
+            <h6>Edit Images</h6>
+
+            <!-- Image Previews -->
+            <div v-if="localEditData.photos && localEditData.photos.length" class="image-preview-container"
+              @dragover.prevent @drop="handleDrop">
+              <div v-for="(photo, index) in localEditData.photos" :key="index" class="image-preview-item"
+                draggable="true" @dragstart="handleDragStart(index)" @dragenter.prevent="handleDragEnter(index)"
+                @dragend="handleDragEnd">
+                <div class="image-actions">
+                  <button @click="removeImage(index)" class="remove-image-btn">X</button>
+                </div>
+                <img :src="photo.url || photo" alt="Post photo" class="preview-image" />
+              </div>
+            </div>
+
+            <!-- No Images Message -->
+            <div v-else>
+              <p>No images in this post</p>
+            </div>
+          </div>
+
+          <!-- Save Button -->
           <div class="button-group">
-            <!-- <button @click="closeModal" class="cancel-button">Cancel</button> -->
             <button @click="savePostEdit" class="save-button">Save</button>
           </div>
         </div>
@@ -29,6 +57,18 @@
 <script>
 export default {
   name: "EditPostModal",
+  data() {
+    return {
+      localEditData: {
+        title: '',
+        description: '',
+        photos: []
+      },
+      dragStartIndex: null,
+      dragOverIndex: null
+    };
+  },
+
   props: {
     show: {
       type: Boolean,
@@ -43,11 +83,25 @@ export default {
     show(newVal) {
       if (newVal) {
         document.body.style.overflow = 'hidden';
+
+        // Initialize with empty array if photos is undefined
+        const photos = Array.isArray(this.editData.photos) ? this.editData.photos : [];
+
+        // Safely map photos
+        this.localEditData = {
+          title: this.editData.title || '',
+          description: this.editData.description || '',
+          photos: photos.map((photo, index) => ({
+            url: typeof photo === 'string' ? photo : photo.url || photo,
+            id: (this.editData.uploadIds && this.editData.uploadIds[index]) || null
+          }))
+        };
       } else {
         document.body.style.overflow = '';
       }
     }
   },
+
   methods: {
     decodeHtml(html) {
       const txt = document.createElement("textarea");
@@ -77,8 +131,95 @@ export default {
       return txt.innerHTML;
     },
 
-    savePostEdit() {
-      this.$emit("save-edit");
+    // Image handling methods
+    async removeImage(index) {
+      const imageToRemove = this.localEditData.photos[index];
+
+      // If the image has an ID (meaning it exists in the database), delete it
+      if (imageToRemove.id) {
+        try {
+          await axios.delete(`/api/delete-timeline-image/${imageToRemove.id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+
+          // Remove from local array only after successful deletion
+          this.localEditData.photos.splice(index, 1);
+
+        } catch (error) {
+          console.error('Error deleting image:', error);
+          // You might want to show an error message to the user here
+        }
+      } else {
+        // If it's a new image that hasn't been saved to DB yet, just remove it
+        this.localEditData.photos.splice(index, 1);
+      }
+    },
+
+    // Drag and drop methods
+    handleDragStart(index) {
+      this.dragStartIndex = index;
+      // Add visual feedback
+      event.target.classList.add('dragging');
+    },
+
+    handleDragEnter(index) {
+      this.dragOverIndex = index;
+    },
+
+    handleDragEnd() {
+      // Remove visual feedback
+      event.target.classList.remove('dragging');
+      this.dragOverIndex = null;
+    },
+
+    handleDrop() {
+      if (this.dragStartIndex !== null && this.dragOverIndex !== null &&
+        this.dragStartIndex !== this.dragOverIndex) {
+        // Reorder the photos array
+        const movedItem = this.localEditData.photos.splice(this.dragStartIndex, 1)[0];
+        this.localEditData.photos.splice(this.dragOverIndex, 0, movedItem);
+
+        // You could optionally update the order immediately here if you want
+        // But we'll wait until save to minimize API calls
+      }
+      this.dragStartIndex = null;
+      this.dragOverIndex = null;
+    },
+
+    async savePostEdit() {
+      // Update the basic post data
+      this.editData.title = this.localEditData.title;
+      this.editData.description = this.localEditData.description;
+      this.editData.photos = [...this.localEditData.photos];
+
+      // Prepare the image order update
+      const imageOrderUpdate = {
+        timeline_id: this.editData.timeline_id,
+        image_order: this.localEditData.photos.map((photo, index) => ({
+          id: photo.id,
+          order: index + 1  // Starting order from 1
+        }))
+      };
+
+      try {
+        // First update the image order
+        await axios.post('/api/update-image-order', imageOrderUpdate, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+
+        // Then emit the save event
+        this.$emit("save-edit");
+
+      } catch (error) {
+        console.error('Error updating image order:', error);
+        // You might want to show an error message to the user here
+        // But still emit save-edit in case you want to proceed with other updates
+        this.$emit("save-edit");
+      }
     },
 
     closeModal() {
@@ -89,6 +230,146 @@ export default {
 </script>
 
 <style scoped>
+.image-edit-section {
+  margin: 20px 0;
+  padding: 20px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+}
+
+.image-edit-section:hover {
+  border-color: #4a9fe0;
+  background-color: #f5f9fd;
+}
+
+.image-preview-container {
+  min-height: 150px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 15px 0;
+  padding: 3px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.image-preview-item {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  width: 160px;
+  height: 130px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.image-preview-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.image-preview-item.dragging {
+  opacity: 0.7;
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.image-preview-item.drag-over {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 2px #4a9fe0;
+  background-color: rgba(74, 159, 224, 0.1);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.image-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-preview-item:hover .image-actions {
+  opacity: 1;
+}
+
+.remove-image-btn {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  line-height: 22px;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.remove-image-btn:hover {
+  background-color: #cc0000;
+  transform: scale(1.1);
+}
+
+/* Drop indicator styles */
+.drop-indicator {
+  position: absolute;
+  height: 4px;
+  background-color: #4a9fe0;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+/* Add some animation for drag operations */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 159, 224, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(74, 159, 224, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 159, 224, 0);
+  }
+}
+
+.image-preview-container.drag-active {
+  animation: pulse 2s infinite;
+  border: 2px dashed #4a9fe0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .image-preview-item {
+    width: 120px;
+    height: 100px;
+  }
+
+  .image-preview-container {
+    gap: 15px;
+  }
+}
+
 .custom-header {
   background-color: #4e73df;
   color: white;
@@ -227,7 +508,6 @@ textarea.modal-input {
   transform: translateY(-2px);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .edit-post-modal {
     width: 90%;

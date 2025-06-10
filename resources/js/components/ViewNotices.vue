@@ -13,7 +13,7 @@
       <div class="flex items-center space-x-4"
         :class="{ 'birthday-layout': notice.user_image, 'default-layout': !notice.user_image }">
         <!-- User Image for Birthday Notices -->
-        <img v-if="notice.user_image" :src="`/storage/${notice.user_image}`" alt="User Image" class="birthday-avatar" />
+        <img v-if="notice.user_image" :src="`/uploads/${notice.user_image}`" alt="User Image" class="birthday-avatar" />
 
         <div class="content-container">
           <h5 class="text-2xl font-bold">
@@ -69,54 +69,38 @@ export default {
 };
 </script>
 
-
-
-
 <style scoped>
 .birthday-layout {
   display: flex;
   align-items: flex-start;
   flex-direction: row;
+  gap: 20px;
 }
 
 .default-layout {
-  display: contents;
+  display: flex;
   align-items: flex-start;
-  flex-direction: row;
+  gap: 20px;
 }
 
-/* .flex.items-center {
-  display: contents;
-  align-items: flex-start;
-  flex-direction: row;
-} */
-
 .birthday-avatar {
-  width: 80px;
-  height: 80px;
+  width: 96px;
+  height: 100px;
   border-radius: 50%;
-  /* Ensures a perfect circle */
   object-fit: cover;
-  /* Ensures the image fills the space without distortion */
   border: 4px solid #ff9800;
-  /* Orange border for birthday highlight */
   box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-  /* Subtle glow */
   transition: transform 0.3s ease-in-out;
 }
 
 .birthday-card {
   background-color: #ffe082;
-  /* Soft yellow background */
   color: #d84315;
-  /* Deep orange text */
   border: 2px solid #ff9800;
-  /* Orange border */
   box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
   transition: all 0.3s ease-in-out;
   position: relative;
   padding-top: 50px;
-  /* Space for banner */
 }
 
 .birthday-banner {
@@ -135,13 +119,11 @@ export default {
 
 .birthday-card h5 {
   color: #c2185b;
-  /* A bolder pinkish-red for headings */
   font-weight: 700;
 }
 
 .birthday-card .description {
   color: #7b1fa2;
-  /* A purple shade for the text */
   font-style: italic;
 }
 
@@ -162,13 +144,9 @@ export default {
 
 .card {
   width: 100%;
-  /* display: flex;
-    align-items: center; */
   gap: 20px;
   background-color: #fff;
-  /* Light background */
   color: #333;
-  /* Dark text for readability */
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -184,15 +162,12 @@ export default {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #f9a826;
-  /* Accent color */
 }
 
 .content-container {
   flex: 1;
-  margin-left: 20px;
-  /* Space between image and text */
-  max-width: calc(100% - 100px);
-  /* Adjusts for image width and padding */
+  margin-left: 0;
+  max-width: 100%;
 }
 
 .content-container h5 {

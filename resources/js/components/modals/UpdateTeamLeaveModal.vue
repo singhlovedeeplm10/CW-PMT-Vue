@@ -260,7 +260,6 @@ export default {
   font-family: math;
 }
 
-/* Modal Content Styling */
 .custom-modal {
   border-radius: 10px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
@@ -301,9 +300,7 @@ export default {
   align-items: center;
   justify-content: center;
   min-width: 70px;
-  /* Ensures consistent width */
   height: 24px;
-  /* Adjust height to center the text properly */
 }
 
 .modal-body {
@@ -311,7 +308,6 @@ export default {
   background-color: #f9f9f9;
 }
 
-/* Input Fields */
 .form-control {
   border-radius: 5px;
   border: 1px solid #ced4da;
@@ -325,7 +321,6 @@ export default {
   box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
 }
 
-/* Buttons */
 .modal-footer .btn {
   padding: 10px 20px;
   font-size: 14px;
@@ -341,17 +336,14 @@ export default {
   border-color: #6c757d;
 }
 
-/* Custom Flexbox Layout for Date and Time Fields */
 .date-fields,
 .time-fields {
   display: flex;
   gap: 15px;
-  /* Adjust the gap between fields as needed */
 }
 
 .date-fields .mb-3,
 .time-fields .mb-3 {
   flex: 1;
-  /* Ensure fields take equal width */
 }
 </style>

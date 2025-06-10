@@ -22,7 +22,6 @@ class Timeline extends Model
     ];
 
     /**
-     * The attributes that should be cast to native types.
      *
      * @var array
      */
@@ -30,9 +29,6 @@ class Timeline extends Model
         'timeline_uploads_ids' => 'array',
     ];
 
-    /**
-     * Get the user associated with the timeline.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
