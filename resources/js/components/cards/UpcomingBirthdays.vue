@@ -3,7 +3,8 @@
         <!-- Task List Card -->
         <div class="task-card flex-fill shadow-sm position-relative" id="card2">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4 class="card_heading">Upcoming Birthdays</h4>
+                <h4 class="card_heading" @click="fetchNext30DaysBirthdays" style="cursor: pointer;">Upcoming Birthdays
+                </h4>
                 <Calendar :selectedDate="tomorrowDate" @dateSelected="fetchBirthdays" />
             </div>
 
@@ -12,29 +13,29 @@
                     <span class="visually-hidden">Loading...</span>
                 </div>
 
-                <div v-else-if="users.length" class="mt-3 w-100">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Date of Birth</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="user in users" :key="user.id">
-                                <td>
-                                    <div class="birthday-profile">
-                                        <img :src="user.user_image" alt="User Image" class="user-avatar" />
+                <div v-else class="mt-3 w-100">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date of Birth</th>
+                                </tr>
+                            </thead>
+                            <tbody class="scrollable-tbody">
+                                <tr v-if="users.length" v-for="user in users" :key="user.id">
+                                    <td class="d-flex align-items-center">
+                                        <img :src="user.user_image" alt="User Image" class="user-avatar me-2" />
                                         <span class="user-name">{{ user.name }}</span>
-                                    </div>
-                                </td>
-                                <td>{{ user.user_DOB }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div v-else class="mt-3">
-                    <p>No Member Exist.</p>
+                                    </td>
+                                    <td>{{ formatDOB(user.user_DOB) }}</td>
+                                </tr>
+                                <tr v-else>
+                                    <td colspan="2" class="text-center py-4">No Members Exist</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -55,6 +56,20 @@ export default {
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
 
+        // Function to format date as "date-month name-year"
+        const formatDOB = (dateString) => {
+            if (!dateString) return '';
+
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString; // Return original if invalid date
+
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'long' });
+            const year = date.getFullYear();
+
+            return `${day}-${month}-${year}`;
+        };
+
         const fetchBirthdays = async (date) => {
             isLoading.value = true;
             try {
@@ -69,8 +84,30 @@ export default {
             }
         };
 
+        const fetchNext30DaysBirthdays = async () => {
+            isLoading.value = true;
+            try {
+                const response = await axios.get("/api/upcoming-birthdays", {
+                    params: { range: 30 },
+                });
+                users.value = response.data;
+            } catch (error) {
+                console.error("Error fetching next 30 days birthdays:", error);
+            } finally {
+                isLoading.value = false;
+            }
+        };
+
         fetchBirthdays(tomorrowDate.toISOString().split("T")[0]);
-        return { users, tomorrowDate, fetchBirthdays, isLoading };
+
+        return {
+            users,
+            tomorrowDate,
+            fetchBirthdays,
+            fetchNext30DaysBirthdays,
+            isLoading,
+            formatDOB
+        };
     },
 };
 </script>
@@ -85,9 +122,8 @@ export default {
 .user-avatar {
     width: 40px;
     height: 40px;
-    object-fit: cover;
     border-radius: 50%;
-    margin-right: 8px;
+    object-fit: cover;
 }
 
 .user-name {
@@ -128,8 +164,6 @@ export default {
 }
 
 .birthday-card-body {
-    overflow-y: auto;
-    max-height: 300px;
     box-sizing: border-box;
     width: 100%;
 }
@@ -148,9 +182,21 @@ export default {
     background-color: #a1a1a1;
 }
 
+.table-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
+}
+
+thead {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 thead th {
@@ -161,6 +207,21 @@ thead th {
     color: white;
     text-align: center;
     vertical-align: middle;
+    position: sticky;
+    top: 0;
+}
+
+.scrollable-tbody {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.scrollable-tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 tbody td {
@@ -171,6 +232,7 @@ tbody td {
     word-break: break-word;
     text-align: center;
     vertical-align: middle;
+    justify-content: center;
 }
 
 .profile {
@@ -212,13 +274,6 @@ tbody td {
     100% {
         transform: rotate(360deg);
     }
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
 }
 
 .user-name {

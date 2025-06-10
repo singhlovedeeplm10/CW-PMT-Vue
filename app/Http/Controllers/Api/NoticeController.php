@@ -285,25 +285,49 @@ personally and professionally. Enjoy your day to the fullest!',
 
 public function upcomingBirthdays(Request $request)
 {
-    $date = $request->input('date'); // Format: YYYY-MM-DD
-    $monthDay = date('m-d', strtotime($date)); // Extract MM-DD for comparison
+    $date = $request->input('date');
+    $range = $request->input('range');
 
-    $birthdays = DB::table('users')
-        ->join('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-        ->where('users.status', '1') // Only fetch active users
-        ->where(DB::raw('DATE_FORMAT(user_profiles.user_DOB, "%m-%d")'), $monthDay)
-        ->select('users.id', 'users.name', 'user_profiles.user_image', 'user_profiles.user_DOB')
-        ->get();
+    if ($range) {
+        $range = (int) $range;
+        $today = now();
+        $endDate = now()->copy()->addDays($range);
 
-    // Add the full URL for the images
+        // Generate an array of all 'm-d' values between today and endDate
+        $monthDays = [];
+        for ($i = 0; $i <= $range; $i++) {
+            $monthDays[] = $today->copy()->addDays($i)->format('m-d');
+        }
+
+        $birthdays = DB::table('users')
+            ->join('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+            ->where('users.status', '1')
+            ->whereNotNull('user_profiles.user_DOB')
+            ->where('user_profiles.user_DOB', '!=', '')
+            ->whereIn(DB::raw('DATE_FORMAT(user_profiles.user_DOB, "%m-%d")'), $monthDays)
+            ->select('users.id', 'users.name', 'user_profiles.user_image', 'user_profiles.user_DOB')
+            ->get();
+    } else {
+        $monthDay = date('m-d', strtotime($date));
+
+        $birthdays = DB::table('users')
+            ->join('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+            ->where('users.status', '1')
+            ->whereNotNull('user_profiles.user_DOB')
+            ->where('user_profiles.user_DOB', '!=', '')
+            ->where(DB::raw('DATE_FORMAT(user_profiles.user_DOB, "%m-%d")'), $monthDay)
+            ->select('users.id', 'users.name', 'user_profiles.user_image', 'user_profiles.user_DOB')
+            ->get();
+    }
+
+    // Format image paths
     $birthdays = $birthdays->map(function ($user) {
         if ($user->user_image) {
-            // Remove 'public/' or 'uploads/' if it's part of the stored path
             $imagePath = ltrim($user->user_image, 'public/');
             $imagePath = ltrim($imagePath, 'uploads/');
             $user->user_image = asset('uploads/profile_images/' . basename($imagePath));
         } else {
-            $user->user_image = null;
+            $user->user_image = asset('img/CWlogo.jpeg'); // Default image
         }
         return $user;
     });

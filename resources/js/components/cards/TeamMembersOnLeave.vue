@@ -19,7 +19,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in usersOnLeave" :key="user.id">
+            <tr v-for="user in usersOnLeave" :key="user.id" style="border-bottom: 1px solid #e9e0e0;">
               <td class="d-flex align-items-center">
                 <img :src="user.user_image || 'img/CWlogo.jpeg'" alt="Team Member" class="user-image me-2">
                 {{ user.name }}
@@ -86,7 +86,6 @@ export default {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ddd;
 }
 
 .table {

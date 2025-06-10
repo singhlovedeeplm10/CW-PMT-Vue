@@ -25,12 +25,10 @@
           </thead>
           <tbody>
             <tr v-for="member in members" :key="member.user_name">
-              <td>
-                <div class="wfh-profile">
-                  <img :src="member.user_image || 'img/CWlogo.jpeg'" alt="User Image"
-                    class="img-fluid rounded-circle me-2" />
-                  <span>{{ member.user_name }}</span>
-                </div>
+              <td class="d-flex align-items-center">
+                <img :src="member.user_image || 'img/CWlogo.jpeg'" alt="User Image" class="user-image me-2" />
+                <span>{{ member.user_name }}</span>
+
               </td>
               <td style="padding: 18px 15px;">{{ member.date_range }}</td>
             </tr>
@@ -91,6 +89,13 @@ export default {
 
 
 <style scoped>
+.user-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .wfh-profile {
   display: flex;
   justify-content: center;
@@ -167,7 +172,7 @@ tbody td {
   padding: 8px 55px;
   font-size: 15px;
   font-family: 'Poppins', sans-serif;
-  border-bottom: 1px solid #f1f1f1;
+  border: none;
   word-break: break-word;
 }
 

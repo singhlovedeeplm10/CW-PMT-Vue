@@ -133,27 +133,24 @@ export default {
 
     // Image handling methods
     async removeImage(index) {
-      const imageToRemove = this.localEditData.photos[index];
+      if (confirm('Are you sure you want to delete this media?')) {
+        const imageToRemove = this.localEditData.photos[index];
+        if (imageToRemove.id) {
+          try {
+            await axios.delete(`/api/delete-timeline-image/${imageToRemove.id}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            });
 
-      // If the image has an ID (meaning it exists in the database), delete it
-      if (imageToRemove.id) {
-        try {
-          await axios.delete(`/api/delete-timeline-image/${imageToRemove.id}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+            this.localEditData.photos.splice(index, 1);
 
-          // Remove from local array only after successful deletion
+          } catch (error) {
+            console.error('Error deleting image:', error);
+          }
+        } else {
           this.localEditData.photos.splice(index, 1);
-
-        } catch (error) {
-          console.error('Error deleting image:', error);
-          // You might want to show an error message to the user here
         }
-      } else {
-        // If it's a new image that hasn't been saved to DB yet, just remove it
-        this.localEditData.photos.splice(index, 1);
       }
     },
 
