@@ -37,8 +37,8 @@ export default {
   name: "UserBreakList",
   data() {
     return {
-      breaks: [], // Holds break data
-      loading: true, // Loading state
+      breaks: [],
+      loading: true,
     };
   },
   mounted() {
@@ -56,7 +56,7 @@ export default {
       } catch (error) {
         console.error("Error fetching breaks:", error);
       } finally {
-        this.loading = false; // Data fetch complete
+        this.loading = false;
       }
     },
   },
@@ -101,7 +101,7 @@ export default {
   padding: 12px 10px;
   font-size: 16px;
   background-color: #3498db;
-    color: white;
+  color: white;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
 }

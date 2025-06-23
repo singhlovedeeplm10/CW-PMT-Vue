@@ -239,7 +239,7 @@ h2 {
 
 .add-notice-btn {
   position: absolute;
-  top: 88px;
+  top: 115px;
   right: 20px;
   padding: 10px 16px;
   font-size: 1em;

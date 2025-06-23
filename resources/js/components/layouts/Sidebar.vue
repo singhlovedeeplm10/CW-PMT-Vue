@@ -2,9 +2,9 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="profile-container">
-        <img :src="userImage || 'img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
+        <img :src="userImage || '/img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
       </div>
-      <h2 class="sidebar-title">{{ userName }}</h2>
+      <h2 class="sidebar-title">{{ userName.split(' ')[0] }}</h2>
     </div>
 
     <ul class="sidebar-list">
@@ -16,7 +16,6 @@
         <router-link to="/projects" class="sidebar-link" active-class="active-link">Projects</router-link>
       </li>
 
-      <!-- Dropdown for Employees (Only shown for Admin) -->
       <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('employees')">
         <div class="timelines-header">
           <h3 class="sidebar-subtitle">Team</h3>
@@ -37,7 +36,6 @@
         </ul>
       </li>
 
-      <!-- Time Logs tab (Only shown for non-admin users) -->
       <li v-if="userRole !== 'Admin'" class="sidebar-item">
         <router-link to="/employees-timelogs" class="sidebar-link" active-class="active-link">Time Logs</router-link>
       </li>
@@ -58,12 +56,10 @@
         </ul>
       </li>
 
-      <!-- Time Logs tab (Only shown for non-admin users) -->
       <li v-if="userRole !== 'Admin'" class="sidebar-item">
         <router-link to="/mytasklist" class="sidebar-link" active-class="active-link">My Tasks</router-link>
       </li>
 
-      <!-- Dropdown for Leaves -->
       <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('leaves')">
         <div class="leaves-header">
           <h3 class="sidebar-subtitle">Leaves</h3>
@@ -79,12 +75,10 @@
         </ul>
       </li>
 
-      <!-- Time Logs tab (Only shown for non-admin users) -->
       <li v-if="userRole !== 'Admin'" class="sidebar-item">
         <router-link to="/leaves" class="sidebar-link" active-class="active-link">My Leaves</router-link>
       </li>
 
-      <!-- Dropdown for TimeLine -->
       <li v-if="userRole === 'Admin'" class="sidebar-item" @click="toggleDropdown('timelines')">
         <div class="timelines-header">
           <h3 class="sidebar-subtitle">TimeLine</h3>
@@ -101,7 +95,6 @@
         </ul>
       </li>
 
-      <!-- Time Logs tab (Only shown for non-admin users) -->
       <li v-if="userRole !== 'Admin'" class="sidebar-item">
         <router-link to="/timeline" class="sidebar-link" active-class="active-link">TimeLine</router-link>
       </li>
@@ -116,6 +109,9 @@
 
       <li class="sidebar-item">
         <router-link to="/policies" class="sidebar-link" active-class="active-link">Policies</router-link>
+      </li>
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
+        <router-link to="/devices" class="sidebar-link" active-class="active-link">Devices</router-link>
       </li>
     </ul>
   </aside>
@@ -148,7 +144,6 @@ export default {
       return this.getUserRole;
     },
 
-    // Check if a sub-tab is active
     isActiveEmployees() {
       return ["/users", "/employees-attendances", "/employees-timelogs"].includes(this.$route.path);
     },
@@ -195,28 +190,22 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .sidebar {
   position: fixed;
   width: 190px;
   height: calc(100vh - 75px);
-  /* Subtract header height */
   background: #24292e;
   color: #ecf0f1;
   padding: 20px 10px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
-  /* Prevents resizing */
   overflow-y: auto;
-  /* Enable vertical scrolling */
-  /* Custom scrollbar styles */
   scrollbar-width: thin;
   scrollbar-color: #16a085 #24292e;
 }
 
-/* For Webkit browsers (Chrome, Safari) */
 .sidebar::-webkit-scrollbar {
   width: 6px;
 }
@@ -299,7 +288,6 @@ export default {
 .sidebar-link:hover,
 .active-link {
   background-color: #16a085;
-  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
@@ -307,7 +295,6 @@ export default {
 .sidebar-sublink:hover,
 .active-link {
   background-color: #16a085;
-  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
@@ -323,14 +310,12 @@ export default {
   border-radius: 8px;
   transition: background-color 0.3s ease;
   height: 40px;
-  /* Fixed height for consistent alignment */
 }
 
 .timelines-header:hover,
 .leaves-header:hover,
 .tasks-header:hover {
   background-color: #16a085;
-  /* Highlight on hover/active */
   color: #fff;
   box-shadow: 0 2px 10px rgba(22, 160, 133, 0.5);
 }
@@ -339,7 +324,6 @@ export default {
   font-size: 1rem;
   color: #ecf0f1;
   margin: 0;
-  /* Remove default margin */
 }
 
 .sidebar-submenu {

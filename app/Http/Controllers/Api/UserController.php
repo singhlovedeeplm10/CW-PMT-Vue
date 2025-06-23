@@ -156,25 +156,37 @@ public function addUser(Request $request)
     return response()->json(['message' => 'User created successfully!', 'user' => $user], 201);
 }
 
-   public function updateUser(Request $request, $id)
+public function updateUser(Request $request, $id)
 {
     // Define the rule for email validation with the exception for the current user's email
     $emailRule = 'required|email|unique:users,email,' . $id;
 
     // Validate the request
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => $emailRule,
-        'status' => 'required|in:0,1',
-        'password' => 'nullable|min:6',
-        'address' => 'nullable|string|max:255',
-        'qualifications' => 'nullable|string|max:255',
-        'employee_code' => 'nullable|string|max:255',
-        'user_DOB' => 'nullable|date',
-        'user_image' => 'nullable|image|mimes:jpeg,png,jpg',
-        'gender' => 'nullable|in:male,female',
-        'contact' => 'nullable|digits:10',
-    ]);
+   $validated = $request->validate([
+    'name' => 'required|string|max:255',
+    'email' => $emailRule,
+    'password' => 'nullable|min:6',
+    'permanent_address' => 'nullable|string|max:255',
+    'temporary_address' => 'nullable|string',
+    'qualifications' => 'nullable|string|max:255',
+    'employee_code' => 'nullable|string|max:255',
+    'user_DOB' => 'nullable|date',
+    'user_image' => 'nullable|image|mimes:jpeg,png,jpg,webp',
+    'gender' => 'nullable|in:male,female,other',
+    'contact' => 'nullable|digits:10',
+    'alternate_contact_number' => 'nullable|digits_between:10,15',
+    'date_of_joining' => 'nullable|date',
+    'date_of_releaving' => 'nullable|date',
+    'releaving_note' => 'nullable|string',
+    'next_appraisal_month' => 'nullable|string',
+    'blood_group' => 'nullable|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+    'designation' => 'nullable|string|max:255',
+    'current_salary' => 'nullable|numeric',
+    'send_notification' => 'nullable|boolean',
+    'appraisals' => 'nullable|json',
+    'credentials' => 'nullable|json',
+    'employee_personal_email' => 'nullable|email', // ✅ added
+]);
 
     // Find the user by ID
     $user = User::findOrFail($id);
@@ -183,21 +195,42 @@ public function addUser(Request $request)
     $user->update([
         'name' => $validated['name'],
         'email' => $validated['email'],
-        'status' => $validated['status'],
         'password' => $request->filled('password') ? Hash::make($validated['password']) : $user->password,
     ]);
 
     // Prepare profile data
-    $profileData = [
-        'address' => $validated['address'] ?? null,
-        'qualifications' => $validated['qualifications'] ?? null,
-        'employee_code' => $validated['employee_code'] ?? null,
-        'user_DOB' => $validated['user_DOB'] ?? null,
-        'gender' => $validated['gender'] ?? null,
-        'contact' => $validated['contact'] ?? null,
-    ];
+$profileData = [
+    'permanent_address' => $validated['permanent_address'] ?? null,
+    'temporary_address' => $validated['temporary_address'] ?? null,
+    'qualifications' => $validated['qualifications'] ?? null,
+    'employee_code' => $validated['employee_code'] ?? null,
+    'user_DOB' => $validated['user_DOB'] ?? null,
+    'gender' => $validated['gender'] ?? null,
+    'contact' => $validated['contact'] ?? null,
+    'alternate_contact_number' => $validated['alternate_contact_number'] ?? null,
+    'date_of_joining' => $validated['date_of_joining'] ?? null,
+    'date_of_releaving' => $validated['date_of_releaving'] ?? null,
+    'releaving_note' => $validated['releaving_note'] ?? null,
+    'next_appraisal_month' => $validated['next_appraisal_month'] ?? null,
+    'blood_group' => $validated['blood_group'] ?? null,
+    'designation' => $validated['designation'] ?? null,
+    'current_salary' => $validated['current_salary'] ?? null,
+    'employee_personal_email' => $validated['employee_personal_email'] ?? null, // ✅ added
+];
 
-    // Handle image upload - Updated to use custom path
+    // Handle JSON data for appraisals
+    if ($request->filled('appraisals')) {
+        $appraisals = json_decode($request->input('appraisals'), true);
+        $profileData['appraisals'] = $this->sanitizeAppraisals($appraisals);
+    }
+
+    // Handle JSON data for credentials
+    if ($request->filled('credentials')) {
+        $credentials = json_decode($request->input('credentials'), true);
+        $profileData['credentials'] = $this->sanitizeCredentials($credentials);
+    }
+
+    // Handle image upload
     if ($request->hasFile('user_image')) {
         // Create directory if it doesn't exist
         $uploadPath = public_path('uploads/profile_images');
@@ -216,7 +249,7 @@ public function addUser(Request $request)
 
         // Delete old image if exists
         if ($user->profile && $user->profile->user_image) {
-            $oldImagePath = public_path($user->profile->user_image);
+            $oldImagePath = public_path('uploads/'.$user->profile->user_image);
             if (file_exists($oldImagePath)) {
                 unlink($oldImagePath);
             }
@@ -235,6 +268,36 @@ public function addUser(Request $request)
         'message' => 'User updated successfully.',
         'data' => $user->load('profile'),
     ]);
+}
+
+/**
+ * Sanitize and validate appraisals data
+ */
+protected function sanitizeAppraisals(array $appraisals): array
+{
+    return array_map(function ($appraisal) {
+        return [
+            'date' => $appraisal['date'] ?? null,
+            'amount' => isset($appraisal['amount']) ? (float)$appraisal['amount'] : null,
+            'final_amount' => isset($appraisal['final_amount']) ? (float)$appraisal['final_amount'] : null,
+            'note' => $appraisal['note'] ?? null,
+        ];
+    }, $appraisals);
+}
+
+/**
+ * Sanitize and validate credentials data
+ */
+protected function sanitizeCredentials(array $credentials): array
+{
+    return array_map(function ($credential) {
+        return [
+            'label' => $credential['label'] ?? null,
+            'username' => $credential['username'] ?? null,
+            'password' => $credential['password'] ?? null, // Note: You should encrypt this in production
+            'note' => $credential['note'] ?? null,
+        ];
+    }, $credentials);
 }
 
 

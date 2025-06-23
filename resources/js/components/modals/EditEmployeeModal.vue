@@ -23,9 +23,9 @@
               placeholder="Enter new password (optional)" />
           </div>
           <div class="form-group">
-            <label for="address" class="form-label">Address</label>
-            <input id="address" type="text" v-model="formData.address" class="form-control custom-input"
-              placeholder="Enter address" />
+            <label for="permanent_address" class="form-label">Address</label>
+            <input id="permanent_address" type="text" v-model="formData.permanent_address"
+              class="form-control custom-input" placeholder="Enter address" />
           </div>
           <div class="form-group">
             <label for="gender" class="form-label">Gender</label>

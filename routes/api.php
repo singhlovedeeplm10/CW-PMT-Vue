@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\MailController;
 use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\SalarySlipController;
+use App\Http\Controllers\Api\DeviceController;
 
 
 
@@ -71,7 +72,7 @@ Route::post('/users', [UserController::class, 'addUser']);
 Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'showUsers']);
 Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
-Route::post('/users/{id}', [UserController::class, 'updateUser']);
+Route::middleware(['auth:sanctum'])->post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
 Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);
 Route::get('/users/{user}/edit', [UserController::class, 'edit']);
@@ -154,4 +155,11 @@ Route::middleware('auth:sanctum')->get('/get-salary', [SalarySlipController::cla
 Route::get('/view-salary-slip/{employeeCode}', [SalarySlipController::class, 'viewSalarySlip']);
 Route::put('/update-salary-slip/{id}', [SalarySlipController::class, 'updateSalarySlip']);
 Route::delete('/delete-salary-slip/{id}', [SalarySlipController::class, 'deleteSalarySlip']);
+
+// DEVICES ROUTES
+Route::middleware('auth:sanctum')->post('/add-devices', [DeviceController::class, 'addDevice']);
+Route::get('/devices', [DeviceController::class, 'index']);
+Route::middleware('auth:sanctum')->put('/update-devices/{id}', [DeviceController::class, 'updateDevice']);
+Route::get('/devices/{id}/history', [DeviceController::class, 'history']);
+Route::middleware('auth:sanctum')->put('/update-devices-status/{id}', [DeviceController::class, 'toggleStatus']);
 

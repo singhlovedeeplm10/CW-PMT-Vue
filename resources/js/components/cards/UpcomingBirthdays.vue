@@ -9,8 +9,12 @@
             </div>
 
             <div class="birthday-card-body d-flex justify-content-center align-items-center">
-                <div v-if="isLoading" class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+                <div v-if="isLoading"
+                    class="d-flex justify-content-center align-items-center position-absolute w-100 h-100"
+                    style="top: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 10;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
 
                 <div v-else class="mt-3 w-100">
@@ -139,11 +143,6 @@ export default {
     display: block;
     max-width: 300px;
     line-height: 1.4;
-}
-
-.spinner-border {
-    width: 3rem;
-    height: 3rem;
 }
 
 .task-card {

@@ -20,6 +20,8 @@ import ViewNotices from '../components/ViewNotices.vue';
 import SalarySlips from '../components/SalarySlips.vue';
 import EmployeesAttendances from '../components/EmployeesAttendances.vue';
 import EmployeesTimelogs from '../components/EmployeesTimelogs.vue';
+import EditEmployee from '../components/EditEmployee.vue';
+import Devices from '../components/Devices.vue';
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
@@ -41,6 +43,8 @@ const routes = [
   { path: '/salary-slips', name: 'SalarySlips', component: SalarySlips },
   { path: '/employees-attendances', name: 'EmployeesAttendances', component: EmployeesAttendances },
   { path: '/employees-timelogs', name: 'EmployeesTimelogs', component: EmployeesTimelogs },
+  { path: '/devices', name: 'Devices', component: Devices },
+  { path: '/employees/:id/edit', name: 'EditEmployee', component: EditEmployee, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({

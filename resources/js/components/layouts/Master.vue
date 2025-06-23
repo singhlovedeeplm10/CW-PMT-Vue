@@ -41,10 +41,8 @@ export default {
 main {
   flex: 1;
   margin-left: 190px;
-  /* Match sidebar width */
   padding: 20px;
   min-height: calc(100vh - 75px);
-  /* Full height minus header */
 }
 
 @media (max-width: 768px) {
@@ -61,7 +59,6 @@ main {
     width: 100%;
     height: auto;
     max-height: 300px;
-    /* Adjust for mobile */
     position: relative;
   }
 }

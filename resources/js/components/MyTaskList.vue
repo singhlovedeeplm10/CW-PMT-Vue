@@ -167,7 +167,6 @@ h2 {
 .table td {
   vertical-align: middle;
   padding: 12px 15px;
-  /* Padding for better readability */
 }
 
 .table th {
@@ -194,7 +193,6 @@ h2 {
 
 .table tbody tr:hover {
   background-color: #e9ecef;
-  /* Highlight row on hover */
 }
 
 .badge-green {

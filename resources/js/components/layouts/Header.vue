@@ -3,7 +3,7 @@
     <nav class="nav">
       <div class="header-left">
         <router-link to="/dashboard" class="sidebar-link header-logo">
-          <img src="img/CWlogo1.svg" alt="Contriwhiz Logo" class="logo-image" />
+          <img src="/img/CWlogo1.svg" alt="Contriwhiz Logo" class="logo-image" />
         </router-link>
       </div>
       <div class="header-right">

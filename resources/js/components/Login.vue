@@ -3,7 +3,6 @@
     <div class="login-card">
       <div class="header">
         <img src="img/Tablogo.svg" alt="Logo" class="logo" />
-        <!-- <h2 class="brand">CONTRIWHIZ</h2> -->
       </div>
       <form @submit.prevent="login" class="login-form">
         <div class="input-group">
@@ -38,7 +37,6 @@ export default {
     };
   },
   created() {
-    // Redirect to dashboard if already logged in
     if (localStorage.getItem('authToken')) {
       this.$router.push({ name: 'Dashboard' });
     }
@@ -57,7 +55,7 @@ export default {
         if (response.data.success) {
           // === 1. Store token and expiration time ===
           const now = Date.now();
-          const expirationInHours = 24;
+          const expirationInHours = 12;
           const expiresAt = now + expirationInHours * 60 * 60 * 1000;
 
           localStorage.setItem('authToken', response.data.token);
@@ -91,7 +89,6 @@ export default {
 </script>
 
 <style scoped>
-/* Background and container styling */
 .login-container {
   display: flex;
   align-items: center;
@@ -110,7 +107,6 @@ export default {
   text-align: center;
 }
 
-/* Header section */
 .header {
   margin-bottom: 20px;
   border: none;
@@ -130,7 +126,6 @@ export default {
   margin: 0;
 }
 
-/* Form styling */
 .login-form {
   margin-top: 20px;
 }
@@ -161,7 +156,6 @@ export default {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-/* Button styling */
 .login-button {
   width: 100%;
   padding: 12px;
@@ -185,14 +179,12 @@ export default {
   transform: scale(1.02);
 }
 
-/* Error message */
 .error {
   color: #e74c3c;
   font-size: 14px;
   margin-top: 10px;
 }
 
-/* Loader */
 .loader {
   border: 3px solid #f3f3f3;
   border-radius: 50%;

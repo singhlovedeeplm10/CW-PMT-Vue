@@ -65,6 +65,6 @@ export default {
 
 <style scoped>
 label {
-  margin-bottom: 8px;
+  margin-bottom: 3px;
 }
 </style>

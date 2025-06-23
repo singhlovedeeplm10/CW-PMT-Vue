@@ -241,6 +241,7 @@ export default {
 <style scoped>
 .custom-btn-submit {
   background-color: #4e73df;
+  border: none;
   color: white;
   border-radius: 5px;
   padding: 10px 20px;

@@ -57,21 +57,21 @@ export default {
     AddBreakModal,
   },
   setup(_, { emit }) {
-    const fetchedTotalBreakTime = ref(0); // Store the fetched total break time
-    const loadingWeeklyHours = ref(true);  // For the Weekly Hours box
+    const fetchedTotalBreakTime = ref(0);
+    const loadingWeeklyHours = ref(true);
     const loadingDailyHours = ref(true);
     const loadingBreakTime = ref(true);
     const isClockedIn = ref(false);
     const clockInTime = ref(null);
     const timer = ref(0);
     const pausedTime = ref(0);
-    const dailyHours = ref(0); // Productive hours in seconds
+    const dailyHours = ref(0);
     const weeklyHours = ref(0);
     const isOnBreak = ref(false);
     const breakStartTime = ref(null);
     const breakInterval = ref(null);
-    const totalBreakTime = ref(0); // Total break time in seconds
-    const isPageLoading = ref(true); // Add this line to track if the page is still loading
+    const totalBreakTime = ref(0);
+    const isPageLoading = ref(true);
 
     let interval = null;
 
@@ -110,8 +110,8 @@ export default {
         const response = await axios.get("/api/daily-breaks", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
-        fetchedTotalBreakTime.value = response.data.total_break_time || 0; // Set fetched total time
-        totalBreakTime.value = fetchedTotalBreakTime.value; // Initialize totalBreakTime with fetched time
+        fetchedTotalBreakTime.value = response.data.total_break_time || 0;
+        totalBreakTime.value = fetchedTotalBreakTime.value;
         const breakDuration = breakStartTime.value
           ? Math.floor((Date.now() - breakStartTime.value) / 1000)
           : 0;
@@ -165,25 +165,18 @@ export default {
       loadingWeeklyHours.value = true;
 
       try {
-        // Fetch weekly productive hours
         const weeklyHoursResponse = await axios.get("/api/weekly-hours", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
 
-        // Fetch weekly break time
         const weeklyBreakResponse = await axios.get("/api/weekly-break-time", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
 
-        // Get weekly productive hours and break time
         const weeklyProductiveSeconds = weeklyHoursResponse.data.weekly_hours || 0;
         const weeklyBreakSeconds = weeklyBreakResponse.data.weekly_break_time || 0;
 
-        // Assign only the weekly productive hours
         weeklyHours.value = weeklyProductiveSeconds;
-
-        // Toast notification for successful fetch
-        // toast.success("Weekly hours and break time fetched successfully", { position: "top-right" });
       } catch (error) {
         console.error("Error fetching weekly hours or break time:", error.response?.data || error.message);
         toast.error("Failed to fetch weekly hours or break time", {
@@ -202,7 +195,7 @@ export default {
         const response = await axios.get("/api/daily-hours", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
-        dailyHours.value = response.data.daily_hours || 0; // Productive hours in seconds
+        dailyHours.value = response.data.daily_hours || 0;
         if (isClockedIn.value) {
           timer.value = dailyHours.value;
           startTimer();
@@ -224,10 +217,9 @@ export default {
         const response = await axios.get("/api/weekly-break-time", {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
-        const weeklyBreakSeconds = response.data.weekly_break_time || 0; // Break time in seconds
-        totalBreakTime.value = weeklyBreakSeconds; // Update the state with the fetched break time
+        const weeklyBreakSeconds = response.data.weekly_break_time || 0;
+        totalBreakTime.value = weeklyBreakSeconds;
 
-        // toast.success("Weekly break time fetched successfully", { position: "top-right" });
       } catch (error) {
         console.error("Error fetching weekly break time:", error.response?.data || error.message);
         toast.error(error.response?.data?.error || "Failed to fetch weekly break time", {
@@ -267,7 +259,6 @@ export default {
         );
 
         if (!isClockedIn.value) {
-          // Clock In logic
           clockInTime.value = Date.now();
           isClockedIn.value = true;
           pausedTime.value = dailyHours.value;
@@ -275,20 +266,16 @@ export default {
           toast.success("User Clocked In", { position: "top-right", autoClose: 1000 });
           emit("clockedIn");
         } else {
-          // Clock Out logic
           isClockedIn.value = false;
           stopTimer();
           toast.info("User Clocked Out", { position: "top-right", autoClose: 1000 });
 
-          // Fetch the updated daily hours from the server
           await fetchDailyHours();
 
-          // Subtract break time from productive hours immediately (frontend only)
-          dailyHours.value = Math.max(dailyHours.value - totalBreakTime.value, 0); // Adjust for total break time
+          dailyHours.value = Math.max(dailyHours.value - totalBreakTime.value, 0);
 
-          // Fetch the updated weekly hours after clocking out
-          await fetchWeeklyHours(); // Update weekly hours
-          await fetchTotalBreakTime(); // Fetch the latest break time
+          await fetchWeeklyHours();
+          await fetchTotalBreakTime();
         }
       } catch (error) {
         console.error("Error:", error.response?.data || error.message);
@@ -301,10 +288,8 @@ export default {
     const onBreakStarted = ({ reason, startTime }) => {
       isOnBreak.value = true;
       breakStartTime.value = startTime;
-      totalBreakTime.value = 0; // Reset to 0 because break time will be recalculated
+      totalBreakTime.value = 0;
       startBreakTimer();
-
-      // Store break start time and state in localStorage
       localStorage.setItem("isOnBreak", "true");
       localStorage.setItem("breakStartTime", startTime);
       localStorage.setItem("totalBreakTime", totalBreakTime.value);
@@ -313,11 +298,9 @@ export default {
 
     const startBreakTimer = () => {
       if (breakInterval.value) clearInterval(breakInterval.value);
-
-      // Add the already fetched total break time to the elapsed time
       breakInterval.value = setInterval(() => {
         const elapsed = Math.floor((Date.now() - breakStartTime.value) / 1000);
-        totalBreakTime.value = fetchedTotalBreakTime.value + elapsed; // Use fetched total time
+        totalBreakTime.value = fetchedTotalBreakTime.value + elapsed;
       }, 1000);
     };
 
@@ -332,19 +315,13 @@ export default {
           { break_time: breakDuration },
           { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         );
-
-        // Stop the break timer
         clearInterval(breakInterval.value);
         breakInterval.value = null;
 
-        // Update frontend timers
         totalBreakTime.value += breakDuration;
         dailyHours.value = Math.max(dailyHours.value - breakDuration, 0);
 
-        // Set break state to false
         isOnBreak.value = false;
-
-        // Clean up localStorage
         localStorage.removeItem("isOnBreak");
         localStorage.removeItem("breakStartTime");
         localStorage.removeItem("totalBreakTime");
@@ -353,8 +330,6 @@ export default {
           position: "top-right",
           autoClose: 1000
         });
-
-        // Emit an event to notify the parent component
         emit("breakEnded");
         await fetchTotalBreakTime();
 
@@ -389,7 +364,6 @@ export default {
       await fetchTotalBreakTime();
 
       try {
-        // Fetch clock-in status
         const clockinResponse = await axios.get('/api/get-clockin-token', {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
@@ -398,8 +372,6 @@ export default {
           isClockedIn.value = true;
           clockInTime.value = new Date(clockinResponse.data.clockInTime).getTime(); // Convert server time to local timestamp
         }
-
-        // Fetch break-in status
         const breakinResponse = await axios.get('/api/get-breakin-token', {
           headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         });
@@ -410,32 +382,24 @@ export default {
           totalBreakTime.value = breakinResponse.data.totalBreakTime || 0;
         }
 
-        // Fetch daily hours
         await fetchDailyHours();
-
-        // Adjust productive hours by subtracting total break time (frontend only)
         dailyHours.value -= totalBreakTime.value;
-
-        // Start both timers if applicable
         if (isClockedIn.value) {
-          pausedTime.value = dailyHours.value; // Initialize timer with the adjusted daily hours
-          startTimer(); // Start the main timer
+          pausedTime.value = dailyHours.value;
+          startTimer();
         }
 
         if (isOnBreak.value) {
-          startBreakTimer(); // Start the break timer
+          startBreakTimer();
         }
 
       } catch (error) {
         console.error("Error fetching status:", error.response?.data || error.message);
         toast.error("Failed to fetch status", { position: "top-right", autoClose: 1000 });
       } finally {
-        isPageLoading.value = false; // Set loading to false after all data is fetched
+        isPageLoading.value = false;
       }
     });
-
-
-
 
     return {
       clockInOutText,
@@ -455,7 +419,7 @@ export default {
       loadingWeeklyHours,
       loadingDailyHours,
       loadingBreakTime,
-      isPageLoading, // Return isPageLoading
+      isPageLoading,
     };
   },
 };

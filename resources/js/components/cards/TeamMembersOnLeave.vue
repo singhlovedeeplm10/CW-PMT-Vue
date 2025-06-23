@@ -5,7 +5,9 @@
       <Calendar :selectedDate="date" @dateSelected="onDateSelected" :showHeader="true" :highlightToday="true" />
     </div>
     <div class="task-card-body">
-      <div v-if="loadingUsersOnLeave" class="loader-container">
+      <div v-if="loadingUsersOnLeave"
+        class="d-flex justify-content-center align-items-center position-absolute w-100 h-100"
+        style="top: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 10;">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -81,6 +83,10 @@ export default {
 </script>
 
 <style scoped>
+.table>:not(:first-child) {
+  border-top: none !important;
+}
+
 .user-image {
   width: 40px;
   height: 40px;

@@ -1,10 +1,6 @@
 <template>
-  <button 
-    :class="['btn', buttonClass]" 
-    @click="handleClick"
-    :disabled="isDisabled || isLoading"
-    v-bind="customAttributes"
-  >
+  <button :class="['btn', buttonClass]" @click="handleClick" :disabled="isDisabled || isLoading"
+    v-bind="customAttributes">
     <template v-if="isLoading">
       <i class="fas fa-spinner fa-spin"></i> {{ loadingText }}
     </template>

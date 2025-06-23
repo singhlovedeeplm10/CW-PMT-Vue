@@ -27,10 +27,10 @@ class AuthController extends Controller
         return response()->json(['success' => false, 'message' => 'Your account is inactive. Please contact support.'], 403);
     }
 
-    // ✅ Set token with 5-minute expiration
+    
     $tokenResult = $user->createToken('authToken');
     $token = $tokenResult->plainTextToken;
-    $tokenResult->accessToken->expires_at = now()->addHours(24);
+    $tokenResult->accessToken->expires_at = now()->addHours(12); // Set token with 12-hours expiration
     $tokenResult->accessToken->save();
 
     return response()->json([

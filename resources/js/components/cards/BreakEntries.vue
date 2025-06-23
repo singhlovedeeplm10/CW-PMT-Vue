@@ -7,13 +7,19 @@
                 <Calendar :selectedDate="selectedDate" @dateSelected="onDateSelected" />
             </div>
             <div class="task-card-body mt-3">
-                <div v-if="loading" class="loader"></div>
+                <div v-if="loading"
+                    class="d-flex justify-content-center align-items-center position-absolute w-100 h-100"
+                    style="top: 0; left: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 10;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
                 <!-- Break Entries Table -->
-                <table v-else>
+                <table v-else class="table">
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Total Breaks</th>
+                            <th style="width: 115px;">Total Breaks</th>
                             <th>Break Time</th>
                         </tr>
                     </thead>
@@ -21,12 +27,11 @@
                         <tr v-if="breakEntries.length === 0">
                             <td colspan="3" class="text-center">No break entries available for the selected date.</td>
                         </tr>
-                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id">
-                            <td>
-                                <div class="profile">
-                                    <img :src="breakEntry.user_image" alt="User Image" class="rounded-circle">
-                                    <span>{{ breakEntry.user_name }}</span>
-                                </div>
+                        <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id"
+                            style="border-bottom: 1px solid #e9e0e0;">
+                            <td class="d-flex align-items-center" style="padding-left: 40px;">
+                                <img :src="breakEntry.user_image" alt="User Image" class="user-image me-2">
+                                <span>{{ breakEntry.user_name }}</span>
                             </td>
                             <td>{{ breakEntry.total_breaks }}</td>
                             <td @click="openBreakDetailsModal(breakEntry.user_id)" class="clickable-time">
@@ -153,6 +158,49 @@ export default {
 </script>
 
 <style scoped>
+.table>:not(:first-child) {
+    border-top: none !important;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+thead th {
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    background-color: #3498db;
+    color: white;
+    padding: 9px;
+}
+
+thead th,
+tbody td {
+    vertical-align: middle;
+    padding: 10px;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    border-bottom: 1px solid #f1f1f1;
+    word-break: break-word;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    border: none;
+}
+
+.user-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .profile span {
     font-weight: 400;
 }
@@ -249,31 +297,6 @@ export default {
 
 .task-card-body::-webkit-scrollbar-thumb:hover {
     background-color: #a1a1a1;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead th {
-    font-size: 16px;
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    background-color: #3498db;
-    color: white;
-
-}
-
-thead th,
-tbody td {
-    text-align: center !important;
-    vertical-align: middle;
-    padding: 10px;
-    font-size: 15px;
-    font-family: 'Poppins', sans-serif;
-    border-bottom: 1px solid #f1f1f1;
-    word-break: break-word;
 }
 
 .profile {

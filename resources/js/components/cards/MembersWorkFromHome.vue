@@ -28,7 +28,6 @@
               <td class="d-flex align-items-center">
                 <img :src="member.user_image || 'img/CWlogo.jpeg'" alt="User Image" class="user-image me-2" />
                 <span>{{ member.user_name }}</span>
-
               </td>
               <td style="padding: 18px 15px;">{{ member.date_range }}</td>
             </tr>
@@ -89,6 +88,10 @@ export default {
 
 
 <style scoped>
+.table>:not(:first-child) {
+  border-top: none !important;
+}
+
 .user-image {
   width: 40px;
   height: 40px;

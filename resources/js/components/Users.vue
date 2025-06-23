@@ -46,7 +46,6 @@
             </thead>
             <tbody>
               <tr v-for="user in filteredUsers" :key="user.id">
-                <!-- <td style="padding: 27px 20px;">{{ user.id }}</td> -->
                 <td>
                   <div class="d-flex align-items-center">
                     <img :src="user.user_image ? '/uploads/' + user.user_image : 'img/CWlogo.jpeg'" alt="User Image"
@@ -65,7 +64,7 @@
                 </td>
                 <td style="padding: 17px 0px;">
                   {{ user.email }}
-                  <div class="text-muted">{{ user.contact }}</div> <!-- Display contact number here -->
+                  <div class="text-muted">{{ user.contact }}</div>
                 </td>
                 <td style="padding: 22px 0px;">
                   <button :class="user.role_name === 'Admin' ? 'btn btn-primary' : 'btn btn-secondary'"
@@ -74,15 +73,15 @@
                   </button>
                 </td>
                 <td style="padding: 21px 5px;">
-                  <button :class="user.status === '1' ? 'btn btn-success' : 'btn btn-danger'"
-                    @click="toggleStatus(user)" :disabled="user.role_name === 'Admin' && user.logged_in_status">
+                  <button :class="user.status === '1' ? 'btn-active' : 'btn-inacive'" @click="toggleStatus(user)"
+                    :disabled="user.role_name === 'Admin' && user.logged_in_status">
                     {{ user.status === '1' ? 'Active' : 'Inactive' }}
                   </button>
                 </td>
                 <td style="padding: 21px 20px;">
-                  <button class="btn btn-sm btn-primary me-2" @click="editUser(user)">
+                  <router-link :to="`/employees/${user.id}/edit`" class="btn btn-sm btn-primary me-2">
                     <i class="fas fa-edit"></i>
-                  </button>
+                  </router-link>
                 </td>
               </tr>
             </tbody>
@@ -97,8 +96,7 @@
       <!-- Modals -->
       <add-employee-modal v-if="showAddEmployeeModal" @close="closeAddEmployeeModal" @employee-added="fetchUsers" />
 
-      <edit-employee-modal v-if="showEditEmployeeModal" :user="selectedUser" @close="closeEditEmployeeModal"
-        @employee-updated="fetchUsers" />
+
     </div>
   </master-component>
 </template>
@@ -132,9 +130,9 @@ export default {
       selectedUser: null,
       isLoading: false,
       filters: {
-        query: "", // Combined search field
-        status: "1", // Set default to Active (1)
-        role: "", // New role filter
+        query: "",
+        status: "1",
+        role: "",
       },
     };
   },
@@ -158,7 +156,6 @@ export default {
   },
   methods: {
     generateEmployeeCode(id) {
-      // Convert ID to string and pad with leading zeros to 3 digits
       return `CW${id.toString().padStart(3, '0')}`;
     },
 
@@ -197,7 +194,7 @@ export default {
           },
           params: {
             page: page,
-            query: this.filters.query, // Use a single "query" parameter for both name and email
+            query: this.filters.query,
             status: this.filters.status,
             role: this.filters.role,
           }
@@ -221,24 +218,7 @@ export default {
       this.showAddEmployeeModal = false;
     },
     async editUser(user) {
-      this.selectedUser = user;
-      try {
-        const response = await axios.get(`/api/users/${user.id}/edit`);
-        const { userData, userProfile } = response.data;
-
-        // Generate the employee_code
-        const employeeCode = `CW00${userData.id}`;
-
-        this.selectedUser = {
-          ...userData,
-          profile: { ...userProfile },
-          employee_code: employeeCode, // Add the generated employee_code
-        };
-
-        this.showEditEmployeeModal = true;
-      } catch (error) {
-        console.error("Error fetching user data for edit:", error);
-      }
+      this.$router.push(`/employees/${user.id}/edit`);
     },
 
     closeEditEmployeeModal() {
@@ -276,6 +256,28 @@ export default {
 </script>
 
 <style scoped>
+.btn-active {
+  border: 1px solid green;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: green;
+  transition: all 0.3s ease-in-out;
+  background: #c9fdc9;
+  border-radius: 50px;
+}
+
+.btn-inacive {
+  border: 1px solid red;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: red;
+  transition: all 0.3s ease-in-out;
+  border-radius: 50px;
+  background: #fbe2e2;
+}
+
 h2 {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
@@ -329,14 +331,11 @@ h2 {
   font-weight: 600;
 }
 
-/* Center align Email column */
 .table thead th:nth-child(2),
 .table tbody tr td:nth-child(2) {
-  /* text-align: center; */
   vertical-align: middle;
 }
 
-/* Updated Add Employee Button */
 .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3);
   border: none;
@@ -350,7 +349,6 @@ h2 {
   background: linear-gradient(135deg, #0056b3, #003d82);
 }
 
-/* Role Toggle Button Styling */
 .btn-primary,
 .btn-secondary {
   padding: 8px 12px;
@@ -373,36 +371,6 @@ h2 {
   background: linear-gradient(135deg, #5a6268, #343a40);
 }
 
-/* Status Toggle Button */
-.btn-success {
-  background: linear-gradient(135deg, #28a745, #218838);
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-weight: bold;
-  transition: all 0.3s ease-in-out;
-}
-
-.btn-success:hover {
-  background: linear-gradient(135deg, #218838, #1e7e34);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #e85151, #ed2424);
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-weight: bold;
-  color: white;
-  transition: all 0.3s ease-in-out;
-}
-
-.btn-danger:hover {
-  background: linear-gradient(135deg, #ea5c5c, #f51d1d);
-  color: white;
-}
-
-/* Disabled Button */
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

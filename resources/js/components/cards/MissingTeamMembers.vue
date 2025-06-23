@@ -31,9 +31,7 @@
             }">
               {{ user.name }}
             </p>
-
           </div>
-
         </div>
       </div>
     </div>
@@ -74,10 +72,8 @@ export default {
 </script>
 
 <style scoped>
-/* Card Styling - Fixed dimensions */
 #card1 {
   height: 350px;
-  /* Fixed height */
   padding: 20px;
   background: #ffffff;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
@@ -96,23 +92,17 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Crucial for proper scrolling */
 }
 
-/* Horizontal employee row with wrapping */
 .employee-row {
   display: flex;
   flex-wrap: wrap;
-  /* Allow wrapping to next line */
   overflow-y: auto;
-  /* Vertical scroll if needed */
   gap: 20px;
   padding-bottom: 10px;
   align-items: flex-start;
-  /* Align items at the top */
 }
 
-/* Employee card styling */
 .employee-card {
   display: flex;
   flex-direction: column;
@@ -121,20 +111,16 @@ export default {
   padding: 8px;
   border-radius: 8px;
   margin-bottom: 10px;
-  /* Space between rows */
 }
 
-/* User image styling */
 .user-image {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ddd;
   margin-bottom: 8px;
 }
 
-/* Employee name styling */
 .employee-name {
   font-size: 14px;
   font-weight: 600;
@@ -166,7 +152,6 @@ export default {
 }
 
 
-/* Loader styling */
 .loader-container {
   flex: 1;
   display: flex;
@@ -175,7 +160,6 @@ export default {
   margin: 0 auto;
 }
 
-/* Custom scrollbar */
 .employee-row::-webkit-scrollbar {
   width: 6px;
 }

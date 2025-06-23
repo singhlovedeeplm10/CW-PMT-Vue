@@ -390,6 +390,7 @@ export default {
   border-radius: 5px;
   padding: 10px 20px;
   transition: background-color 0.3s ease, transform 0.2s ease;
+  border: none;
 }
 
 .btn-success:hover {

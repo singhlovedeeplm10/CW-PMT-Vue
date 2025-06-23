@@ -21,28 +21,33 @@
             @input="localEditData.description = encodeHtmlWithFormatting($event.target.value)"
             placeholder="Edit Description" class="modal-input"></textarea>
 
-          <!-- Image Editing Section -->
+          <!-- Media Editing Section -->
           <div class="image-edit-section">
-            <h6>Edit Images</h6>
+            <h6>Edit Media</h6>
 
-            <!-- Image Previews -->
+            <!-- Media Previews -->
             <div v-if="localEditData.photos && localEditData.photos.length" class="image-preview-container"
               @dragover.prevent @drop="handleDrop">
-              <div v-for="(photo, index) in localEditData.photos" :key="index" class="image-preview-item"
+              <div v-for="(media, index) in localEditData.photos" :key="index" class="image-preview-item"
                 draggable="true" @dragstart="handleDragStart(index)" @dragenter.prevent="handleDragEnter(index)"
                 @dragend="handleDragEnd">
+
                 <div class="image-actions">
                   <button @click="removeImage(index)" class="remove-image-btn">X</button>
                 </div>
-                <img :src="photo.url || photo" alt="Post photo" class="preview-image" />
+
+                <!-- Media Preview -->
+                <img v-if="media.type === 'image'" :src="media.url" alt="Media" class="preview-image" />
+                <video v-else-if="media.type === 'video'" :src="media.url" controls class="preview-video"></video>
               </div>
             </div>
 
-            <!-- No Images Message -->
+            <!-- No Media Message -->
             <div v-else>
-              <p>No images in this post</p>
+              <p>No media in this post</p>
             </div>
           </div>
+
 
           <!-- Save Button -->
           <div class="button-group">
@@ -84,16 +89,15 @@ export default {
       if (newVal) {
         document.body.style.overflow = 'hidden';
 
-        // Initialize with empty array if photos is undefined
-        const photos = Array.isArray(this.editData.photos) ? this.editData.photos : [];
+        const media = Array.isArray(this.editData.photos) ? this.editData.photos : [];
 
-        // Safely map photos
         this.localEditData = {
           title: this.editData.title || '',
           description: this.editData.description || '',
-          photos: photos.map((photo, index) => ({
-            url: typeof photo === 'string' ? photo : photo.url || photo,
-            id: (this.editData.uploadIds && this.editData.uploadIds[index]) || null
+          photos: media.map((item, index) => ({
+            url: typeof item === 'string' ? item : item.url || item,
+            id: (this.editData.uploadIds && this.editData.uploadIds[index]) || null,
+            type: item.type || (item.url && item.url.endsWith('.mp4') ? 'video' : 'image')
           }))
         };
       } else {
@@ -101,6 +105,7 @@ export default {
       }
     }
   },
+
 
   methods: {
     decodeHtml(html) {
@@ -227,6 +232,14 @@ export default {
 </script>
 
 <style scoped>
+.preview-video {
+  width: 100%;
+  height: 100%;
+  max-height: 180px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
 .image-edit-section {
   margin: 20px 0;
   padding: 20px;

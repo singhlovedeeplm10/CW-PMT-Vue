@@ -142,7 +142,6 @@
         </div>
       </div>
 
-      <!-- Image Viewer Modal -->
       <!-- Media Viewer Modal -->
       <div v-if="selectedMedia" class="media-viewer" @click.self="closeMedia">
         <div class="media-container">
@@ -230,6 +229,20 @@ export default {
         window.addEventListener('keydown', this.handleKeyDown);
       } else {
         window.removeEventListener('keydown', this.handleKeyDown);
+      }
+    },
+    selectedMedia(newVal) {
+      if (newVal) {
+        document.body.style.overflow = 'hidden'; // Lock scrolling
+      } else {
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+    },
+    isLikesModalOpen(newVal) {
+      if (newVal) {
+        document.body.style.overflow = 'hidden'; // Lock scrolling
+      } else {
+        document.body.style.overflow = ''; // Restore scrolling
       }
     }
   },
@@ -521,7 +534,11 @@ export default {
         title: event.title || '',
         description: event.description || '',
         photos: event.mediaFiles
-          ? event.mediaFiles.filter(f => f.type === 'image').map(f => f.url)
+          ? event.mediaFiles.map(f => ({
+            url: f.url,
+            type: f.type,
+            id: f.id
+          }))
           : [],
         uploadIds: event.uploadIds || [],
         timeline_id: event.timeline_id,
@@ -529,6 +546,7 @@ export default {
       };
       this.showEditModal = true;
     },
+
 
     openEditModal(post) {
       this.editData = { ...post };
@@ -596,6 +614,9 @@ export default {
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeyDown);
   },
+  beforeUnmount() {
+    document.body.style.overflow = '';
+  }
 };
 </script>
 

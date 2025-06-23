@@ -139,9 +139,11 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
+.table>:not(:first-child) {
+  border-top: none !important;
+}
+
 .detail-timelogs {
   cursor: pointer;
   color: black;

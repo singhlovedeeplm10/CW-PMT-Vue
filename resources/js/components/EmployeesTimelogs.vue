@@ -282,7 +282,6 @@ export default {
   background: white;
   border: 1px solid #ccc;
   width: 100%;
-  /* Match input width */
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -314,7 +313,6 @@ export default {
 .filter-container {
   position: relative;
   width: 250px;
-  /* Adjust width based on your layout */
 }
 
 .filter-input {
@@ -358,13 +356,11 @@ export default {
 .clickable-time {
   cursor: pointer;
   text-decoration: underline;
-  /* Underline effect */
 }
 
 .clickable-time {
   cursor: pointer;
   text-decoration: underline;
-  /* Underline effect */
 }
 
 .modal-footer {
@@ -462,21 +458,18 @@ export default {
 
 .bg-green {
   background-color: #2eb62e;
-  /* Light green */
   color: white;
   font-weight: bold;
 }
 
 .bg-red {
   background-color: rgb(243, 62, 62);
-  /* Light red */
   color: white;
   font-weight: bold;
 }
 
 .bg-orange {
   background-color: rgb(205, 156, 65);
-  /* Light orange */
   color: white;
   font-weight: bold;
 }

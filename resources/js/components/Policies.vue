@@ -6,12 +6,8 @@
         <h2 class="title_heading">Company Policies</h2>
 
         <!-- Add Project Button -->
-        <ButtonComponent
-          v-if="userRole === 'Admin'"
-          label="Add New Policy"
-          buttonClass="btn-primary"
-          @click="showModal = true"
-        />
+        <ButtonComponent v-if="userRole === 'Admin'" label="Add New Policy" buttonClass="btn-primary"
+          @click="showModal = true" />
 
         <!-- Add Policy Modal -->
         <AddPolicyModal v-if="showModal" @policyadded="fetchPolicies" @close="showModal = false" />
@@ -42,11 +38,11 @@
         </div>
         <p class="text-center mt-2"></p>
       </div>
-      
+
       <div v-else-if="policies.length === 0 && !currentDocument" class="no-data-container text-center">
         <p class="text-muted">No policies available.</p>
       </div>
-      
+
 
       <!-- Policies Table -->
       <div v-else-if="!currentDocument" class="table-container mt-4">
@@ -74,38 +70,23 @@
             </tr>-->
           </thead>
           <tbody>
-            <tr
-              v-for="(policy, index) in filteredPolicies"
-              :key="policy.id"
-              class="table-row"
-            >
+            <tr v-for="(policy, index) in filteredPolicies" :key="policy.id" class="table-row">
               <td>{{ index + 1 }}</td> <!-- Display the serial number -->
               <td>{{ policy.policy_title }}</td>
               <td>{{ formatDate(policy.last_updated_at) }}</td>
               <td class="manage-buttons">
                 <!-- Eye Icon to View Document -->
-                <button
-                  @click="openDocument(policy)"
-                  class="btn btn-info"
-                >
+                <button @click="openDocument(policy)" class="btn btn-info">
                   <i class="fas fa-eye"></i>
                 </button>
 
                 <!-- Edit Icon to Edit Policy -->
-                <button
-                  v-if="userRole === 'Admin'"
-                  @click="editPolicy(policy)"
-                  class="btn btn-warning"
-                >
+                <button v-if="userRole === 'Admin'" @click="editPolicy(policy)" class="btn btn-warning">
                   <i class="fas fa-edit"></i>
                 </button>
 
                 <!-- Delete Icon to Delete Policy -->
-                <button
-                  v-if="userRole === 'Admin'"
-                  @click="deletePolicy(policy.id)"
-                  class="btn btn-danger"
-                >
+                <button v-if="userRole === 'Admin'" @click="deletePolicy(policy.id)" class="btn btn-danger">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -115,12 +96,7 @@
       </div>
 
       <!-- Edit Policy Modal -->
-      <EditPolicyModal
-        v-if="showEditModal"
-        :policy="editPolicyData"
-        @close="closeEditModal"
-        @save="updatePolicy"
-      />
+      <EditPolicyModal v-if="showEditModal" :policy="editPolicyData" @close="closeEditModal" @save="updatePolicy" />
     </div>
   </master-component>
 </template>
@@ -148,25 +124,25 @@ export default {
       showEditModal: false,
       userRole: null,
       policies: [],
-      searchQuery: '', 
+      searchQuery: '',
       editPolicyData: {
         id: null,
         policy_title: '',
         document_path: null,
       },
-      currentDocument: null, // Add a property to store the document data
-      isLoading: true, // Add a loading state
+      currentDocument: null,
+      isLoading: true,
     };
   },
 
   mounted() {
     this.fetchPolicies();
-    this.fetchUserRole(); // Call fetchUserRole when component is mounted
+    this.fetchUserRole();
   },
   computed: {
     filteredPolicies() {
       // Filter policies based on the search query
-      return this.policies.filter(policy => 
+      return this.policies.filter(policy =>
         policy.policy_title.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
@@ -228,16 +204,16 @@ export default {
             this.policies[index] = updatedPolicy; // Update policy in the list
           }
           toast.success("Changes saved successfully!", {
-        autoClose: 1000, // Set to 2 seconds
-      });
+            autoClose: 1000, // Set to 2 seconds
+          });
           this.fetchPolicies(); // Re-fetch policies to ensure updated data
           this.closeEditModal(); // Close modal
         })
         .catch((error) => {
           console.error("Error updating policy:", error);
           toast.error("Failed to save changes. Please try again.", {
-        autoClose: 1000, // Set to 2 seconds
-      });
+            autoClose: 1000, // Set to 2 seconds
+          });
         });
     },
     // Delete policy from both frontend and backend
@@ -249,8 +225,8 @@ export default {
           .then(() => {
             console.log('Policy deleted successfully');
             toast.success("Policy deleted successfully", {
-        autoClose: 1000, // Set to 2 seconds
-      });
+              autoClose: 1000, // Set to 2 seconds
+            });
           })
           .catch(error => {
             console.error('Error deleting policy:', error);
@@ -278,10 +254,11 @@ export default {
 
 
 <style scoped>
-h2{
+h2 {
   font-family: 'Poppins', sans-serif;
-    font-weight: 600;
+  font-weight: 600;
 }
+
 .table thead th {
   background: linear-gradient(10deg, #2a5298, #2a5298);
   color: #ffffff;
@@ -289,46 +266,59 @@ h2{
   padding: 12px 15px;
   font-weight: 600;
 }
-.text-muted{
+
+.text-muted {
   margin-top: 60px;
   font-size: 18px;
   color: #555;
   text-align: center;
 }
+
 h1 {
   font-size: 2em;
   margin-bottom: 50px;
 }
+
 .loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 50px;
 }
+
 .last-updated {
   position: absolute;
-  top: 45px; /* Adjust vertical position */
-  right: 50px; /* Adjust horizontal position */
-  font-size: 17px; /* Slightly smaller font size for subtlety */
+  top: 45px;
+  /* Adjust vertical position */
+  right: 50px;
+  /* Adjust horizontal position */
+  font-size: 17px;
+  /* Slightly smaller font size for subtlety */
 }
 
 .document-view {
   padding: 20px;
-  background-color: #f8f9fa; /* Light background for a professional look */
-  border: 1px solid #e0e0e0; /* Subtle border for separation */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  background-color: #f8f9fa;
+  /* Light background for a professional look */
+  border: 1px solid #e0e0e0;
+  /* Subtle border for separation */
+  border-radius: 8px;
+  /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Soft shadow for depth */
 }
 
 .document-header {
   font-family: 'Arial', sans-serif;
   font-weight: bold;
-  color: #343a40; /* Dark text for a professional tone */
+  color: #343a40;
+  /* Dark text for a professional tone */
   margin-bottom: 20px;
 }
 
 .back-button {
-  background-color: #007bff; /* Primary blue for consistency */
+  background-color: #007bff;
+  /* Primary blue for consistency */
   color: #fff;
   border: none;
   padding: 8px 12px;
@@ -343,20 +333,24 @@ h1 {
 }
 
 .back-button:hover {
-  background-color: #0056b3; /* Slightly darker blue on hover */
+  background-color: #0056b3;
+  /* Slightly darker blue on hover */
 }
 
 .document-title {
   font-size: 1.5rem;
-  color: #212529; /* Neutral dark for title */
+  color: #212529;
+  /* Neutral dark for title */
 }
 
 .document-iframe {
   width: 100%;
   height: 600px;
-  border: 1px solid #dee2e6; /* Light border for the iframe */
+  border: 1px solid #dee2e6;
+  /* Light border for the iframe */
   border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Shadow to make it pop */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  /* Shadow to make it pop */
 }
 
 /* Page Container */
