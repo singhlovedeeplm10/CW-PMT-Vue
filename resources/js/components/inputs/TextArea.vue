@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <label v-if="label">{{ label }}</label>
+  <div class="mb-3">
+    <label v-if="label" class="form-label">{{ label }}</label>
     <textarea :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
       :class="['form-control', textareaClass, { 'is-invalid': hasError }]" :placeholder="placeholder" :rows="rows"
       :required="isRequired" :readonly="isReadonly"></textarea>
@@ -54,13 +54,9 @@ export default {
 };
 </script>
 
-
 <style scoped>
-.form-control {
-  resize: vertical;
-}
-
-label {
-  margin-bottom: 10px;
+.form-label {
+  font-weight: 500;
+  font-size: 18px;
 }
 </style>

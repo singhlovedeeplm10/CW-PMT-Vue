@@ -127,9 +127,10 @@ export default {
       this.selectedNotice = { ...notice };
       this.editModalVisible = true;
     },
-    formatDate(date) {
-      if (!date) return "";
-      return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     },
     async deleteNotice(id) {
       if (confirm("Are you sure you want to delete this notice?")) {

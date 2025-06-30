@@ -11,6 +11,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import MasterComponent from './components/layouts/Master.vue';
 import store from './store';
 import '../css/fonts.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 
 const app = createApp({});
@@ -19,7 +21,9 @@ app.component('master-component', MasterComponent);
 
 app.use(router);
 app.use(store);
-app.use(FloatingVue); // Use FloatingVue instead of v-tooltip
+app.use(FloatingVue);
 
 app.mount('#app');
 window.axios = axios;
+AOS.init();
+

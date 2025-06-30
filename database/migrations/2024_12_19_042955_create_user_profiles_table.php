@@ -37,6 +37,8 @@ return new class extends Migration
             $table->string('alternate_contact_number', 15)->nullable();
             $table->string('designation')->nullable();
             $table->string('current_salary')->nullable();
+            $table->json('appraisals')->nullable();
+            $table->json('credentials')->nullable();
         });        
     }
 

@@ -1,6 +1,6 @@
 <template>
-  <div class="date-input">
-    <label v-if="label" :for="id" class="date-label">{{ label }}</label>
+  <div class="mb-3">
+    <label v-if="label" :for="id" class="form-label">{{ label }}</label>
     <input type="date" :id="id" :name="name" :value="formattedValue" :min="minDate" :max="maxDate" :disabled="disabled"
       class="form-control" :class="{ 'is-invalid': error }" @input="handleInput" />
     <div v-if="error" class="invalid-feedback">{{ error }}</div>
@@ -63,21 +63,6 @@ export default {
 </script>
 
 <style scoped>
-.date-input {
-  margin-bottom: 1rem;
-}
-
-.date-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
 .is-invalid {
   border-color: red;
 }
@@ -85,5 +70,10 @@ export default {
 .invalid-feedback {
   color: red;
   font-size: 0.875rem;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 18px;
 }
 </style>

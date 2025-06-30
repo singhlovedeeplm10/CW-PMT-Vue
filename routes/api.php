@@ -74,7 +74,6 @@ Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
 Route::middleware(['auth:sanctum'])->post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
-Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);
 Route::get('/users/{user}/edit', [UserController::class, 'edit']);
 Route::get('/employee-attendances', [UserController::class, 'employeeAttendances']);
 Route::post('/users/{id}/assign-role', [UserController::class, 'assignUserRole']);
@@ -163,3 +162,8 @@ Route::middleware('auth:sanctum')->put('/update-devices/{id}', [DeviceController
 Route::get('/devices/{id}/history', [DeviceController::class, 'history']);
 Route::middleware('auth:sanctum')->put('/update-devices-status/{id}', [DeviceController::class, 'toggleStatus']);
 
+// My-Account ROUTES
+Route::middleware('auth:sanctum')->get('/user/projects', [TaskController::class, 'getAssignedProjectsWithHours']);
+Route::middleware('auth:sanctum')->get('/user/credentials', [UserController::class, 'getUserCredentials']);
+Route::middleware('auth:sanctum')->get('/user-assigned-devices', [DeviceController::class, 'getUserAssignedDevices']);
+Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);

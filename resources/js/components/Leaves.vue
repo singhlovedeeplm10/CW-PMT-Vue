@@ -61,7 +61,7 @@
                 {{ leave.status }}
               </span>
             </td>
-            <td>{{ leave.created_at }}</td>
+            <td>{{ formatDate(leave.created_at) }}</td>
             <td>{{ leave.updated_by }}</td>
             <td>
               <ButtonComponent label="" buttonClass="btn-info" iconClass="fas fa-eye"
@@ -121,6 +121,11 @@ export default {
     };
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
     // Method to open the Apply Leave modal
     openApplyLeaveModal() {
       const modalElement = document.getElementById('applyleavemodal');

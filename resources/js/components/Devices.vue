@@ -53,7 +53,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="device in filteredDevices" :key="device.id">
-                            <td>
+                            <td class="align-middle">
                                 <div v-if="device.developers && device.developers.length">
                                     <div class="d-flex flex-column">
                                         <div v-for="dev in device.developers" :key="dev.id"
@@ -68,7 +68,7 @@
                             </td>
                             <td class="align-middle">{{ device.device }} <br> {{ device.device_number }}</td>
                             <td class="align-middle">{{ formatDate(device.date_of_assign) }}</td>
-                            <td class="align-middle">{{ device.note }}</td>
+                            <td class="align-middle-note">{{ device.note }}</td>
                             <td class="align-middle">
                                 <button :class="device.status === '1' ? 'btn-active' : 'btn-inacive'"
                                     @click="toggleDeviceStatus(device)" :disabled="isToggling">
@@ -335,6 +335,15 @@ export default {
 .align-middle {
     vertical-align: middle !important;
 }
+
+.align-middle-note {
+    vertical-align: middle !important;
+    word-wrap: break-word;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 300px;
+}
+
 
 .dev-wrapper {
     display: flex;

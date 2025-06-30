@@ -175,10 +175,10 @@ export default {
     },
 
     // Format date to a readable format
-    formatDate(date) {
-      if (!date) return 'N/A';
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(date).toLocaleDateString(undefined, options);
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     },
     // Edit policy (open the modal with policy data)
     editPolicy(policy) {

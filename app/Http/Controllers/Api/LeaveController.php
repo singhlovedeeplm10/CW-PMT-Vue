@@ -796,9 +796,10 @@ public function getMembersOnWFH(Request $request)
             'user_name' => $leave->user_name,
             'user_image' => $leave->user_image ? asset('uploads/' . $leave->user_image) : asset('img/CWlogo.jpeg'),
  // Generate full URL for the image
-            'date_range' => \Carbon\Carbon::parse($leave->start_date)->format('F d, Y') . 
-                ' to ' . 
-                \Carbon\Carbon::parse($leave->end_date)->format('F d, Y'),
+            'date_range' => [
+                             'start_date' => $leave->start_date,
+                             'end_date'   => $leave->end_date,
+                            ],
         ];
     });
 

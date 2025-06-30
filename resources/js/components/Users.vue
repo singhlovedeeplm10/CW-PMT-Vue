@@ -15,6 +15,7 @@
           <option value="">All Statuses</option>
           <option value="1">Active</option>
           <option value="0">Inactive</option>
+          <option value="2">Relieved</option>
         </select>
         <select class="form-control" v-model="filters.role" @change="fetchUsers()">
           <option value="">All Roles</option>
@@ -36,7 +37,6 @@
           <table class="table">
             <thead>
               <tr>
-                <!-- <th>ID</th> -->
                 <th style="padding: 12px 42px;">Name</th>
                 <th style="padding: 12px 42px;">Email</th>
                 <th>Role</th>
@@ -73,11 +73,17 @@
                   </button>
                 </td>
                 <td style="padding: 21px 5px;">
-                  <button :class="user.status === '1' ? 'btn-active' : 'btn-inacive'" @click="toggleStatus(user)"
+                  <button v-if="user.status === '1' || user.status === '0'"
+                    :class="user.status === '1' ? 'btn-active' : 'btn-inacive'" @click="toggleStatus(user)"
                     :disabled="user.role_name === 'Admin' && user.logged_in_status">
                     {{ user.status === '1' ? 'Active' : 'Inactive' }}
                   </button>
+
+                  <button v-else-if="user.status === '2'" class="btn-relieved" disabled>
+                    Relieved
+                  </button>
                 </td>
+
                 <td style="padding: 21px 20px;">
                   <router-link :to="`/employees/${user.id}/edit`" class="btn btn-sm btn-primary me-2">
                     <i class="fas fa-edit"></i>
@@ -95,7 +101,6 @@
 
       <!-- Modals -->
       <add-employee-modal v-if="showAddEmployeeModal" @close="closeAddEmployeeModal" @employee-added="fetchUsers" />
-
 
     </div>
   </master-component>
@@ -256,6 +261,17 @@ export default {
 </script>
 
 <style scoped>
+.btn-relieved {
+  border: 1px solid grey;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: black;
+  transition: all 0.3s ease-in-out;
+  background: #e7e7e7;
+  border-radius: 50px;
+}
+
 .btn-active {
   border: 1px solid green;
   padding: 8px 12px;

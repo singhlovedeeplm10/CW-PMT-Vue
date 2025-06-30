@@ -82,7 +82,7 @@
                 {{ leave.status }}
               </span>
             </td>
-            <td>{{ leave.created_at }}</td>
+            <td>{{ formatDate(leave.created_at) }}</td>
             <td>{{ leave.updated_by }}</td>
             <td>
               <ButtonComponent label="" iconClass="fas fa-eye" buttonClass="btn-info"
@@ -136,6 +136,11 @@ export default {
     };
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
     async fetchLeaves() {
       this.loading = true; // Show loader before fetching data
       try {

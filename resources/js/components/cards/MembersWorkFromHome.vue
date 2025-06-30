@@ -29,7 +29,12 @@
                 <img :src="member.user_image || 'img/CWlogo.jpeg'" alt="User Image" class="user-image me-2" />
                 <span>{{ member.user_name }}</span>
               </td>
-              <td style="padding: 18px 15px;">{{ member.date_range }}</td>
+              <td style="padding: 18px 15px;">
+                {{ formatDate(member.date_range.start_date) }}
+                to
+                {{ formatDate(member.date_range.end_date) }}
+              </td>
+
             </tr>
           </tbody>
         </table>
@@ -58,6 +63,11 @@ export default {
     };
   },
   methods: {
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
     async fetchWFHMembers(selectedDate) {
       this.loading = true;
       try {

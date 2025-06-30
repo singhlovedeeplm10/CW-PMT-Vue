@@ -17,6 +17,7 @@
         "vue": "^3.2.37"
     },
     "dependencies": {
+        "aos": "^2.3.4",
         "dayjs": "^1.11.13",
         "floating-vue": "^5.2.2",
         "jquery": "^3.7.1",

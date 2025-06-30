@@ -1,6 +1,25 @@
 <template>
     <master-component>
         <div class="edit-employee-page">
+            <!-- TOP BAR / CARD -->
+            <div class="releaved-card mb-2 p-3" v-if="formData.date_of_releaving">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <strong class="me-1">Joining Date:</strong>
+                        <span>{{ formatDate(formData.date_of_joining) }}</span>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <strong class="me-1">Releaving Date:</strong>
+                        <span>{{ formatDate(formData.date_of_releaving) || 'N/A' }}</span>
+                    </div>
+                    <div class="col-md-12">
+                        <strong>Releaving Note:</strong>
+                        <p class="mb-0 releaving-note"
+                            v-html="formData.releaving_note ? formData.releaving_note.replace(/\n/g, '<br>') : 'N/A'">
+                        </p>
+                    </div>
+                </div>
+            </div>
             <div class="header d-flex justify-content-between align-items-center mb-4">
                 <h2 class="title_heading">Edit Employee</h2>
                 <router-link to="/users" style="text-decoration: none;">
@@ -22,7 +41,7 @@
                             <div class="col-md-4">
                                 <div class="user-profile-card text-center p-4 mb-4">
                                     <div class="position-relative d-inline-block">
-                                        <img :src="user.user_image ? '/uploads/' + user.user_image : '/img/CWlogo.jpeg'"
+                                        <img :src="formData.user_image_url || (user.user_image ? '/uploads/' + user.user_image : '/img/CWlogo.jpeg')"
                                             alt="User Image" class="img-thumbnail circular-image mb-3"
                                             style="width: 200px; height: 200px;">
                                         <label for="user_image"
@@ -34,11 +53,32 @@
                                             accept="image/png, image/jpeg, image/jpg, image/webp"
                                             @change="handleImageUpload" class="d-none">
                                     </div>
-                                    <h3 class="mb-1">{{ formData.name }}</h3>
+                                    <h3 class="mb-1" style="color: black;">{{ formData.name }}</h3>
                                     <p class="text-muted mb-2">{{ formData.employee_code }}</p>
-                                    <div class="d-flex justify-content-center gap-2 mb-3">
+                                    <!-- <div class="d-flex justify-content-center gap-2 mb-3"
+                                        v-if="!formData.date_of_releaving">
                                         <span :class="user.status === '1' ? 'badge bg-success' : 'badge bg-danger'">
                                             {{ user.status === '1' ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </div> -->
+                                    <div class="d-flex justify-content-center gap-2 mb-3"
+                                        v-if="!formData.date_of_releaving">
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center gap-2 mb-3"
+                                        v-if="!formData.date_of_releaving && user.status === '0'">
+                                        <span class="badge bg-danger">
+                                            Inactive
+                                        </span>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center gap-2 mb-3"
+                                        v-if="formData.date_of_releaving">
+                                        <span class="badge bg-dark">
+                                            Relieved
                                         </span>
                                     </div>
                                     <div class="employee-meta">
@@ -66,6 +106,11 @@
                                         <span class="info-label">Left:</span>
                                         <span class="info-value">{{ formatDate(formData.date_of_releaving) }}</span>
                                     </div>
+                                    <!-- <div class="info-item" v-if="formData.date_of_releaving">
+                                        <span class="info-label">Releaving Note</span>
+                                        <span class="info-value-releaving-note"
+                                            v-html="formData.releaving_note ? formData.releaving_note.replace(/\n/g, '<br>') : 'N/A'"></span>
+                                    </div> -->
                                     <!-- <div class="info-item">
                                         <span class="info-label">Appraisal:</span>
                                         <span class="info-value">{{ formData.next_appraisal_month || 'Not scheduled'
@@ -118,97 +163,82 @@
                                     <div class="tab-pane fade show active" id="personal" role="tabpanel">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Full Name</label>
-                                                <input type="text" v-model="formData.name" class="form-control">
+                                                <InputField v-model="formData.name" label="Full Name" inputType="text"
+                                                    placeholder="Enter Full Name" />
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Email</label>
-                                                <input type="email" v-model="formData.email" class="form-control"
-                                                    readonly>
+                                                <EmailInput label="Email" id="email" v-model="formData.email"
+                                                    placeholder="Enter personal email" :readonly="true" />
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Date of Birth</label>
-                                                <input type="date" v-model="formData.user_DOB" class="form-control">
+                                                <DateInput v-model="formData.user_DOB" label="Date of Birth" />
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Gender</label>
-                                                <select v-model="formData.gender" class="form-control">
-                                                    <option value="">Select Gender</option>
-                                                    <option value="male">Male</option>
-                                                    <option value="female">Female</option>
-                                                    <option value="other">Other</option>
-                                                </select>
+                                            <div class="col-md-6">
+                                                <SelectInput v-model="formData.gender" :options="genderOptions"
+                                                    label="Gender" name="gender" id="gender"
+                                                    placeholder="Select Gender" />
                                             </div>
+
                                         </div>
 
                                         <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Blood Group</label>
-                                                <select v-model="formData.blood_group" class="form-control">
-                                                    <option value="">Select Blood Group</option>
-                                                    <option value="A+">A+</option>
-                                                    <option value="A-">A-</option>
-                                                    <option value="B+">B+</option>
-                                                    <option value="B-">B-</option>
-                                                    <option value="AB+">AB+</option>
-                                                    <option value="AB-">AB-</option>
-                                                    <option value="O+">O+</option>
-                                                    <option value="O-">O-</option>
-                                                </select>
+                                            <div class="col-md-6">
+                                                <SelectInput v-model="formData.blood_group" :options="bloodGroupOptions"
+                                                    label="Blood Group" name="blood_group" id="blood_group"
+                                                    placeholder="Select Blood Group" />
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label class="form-label">Employee Code</label>
-                                                <input type="text" v-model="formData.employee_code" class="form-control"
-                                                    readonly>
+
+                                            <div class="col-md-6">
+                                                <InputField v-model="formData.employee_code" label="Employee Code"
+                                                    inputType="text" isReadonly />
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Qualifications</label>
-                                            <input type="text" v-model="formData.qualifications" class="form-control">
+                                            <InputField v-model="formData.qualifications" label="Qualifications"
+                                                inputType="text" />
                                         </div>
 
-                                        <div class="mb-3">
+                                        <!-- <div class="mb-3">
                                             <label class="form-label">Password</label>
                                             <input type="password" v-model="formData.password" class="form-control"
                                                 placeholder="Enter new password (optional)">
-                                        </div>
+                                        </div> -->
                                     </div>
 
                                     <!-- Employment Details Tab -->
                                     <div class="tab-pane fade" id="employment" role="tabpanel">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Date of Joining</label>
-                                                <input type="date" v-model="formData.date_of_joining"
-                                                    class="form-control">
+                                                <DateInput v-model="formData.date_of_joining" label="Date of Joining" />
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Date of Releaving</label>
-                                                <input type="date" v-model="formData.date_of_releaving"
-                                                    class="form-control">
+                                                <DateInput v-model="formData.date_of_releaving"
+                                                    label="Date of Releaving" />
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Releaving Note</label>
-                                            <textarea v-model="formData.releaving_note" class="form-control"
-                                                rows="3"></textarea>
+                                            <TextArea v-model="formData.releaving_note" label="Releaving Note"
+                                                :rows="3" />
                                         </div>
+
 
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Designation</label>
-                                                <input type="text" v-model="formData.designation" class="form-control">
+                                                <InputField v-model="formData.designation" label="Designation"
+                                                    inputType="text" placeholder="Enter designation" />
                                             </div>
+
+
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Current Salary</label>
-                                                <input type="number" v-model="formData.current_salary"
-                                                    class="form-control">
+                                                <NumberInput v-model="formData.current_salary" label="Current Salary"
+                                                    id="current_salary" placeholder="Enter current salary" />
                                             </div>
+
                                         </div>
 
                                         <div class="mb-3">
@@ -222,52 +252,114 @@
                                     <div class="tab-pane fade" id="contact" role="tabpanel">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Primary Contact</label>
-                                                <input type="text" v-model="formData.contact" class="form-control"
-                                                    @input="validateContact">
-                                                <small v-if="contactError" class="text-danger">{{ contactError
-                                                }}</small>
+                                                <NumberInput v-model="formData.contact" label="Primary Contact"
+                                                    id="contact" placeholder="Enter primary contact"
+                                                    :hasError="!!contactError" :errorMessage="contactError"
+                                                    @input-blur="validateContact" />
                                             </div>
+
                                             <div class="col-md-6 mb-3">
-                                                <label class="form-label">Alternate Contact</label>
-                                                <input type="text" v-model="formData.alternate_contact_number"
-                                                    class="form-control">
+                                                <NumberInput v-model="formData.alternate_contact_number"
+                                                    label="Alternate Contact" id="alternate_contact"
+                                                    placeholder="Enter alternate contact" />
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Employee Personal Email</label>
-                                            <textarea v-model="formData.employee_personal_email"
-                                                class="form-control"></textarea>
+                                            <EmailInput label="Employee Personal Email" id="employee_personal_email"
+                                                v-model="formData.employee_personal_email"
+                                                placeholder="Enter personal email" />
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Permanent Address</label>
-                                            <textarea v-model="formData.permanent_address" class="form-control"
-                                                rows="3"></textarea>
+                                            <TextArea v-model="formData.permanent_address" label="Permanent Address"
+                                                :rows="3" />
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Temporary Address</label>
-                                            <textarea v-model="formData.temporary_address" class="form-control"
-                                                rows="3"></textarea>
+                                            <TextArea v-model="formData.temporary_address" label="Current Address"
+                                                :rows="3" />
                                         </div>
+
                                     </div>
 
                                     <!-- Credentials Tab -->
                                     <div class="tab-pane fade" id="credentials" role="tabpanel">
-                                        <div v-for="(credential, index) in formData.credentials" :key="index"
+                                        <template v-for="(credential, index) in formData.credentials">
+
+                                            <div v-if="credential.label === 'Pmt-Tool'"
+                                                class="credential-item mb-4 p-3 border rounded">
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-3">
+                                                        <InputField v-model="credential.label" label="Label"
+                                                            placeholder="e.g., Zoho, Pmt-tool, Gmail"
+                                                            :isDisabled="credential.label === 'Pmt-Tool'" />
+                                                    </div>
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <InputField v-model="formData.email" label="Username"
+                                                            :isDisabled="credential.label === 'Pmt-Tool'" />
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <PasswordInput v-model="credential.password" label="Password"
+                                                            :required="true"
+                                                            @input-blur="handlePasswordBlur(credential)" />
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <TextArea v-model="credential.note" label="Note" :rows="2" />
+                                                </div>
+
+                                                <button v-if="index > 0" type="button" class="btn btn-sm btn-danger"
+                                                    @click="removeCredential(index)">
+                                                    <i class="fas fa-trash me-1"></i> Remove
+                                                </button>
+                                            </div>
+
+                                            <div v-if="credential.label !== 'Pmt-Tool'"
+                                                class="credential-item mb-4 p-3 border rounded">
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-3">
+                                                        <InputField v-model="credential.label" label="Label"
+                                                            placeholder="e.g., Zoho, Pmt-tool, Gmail"
+                                                            inputType="text" />
+                                                    </div>
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <InputField v-model="credential.username" label="Username"
+                                                            inputType="text" />
+                                                    </div>
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <PasswordInput v-model="credential.password" label="Password"
+                                                            :required="true"
+                                                            @input-blur="handlePasswordBlur(credential)" />
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <TextArea v-model="credential.note" label="Note" :rows="2" />
+                                                </div>
+
+                                                <button v-if="index > 0" type="button" class="btn btn-sm btn-danger"
+                                                    @click="removeCredential(index)">
+                                                    <i class="fas fa-trash me-1"></i> Remove
+                                                </button>
+                                            </div>
+                                        </template>
+                                        <!-- <div v-for="(credential, index) in formData.credentials" :key="index"
                                             class="credential-item mb-4 p-3 border rounded">
                                             <div class="row">
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Label</label>
                                                     <input type="text" v-model="credential.label" class="form-control"
-                                                        placeholder="e.g., Zoho, Pmt-tool, Gmail">
+                                                        placeholder="e.g., Zoho, Pmt-tool, Gmail"
+                                                        :disabled="credential.label === 'Pmt-Tool'">
                                                 </div>
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Username</label>
                                                     <input type="text" v-model="credential.username"
-                                                        class="form-control">
+                                                        class="form-control"
+                                                        :disabled="credential.label === 'Pmt-Tool'">
                                                 </div>
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Password</label>
@@ -283,15 +375,14 @@
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Note</label>
-                                                <textarea v-model="credential.note" class="form-control"
-                                                    rows="2"></textarea>
+                                                <TextArea v-model="credential.note" label="Note" :rows="2" />
                                             </div>
+
                                             <button v-if="index > 0" type="button" class="btn btn-sm btn-danger"
                                                 @click="removeCredential(index)">
                                                 <i class="fas fa-trash me-1"></i> Remove
                                             </button>
-                                        </div>
+                                        </div> -->
 
                                         <button type="button" class="btn btn-sm btn-primary mt-2"
                                             @click="addCredential">
@@ -305,25 +396,31 @@
                                             class="appraisal-item mb-4 p-3 border rounded">
                                             <div class="row">
                                                 <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Date</label>
-                                                    <input type="date" v-model="appraisal.date" class="form-control">
+                                                    <DateInput v-model="appraisal.date" label="Date" />
+                                                </div>
+
+                                                <div class="col-md-4 mb-3">
+                                                    <NumberInput v-model="appraisal.amount" label="Appraisal Amount"
+                                                        id="amount" placeholder="Enter Appraisal Amount" />
                                                 </div>
                                                 <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Appraisal Amount</label>
-                                                    <input type="number" v-model="appraisal.amount"
-                                                        class="form-control">
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Final Amount</label>
-                                                    <input type="number" v-model="appraisal.final_amount"
-                                                        class="form-control">
+                                                    <NumberInput v-model="appraisal.final_amount" label="Revised Amount"
+                                                        id="final_amount" placeholder="Enter Revised Amount" />
                                                 </div>
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Note</label>
-                                                <textarea v-model="appraisal.note" class="form-control"
-                                                    rows="3"></textarea>
+                                                <TextArea v-model="appraisal.note" label="Note" :rows="3" />
                                             </div>
+
+                                            <!-- Added checkbox for "Show to employee" -->
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox"
+                                                    v-model="appraisal.show_to_employee" id="showToEmployee">
+                                                <label class="form-check-label" name="showToEmployee">
+                                                    Show to the employee
+                                                </label>
+                                            </div>
+
                                             <button v-if="index > 0" type="button" class="btn btn-sm btn-danger"
                                                 @click="removeAppraisal(index)">
                                                 <i class="fas fa-trash me-1"></i> Remove
@@ -356,11 +453,25 @@ import axios from "axios";
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import MasterComponent from "./layouts/Master.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
+import EmailInput from "@/components/inputs/EmailInput.vue";
+import InputField from "@/components/inputs/InputField.vue";
+import NumberInput from "@/components/inputs/NumberInput.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
+import PasswordInput from "@/components/inputs/PasswordInput.vue";
+import SelectInput from "@/components/inputs/SelectInput.vue";
 
 export default {
     name: 'EditEmployee',
     components: {
-        MasterComponent
+        MasterComponent,
+        TextArea,
+        EmailInput,
+        NumberInput,
+        InputField,
+        DateInput,
+        PasswordInput,
+        SelectInput
     },
     data() {
         return {
@@ -403,10 +514,25 @@ export default {
                         date: '',
                         amount: '',
                         final_amount: '',
-                        note: ''
+                        note: '',
+                        show_to_employee: false,
                     }
                 ]
             },
+            genderOptions: [
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' }
+            ],
+            bloodGroupOptions: [
+                { value: "A+", label: "A+" },
+                { value: "A-", label: "A-" },
+                { value: "B+", label: "B+" },
+                { value: "B-", label: "B-" },
+                { value: "AB+", label: "AB+" },
+                { value: "AB-", label: "AB-" },
+                { value: "O+", label: "O+" },
+                { value: "O-", label: "O-" },
+            ],
             contactError: ""
         };
     },
@@ -426,7 +552,7 @@ export default {
         removeCredential(index) {
             this.formData.credentials.splice(index, 1);
         },
-        togglePasswordVisibility(credential) {
+        handlePasswordBlur(credential) {
             credential.showPassword = !credential.showPassword;
         },
 
@@ -436,7 +562,8 @@ export default {
                 date: '',
                 amount: '',
                 final_amount: '',
-                note: ''
+                note: '',
+                show_to_employee: false
             });
         },
         removeAppraisal(index) {
@@ -478,12 +605,18 @@ export default {
                 }));
 
                 // Initialize appraisals with default empty object if none exist
-                const appraisals = userProfile?.appraisals?.length ? userProfile.appraisals : [{
-                    date: '',
-                    amount: '',
-                    final_amount: '',
-                    note: ''
-                }];
+                const appraisals = userProfile?.appraisals?.length ?
+                    userProfile.appraisals.map(appraisal => ({
+                        ...appraisal,
+                        show_to_employee: appraisal.show_to_employee == '1' || appraisal.show_to_employee === 1 || appraisal.show_to_employee === true
+                    })) :
+                    [{
+                        date: '',
+                        amount: '',
+                        final_amount: '',
+                        note: '',
+                        show_to_employee: false
+                    }];
 
                 // Populate form data with proper null checks
                 this.formData = {
@@ -548,6 +681,14 @@ export default {
                     event.target.value = "";
                     return;
                 }
+
+                // Check file size (example: 2MB limit)
+                if (file.size > 2 * 1024 * 1024) {
+                    toast.error("Image size should be less than 2MB");
+                    event.target.value = "";
+                    return;
+                }
+
                 this.formData.user_image = file;
 
                 // Create a preview of the new image
@@ -646,6 +787,10 @@ export default {
 </script>
 
 <style scoped>
+.releaved-card {
+    background-color: #d1d1d1;
+}
+
 .card {
     position: relative;
     display: flex;
@@ -755,9 +900,9 @@ export default {
 }
 
 .form-label {
-    font-weight: 500;
-    color: #495057;
     margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 18px;
 }
 
 .btn-primary {

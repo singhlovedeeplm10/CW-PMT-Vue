@@ -21,7 +21,6 @@ return new class extends Migration
             $table->text('comment')->nullable();
             $table->json('developer_assign_list')->nullable();
             $table->timestamps();
-
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 

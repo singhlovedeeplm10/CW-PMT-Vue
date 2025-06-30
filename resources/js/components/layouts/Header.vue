@@ -7,7 +7,6 @@
         </router-link>
       </div>
       <div class="header-right">
-        <!-- User Profile with Hover Dropdown -->
         <div class="profile-container">
           <img :src="userImage || '/img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
           <div class="profile-dropdown">
@@ -16,10 +15,6 @@
               <span v-if="!isLoggingOut">Logout</span>
               <span v-if="isLoggingOut" class="spinner-border spinner-border-sm"></span>
             </a>
-            <!-- <a  v-if="userRole === 'Admin'" href="javascript:void(0)" @click="clockOutusers" class="dropdown-item" :disabled="isClockingOut">
-              <span v-if="!isClockingOut">Clock Out User</span>
-              <span v-if="isClockingOut" class="spinner-border spinner-border-sm"></span>
-            </a> -->
           </div>
         </div>
       </div>
@@ -29,95 +24,83 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
 export default {
   name: "HeaderComponent",
+  data() {
+    return {
+      isLoggingOut: false,
+      isClockingOut: false,
+    };
+  },
   computed: {
     ...mapGetters(["getUserDetails"]),
     userImage() {
-      return this.getUserDetails.image; // Get user image from Vuex store
+      return this.getUserDetails.image;
     },
   },
-  setup() {
-    const router = useRouter();
-    const isLoggingOut = ref(false);
-    const isClockingOut = ref(false);
+  methods: {
+    ...mapActions(["fetchUserDetails"]),
 
-    const logout = async () => {
-      if (isLoggingOut.value) return;
-      isLoggingOut.value = true;
+    async logout() {
+      if (this.isLoggingOut) return;
+      this.isLoggingOut = true;
 
       try {
-        await axios.post("/api/logout", {}, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
+        await axios.post(
+          "/api/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
 
         localStorage.removeItem("authToken");
-        router.push("/login");
+        this.$router.push("/login");
       } catch (error) {
         console.error("Logout failed:", error);
         alert("An error occurred during logout.");
       } finally {
-        isLoggingOut.value = false;
+        this.isLoggingOut = false;
       }
-    };
+    },
 
-    const goToAccount = () => {
-      router.push("/myaccount");
-    };
+    goToAccount() {
+      this.$router.push("/myaccount");
+    },
 
-    const clockOutusers = async () => {
-      if (isClockingOut.value) return;
-      isClockingOut.value = true;
+    async clockOutusers() {
+      if (this.isClockingOut) return;
+      this.isClockingOut = true;
 
       try {
-        const response = await axios.get("/api/auto-clockout", {
-
-        });
-
+        const response = await axios.get("/api/auto-clockout");
         alert(response.data.message || "Users clocked out successfully.");
       } catch (error) {
         console.error("Clock out failed:", error);
         alert("An error occurred while clocking out users.");
       } finally {
-        isClockingOut.value = false;
+        this.isClockingOut = false;
       }
-    };
-
-    return {
-      logout,
-      goToAccount,
-      clockOutusers,
-      isLoggingOut,
-      isClockingOut,
-    };
-  },
-  methods: {
-    ...mapActions(["fetchUserDetails"]),
+    },
   },
   mounted() {
-    this.fetchUserDetails(); // Fetch user details on component mount
+    this.fetchUserDetails();
   },
 };
 </script>
 
-
-
-
 <style scoped>
-/* General Reset */
 body {
   margin: 0;
   font-family: 'Roboto', Arial, sans-serif;
   background-color: #f4f6f9;
 }
 
-/* Header Container */
 .header {
   position: fixed;
   width: 100%;
@@ -132,14 +115,12 @@ body {
   z-index: 1000;
 }
 
-/* Navigation Bar */
 .nav {
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
-/* Logo Section */
 .header-left {
   display: flex;
   align-items: center;
@@ -152,7 +133,6 @@ body {
 }
 
 .logo-image {
-  /* width: 14%; */
   height: 50%;
   transition: transform 0.3s ease;
   margin: 0px 18px;
@@ -162,16 +142,13 @@ body {
   font-size: 1.8rem;
   font-weight: bold;
   color: #f1c40f;
-  /* Golden accent color */
   transition: color 0.3s ease;
 }
 
 .header-logo:hover .logo-title {
   color: #3498db;
-  /* Light blue accent on hover */
 }
 
-/* User Profile Section */
 .header-right {
   position: relative;
 }
@@ -198,26 +175,16 @@ body {
   box-shadow: 0 0 8px rgba(52, 152, 219, 0.8);
 }
 
-/* Dropdown Menu */
 .profile-dropdown {
   position: absolute;
-  /* Positions the dropdown relative to the container */
   top: 100%;
-  /* Ensures the dropdown appears below the profile image */
   right: 0;
-  /* Aligns the dropdown to the right of the container */
   z-index: 1000;
-  /* High enough to ensure it appears above other elements */
   background: white;
-  /* Optional: Dropdown background */
   border: 1px solid #ccc;
-  /* Optional: Border for the dropdown */
   border-radius: 4px;
-  /* Optional: Rounded corners */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  /* Optional: Adds shadow for better visibility */
   display: none;
-  /* Initially hidden */
 }
 
 .profile-container:hover .profile-dropdown {

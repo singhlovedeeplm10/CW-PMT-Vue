@@ -1,8 +1,8 @@
 <template>
-  <div class="select-input">
-    <label v-if="label" :for="id" class="select-label">{{ label }}</label>
-    <select :id="id" :name="name" :disabled="disabled" :multiple="multiple" class="form-select"
-      :class="{ 'is-invalid': error }" @change="handleChange">
+  <div class="mb-3">
+    <label v-if="label" :for="id" class="form-label">{{ label }}</label>
+    <select :id="id" :name="name" :disabled="disabled" :multiple="multiple" class="form-control"
+      :class="{ 'is-invalid': error }" v-model="internalValue">
       <option v-if="placeholder" disabled value="">
         {{ placeholder }}
       </option>
@@ -10,6 +10,7 @@
         {{ option[labelKey] }}
       </option>
     </select>
+
     <div v-if="error" class="invalid-feedback">{{ error }}</div>
   </div>
 </template>
@@ -18,6 +19,7 @@
 export default {
   name: "SelectInput",
   props: {
+    modelValue: [String, Number, Array, Object], // Accept any type
     options: {
       type: Array,
       required: true,
@@ -53,7 +55,6 @@ export default {
     },
     placeholder: {
       type: String,
-      // default: "Select an option",
     },
     error: {
       type: String,
@@ -71,41 +72,22 @@ export default {
         ? this.options.filter((option) => option.visible !== false)
         : this.options;
     },
-  },
-  methods: {
-    handleChange(event) {
-      const selectedValue = this.multiple
-        ? Array.from(event.target.selectedOptions, (option) => option.value)
-        : event.target.value;
-      this.$emit("update:modelValue", selectedValue);
-      this.$emit("change", selectedValue);
+    internalValue: {
+      get() {
+        return this.modelValue;
+      },
+      set(val) {
+        this.$emit("update:modelValue", val);
+        this.$emit("change", val);
+      },
     },
   },
 };
 </script>
 
 <style scoped>
-.select-input {
-  margin-bottom: 1rem;
-}
-
-.select-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.form-select {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
-.is-invalid {
-  border-color: red;
-}
-
-.invalid-feedback {
-  color: red;
-  font-size: 0.875rem;
+.form-label {
+  font-weight: 500;
+  font-size: 18px;
 }
 </style>

@@ -32,7 +32,7 @@
                                         <img :src="user.user_image" alt="User Image" class="user-avatar me-2" />
                                         <span class="user-name">{{ user.name }}</span>
                                     </td>
-                                    <td>{{ formatDOB(user.user_DOB) }}</td>
+                                    <td>{{ formatDate(user.user_DOB) }}</td>
                                 </tr>
                                 <tr v-else>
                                     <td colspan="2" class="text-center py-4">No Members Exist</td>
@@ -60,18 +60,10 @@ export default {
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
 
-        // Function to format date as "date-month name-year"
-        const formatDOB = (dateString) => {
+        const formatDate = (dateString) => {
             if (!dateString) return '';
-
             const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString; // Return original if invalid date
-
-            const day = date.getDate();
-            const month = date.toLocaleString('default', { month: 'long' });
-            const year = date.getFullYear();
-
-            return `${day}-${month}-${year}`;
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         };
 
         const fetchBirthdays = async (date) => {
@@ -110,7 +102,7 @@ export default {
             fetchBirthdays,
             fetchNext30DaysBirthdays,
             isLoading,
-            formatDOB
+            formatDate
         };
     },
 };
