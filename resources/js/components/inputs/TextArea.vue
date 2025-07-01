@@ -48,7 +48,7 @@ export default {
     },
     isReadonly: {
       type: Boolean,
-      default: false // Add this prop for readonly functionality
+      default: false
     }
   }
 };

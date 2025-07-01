@@ -19,7 +19,7 @@
 export default {
   name: "SelectInput",
   props: {
-    modelValue: [String, Number, Array, Object], // Accept any type
+    modelValue: [String, Number, Array, Object],
     options: {
       type: Array,
       required: true,

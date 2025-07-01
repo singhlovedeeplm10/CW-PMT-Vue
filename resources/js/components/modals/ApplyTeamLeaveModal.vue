@@ -33,8 +33,6 @@
               <!-- <span v-if="leaveTypeError" class="text-danger">{{ leaveTypeError }}</span> -->
             </div>
 
-
-
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="startDateHalfDay" name="start_date"

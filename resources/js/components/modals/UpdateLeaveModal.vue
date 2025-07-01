@@ -23,107 +23,79 @@
         <div class="modal-body">
           <form @submit.prevent="submitLeaveUpdate">
             <div class="mb-3">
-              <label for="leaveType" class="form-label">Leave Type</label>
-              <select v-model="leave.type_of_leave" id="leaveType" class="form-select" :disabled="!leave.isEditable"
-                required>
-                <option value="Short Leave">Short Leave</option>
-                <option value="Half Day Leave">Half Day Leave</option>
-                <option value="Full Day Leave">Full Day Leave</option>
-                <option value="Work From Home Full Day">Work From Home Full Day</option>
-                <option value="Work From Home Half Day">Work From Home Half Day</option>
-              </select>
+              <SelectInput v-model="leave.type_of_leave" :options="leaveTypeOptions" label="Leave Type" name="leaveType"
+                id="leaveType" :disabled="!leave.isEditable" placeholder="Select Leave Type" />
             </div>
 
             <!-- Conditionally show start date and end date based on leave type -->
             <div v-if="leave.type_of_leave === 'Full Day Leave' || leave.type_of_leave === 'Work From Home Full Day'"
-              class="date-time-row">
-              <div class="form-group">
-                <label for="startDate" class="form-label">Start Date</label>
-                <input type="date" v-model="leave.start_date" id="startDate" class="form-control"
-                  :disabled="!leave.isEditable" required :min="minDate" @change="validateStartDate" />
-                <div v-if="startDateError" class="text-danger mt-2">{{ startDateError }}</div>
+              class="row mb-3">
+              <div class="col">
+                <DateInput v-model="leave.start_date" label="Start Date" id="startDate" name="startDate"
+                  :minDate="minDate" :disabled="!leave.isEditable" :error="startDateError"
+                  @update:modelValue="validateStartDate" />
               </div>
 
-              <div class="form-group">
-                <label for="endDate" class="form-label">End Date</label>
-                <input type="date" v-model="leave.end_date" id="endDate" class="form-control"
-                  :disabled="!leave.isEditable" required :min="leave.start_date" @change="validateEndDate" />
-                <div v-if="endDateError" class="text-danger mt-2">{{ endDateError }}</div>
+              <div class="col">
+                <DateInput v-model="leave.end_date" label="End Date" id="endDate" name="endDate"
+                  :minDate="leave.start_date" :disabled="!leave.isEditable" :error="endDateError"
+                  @update:modelValue="validateEndDate" />
               </div>
             </div>
 
-
-
-            <div v-if="leave.type_of_leave === 'Work From Home Half Day'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" v-model="leave.start_date" id="startDate" class="form-control"
-                :disabled="!leave.isEditable" required :min="minDate" @change="validateStartDate" />
+            <div class="mb-3">
+              <DateInput v-if="leave.type_of_leave === 'Work From Home Half Day'" v-model="leave.start_date"
+                label="Start Date" id="startDate" name="startDate" :minDate="minDate" :disabled="!leave.isEditable"
+                :error="startDateError" @update:modelValue="validateStartDate" />
             </div>
 
-            <!-- Conditionally show "Half Day" specific field -->
-            <div v-if="leave.type_of_leave === 'Work From Home Half Day'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select v-model="leave.half" id="halfDay" class="form-select" :disabled="!leave.isEditable" required>
-                <option value="First Half">First Half</option>
-                <option value="Second Half">Second Half</option>
-              </select>
+            <div class="mb-3">
+              <SelectInput
+                v-if="leave.type_of_leave === 'Half Day Leave' || leave.type_of_leave === 'Work From Home Half Day'"
+                v-model="leave.half" :options="halfDayOptions" label="Half Day" name="halfDay" id="halfDay"
+                :disabled="!leave.isEditable" placeholder="Select Half Day" />
             </div>
 
-            <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" v-model="leave.start_date" id="startDate" class="form-control"
-                :disabled="!leave.isEditable" required :min="minDate" @change="validateStartDate" />
-            </div>
-
-            <!-- Conditionally show "Half Day" specific field -->
-            <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select v-model="leave.half" id="halfDay" class="form-select" :disabled="!leave.isEditable" required>
-                <option value="First Half">First Half</option>
-                <option value="Second Half">Second Half</option>
-              </select>
+            <div class="mb-3">
+              <DateInput v-if="leave.type_of_leave === 'Half Day Leave'" v-model="leave.start_date" label="Start Date"
+                id="startDate" name="startDate" :minDate="minDate" :disabled="!leave.isEditable" :error="startDateError"
+                @update:modelValue="validateStartDate" />
             </div>
 
             <!-- Conditionally show "Short Leave" specific fields -->
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" v-model="leave.start_date" id="startDate" class="form-control"
-                :disabled="!leave.isEditable" required :min="minDate" @change="validateStartDate" />
+            <div class="mb-3">
+              <DateInput v-if="leave.type_of_leave === 'Short Leave'" v-model="leave.start_date" label="Start Date"
+                id="startDate" name="startDate" :minDate="minDate" :disabled="!leave.isEditable" :error="startDateError"
+                @update:modelValue="validateStartDate" />
             </div>
-            <div v-if="leave.type_of_leave === 'Short Leave'" class="time-row">
-              <div class="form-group">
-                <label for="startTime" class="form-label">Start Time</label>
-                <input type="time" v-model="leave.start_time" id="startTime" class="form-control"
-                  :disabled="!leave.isEditable" required @change="validateShortLeaveTime" />
+
+            <div v-if="leave.type_of_leave === 'Short Leave'" class="row mb-3">
+              <div class="col">
+                <TimeInput v-model="leave.start_time" label="Start Time" id="startTime" name="startTime"
+                  :disabled="!leave.isEditable" :minTime="'09:00'" :maxTime="'18:00'"
+                  @update:modelValue="validateShortLeaveTime" />
               </div>
 
-              <div class="form-group">
-                <label for="endTime" class="form-label">End Time</label>
-
-                <input type="time" v-model="leave.end_time" id="endTime" class="form-control"
-                  :disabled="!leave.isEditable" required @change="validateShortLeaveTime" />
-                <div v-if="timeError" class="text-danger mt-2">{{ timeError }}</div>
+              <div class="col">
+                <TimeInput v-model="leave.end_time" label="End Time" id="endTime" name="endTime"
+                  :disabled="!leave.isEditable" :minTime="'09:00'" :maxTime="'18:00'" :error="timeError"
+                  @update:modelValue="validateShortLeaveTime" />
               </div>
             </div>
-            <!-- Reason and Contact fields -->
+
             <div class="mb-3">
-              <label for="reason" class="form-label">Reason</label>
-              <textarea v-model="leave.reason" id="reason" class="form-control" rows="3" :disabled="!leave.isEditable"
-                required></textarea>
+              <TextArea v-model="leave.reason" label="Reason" :isReadonly="!leave.isEditable" :isRequired="true"
+                id="reason" placeholder="Enter reason" />
             </div>
 
             <div class="mb-3">
-              <label for="contact" class="form-label">Contact During Leave</label>
-              <input type="text" v-model="leave.contact_during_leave" id="contact" class="form-control"
-                :disabled="!leave.isEditable" required />
+              <NumberInput v-model="leave.contact_during_leave" label="Contact During Leave" id="contact" name="contact"
+                :disabled="!leave.isEditable" placeholder="Enter contact number" />
             </div>
 
             <div class="mb-3">
-              <label for="status" class="form-label">Leave Status</label>
-              <select v-model="leave.status" id="status" class="form-select" :disabled="!leave.isEditable" required>
-                <option value="pending">Pending</option>
-                <option value="canceled">Canceled</option>
-              </select>
+              <SelectInput v-model="leave.status" :options="leaveStatusOptions" label="Leave Status" name="status"
+                id="status" :disabled="!leave.isEditable" placeholder="Select Leave Status" />
             </div>
 
             <div class="modal-footer">
@@ -146,9 +118,21 @@ import axios from "axios";
 import { Modal } from "bootstrap";
 import * as bootstrap from 'bootstrap';
 import { toast } from "vue3-toastify";
+import SelectInput from "@/components/inputs/SelectInput.vue";
+import TextArea from "@/components/inputs/TextArea.vue";
+import NumberInput from "@/components/inputs/NumberInput.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
+import TimeInput from "@/components/inputs/TimeInput.vue";
 
 export default {
   name: "UpdateLeaveModal",
+  components: {
+    SelectInput,
+    TextArea,
+    NumberInput,
+    DateInput,
+    TimeInput
+  },
   props: {
     leave: {
       type: Object,
@@ -158,12 +142,28 @@ export default {
   data() {
     return {
       loading: false,
-      timeError: "", // Store the time validation error message
-      startDateError: "", // Store error for start date
-      endDateError: "", // Store error for end date
-      minDate: this.getCurrentDate(), // Set minDate to current date
+      timeError: "",
+      startDateError: "",
+      endDateError: "",
+      minDate: this.getCurrentDate(),
+      leaveTypeOptions: [
+        { label: "Short Leave", value: "Short Leave" },
+        { label: "Half Day Leave", value: "Half Day Leave" },
+        { label: "Full Day Leave", value: "Full Day Leave" },
+        { label: "Work From Home Full Day", value: "Work From Home Full Day" },
+        { label: "Work From Home Half Day", value: "Work From Home Half Day" },
+      ],
+      halfDayOptions: [
+        { label: "First Half", value: "First Half" },
+        { label: "Second Half", value: "Second Half" },
+      ],
+      leaveStatusOptions: [
+        { label: "Pending", value: "pending" },
+        { label: "Canceled", value: "canceled" },
+      ],
     };
   },
+
   methods: {
     getCurrentDate() {
       const date = new Date();
@@ -285,6 +285,10 @@ export default {
 </script>
 
 <style scoped>
+.col {
+  margin-bottom: -16px;
+}
+
 .close-modal {
   background: none;
   color: white;

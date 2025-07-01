@@ -1,6 +1,6 @@
 <template>
-  <div class="time-input">
-    <label v-if="label" :for="id" class="time-label">{{ label }}</label>
+  <div class="mb-3">
+    <label v-if="label" :for="id" class="form-label">{{ label }}</label>
     <select :id="id" :name="name" v-model="selectedTime" :disabled="disabled" class="form-control"
       :class="{ 'is-invalid': error }" @change="handleInput">
       <option value="" disabled>Select Time</option>
@@ -51,7 +51,7 @@ export default {
   },
   data() {
     return {
-      selectedTime: this.modelValue,
+      selectedTime: this.formatTimeForComponent(this.modelValue),
     };
   },
   computed: {
@@ -93,14 +93,19 @@ export default {
       return times;
     },
   },
-  watch: {
-    modelValue(newValue) {
-      this.selectedTime = newValue;
-    },
-  },
   methods: {
+    formatTimeForComponent(time) {
+      if (!time) return '';
+      // If time comes as HH:MM:SS from database, extract just HH:MM
+      return time.substring(0, 5);
+    },
     handleInput() {
       this.$emit("update:modelValue", this.selectedTime);
+    },
+  },
+  watch: {
+    modelValue(newValue) {
+      this.selectedTime = this.formatTimeForComponent(newValue);
     },
   },
 };
@@ -111,21 +116,6 @@ export default {
 .form-label {
   font-weight: 500;
   font-size: 18px;
-}
-
-.time-input {
-  margin-bottom: 1rem;
-}
-
-.time-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
 }
 
 .is-invalid {

@@ -22,14 +22,8 @@
         <div class="modal-body">
           <form @submit.prevent="submitLeaveUpdate">
             <div class="mb-3">
-              <label for="leaveType" class="form-label">Leave Type</label>
-              <select v-model="leave.type_of_leave" id="leaveType" class="form-select" required>
-                <option value="Short Leave">Short Leave</option>
-                <option value="Half Day Leave">Half Day Leave</option>
-                <option value="Full Day Leave">Full Day Leave</option>
-                <option value="Work From Home Full Day">Work From Home Full Day</option>
-                <option value="Work From Home Half Day">Work From Home Half Day</option>
-              </select>
+              <SelectInput v-model="leave.type_of_leave" label="Leave Type" id="leaveType" name="leaveType"
+                :options="leaveTypeOptions" :error="timeError" required />
             </div>
 
             <!-- Conditionally show start date and end date based on leave type -->
@@ -49,23 +43,14 @@
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select v-model="leave.half" id="halfDay" class="form-select" required>
-                <option value="First Half">First Half</option>
-                <option value="Second Half">Second Half</option>
-              </select>
-
+              <SelectInput v-model="leave.half" label="Half Day" id="halfDay" :options="halfDayOptions"
+                :required="true" />
             </div>
+
             <div v-if="leave.type_of_leave === 'Work From Home Half Day'" class="mb-3">
-              <label for="halfDay" class="form-label">Half Day</label>
-              <select v-model="leave.half" id="halfDay" class="form-select" required>
-                <option value="First Half">First Half</option>
-                <option value="Second Half">Second Half</option>
-              </select>
-
+              <SelectInput v-model="leave.half" label="Half Day" id="halfDayWFH" :options="halfDayOptions"
+                :required="true" />
             </div>
-
-
 
             <!-- Conditionally show "Short Leave" specific fields -->
             <div v-if="leave.type_of_leave === 'Short Leave'" class="time-fields">
@@ -129,9 +114,13 @@
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 import { toast } from "vue3-toastify";
+import SelectInput from "@/components/inputs/SelectInput.vue";
 
 export default {
   name: "UpdateTeamLeaveModal",
+  components: {
+    SelectInput,
+  },
   props: {
     leave: {
       type: Object,
@@ -142,6 +131,17 @@ export default {
     return {
       isLoading: false,
       timeError: "", // Store validation error message
+      leaveTypeOptions: [
+        { value: 'Short Leave', label: 'Short Leave' },
+        { value: 'Half Day Leave', label: 'Half Day Leave' },
+        { value: 'Full Day Leave', label: 'Full Day Leave' },
+        { value: 'Work From Home Full Day', label: 'Work From Home Full Day' },
+        { value: 'Work From Home Half Day', label: 'Work From Home Half Day' }
+      ],
+      halfDayOptions: [
+        { value: 'First Half', label: 'First Half' },
+        { value: 'Second Half', label: 'Second Half' }
+      ]
     };
   },
   methods: {
