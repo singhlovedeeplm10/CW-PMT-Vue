@@ -8,12 +8,7 @@
 
       <!-- Search Bar -->
       <div class="search-bar">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search by title..."
-          class="search-input"
-        />
+        <input type="text" v-model="searchQuery" placeholder="Search by title..." class="search-input" />
         <label for="sortOrder">Sort By:</label>
         <select v-model="selectedSort" @change="sortNotices">
           <option value="order_asc">Order (Ascending)</option>
@@ -43,7 +38,7 @@
           <tbody>
             <tr v-for="notice in filteredNotices" :key="notice.id">
               <td>{{ notice.order }}</td>
-              <td>{{ notice.title }}</td>
+              <td v-html="notice.title"></td>
               <td>{{ formatDate(notice.start_date) }}</td>
               <td>{{ formatDate(notice.end_date) }}</td>
               <td class="manage-buttons">
@@ -57,21 +52,13 @@
         <p v-else class="no-notices">No notices available.</p>
 
         <!-- Pagination Component -->
-        <pagination
-          v-if="totalPages > 1"
-          :totalPages="totalPages"
-          :currentPage="currentPage"
-          @page-changed="fetchNotices"
-        />
+        <pagination v-if="totalPages > 1" :totalPages="totalPages" :currentPage="currentPage"
+          @page-changed="fetchNotices" />
       </div>
 
       <add-notice-modal v-if="showModal" @noticeadded="fetchNotices" @close="showModal = false" />
-      <edit-notice-modal
-        v-if="editModalVisible"
-        :notice="selectedNotice"
-        @noticeupdated="fetchNotices"
-        @close="editModalVisible = false"
-      />
+      <edit-notice-modal v-if="editModalVisible" :notice="selectedNotice" @noticeupdated="fetchNotices"
+        @close="editModalVisible = false" />
     </div>
   </master-component>
 </template>
@@ -140,9 +127,10 @@ export default {
       this.selectedNotice = { ...notice };
       this.editModalVisible = true;
     },
-    formatDate(date) {
-      if (!date) return "";
-      return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date(date));
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     },
     async deleteNotice(id) {
       if (confirm("Are you sure you want to delete this notice?")) {
@@ -166,10 +154,11 @@ export default {
 </script>
 
 <style scoped>
-h2{
+h2 {
   font-family: 'Poppins', sans-serif;
-    font-weight: 600;
+  font-weight: 600;
 }
+
 .loader-container {
   display: flex;
   justify-content: center;
@@ -187,8 +176,13 @@ h2{
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .search-bar {
@@ -246,11 +240,12 @@ h2{
 
 .add-notice-btn {
   position: absolute;
-  top: 88px;
+  top: 115px;
   right: 20px;
   padding: 10px 16px;
   font-size: 1em;
-  background: linear-gradient(135deg, #007bff, #0056b3);background-color: #007bff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  background-color: #007bff;
   border: none;
   font-weight: bold;
   color: white;
@@ -309,6 +304,7 @@ h2{
   color: #555;
   text-align: center;
 }
+
 /* Manage Buttons */
 .manage-buttons .btn {
   margin-right: 5px;

@@ -16,13 +16,12 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('attendance_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('project_id')->nullable();
-            $table->string('project_name'); // New column
-            $table->unsignedBigInteger('leave_id')->nullable(); // New column
+            $table->string('project_name');
+            $table->unsignedBigInteger('leave_id')->nullable(); 
             $table->decimal('hours', 8, 2);
             $table->text('task_description');
             $table->enum('task_status', ['pending', 'in_progress', 'completed']);
             $table->timestamps();
-        
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->foreign('leave_id')->references('id')->on('leaves')->onDelete('cascade');
         });

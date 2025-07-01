@@ -2,13 +2,8 @@
   <div class="task-card">
     <div class="task-card-header">
       <h4 class="card_heading">Tasks List</h4>
-      <ButtonComponent
-        :label="'Tasks'"
-        :isLoading="buttonLoading"
-        :isDisabled="loading"
-        buttonClass="btn-primary"
-        :clickEvent="checkClockInStatus"
-      />
+      <ButtonComponent :label="'Tasks'" :isLoading="buttonLoading" :isDisabled="loading" buttonClass="btn-primary"
+        :clickEvent="checkClockInStatus" />
     </div>
     <table class="task-table">
       <thead>
@@ -38,12 +33,7 @@
       </tbody>
     </table>
 
-    <AddTaskModal
-      :tasks="modalTasks" 
-      :projects="projects"
-      @taskAdded="fetchTasks"
-      @closeModal="resetModalTasks" 
-    />
+    <AddTaskModal :tasks="modalTasks" :projects="projects" @taskUpdated="fetchTasks" @closeModal="resetModalTasks" />
   </div>
 </template>
 
@@ -73,8 +63,8 @@ export default {
   },
   methods: {
     formattedDescription(description) {
-  return description ? description.replace(/\n/g, "<br>") : "";
-},
+      return description ? description.replace(/\n/g, "<br>") : "";
+    },
 
     async fetchTasks() {
       this.loading = true;
@@ -101,7 +91,11 @@ export default {
 
     async fetchProjects() {
       try {
-        const response = await axios.get("/api/user-projects");
+        const response = await axios.get('/api/user-projects', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
         this.projects = response.data.projects;
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -124,7 +118,7 @@ export default {
         if (response.data.clocked_in) {
           // Make a copy of the tasks and pass to the modal
           this.modalTasks = JSON.parse(JSON.stringify(this.tasks)); // Deep copy of tasks
-          
+
           const modalElement = document.getElementById("addtaskmodal");
           if (modalElement) {
             const modalInstance = new bootstrap.Modal(modalElement);
@@ -138,8 +132,10 @@ export default {
             });
           }
         } else {
-          toast.warning("You need to clock in to add tasks!", { position: "top-right" ,
-          autoClose: 1000});
+          toast.warning("You need to clock in to add tasks!", {
+            position: "top-right",
+            autoClose: 1000
+          });
         }
       } catch (error) {
         console.error("Error checking clock-in status:", error.response?.data || error.message);
@@ -161,44 +157,49 @@ export default {
 </script>
 
 
-  <style scoped>
-  .task-card {
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 20px;
-    background-color: #fff;
-    width: 100%;
-  }
-  .task-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .task-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .task-table th{
-    padding: 10px;
-    font-size: 16px;
-    text-align: left;
-    background-color: #3498db;
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    border: none;
-  }
-  .task-table td {
-    padding: 10px;
-    text-align: left;
-    font-size: 15px;
-    border-bottom: 1px solid #ddd;
-    font-family: 'Poppins', sans-serif;
-  }
-  .spinner-border {
+<style scoped>
+.task-card {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 20px;
+  background-color: #fff;
+  width: 100%;
+}
+
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.task-table th {
+  padding: 10px;
+  font-size: 16px;
+  text-align: left;
+  background-color: #3498db;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  border: none;
+}
+
+.task-table td {
+  padding: 10px;
+  text-align: left;
+  font-size: 15px;
+  border-bottom: 1px solid #ddd;
+  font-family: 'Poppins', sans-serif;
+}
+
+.spinner-border {
   width: 2rem;
   height: 2rem;
 }
-  </style>
+</style>

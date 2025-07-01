@@ -6,30 +6,19 @@
           <h2 class="title_heading">Salary Slips</h2>
         </div>
         <div class="actions" v-if="userRole === 'Admin'">
-          <input
-            type="file"
-            ref="fileInput"
-            @change="handleFileUpload"
-            accept=".csv"
-            class="file-input"
-          />
+          <input type="file" ref="fileInput" @change="handleFileUpload" accept=".csv" class="file-input" />
           <button class="btn-primary" @click="uploadFile" :disabled="isUploading">
-  <span v-if="!isUploading">Upload CSV</span>
-  <span v-else><i class="fas fa-spinner fa-spin"></i> Uploading...</span>
-</button>
+            <span v-if="!isUploading">Upload CSV</span>
+            <span v-else><i class="fas fa-spinner fa-spin"></i> Uploading...</span>
+          </button>
 
         </div>
       </div>
 
       <!-- Search & Filters -->
       <div class="search-container">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search by Employee Name..."
-          class="search-input"
-          v-if="userRole === 'Admin'"
-        />
+        <input type="text" v-model="searchQuery" placeholder="Search by Employee Name..." class="search-input"
+          v-if="userRole === 'Admin'" />
         <select v-model="selectedMonth">
           <option v-for="month in months" :key="month.value" :value="month.value">
             {{ month.name }}
@@ -41,9 +30,9 @@
         </select>
 
         <button @click="handleFilter" class="btn-primary" :disabled="isFiltering">
-  <span v-if="!isFiltering">Filter</span>
-  <span v-else><i class="fas fa-spinner fa-spin"></i></span>
-</button>
+          <span v-if="!isFiltering">Filter</span>
+          <span v-else><i class="fas fa-spinner fa-spin"></i></span>
+        </button>
 
       </div>
 
@@ -71,7 +60,7 @@
               <th>Total Deductions</th>
               <th>Total Incentives</th>
               <th>Net Salary Credited</th>
-              <th>View Details</th> 
+              <th>View Details</th>
             </tr>
           </thead>
           <tbody>
@@ -88,8 +77,8 @@
                   <i class="fas fa-eye"></i>
                 </button>
                 <button v-if="userRole === 'Admin'" @click="deleteSalarySlip(slip.id)" class="delete-button">
-    <i class="fas fa-trash"></i>
-  </button>
+                  <i class="fas fa-trash"></i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -97,12 +86,8 @@
       </div>
     </div>
 
-    <SalarySlipModal
-    @salaryupdated="filterSalarySlips"
-      :isVisible="showModal"
-      :selectedSalarySlip="selectedSalarySlip"
-      @close="showModal = false"
-    />
+    <SalarySlipModal @salaryupdated="filterSalarySlips" :isVisible="showModal" :selectedSalarySlip="selectedSalarySlip"
+      @close="showModal = false" />
   </master-component>
 </template>
 
@@ -132,9 +117,9 @@ export default {
       selectedSalarySlip: null,
       selectedMonth: new Date().getMonth() + 1,
       selectedYear: currentYear,
-      loading: true, // Added loading state
-      isUploading: false, // New property for upload loader
-      isFiltering: false, // New state for the filter button
+      loading: true,
+      isUploading: false,
+      isFiltering: false,
       months: [
         { name: "January", value: 1 },
         { name: "February", value: 2 },
@@ -166,7 +151,7 @@ export default {
         this.selectedSalarySlip = response.data;
         this.showModal = true;
       } catch (error) {
-        toast.error('Failed to fetch salary slip details.', { position: "top-right" , autoClose: 1000, });
+        toast.error('Failed to fetch salary slip details.', { position: "top-right", autoClose: 1000, });
         console.error(error);
       }
     },
@@ -174,71 +159,71 @@ export default {
       this.file = event.target.files[0];
     },
     async uploadFile() {
-  if (!this.file) {
-    toast.error('Please select a file to upload.', { position: "top-right" , autoClose: 1000, });
-    return;
-  }
+      if (!this.file) {
+        toast.error('Please select a file to upload.', { position: "top-right", autoClose: 1000, });
+        return;
+      }
 
-  this.isUploading = true;
-  const formData = new FormData();
-  formData.append('file', this.file);
+      this.isUploading = true;
+      const formData = new FormData();
+      formData.append('file', this.file);
 
-  try {
-    await axios.post('/api/upload-salary-slip', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    toast.success('File uploaded successfully!', { position: "top-right", autoClose: 1000, });
+      try {
+        await axios.post('/api/upload-salary-slip', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success('File uploaded successfully!', { position: "top-right", autoClose: 1000, });
 
-    // Reset file input
-    this.file = null;
-    this.$refs.fileInput.value = ""; // Reset file input field
+        // Reset file input
+        this.file = null;
+        this.$refs.fileInput.value = ""; // Reset file input field
 
-    this.fetchSalarySlips();
-  } catch (error) {
-    toast.error('Failed to upload file.', { position: "top-right", autoClose: 1000, });
-    console.error(error);
-  } finally {
-    this.isUploading = false;
-  }
-},
+        this.fetchSalarySlips();
+      } catch (error) {
+        toast.error('Failed to upload file.', { position: "top-right", autoClose: 1000, });
+        console.error(error);
+      } finally {
+        this.isUploading = false;
+      }
+    },
 
     async deleteSalarySlip(id) {
-    if (!confirm("Are you sure you want to delete this salary slip?")) return;
+      if (!confirm("Are you sure you want to delete this salary slip?")) return;
 
-    try {
-      await axios.delete(`/api/delete-salary-slip/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-      });
-      this.salarySlips = this.salarySlips.filter(slip => slip.id !== id);
-      toast.success('Salary slip deleted successfully!', { position: "top-right" , autoClose: 1000,});
-    } catch (error) {
-      toast.error('Failed to delete salary slip.', { position: "top-right" , autoClose: 1000,});
-      console.error(error);
-    }
-  },
-  async handleFilter() {
-    this.isFiltering = true;
-    try {
-      await this.filterSalarySlips();
-    } finally {
-      this.isFiltering = false;
-    }
-  },
-  async filterSalarySlips() {
-    this.loading = true;
-    try {
-      const response = await axios.get("/api/get-salary", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-        params: { month: this.selectedMonth, year: this.selectedYear },
-      });
-      this.salarySlips = response.data;
-    } catch (error) {
-      toast.error("Failed to filter salary slips.", { position: "top-right" });
-      console.error(error);
-    } finally {
-      this.loading = false;
-    }
-  },
+      try {
+        await axios.delete(`/api/delete-salary-slip/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+        });
+        this.salarySlips = this.salarySlips.filter(slip => slip.id !== id);
+        toast.success('Salary slip deleted successfully!', { position: "top-right", autoClose: 1000, });
+      } catch (error) {
+        toast.error('Failed to delete salary slip.', { position: "top-right", autoClose: 1000, });
+        console.error(error);
+      }
+    },
+    async handleFilter() {
+      this.isFiltering = true;
+      try {
+        await this.filterSalarySlips();
+      } finally {
+        this.isFiltering = false;
+      }
+    },
+    async filterSalarySlips() {
+      this.loading = true;
+      try {
+        const response = await axios.get("/api/get-salary", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
+          params: { month: this.selectedMonth, year: this.selectedYear },
+        });
+        this.salarySlips = response.data;
+      } catch (error) {
+        toast.error("Failed to filter salary slips.", { position: "top-right" });
+        console.error(error);
+      } finally {
+        this.loading = false;
+      }
+    },
 
     async fetchSalarySlips() {
       await this.filterSalarySlips();
@@ -264,7 +249,6 @@ export default {
 </script>
 
 <style scoped>
-/* Loader Styling */
 .loader-container {
   text-align: center;
   font-size: 18px;
@@ -277,7 +261,6 @@ export default {
   color: #007bff;
 }
 
-/* No Data Message */
 .no-data {
   text-align: center;
   font-size: 18px;
@@ -285,29 +268,29 @@ export default {
   margin-top: 20px;
 }
 
-/* Main Container */
 .salary-container {
   padding: 20px;
 }
 
-/* Header */
 .header {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 20px;
   padding: 20px;
-  border: none;  
+  border: none;
 }
 
 .header-title {
   color: #333;
   margin-bottom: 5px;
 }
-h2{
+
+h2 {
   font-family: 'Poppins', sans-serif;
-    font-weight: 600;
+  font-weight: 600;
 }
+
 .subtext {
   font-size: 14px;
   color: #666;
@@ -327,17 +310,16 @@ h2{
   background: #fff;
 }
 
-/* Buttons */
 .btn-primary {
   background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-      font-weight: bold;
-      padding: 8px 13px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
+  color: white;
+  font-weight: bold;
+  padding: 8px 13px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
 }
 
 .btn-primary:hover {
@@ -359,7 +341,6 @@ h2{
   background: #5a6268;
 }
 
-/* Search & Filters */
 .search-container {
   display: flex;
   align-items: center;
@@ -389,7 +370,6 @@ select:focus {
   outline: none;
 }
 
-/* Salary Slip Table */
 .salary-slip-table {
   margin-top: 20px;
   overflow-x: auto;
@@ -426,7 +406,6 @@ tr:hover {
   background-color: #f1f1f1;
 }
 
-/* View Button */
 .view-button {
   background: linear-gradient(135deg, #28a745, #218838);
   color: white;
@@ -441,6 +420,7 @@ tr:hover {
   background: linear-gradient(135deg, #218838, #1e7e34);
   transform: scale(1.1);
 }
+
 .delete-button {
   background-color: #dc3545;
   color: #fff;

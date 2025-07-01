@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notices', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->integer('order')->default(0); // Numeric 'order' column with a default value of 0
-            $table->string('title')->nullable(); // Title column
-            $table->longText('description'); // Description column
-            $table->date('start_date'); // Start Date
-            $table->date('end_date'); // End Date
-            $table->timestamps(); // created_at and updated_at columns
+            $table->id();
+            $table->integer('order')->default(0);
+            $table->string('title')->nullable();
+            $table->longText('description');
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->timestamps();
         });
     }
 

@@ -8,69 +8,40 @@
         </div>
         <div class="modal-body">
           <!-- Employee Name -->
-<div class="mb-3">
-  <InputField
-    label="Employee Name"
-    id="name"
-    v-model="employee.name"
-    placeholder="Enter employee name"
-    :error="fieldErrors.name"
-    :class="{ 'input-error': fieldErrors.name }"
-    @input="clearNameError"
-  />
-  <p v-if="fieldErrors.name" class="error-message">{{ fieldErrors.name }}</p>
-</div>
+          <div class="mb-3">
+            <InputField label="Employee Name" id="name" v-model="employee.name" placeholder="Enter employee name"
+              :error="fieldErrors.name" :class="{ 'input-error': fieldErrors.name }" @input="clearNameError" />
+            <p v-if="fieldErrors.name" class="error-message">{{ fieldErrors.name }}</p>
+          </div>
 
-<!-- Employee Email -->
-<div class="mb-3">
-  <EmailInput
-    label="Employee Email"
-    id="email"
-    v-model="employee.email"
-    placeholder="Enter employee email"
-    :class="{ 'input-error': fieldErrors.email }"
-    @input-blur="(error) => emailError = error"
-    @input="clearEmailError"
-  />
-  <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
-</div>
+          <!-- Employee Email -->
+          <div class="mb-3">
+            <EmailInput label="Employee Email" id="email" v-model="employee.email" placeholder="Enter employee email"
+              :class="{ 'input-error': fieldErrors.email }" @input-blur="(error) => emailError = error"
+              @input="clearEmailError" />
+            <p v-if="fieldErrors.email" class="error-message">{{ fieldErrors.email }}</p>
+          </div>
 
           <!-- Password -->
-<div class="mb-3">
-  <PasswordInput
-    label="Password"
-    id="password"
-    v-model="employee.password"
-    placeholder="Enter password"
-    :class="{ 'input-error': fieldErrors.password }"
-    @input-blur="(error) => passwordError = error"
-    @input="clearPasswordError"
-  />
-  <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
-</div>
+          <div class="mb-3">
+            <PasswordInput label="Password" id="password" v-model="employee.password" placeholder="Enter password"
+              :class="{ 'input-error': fieldErrors.password }" @input-blur="(error) => passwordError = error"
+              @input="clearPasswordError" />
+            <p v-if="fieldErrors.password" class="error-message">{{ fieldErrors.password }}</p>
+          </div>
 
-<!-- Confirm Password -->
-<div class="mb-3">
-  <PasswordInput
-    label="Confirm Password"
-    id="confirmPassword"
-    v-model="employee.confirmPassword"
-    placeholder="Confirm password"
-    :class="{ 'input-error': fieldErrors.confirmPassword }"
-    @input-blur="(error) => confirmPasswordError = error"
-    @input="clearConfirmPasswordError"
-  />
-  <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
-</div>
+          <!-- Confirm Password -->
+          <div class="mb-3">
+            <PasswordInput label="Confirm Password" id="confirmPassword" v-model="employee.confirmPassword"
+              placeholder="Confirm password" :class="{ 'input-error': fieldErrors.confirmPassword }"
+              @input-blur="(error) => confirmPasswordError = error" @input="clearConfirmPasswordError" />
+            <p v-if="fieldErrors.confirmPassword" class="error-message">{{ fieldErrors.confirmPassword }}</p>
+          </div>
         </div>
 
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label=""
-            :isDisabled="isLoading"
-            buttonClass="btn-primary custom-btn-submit"
-            :clickEvent="addEmployee"
-          >
+          <ButtonComponent label="" :isDisabled="isLoading" buttonClass="btn-primary custom-btn-submit"
+            :clickEvent="addEmployee">
             <template v-if="isLoading">
               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               Loading...
@@ -239,18 +210,20 @@ export default {
 </script>
 
 <style scoped>
- .close-modal{
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-  }
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
 .error-message {
   color: red;
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
+
 .modal.fade.show {
   display: block;
   background: rgba(0, 0, 0, 0.5);

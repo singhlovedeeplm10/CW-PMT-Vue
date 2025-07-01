@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\MailController;
 use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\SalarySlipController;
+use App\Http\Controllers\Api\DeviceController;
 
 
 
@@ -36,7 +37,7 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 // Route::get('/tasks', [TaskController::class, 'getTasks']);
 Route::middleware(['auth:sanctum'])->post('/tasks', [TaskController::class, 'storeTasks']);
 Route::middleware(['auth:sanctum'])->get('/tasks', [TaskController::class, 'showTasks']);
-Route::get('/user-projects', [TaskController::class, 'fetchProjects']);
+Route::middleware(['auth:sanctum'])->get('/user-projects', [TaskController::class, 'fetchProjects']);
 Route::get('/users-without-tasks', [TaskController::class, 'getUsersWithoutTasks']);
 
 Route::get('/daily-tasks', [TaskController::class, 'getDailyTasks']);
@@ -52,35 +53,34 @@ Route::middleware('auth:sanctum')->delete('/tasks/{id}', [TaskController::class,
 
 // LEAVES API ROUTE
 // leave routes (USER)
-Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'store']);
-Route::middleware('auth:sanctum')->get('/leaves', [LeaveController::class, 'showLeaves']);
-Route::middleware('auth:sanctum')->put('/update-leaves/{leave}', [LeaveController::class, 'update']);
+Route::middleware('auth:sanctum')->post('/apply-leave', [LeaveController::class, 'applyLeave']);
+Route::middleware('auth:sanctum')->get('/leaves', [LeaveController::class, 'showLeavesUser']);
+Route::middleware('auth:sanctum')->put('/update-leaves/{leave}', [LeaveController::class, 'updateLeaveUser']);
 Route::get('/leaves/{id}', [LeaveController::class, 'show'])->middleware('auth:api');
 
 // team leave routes (ADMIN)
-Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'teamLeave']);
+Route::middleware('auth:sanctum')->post('/apply-team-leave', [LeaveController::class, 'applyTeamLeave']);
 Route::middleware('auth:sanctum')->get('/team-leaves', [LeaveController::class, 'showteamLeaves']);
 Route::middleware('auth:sanctum')->post('update-team-leaves/{leave}', [LeaveController::class, 'updateTeamLeave']);
-Route::get('/users/search', [LeaveController::class, 'search']);
+Route::get('/users/search', [LeaveController::class, 'searchUser']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH']);
 
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
-Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'index']);
-Route::middleware('auth:sanctum')->get('/username', [AuthController::class, 'getUser']);
+Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'showUsers']);
 Route::middleware('auth:sanctum')->get('/user-details', [AuthController::class, 'getUserDetails']);
 Route::middleware(['auth:sanctum'])->get('/user-role', [AuthController::class, 'getUserRole']);
-Route::post('/users/{id}', [UserController::class, 'updateUser']);
+Route::middleware(['auth:sanctum'])->post('/users/{id}', [UserController::class, 'updateUser']);
 Route::put('/users/{id}/status', [UserController::class, 'updateStatus']);
-Route::middleware('auth:sanctum')->get('/user-profile', [UserController::class, 'getUserProfile']);
 Route::get('/users/{user}/edit', [UserController::class, 'edit']);
 Route::get('/employee-attendances', [UserController::class, 'employeeAttendances']);
 Route::post('/users/{id}/assign-role', [UserController::class, 'assignUserRole']);
 Route::middleware('auth:sanctum')->get('/employee-time-logs', [UserController::class, 'getEmployeeTimeLogsById']);
 Route::get('/employee-detailed-time-logs', [UserController::class, 'getEmployeeAttendanceTimelogs']);
 Route::get('/employee-breaks', [UserController::class, 'getEmployeeBreaksTimelogs']);
+Route::middleware('auth:sanctum')->get('/time-logs/all', [UserController::class, 'getAllEmployeeTimeLogs']);
 
 
 // TECHNOLOGIES API ROUTE
@@ -129,9 +129,10 @@ Route::middleware('auth:sanctum')->get('/timelines', [TimelineController::class,
 Route::middleware('auth:sanctum')->post('/like-post', [TimelineController::class, 'likePost']);
 Route::middleware('auth:sanctum')->post('/timeline/comment', [TimelineController::class, 'postComment']);
 Route::get('/timeline/fetch-comments', [TimelineController::class, 'fetchComments']);
-Route::middleware('auth:sanctum')->put('/timelines/{id}', [TimelineController::class, 'updateTimeline']);
+Route::middleware('auth:sanctum')->put('/update-timelines/{id}', [TimelineController::class, 'updateTimeline']);
 Route::middleware('auth:sanctum')->delete('/delete/timelines/{id}', [TimelineController::class, 'deleteTimeline']);
-
+Route::middleware('auth:sanctum')->delete('/delete-timeline-image/{uploadId}', [TimelineController::class, 'deleteImage']);
+Route::middleware('auth:sanctum')->post('/update-image-order', [TimelineController::class, 'updateImageOrder']);
 
 // POLICIES API ROUTES
 Route::middleware('auth:sanctum')->post('/save-policies', [PolicyController::class, 'savePolicy']);
@@ -154,3 +155,15 @@ Route::get('/view-salary-slip/{employeeCode}', [SalarySlipController::class, 'vi
 Route::put('/update-salary-slip/{id}', [SalarySlipController::class, 'updateSalarySlip']);
 Route::delete('/delete-salary-slip/{id}', [SalarySlipController::class, 'deleteSalarySlip']);
 
+// DEVICES ROUTES
+Route::middleware('auth:sanctum')->post('/add-devices', [DeviceController::class, 'addDevice']);
+Route::get('/devices', [DeviceController::class, 'index']);
+Route::middleware('auth:sanctum')->put('/update-devices/{id}', [DeviceController::class, 'updateDevice']);
+Route::get('/devices/{id}/history', [DeviceController::class, 'history']);
+Route::middleware('auth:sanctum')->put('/update-devices-status/{id}', [DeviceController::class, 'toggleStatus']);
+
+// My-Account ROUTES
+Route::middleware('auth:sanctum')->get('/user/projects', [TaskController::class, 'getAssignedProjectsWithHours']);
+Route::middleware('auth:sanctum')->get('/user/credentials', [UserController::class, 'getUserCredentials']);
+Route::middleware('auth:sanctum')->get('/user-assigned-devices', [DeviceController::class, 'getUserAssignedDevices']);
+Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);

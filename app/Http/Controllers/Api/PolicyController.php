@@ -11,40 +11,50 @@ use Illuminate\Support\Facades\Storage;
 class PolicyController extends Controller
 {
     public function savePolicy(Request $request)
-    {
-        $request->validate([
-            'policy_title' => 'required|string|max:255',
-            'document' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:2048',
-        ]);
-    
-        // Store the document in the 'public/policies' directory
-        $documentPath = $request->file('document')->store('policies', 'public');
-    
-        $policy = Policy::create([
-            'user_id' => auth()->id(),
-            'policy_title' => $request->input('policy_title'),
-            'last_updated_at' => now(),
-            'document_path' => $documentPath, // This will store the relative path like 'policies/filename.ext'
-        ]);
-    
-        return response()->json([
-            'message' => 'Policy added successfully',
-            'policy' => $policy,
-        ]);
+{
+    $request->validate([
+        'policy_title' => 'required|string|max:255',
+        'document' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:2048',
+    ]);
+
+    // Create directory if it doesn't exist
+    $uploadPath = public_path('uploads/policies');
+    if (!file_exists($uploadPath)) {
+        mkdir($uploadPath, 0777, true);
     }
+
+    // Generate unique filename and move file
+    $fileName = time().'_'.$request->file('document')->getClientOriginalName();
+    $request->file('document')->move($uploadPath, $fileName);
+    $documentPath = 'policies/'.$fileName;
+
+    $policy = Policy::create([
+        'user_id' => auth()->id(),
+        'policy_title' => $request->input('policy_title'),
+        'last_updated_at' => now(),
+        'document_path' => $documentPath, // Stores relative path
+    ]);
+
+    return response()->json([
+        'message' => 'Policy added successfully',
+        'policy' => $policy,
+    ]);
+}
     
 
 public function getPolicies()
 {
-    $policies = Policy::all();
+    // Fetch policies sorted alphabetically by title
+    $policies = Policy::orderBy('policy_title', 'asc')->get();
 
     // Add the full document URL to each policy
     foreach ($policies as $policy) {
-        $policy->document_url = url('storage/' . $policy->document_path);
+        $policy->document_url = url('uploads/' . $policy->document_path);
     }
 
     return response()->json($policies);
 }
+
 
 public function deletePolicies($id)
     {
@@ -62,33 +72,33 @@ public function deletePolicies($id)
         return response()->json(['message' => 'Policy deleted successfully'], 200);
     }
 
-    public function updatePolicies(Request $request, $id)
-    {
-        $policy = Policy::findOrFail($id);
-    
-        // Update policy title
-        $policy->policy_title = $request->input('policy_title');
-    
-        // Handle file upload
-        if ($request->hasFile('document')) {
-            // Delete the old document if it exists
-            if ($policy->document_path && Storage::exists('public/' . $policy->document_path)) {
-                Storage::delete('public/' . $policy->document_path);
-            }
-    
-            // Store the new document
-            $path = $request->file('document')->store('policies', 'public');
-            $policy->document_path = $path;
-        }
-    
-        // Update the last updated date
-        $policy->last_updated_at = now();
-    
-        // Save the policy
-        $policy->save();
-    
-        return response()->json($policy);
-    }
-    
+   public function updatePolicies(Request $request, $id)
+{
+    $policy = Policy::findOrFail($id);
+    $policy->policy_title = $request->input('policy_title');
 
+    if ($request->hasFile('document')) {
+        // Delete old file if exists
+        if ($policy->document_path && file_exists(public_path($policy->document_path))) {
+            unlink(public_path($policy->document_path));
+        }
+
+        // Create directory if it doesn't exist
+        $uploadPath = public_path('uploads/policies');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        // Generate unique filename and move file
+        $fileName = time().'_'.$request->file('document')->getClientOriginalName();
+        $request->file('document')->move($uploadPath, $fileName);
+        $policy->document_path = 'policies/'.$fileName;
+    }
+
+    $policy->last_updated_at = now();
+    $policy->save();
+
+    return response()->json($policy);
+}
+    
 }

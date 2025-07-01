@@ -1,15 +1,9 @@
 <template>
-  <div>
-    <label v-if="label">{{ label }}</label>
-    <textarea
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
-      :class="['form-control', textareaClass, { 'is-invalid': hasError }]"
-      :placeholder="placeholder"
-      :rows="rows"
-      :required="isRequired"
-      :readonly="isReadonly"
-    ></textarea>
+  <div class="mb-3">
+    <label v-if="label" class="form-label">{{ label }}</label>
+    <textarea :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
+      :class="['form-control', textareaClass, { 'is-invalid': hasError }]" :placeholder="placeholder" :rows="rows"
+      :required="isRequired" :readonly="isReadonly"></textarea>
     <div v-if="hasError" class="invalid-feedback">
       {{ errorMessage }}
     </div>
@@ -54,19 +48,15 @@ export default {
     },
     isReadonly: {
       type: Boolean,
-      default: false // Add this prop for readonly functionality
+      default: false
     }
   }
 };
 </script>
 
-  
-  <style scoped>
-  .form-control {
-    resize: vertical; 
-  }
-  label{
-    margin-bottom: 10px;
-  }
-  </style>
-  
+<style scoped>
+.form-label {
+  font-weight: 500;
+  font-size: 18px;
+}
+</style>

@@ -3,7 +3,6 @@
     <div class="login-card">
       <div class="header">
         <img src="img/Tablogo.svg" alt="Logo" class="logo" />
-        <!-- <h2 class="brand">CONTRIWHIZ</h2> -->
       </div>
       <form @submit.prevent="login" class="login-form">
         <div class="input-group">
@@ -34,12 +33,17 @@ export default {
       email: '',
       password: '',
       error: null,
-      loading: false, // State for loader
+      loading: false,
     };
+  },
+  created() {
+    if (localStorage.getItem('authToken')) {
+      this.$router.push({ name: 'Dashboard' });
+    }
   },
   methods: {
     async login() {
-      this.loading = true; // Start loader
+      this.loading = true;
       this.error = null;
 
       try {
@@ -49,21 +53,35 @@ export default {
         });
 
         if (response.data.success) {
-          // Store the token in local storage
+          // === 1. Store token and expiration time ===
+          const now = Date.now();
+          const expirationInHours = 12;
+          const expiresAt = now + expirationInHours * 60 * 60 * 1000;
+
           localStorage.setItem('authToken', response.data.token);
+          localStorage.setItem('expiresAt', expiresAt);
 
-          // Store the last login date in local storage
-          localStorage.setItem('lastLoginDate', response.data.lastLoginDate);
 
-          // Redirect to the Dashboard
-          this.$router.push({ name: 'Dashboard' });
+          // === 2. Set timeout to auto-logout ===
+          const expiresIn = expiresAt - now;
+          setTimeout(() => {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('expiresAt');
+            alert('Session expired. Please log in again.');
+            this.$router.push('/login');
+          }, expiresIn);
+
+          // === 3. Redirect user ===
+          const redirectTo = this.$route.query.redirect || 'Dashboard';
+          this.$router.push({ name: redirectTo });
         } else {
-          this.error = response.data.message; // Display the message from the API
+          this.error = response.data.message;
         }
       } catch (error) {
-        this.error = 'Your account is inactive. Please contact support.';
+        this.error = error.response?.data?.message ||
+          'Your account is inactive. Please contact support.';
       } finally {
-        this.loading = false; // Stop loader
+        this.loading = false;
       }
     },
   },
@@ -71,7 +89,6 @@ export default {
 </script>
 
 <style scoped>
-/* Background and container styling */
 .login-container {
   display: flex;
   align-items: center;
@@ -90,7 +107,6 @@ export default {
   text-align: center;
 }
 
-/* Header section */
 .header {
   margin-bottom: 20px;
   border: none;
@@ -110,7 +126,6 @@ export default {
   margin: 0;
 }
 
-/* Form styling */
 .login-form {
   margin-top: 20px;
 }
@@ -141,7 +156,6 @@ export default {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-/* Button styling */
 .login-button {
   width: 100%;
   padding: 12px;
@@ -165,14 +179,12 @@ export default {
   transform: scale(1.02);
 }
 
-/* Error message */
 .error {
   color: #e74c3c;
   font-size: 14px;
   margin-top: 10px;
 }
 
-/* Loader */
 .loader {
   border: 3px solid #f3f3f3;
   border-radius: 50%;
@@ -188,9 +200,9 @@ export default {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
 </style>
-

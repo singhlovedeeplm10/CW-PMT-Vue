@@ -7,7 +7,7 @@
     <title>PMT | Contriwhiz Technologies</title>
 
     <!-- Add favicon -->
-    <link rel="icon" href="img/Tablogo.svg" type="image/jpeg">
+    <link rel="icon" href="/img/Tablogo.svg" type="image/jpeg">
 
     @vite(['resources/js/app.js', 'resources/css/home.css'])
 </head>

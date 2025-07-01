@@ -38,12 +38,14 @@
           <tr v-for="employee in employees" :key="employee.id" class="table-row">
             <td>
               <div class="d-flex align-items-center">
-                <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image" class="img-thumbnail employee-image me-2" />
+                <img :src="employee.image ? employee.image : 'img/CWlogo.jpeg'" alt="Employee Image"
+                  class="img-thumbnail employee-image me-2" />
                 <div>
                   <div class="fw-bold">
                     {{ employee.name }}
                     <!-- Status Dot -->
-                    <span :class="{'status-dot-active': employee.status === '1', 'status-dot-inactive': employee.status === '0'}"></span>
+                    <span
+                      :class="{ 'status-dot-active': employee.status === '1', 'status-dot-inactive': employee.status === '0' }"></span>
                   </div>
                   <div class="text-muted">{{ employee.id }}</div>
                 </div>
@@ -78,76 +80,78 @@
   </master-component>
 </template>
 
-  
-  <script>
-  import MasterComponent from './layouts/Master.vue';
-  import axios from 'axios';
-  
-  export default {
-    name: "EmployeesAttendances",
-    components: {
-      MasterComponent,
-    },
-    data() {
-      return {
-        employees: [],
-        filters: {
-          name: '',
-          status: '1', // Default to Active status
-          monthYear: this.getPreviousMonth(),
-        },
-        loading: false,
+
+<script>
+import MasterComponent from './layouts/Master.vue';
+import axios from 'axios';
+
+export default {
+  name: "EmployeesAttendances",
+  components: {
+    MasterComponent,
+  },
+  data() {
+    return {
+      employees: [],
+      filters: {
+        name: '',
+        status: '1', // Default to Active status
+        monthYear: this.getPreviousMonth(),
+      },
+      loading: false,
+    };
+  },
+  methods: {
+    fetchData() {
+      this.loading = true;
+      let year, month;
+      if (this.filters.monthYear) {
+        [year, month] = this.filters.monthYear.split('-');
+      }
+
+      const params = {
+        name: this.filters.name,
+        month,
+        year,
+        status: this.filters.status, // Always send the status filter
       };
+
+      axios
+        .get('/api/employee-attendances', { params })
+        .then((response) => {
+          this.employees = response.data;
+        })
+        .catch((error) => {
+          console.error("Error fetching data", error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
-    methods: {
-      fetchData() {
-        this.loading = true;
-        let year, month;
-        if (this.filters.monthYear) {
-          [year, month] = this.filters.monthYear.split('-');
-        }
-  
-        const params = {
-          name: this.filters.name,
-          month,
-          year,
-          status: this.filters.status, // Always send the status filter
-        };
-  
-        axios
-          .get('/api/employee-attendances', { params })
-          .then((response) => {
-            this.employees = response.data;
-          })
-          .catch((error) => {
-            console.error("Error fetching data", error);
-          })
-          .finally(() => {
-            this.loading = false;
-          });
-      },
-      getPreviousMonth() {
-        const date = new Date();
-        date.setMonth(date.getMonth() - 1);
-        return date.toISOString().slice(0, 7);
-      },
+    getPreviousMonth() {
+      const date = new Date();
+      date.setMonth(date.getMonth() - 1);
+      return date.toISOString().slice(0, 7);
     },
-    mounted() {
-      this.fetchData(); // Fetch data with the default filters when the component is mounted
-    },
-  };
-  </script>
-  
-  <style scoped>
-  h2{
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-  }
+  },
+  mounted() {
+    this.fetchData(); // Fetch data with the default filters when the component is mounted
+  },
+};
+</script>
+
+<style scoped>
+h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
 .status-dot-active {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: #28a745; /* Green dot for active */
+  background-color: #28a745;
+  /* Green dot for active */
   display: inline-block;
   margin-left: 8px;
 }
@@ -156,11 +160,15 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: #ffc107; /* Yellow dot for inactive */
+  background-color: #ffc107;
+  /* Yellow dot for inactive */
   display: inline-block;
   margin-left: 8px;
 }
-.filter-input, .filter-select, .search-btn {
+
+.filter-input,
+.filter-select,
+.search-btn {
   margin: 10px 5px;
   padding: 8px;
 }
@@ -189,6 +197,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -200,103 +209,104 @@
   font-size: 1.2em;
   color: #666;
 }
-  .attendance-container {
-      padding: 20px;
-      max-width: 100%;
-      margin: 0 auto;
-  }
-  
-  .title {
-      color: #333;
-      margin-bottom: 20px;
-  }
-  
-  .filters {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-  }
-  
-  .filter-input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      flex: 1;
-      max-width: 300px;
-  }
-  
-  .filter-select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      flex: 1;
-      max-width: 200px;
-  }
-  
-  .search-btn {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-      font-weight: bold;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-  }
-  
-  .search-btn:hover {
-    background: linear-gradient(135deg, #0056b3, #003d82);
-  }
-  
-  .attendance-table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .attendance-table th {
-    background: linear-gradient(10deg, #2a5298, #2a5298);
-      color: white;
-      font-weight: bold;
-      text-transform: uppercase;
-      font-size: 0.9rem;
-      padding: 15px;
-      text-align: left;
-  }
-  
-  .attendance-table tbody td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #ddd;
-      font-size: 0.9rem;
-  }
-  .attendance-table tbody tr {
-    padding: 12px 15px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .table-row:hover {
-      background-color: #f9f9f9;
-      transition: background-color 0.3s;
-  }
-  
-  .employee-image {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-  }
 
-  .btn-active {
-    background: linear-gradient(135deg, #28a745, #218838);
-    color: white;
+.attendance-container {
+  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.title {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  flex: 1;
+  max-width: 300px;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  flex: 1;
+  max-width: 200px;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  font-weight: bold;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-table th {
+  background: linear-gradient(10deg, #2a5298, #2a5298);
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  padding: 15px;
+  text-align: left;
+}
+
+.attendance-table tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.attendance-table tbody tr {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-row:hover {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s;
+}
+
+.employee-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.btn-active {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
   border: none;
   padding: 5px 12px;
   border-radius: 40px;
@@ -313,5 +323,4 @@
   color: #333;
   transition: all 0.3s ease-in-out;
 }
-  </style>
-  
+</style>

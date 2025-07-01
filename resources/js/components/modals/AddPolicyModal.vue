@@ -9,36 +9,20 @@
 
       <!-- Policy Title -->
       <div class="form-group">
-        <InputField
-          label="Policy Title"
-          v-model="policyTitle"
-          placeholder="Enter policy title"
-          inputClass="form-control"
-          :isRequired="true"
-        />
+        <InputField label="Policy Title" v-model="policyTitle" placeholder="Enter policy title"
+          inputClass="form-control" :isRequired="true" />
       </div>
 
       <!-- Document Upload -->
       <div class="form-group">
         <label for="document-upload">Upload Document</label>
-        <input
-          type="file"
-          id="document-upload"
-          class="form-control"
-          @change="handleFileUpload"
-          accept=".pdf"
-        />
+        <input type="file" id="document-upload" class="form-control" @change="handleFileUpload" accept=".pdf" />
       </div>
 
       <!-- Buttons -->
       <div class="modal-footer">
-        <ButtonComponent
-          label="Save Policy"
-          buttonClass="btn-primary"
-          :isDisabled="loading"
-          :iconClass="loading ? 'fa fa-spinner fa-spin' : null"
-          @click="submitPolicy"
-        />
+        <ButtonComponent label="Save Policy" buttonClass="btn-primary" :isDisabled="loading"
+          :iconClass="loading ? 'fa fa-spinner fa-spin' : null" @click="submitPolicy" />
       </div>
     </div>
   </div>
@@ -123,16 +107,15 @@ export default {
 };
 </script>
 
-
 <style scoped>
-  .close-modal{
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-  }
-/* Modal Overlay */
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -147,7 +130,6 @@ export default {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Modal Content */
 .modal-content {
   background: white;
   border-radius: 12px;
@@ -158,7 +140,6 @@ export default {
   position: relative;
 }
 
-/* Modal Header */
 .modal-header {
   background-color: #4e73df;
   padding: 7px 18px;
@@ -169,7 +150,6 @@ export default {
   font-weight: bold;
 }
 
-/* Form Group Styling */
 .form-group {
   margin-top: 12px;
   padding: 5px 22px;
@@ -182,7 +162,6 @@ label {
   margin-bottom: 8px;
 }
 
-/* Input Fields */
 input[type="text"],
 input[type="file"] {
   width: 100%;
@@ -202,7 +181,6 @@ input[type="file"]:focus {
   outline: none;
 }
 
-/* Buttons */
 button {
   padding: 12px 24px;
   font-size: 1rem;
@@ -210,13 +188,14 @@ button {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease-in-out;
-  
+
 }
 
 .btn-secondary {
   background-color: #6c757d;
   color: white;
 }
+
 .btn-primary {
   background-color: #4e73df;
   color: white;
@@ -225,7 +204,6 @@ button {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Modal Footer */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -233,11 +211,11 @@ button {
   margin-top: 20px;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -247,6 +225,7 @@ button {
   from {
     transform: translateY(-20px);
   }
+
   to {
     transform: translateY(0);
   }

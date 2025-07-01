@@ -4,30 +4,20 @@
       <h5>Add New Notice
         <button type="button" class="close-modal" @click="$emit('close')">&times;</button>
       </h5>
-      
+
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-row">
           <!-- Title input field (No longer required) -->
           <div class="form-group">
-            <InputField
-              label="Title"
-              :modelValue="form.title"
-              @update:modelValue="(value) => (form.title = value)"
-              placeholder="Enter notice title"
-              :isRequired="false"
-            />
+            <InputField label="Title" :modelValue="form.title" @update:modelValue="(value) => (form.title = value)"
+              placeholder="Enter notice title" :isRequired="false" />
           </div>
 
           <!-- Order input field -->
           <div class="form-group" :class="{ 'error': validationErrors.order }">
-            <InputField
-              label="Order"
-              type="number"
-              :modelValue="form.order"
-              @update:modelValue="(value) => (form.order = value)"
-              placeholder="Enter order number"
-              :isRequired="true"
-            />
+            <InputField label="Order" type="number" :modelValue="form.order"
+              @update:modelValue="(value) => (form.order = value)" placeholder="Enter order number"
+              :isRequired="true" />
             <p v-if="validationErrors.order" class="error-message">Order is required.</p>
           </div>
         </div>
@@ -35,31 +25,17 @@
         <div class="form-row">
           <!-- Start Date -->
           <div class="form-group" :class="{ 'error': validationErrors.start_date }">
-            <DateInput
-              label="Start Date"
-              id="start_date"
-              name="start_date"
-              :modelValue="form.start_date"
-              @update:modelValue="(value) => (form.start_date = value)"
-              :minDate="minDate"
-              :maxDate="maxDate"
-              :condition="true"
-            />
+            <DateInput label="Start Date" id="start_date" name="start_date" :modelValue="form.start_date"
+              @update:modelValue="(value) => (form.start_date = value)" :minDate="minDate" :maxDate="maxDate"
+              :condition="true" />
             <p v-if="validationErrors.start_date" class="error-message">Start Date is required.</p>
           </div>
 
           <!-- End Date -->
           <div class="form-group" :class="{ 'error': validationErrors.end_date }">
-            <DateInput
-              label="End Date"
-              id="end_date"
-              name="end_date"
-              :modelValue="form.end_date"
-              @update:modelValue="(value) => (form.end_date = value)"
-              :minDate="form.start_date"
-              :maxDate="maxDate"
-              :condition="true"
-            />
+            <DateInput label="End Date" id="end_date" name="end_date" :modelValue="form.end_date"
+              @update:modelValue="(value) => (form.end_date = value)" :minDate="form.start_date" :maxDate="maxDate"
+              :condition="true" />
             <p v-if="validationErrors.end_date" class="error-message">End Date is required.</p>
           </div>
         </div>
@@ -73,14 +49,9 @@
 
         <!-- Buttons -->
         <div class="form-actions">
-          <ButtonComponent
-            label="Save"
-            buttonClass="submit-btn"
-            :isLoading="isLoading"
-            loadingText="Saving..."
-            @click="submitForm"
-          />
-          
+          <ButtonComponent label="Save" buttonClass="submit-btn" :isLoading="isLoading" loadingText="Saving..."
+            @click="submitForm" />
+
         </div>
       </form>
     </div>
@@ -145,18 +116,18 @@ export default {
 
       if (Object.keys(this.validationErrors).length > 0) {
         toast.error("Please fill in all required fields!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
         this.isLoading = false; // Hide loader
         return;
       }
 
       if (new Date(this.form.start_date) > new Date(this.form.end_date)) {
         toast.error("End Date must be greater than or equal to Start Date!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000, // Set to 2 seconds
+        });
         this.isLoading = false; // Hide loader
         return;
       }
@@ -204,52 +175,47 @@ export default {
     },
   },
   mounted() {
-  $("#description-editor").summernote({
-    placeholder: "Enter a detailed description",
-    tabsize: 2,
-    height: 200,
-    dialogsInBody: true,
-    callbacks: {
-      onInit: function () {
-        $(".note-modal").appendTo("body");
+    $("#description-editor").summernote({
+      placeholder: "Enter a detailed description",
+      tabsize: 2,
+      height: 200,
+      dialogsInBody: true,
+      callbacks: {
+        onInit: function () {
+          $(".note-modal").appendTo("body");
+        },
       },
-    },
-  });
+    });
 
-  // Add event listener for Esc key
-  document.addEventListener("keydown", this.handleEscKey);
-},
-beforeUnmount() {
-  // Remove event listener when component is destroyed
-  document.removeEventListener("keydown", this.handleEscKey);
-},
+    // Add event listener for Esc key
+    document.addEventListener("keydown", this.handleEscKey);
+  },
+  beforeUnmount() {
+    // Remove event listener when component is destroyed
+    document.removeEventListener("keydown", this.handleEscKey);
+  },
 };
 </script>
 
-
 <style scoped>
-   .close-modal {
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    cursor: pointer;
-  }
-  
-/* .error {
-  border: 2px solid red !important;
-  border-radius: 5px;
-} */
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  cursor: pointer;
+}
 
 .error-message {
   color: red;
   font-size: 0.9rem;
   margin-top: 5px;
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -314,7 +280,8 @@ label {
   margin: 0px 30px;
 }
 
-.submit-btn, .cancel-btn {
+.submit-btn,
+.cancel-btn {
   padding: 12px 20px;
   font-size: 1rem;
   border-radius: 6px;
@@ -345,6 +312,3 @@ label {
   background-color: grey;
 }
 </style>
-
-
-  

@@ -5,14 +5,14 @@ import Login from '../components/Login.vue';
 import Project from '../components/Project.vue';
 import Listings from '../components/Listings.vue';
 import Users from '../components/Users.vue';
-import Dashboard from '../components/Dashboard.vue'; 
-import Tasks from '../components/Tasks.vue'; 
-import Leaves from '../components/Leaves.vue'; 
-import TeamLeaves from '../components/TeamLeaves.vue'; 
-import DailyTask from '../components/DailyTask.vue'; 
-import MyTaskList from '../components/MyTaskList.vue'; 
-import MyAccount from '../components/MyAccount.vue'; 
-import TimeLine from '../components/TimeLine.vue'; 
+import Dashboard from '../components/Dashboard.vue';
+import Tasks from '../components/Tasks.vue';
+import Leaves from '../components/Leaves.vue';
+import TeamLeaves from '../components/TeamLeaves.vue';
+import DailyTask from '../components/DailyTask.vue';
+import MyTaskList from '../components/MyTaskList.vue';
+import MyAccount from '../components/MyAccount.vue';
+import TimeLine from '../components/TimeLine.vue';
 import UploadTimeline from '../components/UploadTimeline.vue';
 import Policies from '../components/Policies.vue';
 import Notices from '../components/Notices.vue';
@@ -20,6 +20,8 @@ import ViewNotices from '../components/ViewNotices.vue';
 import SalarySlips from '../components/SalarySlips.vue';
 import EmployeesAttendances from '../components/EmployeesAttendances.vue';
 import EmployeesTimelogs from '../components/EmployeesTimelogs.vue';
+import EditEmployee from '../components/EditEmployee.vue';
+import Devices from '../components/Devices.vue';
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
@@ -29,10 +31,10 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   { path: '/task', name: 'Tasks', component: Tasks },
   { path: '/leaves', name: 'Leaves', component: Leaves },
-  { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves }, 
-  { path: '/dailytask', name: 'DailyTask', component: DailyTask }, 
+  { path: '/teamleaves', name: 'TeamLeaves', component: TeamLeaves },
+  { path: '/dailytask', name: 'DailyTask', component: DailyTask },
   { path: '/mytasklist', name: 'MyTaskList', component: MyTaskList },
-  { path: '/myaccount', name: 'MyAccount', component: MyAccount }, 
+  { path: '/myaccount', name: 'MyAccount', component: MyAccount },
   { path: '/timeline', name: 'TimeLine', component: TimeLine },
   { path: '/uploadtimeline', name: 'UploadTimeline', component: UploadTimeline },
   { path: '/policies', name: 'Policies', component: Policies },
@@ -41,6 +43,8 @@ const routes = [
   { path: '/salary-slips', name: 'SalarySlips', component: SalarySlips },
   { path: '/employees-attendances', name: 'EmployeesAttendances', component: EmployeesAttendances },
   { path: '/employees-timelogs', name: 'EmployeesTimelogs', component: EmployeesTimelogs },
+  { path: '/devices', name: 'Devices', component: Devices },
+  { path: '/employees/:id/edit', name: 'EditEmployee', component: EditEmployee, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({
@@ -51,5 +55,30 @@ const router = createRouter({
     return { top: 0 };
   },
 });
+// Add navigation guard
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('authToken');
+  const expiresAt = localStorage.getItem('expiresAt');
+
+  const isAuthenticated = token && expiresAt && Date.now() < parseInt(expiresAt);
+
+  // If token is expired, remove it and redirect
+  if (token && expiresAt && Date.now() >= parseInt(expiresAt)) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiresAt');
+    return next('/login');
+  }
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return next('/login');
+  }
+
+  if (to.name === 'Login' && isAuthenticated) {
+    return next('/dashboard');
+  }
+
+  next();
+});
+
 
 export default router;

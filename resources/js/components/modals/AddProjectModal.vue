@@ -14,14 +14,8 @@
           <!-- Project Name -->
           <div class="mb-3">
             <label for="name" class="form-label">Project Name</label>
-            <input
-              type="text"
-              id="name"
-              v-model="project.name"
-              class="form-control custom-input"
-              placeholder="Enter project name"
-              :class="{ 'is-invalid': errors.name }"
-            />
+            <input type="text" id="name" v-model="project.name" class="form-control custom-input"
+              placeholder="Enter project name" :class="{ 'is-invalid': errors.name }" />
             <div v-if="errors.name" class="invalid-feedback">
               {{ errors.name }}
             </div>
@@ -29,14 +23,8 @@
 
           <!-- Project Description -->
           <div class="mb-3">
-            <TextArea
-              label="Project Description"
-              v-model="project.description"
-              placeholder="Enter project description"
-              rows="4"
-              textareaClass="custom-input"
-              :class="{ 'is-invalid': errors.description }"
-            />
+            <TextArea label="Project Description" v-model="project.description" placeholder="Enter project description"
+              rows="4" textareaClass="custom-input" :class="{ 'is-invalid': errors.description }" />
             <div v-if="errors.description" class="invalid-feedback">
               {{ errors.description }}
             </div>
@@ -44,16 +32,8 @@
 
           <!-- Project Type -->
           <div class="mb-3">
-            <SelectInput
-              label="Project Type"
-              id="type"
-              v-model="project.type"
-              :options="projectTypeOptions"
-              placeholder="Select Type"
-              valueKey="value"
-              labelKey="label"
-              :class="{ 'is-invalid': errors.type }"
-            />
+            <SelectInput label="Project Type" id="type" v-model="project.type" :options="projectTypeOptions"
+              placeholder="Select Type" valueKey="value" labelKey="label" :class="{ 'is-invalid': errors.type }" />
             <div v-if="errors.type" class="invalid-feedback">
               {{ errors.type }}
             </div>
@@ -61,16 +41,8 @@
 
           <!-- Project Status -->
           <div class="mb-3">
-            <SelectInput
-              label="Project Status"
-              id="status"
-              v-model="project.status"
-              :options="projectStatusOptions"
-              placeholder="Select Status"
-              valueKey="value"
-              labelKey="label"
-              :class="{ 'is-invalid': errors.status }"
-            />
+            <SelectInput label="Project Status" id="status" v-model="project.status" :options="projectStatusOptions"
+              placeholder="Select Status" valueKey="value" labelKey="label" :class="{ 'is-invalid': errors.status }" />
             <div v-if="errors.status" class="invalid-feedback">
               {{ errors.status }}
             </div>
@@ -78,49 +50,27 @@
 
           <!-- Comments -->
           <div class="mb-3">
-            <TextArea
-              label="Comments"
-              v-model="project.comments"
-              placeholder="Enter comments (optional)"
-              rows="3"
-              textareaClass="custom-input"
-            />
+            <TextArea label="Comments" v-model="project.comments" placeholder="Enter comments (optional)" rows="3"
+              textareaClass="custom-input" />
           </div>
 
           <!-- Autocomplete Input for User -->
           <div class="mb-3" style="position: relative;">
             <label for="userSearch">Select Users</label>
             <div class="selected-users">
-              <span
-                v-for="(user, index) in selectedUsers"
-                :key="user.id"
-                class="selected-user"
-              >
+              <span v-for="(user, index) in selectedUsers" :key="user.id" class="selected-user">
                 {{ user.name }}
-                <button type="button" @click="removeUser(index)" class="btn-close ms-2" aria-label="Remove user"></button>
+                <button type="button" @click="removeUser(index)" class="btn-close ms-2"
+                  aria-label="Remove user"></button>
               </span>
             </div>
-            <input
-              type="text"
-              class="form-control"
-              id="userSearch"
-              v-model="userSearchQuery"
-              @input="fetchUsers"
-              placeholder="Search users by name"
-            />
+            <input type="text" class="form-control" id="userSearch" v-model="userSearchQuery" @input="fetchUsers"
+              placeholder="Search users by name" />
             <ul v-if="userSuggestions.length" class="autocomplete-suggestions">
-              <li
-                v-for="user in userSuggestions"
-                :key="user.id"
-                @click="selectUser(user)"
-                class="suggestion-item d-flex align-items-center"
-              >
-                <img
-                  :src="user.user_image"
-                  alt="User Avatar"
-                  class="rounded-circle me-2"
-                  style="width: 40px; height: 40px;"
-                />
+              <li v-for="user in userSuggestions" :key="user.id" @click="selectUser(user)"
+                class="suggestion-item d-flex align-items-center">
+                <img :src="user.user_image" alt="User Avatar" class="rounded-circle me-2"
+                  style="width: 40px; height: 40px;" />
                 <span>{{ user.name }}</span>
               </li>
             </ul>
@@ -129,12 +79,8 @@
         </div>
         <!-- Modal Footer -->
         <div class="modal-footer custom-modal-footer">
-          <ButtonComponent
-            label="Add Project"
-            buttonClass="btn-primary custom-btn-submit"
-            :isDisabled="isLoading"
-            :clickEvent="addProject"
-          >
+          <ButtonComponent label="Add Project" buttonClass="btn-primary custom-btn-submit" :isDisabled="isLoading"
+            :clickEvent="addProject">
             <template #default>
               <span v-if="isLoading">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -158,7 +104,7 @@ import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import TextArea from "@/components/inputs/TextArea.vue";
-import SelectInput from "@/components/inputs/SelectInput.vue"; // Import SelectInput
+import SelectInput from "@/components/inputs/SelectInput.vue";
 
 export default {
   name: "AddProjectModal",
@@ -181,14 +127,14 @@ export default {
       type: "",
       status: "",
       comments: "",
-      developer_assign_list: [], // List to store user ids
+      developer_assign_list: [],
     });
 
     const isLoading = ref(false);
     const userSearchQuery = ref("");
     const userSuggestions = ref([]);
     const userError = ref(null);
-    const selectedUsers = ref([]); // Store selected users
+    const selectedUsers = ref([]);
 
     // Error state for each field
     const errors = ref({
@@ -324,7 +270,7 @@ export default {
       selectedUsers,
       projectStatusOptions,
       removeUser,
-      errors, // Expose errors to the template
+      errors,
       handleEscKey,
     };
   },
@@ -341,168 +287,164 @@ export default {
   font-size: 0.875em;
 }
 
-  /* General Modal Styling */
-  .modal.fade.show {
-    display: block;
-    background: rgba(0, 0, 0, 0.5);
-  }
-  
-  .custom-modal-dialog {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 80%; /* Adjusted width */
-    max-width: 800px;
-    margin: 50px auto;
-  }
-  
-  .custom-modal {
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    background: #fff;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  /* Modal Header */
-  .custom-modal-header {
-    background-color: #4e73df;
-    color: white;
-    padding: 20px;
-    font-weight: bold;
-    font-size: 1.5rem;
-    text-align: center;
-  }
-  
-  .custom-modal-header .btn-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    color: white;
-    background: none;
-    border: none;
-    font-size: 1.25rem;
-    cursor: pointer;
-  }
-  
-  .custom-modal-header .btn-close:hover {
-    color: #ccc;
-  }
-  
-  /* Modal Body */
-  .modal-body {
-    padding: 25px;
-    background-color: #f8f9fa; /* Light gray background */
-    color: #333;
-  }
-  
-  .form-label {
-    font-size: 1rem;
-    margin-bottom: 8px;
-  }
-  
-  .custom-input {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    transition: border-color 0.3s ease-in-out;
-  }
-  
-  .custom-input:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
-  }
-  
-  textarea.custom-input {
-    resize: none;
-  }
-  
-  /* User Autocomplete Suggestions */
-  .autocomplete-suggestions {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    z-index: 10;
-    max-height: 150px;
-    overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding-left: 0px;
-  }
-  
-  .suggestion-item {
-    padding: 10px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .suggestion-item:hover {
-    background: #f1f1f1;
-  }
-  
-  .suggestion-item img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  
-  /* Modal Footer */
-  .custom-modal-footer {
-    background-color: #f8f9fa;
-    padding: 15px;
-    text-align: right;
-    border-top: 1px solid #ddd;
-  }
-  
-  .custom-btn-close {
-    background-color: #6c757d;
-    color: white;
-    border-radius: 5px;
-    padding: 10px 20px;
-    border: none;
-    transition: background-color 0.3s ease;
-  }
-  .close-modal{
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-  }
-  
-  .custom-btn-close:hover {
-    background-color: #5a6268;
-  }
-  
-  .custom-btn-submit {
-    background-color: #4e73df;
+.modal.fade.show {
+  display: block;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.custom-modal-dialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  max-width: 800px;
+  margin: 50px auto;
+}
+
+.custom-modal {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-modal-header {
+  background-color: #4e73df;
+  color: white;
+  padding: 20px;
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.custom-modal-header .btn-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: white;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.custom-modal-header .btn-close:hover {
+  color: #ccc;
+}
+
+.modal-body {
+  padding: 25px;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.form-label {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.custom-input {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.custom-input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+}
+
+textarea.custom-input {
+  resize: none;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  z-index: 10;
+  max-height: 150px;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding-left: 0px;
+}
+
+.suggestion-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.suggestion-item:hover {
+  background: #f1f1f1;
+}
+
+.suggestion-item img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.custom-modal-footer {
+  background-color: #f8f9fa;
+  padding: 15px;
+  text-align: right;
+  border-top: 1px solid #ddd;
+}
+
+.custom-btn-close {
+  background-color: #6c757d;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 20px;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
+.custom-btn-close:hover {
+  background-color: #5a6268;
+}
+
+.custom-btn-submit {
+  background-color: #4e73df;
   color: white;
   border-radius: 5px;
   padding: 10px 20px;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  .custom-btn-submit:hover {
-    background-color: #3e5bcd;
+}
+
+.custom-btn-submit:hover {
+  background-color: #3e5bcd;
   transform: translateY(-2px);
-  }
-  
-  .custom-btn-submit:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  /* Spinner for loading state */
-  .spinner-border {
-    margin-right: 10px;
-  }
-  .selected-users {
+}
+
+.custom-btn-submit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.spinner-border {
+  margin-right: 10px;
+}
+
+.selected-users {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -527,6 +469,4 @@ export default {
 .selected-user .btn-close:hover {
   color: red;
 }
-  </style>
-  
-  
+</style>

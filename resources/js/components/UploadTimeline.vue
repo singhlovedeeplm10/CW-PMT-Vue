@@ -5,55 +5,31 @@
       <form class="timeline-form" @submit.prevent="submitTimeline">
         <!-- Title Field -->
         <div class="form-group">
-          <InputField
-            label="Title"
-            v-model="form.title"
-            placeholder="Enter the title"
-            inputClass="form-control"
-            :isRequired="true"
-          />
+          <InputField label="Title" v-model="form.title" placeholder="Enter the title" inputClass="form-control"
+            :isRequired="true" />
         </div>
 
-        <!-- Description Field -->
-        <div class="form-group">
-          <TextArea
-            label="Description"
-            v-model="form.description"
-            placeholder="Write your description"
-            textareaClass="summernote"
-            :isRequired="true"
-          />
+        <!-- Description Field (With Summernote) -->
+        <div class="form-group full-width" :class="{ 'error': validationErrors.description }">
+          <label for="description-editor">Description</label>
+          <div id="description-editor"></div>
+          <p v-if="validationErrors.description" class="error-message">Description is required.</p>
         </div>
 
         <!-- Upload Media Field -->
         <div class="form-group">
           <label for="uploadMedia">Upload Image/Video</label>
-          <input
-            type="file"
-            id="uploadMedia"
-            @change="handleFileUpload"
-            multiple
-          />
+          <input type="file" id="uploadMedia" @change="handleFileUpload" multiple />
         </div>
 
         <!-- Upload Link Field -->
         <div class="form-group">
-          <InputField
-            label="Upload Link for Image/Video"
-            v-model="form.uploadLink"
-            placeholder="Enter the URL"
-            inputType="url"
-            inputClass="form-control"
-          />
+          <InputField label="Upload Link for Image/Video" v-model="form.uploadLink" placeholder="Enter the URL"
+            inputType="url" inputClass="form-control" />
         </div>
 
         <!-- Submit Button -->
-        <ButtonComponent
-          label="Upload"
-          :buttonClass="'submit-btn'"
-          :isDisabled="isLoading"
-          @click="submitTimeline"
-        >
+        <ButtonComponent label="Upload" :buttonClass="'submit-btn'" :isDisabled="isLoading" @click="submitTimeline">
           <template v-slot:default>
             <span v-if="isLoading" class="loader"></span>
             <span v-else>Upload</span>
@@ -67,13 +43,15 @@
 <script>
 import MasterComponent from "./layouts/Master.vue";
 import ButtonComponent from "@/components/forms/ButtonComponent.vue";
-import TextArea from "@/components/inputs/TextArea.vue";
 import InputField from "@/components/inputs/InputField.vue";
 import { toast } from "vue3-toastify";
+import $ from "jquery";
+import "summernote/dist/summernote-lite.css";
+import "summernote/dist/summernote-lite.js";
 
 export default {
   name: "UploadTimeline",
-  components: { MasterComponent, ButtonComponent, TextArea, InputField }, // Register InputField
+  components: { MasterComponent, ButtonComponent, InputField },
   data() {
     return {
       form: {
@@ -83,6 +61,7 @@ export default {
         uploadLink: "",
       },
       isLoading: false,
+      validationErrors: {},
     };
   },
   methods: {
@@ -90,6 +69,19 @@ export default {
       this.form.uploadMedia = Array.from(event.target.files);
     },
     async submitTimeline() {
+      this.form.description = $("#description-editor").summernote("code");
+
+      // Validate Description
+      this.validationErrors = {};
+      if (!this.form.description || this.form.description === "<p><br></p>") {
+        this.validationErrors.description = true;
+        toast.error("Description is required!", {
+          position: "top-right",
+          autoClose: 1000,
+        });
+        return;
+      }
+
       this.isLoading = true;
       const formData = new FormData();
       formData.append("title", this.form.title);
@@ -114,23 +106,37 @@ export default {
         });
 
         toast.success("Timeline uploaded successfully!", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
+          position: "top-right",
+          autoClose: 1000,
+        });
         this.$router.push({ name: "TimeLine" });
       } catch (error) {
         toast.error("Failed to upload timeline.", {
-        position: "top-right",
-        autoClose: 1000, // Set to 2 seconds
-      });
-        console.error(error.response.data);
+          position: "top-right",
+          autoClose: 1000,
+        });
+        console.error(error.response?.data);
       } finally {
         this.isLoading = false;
       }
     },
   },
+  mounted() {
+    $("#description-editor").summernote({
+      placeholder: "Write your description here...",
+      tabsize: 2,
+      height: 200,
+      dialogsInBody: true,
+      callbacks: {
+        onInit: function () {
+          $(".note-modal").appendTo("body");
+        },
+      },
+    });
+  },
 };
 </script>
+
 
 <style scoped>
 .upload-timeline-container {
@@ -229,7 +235,12 @@ textarea {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

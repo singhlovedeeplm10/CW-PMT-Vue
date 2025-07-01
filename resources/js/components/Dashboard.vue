@@ -2,7 +2,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <master-component>
     <div class="dashboard">
-      <h1 class="dashboard-heading">Welcome to ContriWhiz</h1>
+      <h1 class="dashboard-heading">Welcome to Contriwhiz</h1>
       <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
 
@@ -29,8 +29,9 @@
       <update-team-leave-modal />
       <div class="birthday-container">
         <upcoming-birthdays v-if="userRole === 'Admin'" />
+        <daily-timelogs v-if="userRole === 'Admin'" />
       </div>
-      
+
     </div>
   </master-component>
 </template>
@@ -49,6 +50,7 @@ import MissingTeamMembers from './cards/MissingTeamMembers.vue';
 import TeamMembersOnLeave from './cards/TeamMembersOnLeave.vue';
 import MembersWorkFromHome from './cards/MembersWorkFromHome.vue';
 import UpcomingBirthdays from './cards/UpcomingBirthdays.vue';
+import DailyTimelogs from './cards/DailyTimelogs.vue';
 import AddTaskModal from './modals/AddTaskModal.vue';
 import AddBreakModal from './modals/AddBreakModal.vue';
 import ApplyLeaveModal from './modals/ApplyLeaveModal.vue';
@@ -70,6 +72,7 @@ export default {
     MissingMember,
     MembersWorkFromHome,
     UpcomingBirthdays,
+    DailyTimelogs,
     MissingTeamMembers,
     TeamMembersOnLeave,
     AddTaskModal,
@@ -80,8 +83,6 @@ export default {
     UpdateLeaveModal,
     UpdateTeamLeaveModal,
     EditPostModal
-    // AddProjectModal
-    // Mail
   },
   data() {
     return {
@@ -121,13 +122,11 @@ export default {
     const userDailyTask = ref(null);
 
     const handleBreakEnded = () => {
-      // Call the fetchBreaks method of UserBreakList via ref
       if (userBreakList.value) {
         userBreakList.value.fetchBreaks();
       }
     };
     const handleClockinTask = () => {
-      // Call the fetchBreaks method of UserBreakList via ref
       if (userDailyTask.value) {
         userDailyTask.value.fetchTasks();
       }
@@ -147,6 +146,7 @@ export default {
 .dashboard {
   padding: 60px 33px;
 }
+
 .dashboard-heading {
   color: #24292e;
   font-weight: 600;
@@ -156,38 +156,40 @@ export default {
 
 .members-container {
   display: flex;
-  gap: 7px; /* Space between cards */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 7px;
+  flex-wrap: wrap;
   width: 101%;
   margin-top: 20px;
 }
 
-.members-container > * {
-  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
-  min-width: 300px; /* Ensures a reasonable width for smaller screens */
+.members-container>* {
+  flex: 1 1 calc(50% - 16px);
+  min-width: 300px;
 }
+
 .card-container {
   display: flex;
-  gap: 20px; /* Space between cards */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 20px;
+  flex-wrap: wrap;
   width: 100%;
   margin-bottom: -21px;
 }
 
-.card-container > * {
-  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
-  min-width: 300px; /* Ensures a reasonable width for smaller screens */
+.card-container>* {
+  flex: 1 1 calc(50% - 16px);
+  min-width: 300px;
 }
+
 .birthday-container {
   display: flex;
-  gap: 20px; /* Space between cards */
-  flex-wrap: wrap; /* Allows wrapping on smaller screens */
-  width: 627px;
+  gap: 20px;
+  flex-wrap: wrap;
+  width: 100%;
   margin-bottom: -21px;
 }
 
-.birthday-container > * {
-  flex: 1 1 calc(50% - 16px); /* 50% width for each card minus gap */
-  min-width: 300px; /* Ensures a reasonable width for smaller screens */
+.birthday-container>* {
+  flex: 1 1 calc(50% - 16px);
+  min-width: 300px;
 }
 </style>

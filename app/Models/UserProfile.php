@@ -11,7 +11,8 @@ class UserProfile extends Model
 
     protected $fillable = [
         'user_id',
-        'address',
+        'employee_personal_email',
+        'permanent_address',
         'qualifications',
         'employee_code',
         'academic_documents',
@@ -19,15 +20,63 @@ class UserProfile extends Model
         'offer_letter',
         'joining_letter',
         'contract',
-        'user_image',      // Profile image field
-        'user_DOB',        // Date of birth field
-        'gender',          // Gender field
-        'contact',         // Contact field
+        'user_image',
+        'user_DOB',
+        'gender',
+        'contact',
+        'date_of_joining',
+        'date_of_releaving',
+        'releaving_note',
+        'next_appraisal_month',
+        'blood_group',
+        'temporary_address',
+        'alternate_contact_number',
+        'designation',
+        'current_salary',
+        'appraisals', // Added for JSON appraisal data
+        'credentials', // Added for JSON credential data
+    ];
+
+    protected $casts = [
+        'appraisals' => 'array',
+        'credentials' => 'array',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-    
+
+    /**
+     * Accessor for appraisals - ensures we always return an array
+     */
+    public function getAppraisalsAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Accessor for credentials - ensures we always return an array
+     */
+    public function getCredentialsAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Mutator for appraisals - automatically encodes to JSON
+     */
+    public function setAppraisalsAttribute($value)
+    {
+        $this->attributes['appraisals'] = is_array($value) ? json_encode($value) : $value;
+    }
+
+    /**
+     * Mutator for credentials - automatically encodes to JSON
+     */
+    public function setCredentialsAttribute($value)
+    {
+        $this->attributes['credentials'] = is_array($value) ? json_encode($value) : $value;
+    }
 }
+

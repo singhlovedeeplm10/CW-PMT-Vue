@@ -11,42 +11,40 @@ use App\Models\User;
 class AuthController extends Controller
 {
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-    
-        // Check user credentials
-        $user = User::where('email', $request->email)->first();
-    
-        // Validate credentials and status
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
-        }
-    
-        if ($user->status === '0') { // Check if user is inactive
-            return response()->json(['success' => false, 'message' => 'Your account is inactive. Please contact support.'], 403);
-        }
-    
-        // Generate token
-        $token = $user->createToken('authToken')->plainTextToken;
-    
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'token' => $token,
-            'lastLoginDate' => now()->toDateString(),
-        ]);
-    }    
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-    public function getUser(Request $request)
-    {
-        return response()->json([
-            'success' => true,
-            'user' => $request->user()
-        ]);
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
     }
+
+    if ($user->status === '0') {
+        return response()->json(['success' => false, 'message' => 'Your account is inactive. Please contact support.'], 403);
+    }
+
+    if ($user->status === '2') {
+        return response()->json(['success' => false, 'message' => 'Your account is inactive. Please contact support.'], 403);
+    }
+
+    
+    $tokenResult = $user->createToken('authToken');
+    $token = $tokenResult->plainTextToken;
+    $tokenResult->accessToken->expires_at = now()->addHours(12); // Set token with 12-hours expiration
+    $tokenResult->accessToken->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Login successful',
+        'token' => $token,
+        'lastLoginDate' => now()->toDateString(),
+    ]);
+}
+
 
     public function getUserDetails()
     {
@@ -56,7 +54,7 @@ class AuthController extends Controller
         return response()->json([
             'user_name' => $user->name,
             'user_image' => $userProfile && $userProfile->user_image 
-                ? asset('storage/' . $userProfile->user_image) 
+                ? asset('uploads/' . $userProfile->user_image) 
                 : null, // Return full URL for the image
         ]);
     }

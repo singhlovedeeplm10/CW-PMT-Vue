@@ -38,13 +38,8 @@
         </div>
 
         <div class="modal-actions">
-          <ButtonComponent
-            :isLoading="isLoading"
-            :label="'Save'"
-            :loadingText="'Saving...'"
-            :buttonClass="'save-btn'"
-            @click="updateNotice"
-          />
+          <ButtonComponent :isLoading="isLoading" :label="'Save'" :loadingText="'Saving...'" :buttonClass="'save-btn'"
+            @click="updateNotice" />
         </div>
       </form>
     </div>
@@ -74,7 +69,7 @@ export default {
   data() {
     return {
       form: {
-        title: this.notice.title,
+        title: this.decodeHtml(this.notice.title),
         order: this.notice.order,
         description: this.notice.description,
         start_date: this.notice.start_date,
@@ -83,7 +78,13 @@ export default {
       isLoading: false,
     };
   },
+
   methods: {
+    decodeHtml(html) {
+      const txt = document.createElement("textarea");
+      txt.innerHTML = html;
+      return txt.value;
+    },
     async updateNotice() {
       this.isLoading = true;
       this.form.description = $("#description-editor").summernote("code");
@@ -137,20 +138,19 @@ export default {
 };
 </script>
 
-
 <style scoped>
-   .close-modal {
-    background: none;
-    color: white;
-    border: none;
-    font-size: 22px;
-    font-family: math;
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    cursor: pointer;
-  }
-/* Modal Overlay */
+.close-modal {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  cursor: pointer;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -164,17 +164,15 @@ export default {
   z-index: 1000;
 }
 
-/* Modal Content */
 .modal-content {
   background: white;
   border-radius: 12px;
-  width: 700px; /* Increased width for horizontal layout */
+  width: 700px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   max-height: 100%;
   overflow-y: auto;
 }
 
-/* Headings */
 h5 {
   color: white;
   background-color: #4e73df;
@@ -183,7 +181,6 @@ h5 {
   border-top-right-radius: 10px;
 }
 
-/* Form Grid (Two-Column Layout) */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -192,18 +189,15 @@ h5 {
   padding: 7px 20px;
 }
 
-/* Make Description Full Width */
 .full-width {
   grid-column: span 2;
 }
 
-/* Form Group */
 .form-group {
   display: flex;
   flex-direction: column;
 }
 
-/* Labels */
 label {
   font-size: 1rem;
   font-weight: 600;
@@ -211,7 +205,6 @@ label {
   margin-bottom: 8px;
 }
 
-/* Input Fields */
 .input-field {
   width: 100%;
   padding: 12px;
@@ -221,7 +214,6 @@ label {
   box-sizing: border-box;
 }
 
-/* Modal Actions */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -229,7 +221,6 @@ label {
   margin: 10px 30px;
 }
 
-/* Save Button */
 .save-btn {
   background-color: #4e73df;
   color: white;
@@ -243,7 +234,6 @@ label {
   transform: translateY(-2px);
 }
 
-/* Cancel Button */
 .cancel-btn {
   background-color: grey;
   color: white;
@@ -258,19 +248,16 @@ label {
   background-color: grey;
 }
 
-/* Ensure Summernote modals are always visible */
 .note-modal {
   display: block !important;
   z-index: 1055 !important;
   background-color: #fff;
 }
 
-/* Remove or hide the backdrop from blocking user interaction */
 .modal-backdrop {
   display: none !important;
 }
 
-/* Ensure Summernote dialogs are layered above other UI elements */
 .note-popover {
   z-index: 1056 !important;
 }
