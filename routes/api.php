@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\SalarySlipController;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\NotificationController;
 
 
 
@@ -102,7 +103,7 @@ Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceCo
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 Route::middleware('auth:sanctum')->get('/get-clockin-token', [AttendanceController::class, 'getClockinToken']);
 Route::get('/auto-clockout', [AttendanceController::class, 'autoClockOut']);
-
+Route::middleware('auth:sanctum')->delete('/attendances/cleanup', [AttendanceController::class, 'cleanUpIncompleteAttendance']); 
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
@@ -167,3 +168,7 @@ Route::middleware('auth:sanctum')->get('/user/projects', [TaskController::class,
 Route::middleware('auth:sanctum')->get('/user/credentials', [UserController::class, 'getUserCredentials']);
 Route::middleware('auth:sanctum')->get('/user-assigned-devices', [DeviceController::class, 'getUserAssignedDevices']);
 Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);
+
+// NOTIFICATION ROUTES
+Route::middleware('auth:sanctum')->get('/project-notifications', [NotificationController::class, 'getProjectNotifications']);
+

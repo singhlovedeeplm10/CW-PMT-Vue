@@ -28,7 +28,7 @@
             </div>
             <div class="section-info">
               <h3>Personal Information</h3>
-              <p>Personal information</p>
+              <!-- <p>Personal information</p> -->
             </div>
           </div>
 
@@ -39,7 +39,7 @@
             </div>
             <div class="section-info">
               <h3>Devices</h3>
-              <p>Assigned devices</p>
+              <!-- <p>Assigned devices</p> -->
             </div>
           </div>
 
@@ -50,7 +50,7 @@
             </div>
             <div class="section-info">
               <h3>Credentials</h3>
-              <p>Account credentials</p>
+              <!-- <p>Account credentials</p> -->
             </div>
           </div>
 
@@ -172,7 +172,7 @@
                       <div class="info-row" v-if="user.date_of_releaving">
                         <span class="info-label">Date of Relieving</span>
                         <span class="info-value">{{ user.date_of_releaving || 'N/A'
-                          }}</span>
+                        }}</span>
                       </div>
                       <div class="info-row" v-if="user.releaving_note">
                         <span class="info-label">Relieving Note</span>
@@ -1042,6 +1042,11 @@ export default {
 
 .profile-sections {
   flex: 0 0 300px;
+}
+
+.profile-sections h3 {
+  color: #293e60;
+  font-weight: bolder;
 }
 
 .section-card {

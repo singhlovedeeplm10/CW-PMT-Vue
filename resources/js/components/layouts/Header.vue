@@ -24,58 +24,70 @@
       </div>
     </nav>
 
-    <!-- Notification Modal -->
-    <div v-if="showNotificationModal" class="notification-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5>Notifications</h5>
-          <button @click="closeModal" class="close-btn">&times;</button>
-        </div>
+    <div v-if="showNotificationModal" class="modal-backdrop" @click="closeModal">
+      <!-- Modal Content -->
+      <div class="notification-modal" @click.stop>
+        <div class="modal-content">
+          <!-- Your existing modal content -->
+          <div class="modal-header">
+            <h5>Notifications</h5>
+            <button @click="closeModal" class="close-btn" aria-label="Close">&times;</button>
+          </div>
 
-        <div class="modal-tabs">
-          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-            :class="{ 'active': activeTab === tab.id }">
-            {{ tab.label }}
-          </button>
-        </div>
+          <div class="modal-tabs">
+            <button v-for="tab in tabs" :key="tab.id" @click="handleTabClick(tab.id)"
+              :class="{ 'active': activeTab === tab.id }">
+              {{ tab.label }}
+            </button>
+          </div>
 
-        <div class="modal-body">
-          <div v-if="activeTab === 'projects'" class="tab-content">
-            <!-- Projects notifications content -->
-            <div v-for="notification in projectNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
+          <div v-if="isLoading" class="loading-notifications">
+            Loading notifications...
+          </div>
+
+          <div v-else>
+            <!-- Projects Tab Content -->
+            <div v-if="activeTab === 'projects'">
+              <div v-if="isLoadingProjectNotifications" class="loader-container">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <div v-for="notification in projectNotifications" :key="notification.id" class="notification-item">
+                <div class="notification-header">
+                  <!-- <span class="time">{{ notification.time }}</span> -->
+                </div>
+                <h5>New Project Assigned</h5>
+                <!-- <p class="message">{{ notification.message }}</p> -->
+                <div v-if="notification.project" class="project-info">
+                  <span class="project-name">{{ notification.project.name }}</span>
+                  <!-- <span class="project-status">{{ notification.project.status }}</span> -->
+                </div>
+              </div>
+              <div v-if="projectNotifications.length === 0" class="empty-notifications">
+                No project notifications
+              </div>
             </div>
-            <div v-if="projectNotifications.length === 0" class="empty-notifications">
-              No new project notifications
+
+            <!-- Devices Tab Content -->
+            <div v-if="activeTab === 'devices'">
+              <!-- Similar structure for devices -->
+            </div>
+
+            <!-- Leaves Tab Content -->
+            <div v-if="activeTab === 'leaves'">
+              <!-- Similar structure for leaves -->
             </div>
           </div>
 
-          <div v-if="activeTab === 'devices'" class="tab-content">
-            <!-- Devices notifications content -->
-            <div v-for="notification in deviceNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
-            </div>
-            <div v-if="deviceNotifications.length === 0" class="empty-notifications">
-              No new device notifications
-            </div>
+          <div class="modal-footer">
+            <button class="mark-read-btn">
+              Mark all as read
+            </button>
+            <button class="read-all-btn">
+              Read All Notifications
+            </button>
           </div>
-
-          <div v-if="activeTab === 'leaves'" class="tab-content">
-            <!-- Leaves notifications content -->
-            <div v-for="notification in leaveNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
-            </div>
-            <div v-if="leaveNotifications.length === 0" class="empty-notifications">
-              No new leave notifications
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button @click="markAllAsRead" class="mark-read-btn">Mark all as read</button>
         </div>
       </div>
     </div>
@@ -91,19 +103,21 @@ export default {
   name: "HeaderComponent",
   data() {
     return {
+      isLoadingProjectNotifications: false,
       isLoggingOut: false,
       isClockingOut: false,
       showNotificationModal: false,
-      activeTab: 'projects',
+      activeTab: '',
       tabs: [
+        { id: 'leaves', label: 'Leaves' },
         { id: 'projects', label: 'Projects' },
         { id: 'devices', label: 'Devices' },
-        { id: 'leaves', label: 'Leaves' }
       ],
       projectNotifications: [],
       deviceNotifications: [],
       leaveNotifications: [],
-      unreadCount: 0
+      unreadCount: 0,
+      isLoading: false
     };
   },
   computed: {
@@ -117,47 +131,58 @@ export default {
 
     toggleNotificationModal() {
       this.showNotificationModal = !this.showNotificationModal;
-      if (this.showNotificationModal) {
-        this.fetchNotifications();
-      }
     },
 
     closeModal() {
       this.showNotificationModal = false;
     },
 
-    async fetchNotifications() {
+    async fetchProjectNotifications() {
       try {
-        // Replace with your actual API calls
-        const response = await axios.get('/api/notifications', {
+        const response = await axios.get('/api/project-notifications', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
           }
         });
 
-        // Update notifications data based on your API response structure
-        this.projectNotifications = response.data.projects || [];
-        this.deviceNotifications = response.data.devices || [];
-        this.leaveNotifications = response.data.leaves || [];
-        this.unreadCount = response.data.unread_count || 0;
+        this.projectNotifications = response.data.data.map(notification => ({
+          id: notification.id,
+          message: notification.notification_message,
+          time: new Date(notification.created_at).toLocaleString(),
+          project: notification.project,
+          fromUser: notification.from_user,
+          isRead: notification.is_read
+        }));
+
       } catch (error) {
-        console.error("Error fetching notifications:", error);
+        console.error("Error fetching project notifications:", error);
+      } finally {
+        this.isLoadingProjectNotifications = false;
       }
     },
 
-    async markAllAsRead() {
-      try {
-        await axios.post('/api/notifications/mark-all-read', {}, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`
-          }
-        });
+    async fetchDeviceNotifications() {
+      // Similar implementation for devices
+    },
 
-        // Reset unread count and update notifications
-        this.unreadCount = 0;
-        this.fetchNotifications();
-      } catch (error) {
-        console.error("Error marking notifications as read:", error);
+    async fetchLeaveNotifications() {
+      // Similar implementation for leaves
+    },
+
+    handleTabClick(tabId) {
+      this.activeTab = tabId;
+      switch (tabId) {
+        case 'projects':
+          this.isLoadingProjectNotifications = true;
+          this.fetchProjectNotifications();
+          break;
+        case 'devices':
+          this.fetchDeviceNotifications();
+          break;
+        case 'leaves':
+          this.fetchLeaveNotifications();
+          break;
       }
     },
 
@@ -205,21 +230,29 @@ export default {
         this.isClockingOut = false;
       }
     },
+    handleEscapeKey(e) {
+      if (e.key === 'Escape' && this.showNotificationModal) {
+        this.closeModal();
+      }
+    },
   },
   mounted() {
     this.fetchUserDetails();
-    // Optionally fetch notifications on mount
-    // this.fetchNotifications();
+    document.addEventListener('keydown', this.handleEscapeKey);
+  },
+  beforeUnmount() {
+    // Clean up event listener when component unmounts
+    document.removeEventListener('keydown', this.handleEscapeKey);
   },
 };
 </script>
 
 <style scoped>
-/* Notification Bell */
-.notification-container {
-  position: relative;
-  margin-right: 20px;
-  cursor: pointer;
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
 }
 
 .notification-badge {
@@ -233,18 +266,34 @@ export default {
   font-size: 0.7rem;
 }
 
-/* Notification Modal */
+/* Notification Modal Overlay */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 .notification-modal {
   position: fixed;
-  top: 60px;
+  top: 70px;
   right: 20px;
-  width: 400px;
+  width: 420px;
   max-height: 80vh;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   overflow: hidden;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-content {
@@ -254,8 +303,9 @@ export default {
 }
 
 .modal-header {
-  padding: 5px 15px;
-  border-bottom: 1px solid #eee;
+  padding: 16px 20px;
+  background: #f7f9fc;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -263,87 +313,114 @@ export default {
 
 .modal-header h5 {
   margin: 0;
-  font-size: 1.1rem;
-  color: black;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  color: black;
-  padding: 2px 15px;
+  color: #888;
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #000;
 }
 
 .modal-tabs {
   display: flex;
-  border-bottom: 1px solid #eee;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .modal-tabs button {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   background: none;
   border: none;
   cursor: pointer;
+  font-weight: 500;
+  color: #555;
   border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.modal-tabs button:hover {
+  background: #e2e8f0;
 }
 
 .modal-tabs button.active {
-  border-bottom: 2px solid #4a89dc;
+  border-bottom: 3px solid #4a89dc;
   color: #4a89dc;
+  background: #e6effd;
 }
 
 .modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
-}
-
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
+  padding: 15px 20px;
 }
 
 .notification-item {
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  color: black;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item p {
+  margin: 0;
+  color: #333;
+  font-size: 0.95rem;
 }
 
 .notification-time {
   display: block;
   font-size: 0.8rem;
-  color: #777;
-  margin-top: 5px;
+  color: #999;
+  margin-top: 4px;
 }
 
 .empty-notifications {
   text-align: center;
-  padding: 20px;
-  color: #777;
+  padding: 30px;
+  color: #999;
+  font-style: italic;
+  font-size: 0.95rem;
 }
 
 .modal-footer {
-  padding: 15px;
-  border-top: 1px solid #eee;
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #f7f9fc;
+  border-top: 1px solid #e2e8f0;
 }
 
-.mark-read-btn {
-  background: none;
+.mark-read-btn,
+.read-all-btn {
+  background: #4a89dc;
+  color: #fff;
   border: none;
-  color: #4a89dc;
-  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 4px;
   font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
-.mark-read-btn:hover {
-  text-decoration: underline;
+.mark-read-btn:hover,
+.read-all-btn:hover {
+  background: #326ac0;
 }
+
 
 .notification-container {
   display: flex;
