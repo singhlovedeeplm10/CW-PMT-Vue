@@ -171,4 +171,8 @@ Route::middleware('auth:sanctum')->get('/user-account-details', [UserController:
 
 // NOTIFICATION ROUTES
 Route::middleware('auth:sanctum')->get('/project-notifications', [NotificationController::class, 'getProjectNotifications']);
-
+Route::middleware('auth:sanctum')->post('/project-notifications/mark-as-read', [NotificationController::class, 'markProjectNotificationsAsRead']);
+Route::middleware('auth:sanctum')->get('/devices-notifications', [NotificationController::class, 'getDeviceNotifications']);
+Route::middleware('auth:sanctum')->post('/device-notifications/mark-as-read', [NotificationController::class, 'markDeviceNotificationsAsRead']);
+Route::middleware('auth:sanctum')->get('/leaves-notifications', [NotificationController::class, 'getLeaveNotifications']);
+Route::middleware('auth:sanctum')->post('/leave-notifications/mark-as-read', [NotificationController::class, 'markLeaveNotificationsAsRead']);

@@ -27,7 +27,6 @@
         <thead>
           <tr>
             <th>Employee</th>
-            <!-- <th>Status</th> -->
             <th>Total WFO</th>
             <th>Today WFH</th>
             <th>Total Leaves</th>
@@ -51,11 +50,6 @@
                 </div>
               </div>
             </td>
-            <!-- <td>
-              <button :class="{'btn-active': employee.status === '1', 'btn-inactive': employee.status === '0'}">
-                {{ employee.status === '1' ? 'Active' : 'Inactive' }}
-              </button>
-            </td> -->
             <td style="
     padding: 0px 50px;
 ">{{ employee.totalWFO }}</td>
@@ -135,7 +129,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchData(); // Fetch data with the default filters when the component is mounted
+    this.fetchData();
   },
 };
 </script>

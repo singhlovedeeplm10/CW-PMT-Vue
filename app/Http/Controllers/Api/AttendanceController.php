@@ -151,7 +151,7 @@ class AttendanceController extends Controller
         $leave = Leave::where('user_id', $user->id)
             ->where('status', 'approved')
             ->where('start_date', $today)
-            ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave'])
+            ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Work From Home Half Day'])
             ->first();
 
         if ($leave) {
@@ -161,7 +161,8 @@ class AttendanceController extends Controller
                 ->exists();
 
             if (!$existingTask) {
-                $hours = ($leave->type_of_leave == 'Half Day Leave') ? 4 : 2;
+                $hours = ($leave->type_of_leave == 'Half Day Leave' || $leave->type_of_leave == 'Work From Home Half Day') ? 4 : 2;
+
 
                 DailyTask::create([
                     'user_id' => $leave->user_id,

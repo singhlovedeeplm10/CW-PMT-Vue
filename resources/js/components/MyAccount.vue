@@ -10,10 +10,10 @@
           <h1>{{ user.name }}</h1>
           <p class="designation">{{ user.designation }}</p>
           <p class="employee-code">{{ user.employee_code }}</p>
-          <div class="status-badge"
+          <!-- <div class="status-badge"
             :class="user.status === '1' ? 'active' : user.status === '2' ? 'relieved' : 'inactive'">
             {{ user.status === '1' ? 'Active' : user.status === '2' ? 'Relieved' : 'Inactive' }}
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -172,7 +172,7 @@
                       <div class="info-row" v-if="user.date_of_releaving">
                         <span class="info-label">Date of Relieving</span>
                         <span class="info-value">{{ user.date_of_releaving || 'N/A'
-                        }}</span>
+                          }}</span>
                       </div>
                       <div class="info-row" v-if="user.releaving_note">
                         <span class="info-label">Relieving Note</span>
@@ -233,7 +233,9 @@
                     <div class="device-info">
                       <p><strong>Device Number:</strong> {{ device.device_number }}</p>
                       <p><strong>Assigned On:</strong> {{ formatDate(device.date_of_assign) || 'N/A' }}</p>
-                      <p v-if="device.note"><strong>Note:</strong> {{ device.note }}</p>
+                      <p
+                        v-html="device.note ? '<strong>Note:</strong> ' + device.note.replace(/\n/g, '<br>') : '<strong>Note:</strong> N/A'">
+                      </p>
                     </div>
                   </div>
                 </div>

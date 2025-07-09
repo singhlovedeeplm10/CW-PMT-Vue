@@ -112,96 +112,96 @@ class ProjectController extends Controller
         }
     }
 
-// public function storeProjects(Request $request)
-// {
-//     $validatedData = $request->validate([
-//         'name' => 'required|string|max:255',
-//         'description' => 'required|string',
-//         'type' => 'required|in:Long,Medium,Short',
-//         'status' => 'required|in:Awaiting,Started,Paused,Completed',
-//         'comments' => 'nullable|string',
-//         'developer_assign_list' => 'nullable|array',
-//         'developer_assign_list.*' => 'exists:users,id',
-//     ]);
+public function storeProjects(Request $request)
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'type' => 'required|in:Long,Medium,Short',
+        'status' => 'required|in:Awaiting,Started,Paused,Completed',
+        'comments' => 'nullable|string',
+        'developer_assign_list' => 'nullable|array',
+        'developer_assign_list.*' => 'exists:users,id',
+    ]);
 
-//     try {
-//         $project = Project::create([
-//             'user_id' => auth()->id(),
-//             'name' => $validatedData['name'],
-//             'description' => $validatedData['description'],
-//             'type' => $validatedData['type'],
-//             'status' => $validatedData['status'],
-//             'comment' => $validatedData['comments'],
-//             'developer_assign_list' => json_encode($validatedData['developer_assign_list'] ?? []),
-//         ]);
-
-//         if (!empty($validatedData['developer_assign_list'])) {
-//             $developerList = $validatedData['developer_assign_list'];
-
-//             // Guarantee always array
-//             if (!is_array($developerList)) {
-//                 $developerList = [$developerList];
-//             }
-
-//             \App\Models\Notification::create([
-//                 'from_user_id' => auth()->id(),
-//                 'type' => 'projects',
-//                 'type_id' => $project->id,
-//                 'notification_message' => "Project Assigned: {$project->name}",
-//                 'to_user_ids' => json_encode($developerList),
-//                 'is_read' => false,
-//             ]);
-//         }
-
-//         return response()->json([
-//             'message' => 'Project added successfully',
-//             'data' => $project,
-//         ], 201);
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             'message' => 'Failed to add project',
-//             'error' => $e->getMessage(),
-//         ], 500);
-//     }
-// }
-
-
-    public function storeProjects(Request $request)
-    {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'type' => 'required|in:Long,Medium,Short',
-            'status' => 'required|in:Awaiting,Started,Paused,Completed',
-            'comments' => 'nullable|string',
-            'developer_assign_list' => 'nullable|array',
-            'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+    try {
+        $project = Project::create([
+            'user_id' => auth()->id(),
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'],
+            'type' => $validatedData['type'],
+            'status' => $validatedData['status'],
+            'comment' => $validatedData['comments'],
+            'developer_assign_list' => json_encode($validatedData['developer_assign_list'] ?? []),
         ]);
-    
-        // Save the project data
-        try {
-            $project = Project::create([
-                'user_id' => auth()->id(), // Or provide the correct user ID
-                'name' => $validatedData['name'],
-                'description' => $validatedData['description'],
-                'type' => $validatedData['type'],
-                'status' => $validatedData['status'],
-                'comment' => $validatedData['comments'],
-                'developer_assign_list' => json_encode($validatedData['developer_assign_list'] ?? []),
-            ]);
-    
-            return response()->json([
-                'message' => 'Project added successfully',
-                'data' => $project,
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to add project',
-                'error' => $e->getMessage(),
-            ], 500);
+
+        if (!empty($validatedData['developer_assign_list'])) {
+            $developerList = $validatedData['developer_assign_list'];
+
+            if (!is_array($developerList)) {
+                $developerList = [$developerList];
+            }
+
+            foreach ($developerList as $developerId) {
+                \App\Models\Notification::create([
+                    'from_user_id' => auth()->id(),
+                    'to_user_id' => $developerId,
+                    'type' => 'projects',
+                    'type_id' => $project->id,
+                    'notification_message' => "\"{$project->name}\" Assigned",
+                    'is_read' => false,
+                ]);
+            }
         }
+
+        return response()->json([
+            'message' => 'Project added successfully',
+            'data' => $project,
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to add project',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
+    // public function storeProjects(Request $request)
+    // {
+    //     // Validate the incoming request data
+    //     $validatedData = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'description' => 'required|string',
+    //         'type' => 'required|in:Long,Medium,Short',
+    //         'status' => 'required|in:Awaiting,Started,Paused,Completed',
+    //         'comments' => 'nullable|string',
+    //         'developer_assign_list' => 'nullable|array',
+    //         'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+    //     ]);
+    
+    //     // Save the project data
+    //     try {
+    //         $project = Project::create([
+    //             'user_id' => auth()->id(), // Or provide the correct user ID
+    //             'name' => $validatedData['name'],
+    //             'description' => $validatedData['description'],
+    //             'type' => $validatedData['type'],
+    //             'status' => $validatedData['status'],
+    //             'comment' => $validatedData['comments'],
+    //             'developer_assign_list' => json_encode($validatedData['developer_assign_list'] ?? []),
+    //         ]);
+    
+    //         return response()->json([
+    //             'message' => 'Project added successfully',
+    //             'data' => $project,
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => 'Failed to add project',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 public function getAllProjects()
 {
     try {
@@ -255,61 +255,6 @@ public function getAllProjects()
 }
 
 
-// public function updateProject(Request $request, $id)
-// {
-//     // Validate request data
-//     $validatedData = $request->validate([
-//         'name' => 'required|string|max:255',
-//         'description' => 'nullable|string',
-//         'type' => 'required|string|in:Long,Medium,Short',
-//         'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
-//         'comment' => 'nullable|string',
-//         'developer_assign_list' => 'nullable|array',
-//         'developer_assign_list.*' => 'exists:users,id',
-//     ]);
-
-//     $project = Project::find($id);
-
-//     if (!$project) {
-//         return response()->json(['error' => 'Project not found'], 404);
-//     }
-
-//     $project->name = $validatedData['name'];
-//     $project->description = $validatedData['description'] ?? $project->description;
-//     $project->type = $validatedData['type'];
-//     $project->status = $validatedData['status'];
-//     $project->comment = $validatedData['comment'] ?? $project->comment;
-
-//     // Save developer list as JSON
-//     if (isset($validatedData['developer_assign_list'])) {
-//         $developerList = $validatedData['developer_assign_list'];
-
-//         // Ensure single value is wrapped as array
-//         if (!is_array($developerList)) {
-//             $developerList = [$developerList];
-//         }
-
-//         $project->developer_assign_list = json_encode($developerList);
-
-//         // Create notification
-//         \App\Models\Notification::create([
-//             'from_user_id' => auth()->id(),
-//             'type' => 'projects',
-//             'type_id' => $project->id,
-//             'notification_message' => "Project Assigned: {$project->name}",
-//             'to_user_ids' => json_encode($developerList),
-//             'is_read' => false,
-//         ]);
-//     }
-
-//     $project->save();
-
-//     return response()->json([
-//         'message' => 'Project updated successfully',
-//         'project' => $project,
-//     ], 200);
-// }
-
 public function updateProject(Request $request, $id)
 {
     // Validate request data
@@ -320,7 +265,7 @@ public function updateProject(Request $request, $id)
         'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
         'comment' => 'nullable|string',
         'developer_assign_list' => 'nullable|array',
-        'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+        'developer_assign_list.*' => 'exists:users,id',
     ]);
 
     // Find the project by ID
@@ -330,18 +275,43 @@ public function updateProject(Request $request, $id)
         return response()->json(['error' => 'Project not found'], 404);
     }
 
-    // Update project attributes
+    // Update project fields
     $project->name = $validatedData['name'];
     $project->description = $validatedData['description'] ?? $project->description;
     $project->type = $validatedData['type'];
     $project->status = $validatedData['status'];
     $project->comment = $validatedData['comment'] ?? $project->comment;
-    
-    // Replace the developer list with the updated list from the frontend
-    $project->developer_assign_list = json_encode($validatedData['developer_assign_list'] ?? []); // Store the new list
 
-    // Save the project
+    // Update the developer list
+    $developerList = $validatedData['developer_assign_list'] ?? [];
+    $project->developer_assign_list = json_encode($developerList);
+
+    // Save project
     $project->save();
+
+    if (!empty($developerList)) {
+        // Fetch already notified user IDs for this project
+        $alreadyNotifiedUserIds = \App\Models\Notification::where('type', 'projects')
+            ->where('type_id', $project->id)
+            ->where('from_user_id', auth()->id())
+            ->pluck('to_user_id')
+            ->toArray();
+
+        // Determine new users who haven't been notified
+        $newUsersToNotify = array_diff($developerList, $alreadyNotifiedUserIds);
+
+        // Create notifications only for new users
+        foreach ($newUsersToNotify as $developerId) {
+            \App\Models\Notification::create([
+                'from_user_id' => auth()->id(),
+                'to_user_id' => $developerId,
+                'type' => 'projects',
+                'type_id' => $project->id,
+                'notification_message' => "\"{$project->name}\" Assigned",
+                'is_read' => false,
+            ]);
+        }
+    }
 
     return response()->json([
         'message' => 'Project updated successfully',
@@ -349,5 +319,44 @@ public function updateProject(Request $request, $id)
     ], 200);
 }
 
+
+// public function updateProject(Request $request, $id)
+// {
+//     // Validate request data
+//     $validatedData = $request->validate([
+//         'name' => 'required|string|max:255',
+//         'description' => 'nullable|string',
+//         'type' => 'required|string|in:Long,Medium,Short',
+//         'status' => 'required|string|in:Awaiting,Started,Paused,Completed',
+//         'comment' => 'nullable|string',
+//         'developer_assign_list' => 'nullable|array',
+//         'developer_assign_list.*' => 'exists:users,id', // Ensure each ID exists in the users table
+//     ]);
+
+//     // Find the project by ID
+//     $project = Project::find($id);
+
+//     if (!$project) {
+//         return response()->json(['error' => 'Project not found'], 404);
+//     }
+
+//     // Update project attributes
+//     $project->name = $validatedData['name'];
+//     $project->description = $validatedData['description'] ?? $project->description;
+//     $project->type = $validatedData['type'];
+//     $project->status = $validatedData['status'];
+//     $project->comment = $validatedData['comment'] ?? $project->comment;
+    
+//     // Replace the developer list with the updated list from the frontend
+//     $project->developer_assign_list = json_encode($validatedData['developer_assign_list'] ?? []); // Store the new list
+
+//     // Save the project
+//     $project->save();
+
+//     return response()->json([
+//         'message' => 'Project updated successfully',
+//         'project' => $project,
+//     ], 200);
+// }
 
 }
