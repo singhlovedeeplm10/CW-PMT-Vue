@@ -9,7 +9,10 @@
       <div class="header-right">
         <div class="notification-container" @click="toggleNotificationModal">
           <i class="fa-solid fa-bell"></i>
-          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+          <!-- Add this badge for total count -->
+          <span v-if="totalUnreadCount > 0" class="notification-badge">
+            {{ totalUnreadCount }}
+          </span>
         </div>
         <div class="profile-container">
           <img :src="userImage || '/img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
@@ -24,61 +27,154 @@
       </div>
     </nav>
 
-    <!-- Notification Modal -->
-    <div v-if="showNotificationModal" class="notification-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5>Notifications</h5>
-          <button @click="closeModal" class="close-btn">&times;</button>
-        </div>
+    <div v-if="showNotificationModal" class="modal-backdrop" @click="closeModal">
+      <div class="notification-modal" @click.stop>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5>Notifications</h5>
+            <button @click="closeModal" class="close-btn" aria-label="Close">&times;</button>
+          </div>
 
-        <div class="modal-tabs">
-          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
-            :class="{ 'active': activeTab === tab.id }">
-            {{ tab.label }}
-          </button>
-        </div>
+          <div class="modal-tabs">
+            <button v-for="tab in tabs" :key="tab.id" @click="handleTabClick(tab.id)"
+              :class="{ active: activeTab === tab.id }">
+              {{ tab.label }}
+              <span v-if="getUnreadCount(tab.id) > 0" class="tab-badge">
+                {{ getUnreadCount(tab.id) }}
+              </span>
+            </button>
+          </div>
 
-        <div class="modal-body">
-          <div v-if="activeTab === 'projects'" class="tab-content">
-            <!-- Projects notifications content -->
-            <div v-for="notification in projectNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
+
+          <div class="scrollable-content">
+            <div v-if="isLoading" class="loading-notifications">
+              <div class="spinner"></div>
+              <span>Loading notifications...</span>
             </div>
-            <div v-if="projectNotifications.length === 0" class="empty-notifications">
-              No new project notifications
+
+            <div v-else class="modal-body">
+              <!-- Projects Tab Content -->
+              <!-- Projects Tab Content -->
+              <div v-if="activeTab === 'projects'">
+                <div v-if="isLoadingProjectNotifications" class="loader-container">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <div v-else>
+                  <div v-for="notification in recentProjectNotifications" :key="notification.id"
+                    class="notification-item" :class="{ 'read': notification.isRead }">
+                    <div v-if="notification.project" class="project-info">
+                      <span class="project-name">{{ notification.message }}</span>
+                    </div>
+                  </div>
+                  <div v-if="projectNotifications.length === 0" class="empty-notifications">
+                    No project notifications
+                  </div>
+                </div>
+              </div>
+
+              <!-- Devices Tab Content -->
+              <div v-if="activeTab === 'devices'">
+                <div v-if="isLoadingDeviceNotifications" class="loader-container">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <div v-else>
+                  <div v-for="notification in recentDeviceNotifications" :key="notification.id"
+                    class="notification-item" :class="{ 'read': notification.is_read }">
+                    <div v-if="notification.device" class="device-info">
+                      <template v-if="notification.notification_message.includes('Assigned')">
+                        <div class="device-name-line">
+                          <span class="device-name">
+                            {{
+                              extractDeviceName(notification.notification_message, 'Assigned')
+                            }}
+                          </span>
+                          <span class="device-status assigned"> (Assigned)</span>
+                        </div>
+                        <div class="device-code">
+                          {{ extractDeviceCode(notification.notification_message) }}
+                        </div>
+                      </template>
+                      <template v-else-if="notification.notification_message.includes('Unassigned')">
+                        <div class="device-name-line">
+                          <span class="device-name">
+                            {{
+                              extractDeviceName(notification.notification_message, 'Unassigned')
+                            }}
+                          </span>
+                          <span class="device-status unassigned"> (Unassigned)</span>
+                        </div>
+                        <div class="device-code">
+                          {{ extractDeviceCode(notification.notification_message) }}
+                        </div>
+                      </template>
+                      <template v-else>
+                        <span class="device-name">{{ notification.notification_message }}</span>
+                      </template>
+                    </div>
+
+                    <div v-if="!notification.device" class="device-info">
+                      <span class="text-muted">Device no longer exists</span>
+                    </div>
+                  </div>
+                  <div v-if="deviceNotifications.length === 0" class="empty-notifications">
+                    No device notifications
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leaves Tab Content -->
+              <div v-if="activeTab === 'leaves'">
+                <div v-if="isLoadingLeaveNotifications" class="loader-container">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <div v-else>
+                  <div v-for="notification in recentLeaveNotifications" :key="notification.id" class="notification-item"
+                    :class="{ 'read': notification.is_read }">
+                    <div class="notification-icon">
+                      <template v-if="notification.leave_type === 'Full Day Leave'">
+                        <i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>
+                      </template>
+                      <template v-else-if="notification.leave_type === 'Half Day Leave'">
+                        <i class="fas fa-hourglass-half" style="color: #ff6347;"></i>
+                      </template>
+                      <template v-else-if="notification.leave_type === 'Short Leave'">
+                        <i class="fas fa-clock" style="color: #3498db;"></i>
+                      </template>
+                      <template v-else-if="notification.leave_type === 'Work From Home Full Day'">
+                        <i class="fas fa-home" style="color: #2ecc71;"></i>
+                      </template>
+                      <template v-else>
+                        <i class="fas fa-briefcase" style="color: #4682b4;"></i>
+                      </template>
+                    </div>
+                    <div class="notification-body">
+                      <h5 v-html="notification.notification_message"></h5>
+                    </div>
+                  </div>
+
+                  <div v-if="leaveNotifications.length === 0" class="empty-notifications">
+                    No leave notifications
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div v-if="activeTab === 'devices'" class="tab-content">
-            <!-- Devices notifications content -->
-            <div v-for="notification in deviceNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
-            </div>
-            <div v-if="deviceNotifications.length === 0" class="empty-notifications">
-              No new device notifications
-            </div>
+          <div class="modal-footer">
+            <router-link :to="{ name: 'Notifications', query: { tab: activeTab } }" @click="viewAllNotifications">
+              <button class="read-all-btn">View All</button>
+            </router-link>
           </div>
-
-          <div v-if="activeTab === 'leaves'" class="tab-content">
-            <!-- Leaves notifications content -->
-            <div v-for="notification in leaveNotifications" :key="notification.id" class="notification-item">
-              {{ notification.message }}
-              <span class="notification-time">{{ notification.time }}</span>
-            </div>
-            <div v-if="leaveNotifications.length === 0" class="empty-notifications">
-              No new leave notifications
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button @click="markAllAsRead" class="mark-read-btn">Mark all as read</button>
         </div>
       </div>
     </div>
+
   </header>
 </template>
 
@@ -91,73 +187,258 @@ export default {
   name: "HeaderComponent",
   data() {
     return {
+      isLoadingProjectNotifications: false,
+      isLoadingDeviceNotifications: false,
+      isLoadingLeaveNotifications: false,
+      leaveNotifications: [],
       isLoggingOut: false,
       isClockingOut: false,
       showNotificationModal: false,
-      activeTab: 'projects',
+      activeTab: 'leaves',
       tabs: [
+        { id: 'leaves', label: 'Leaves' },
         { id: 'projects', label: 'Projects' },
         { id: 'devices', label: 'Devices' },
-        { id: 'leaves', label: 'Leaves' }
       ],
+      unreadProjectCount: 0,
+      unreadDeviceCount: 0,
+      unreadLeaveCount: 0,
       projectNotifications: [],
       deviceNotifications: [],
       leaveNotifications: [],
-      unreadCount: 0
+      unreadCount: 0,
+      isLoading: false
     };
   },
   computed: {
+    totalUnreadCount() {
+      // Sum up unread counts from all tabs
+      return this.tabs.reduce((total, tab) => {
+        return total + this.getUnreadCount(tab.id);
+      }, 0);
+    },
     ...mapGetters(["getUserDetails"]),
     userImage() {
       return this.getUserDetails.image;
     },
+    recentLeaveNotifications() {
+      // Sort by created_at date (newest first) and take first 5
+      return [...this.leaveNotifications]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+    },
+    recentProjectNotifications() {
+      return [...this.projectNotifications]
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 5);
+    },
+    recentDeviceNotifications() {
+      return [...this.deviceNotifications]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+    },
   },
   methods: {
+    getUnreadCount(tabId) {
+      // Your existing logic to get unread count for a specific tab
+      // Example:
+      if (tabId === 'leaves') {
+        return this.leaveNotifications.filter(n => !n.is_read).length;
+      } else if (tabId === 'messages') {
+        return this.messageNotifications.filter(n => !n.is_read).length;
+      }
+      // Add other tab cases as needed
+      return 0;
+    },
+    extractDeviceName(message, keyword) {
+      // Remove the keyword (Assigned/Unassigned)
+      let cleaned = message.replace(keyword, '').trim();
+      // Remove trailing device code in parentheses, if present
+      const match = cleaned.match(/^(.*?)\s*\(/);
+      return match ? match[1].trim() : cleaned;
+    },
+    extractDeviceCode(message) {
+      const match = message.match(/\((.*?)\)/);
+      return match ? match[1].trim() : '';
+    },
+    async viewAllNotifications() {
+      // Close the modal first
+      this.closeModal();
+      // Navigate to notifications page with current tab
+      this.$router.push({
+        name: 'Notifications',
+        query: { tab: this.activeTab }
+      });
+    },
+
     ...mapActions(["fetchUserDetails"]),
+
+    getUnreadCount(tabId) {
+      switch (tabId) {
+        case 'projects':
+          return this.unreadProjectCount;
+        case 'devices':
+          return this.unreadDeviceCount;
+        case 'leaves':
+          return this.unreadLeaveCount;
+        default:
+          return 0;
+      }
+    },
 
     toggleNotificationModal() {
       this.showNotificationModal = !this.showNotificationModal;
-      if (this.showNotificationModal) {
-        this.fetchNotifications();
-      }
+      this.fetchProjectNotifications();
+      this.fetchDeviceNotifications();
+      this.fetchLeaveNotifications();
+      this.markLeaveNotificationsAsRead();
     },
 
     closeModal() {
       this.showNotificationModal = false;
     },
 
-    async fetchNotifications() {
+    async fetchProjectNotifications() {
+      this.isLoadingProjectNotifications = true;
       try {
-        // Replace with your actual API calls
-        const response = await axios.get('/api/notifications', {
+        const response = await axios.get('/api/project-notifications', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
           }
         });
+        this.unreadProjectCount = response.data.meta.unread_count;
+        this.projectNotifications = response.data.data.map(notification => ({
+          id: notification.id,
+          message: notification.notification_message,
+          time: new Date(notification.created_at).toLocaleString(),
+          project: notification.project,
+          fromUser: notification.from_user,
+          isRead: notification.is_read
+        }));
 
-        // Update notifications data based on your API response structure
-        this.projectNotifications = response.data.projects || [];
-        this.deviceNotifications = response.data.devices || [];
-        this.leaveNotifications = response.data.leaves || [];
-        this.unreadCount = response.data.unread_count || 0;
       } catch (error) {
-        console.error("Error fetching notifications:", error);
+        console.error("Error fetching project notifications:", error);
+      } finally {
+        this.isLoadingProjectNotifications = false;
       }
     },
 
-    async markAllAsRead() {
+    async markProjectNotificationsAsRead() {
       try {
-        await axios.post('/api/notifications/mark-all-read', {}, {
+        await axios.post('/api/project-notifications/mark-as-read', {}, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
           }
         });
-
-        // Reset unread count and update notifications
-        this.unreadCount = 0;
-        this.fetchNotifications();
+        // Update local state immediately
+        this.unreadProjectCount = 0;
+        this.projectNotifications.forEach(notification => {
+          notification.isRead = true;
+        });
       } catch (error) {
-        console.error("Error marking notifications as read:", error);
+        console.error('Error marking project notifications as read:', error);
+      }
+    },
+
+    async fetchDeviceNotifications() {
+      this.isLoadingDeviceNotifications = true;
+      try {
+        const response = await axios.get('/api/devices-notifications', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
+          }
+        });
+        this.deviceNotifications = response.data.data;
+        // Update unread count for devices
+        this.unreadDeviceCount = response.data.meta.unread_count;
+      } catch (error) {
+        console.error('Error fetching device notifications:', error);
+      } finally {
+        this.isLoadingDeviceNotifications = false;
+      }
+    },
+    async markDeviceNotificationsAsRead() {
+      try {
+        await axios.post('/api/device-notifications/mark-as-read', {}, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
+          }
+        });
+        // Update local state immediately
+        this.unreadDeviceCount = 0;
+        this.deviceNotifications.forEach(notification => {
+          notification.is_read = true;
+        });
+      } catch (error) {
+        console.error('Error marking device notifications as read:', error);
+      }
+    },
+    async fetchLeaveNotifications() {
+      this.isLoadingLeaveNotifications = true;
+      try {
+        const response = await axios.get('/api/leaves-notifications', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
+          }
+        });
+        this.leaveNotifications = response.data.data;
+        // Update unread count for leaves
+        this.unreadLeaveCount = response.data.meta.unread_count;
+      } catch (error) {
+        console.error('Error fetching leave notifications:', error);
+      } finally {
+        this.isLoadingLeaveNotifications = false;
+      }
+    },
+    async markLeaveNotificationsAsRead() {
+      try {
+        await axios.post('/api/leave-notifications/mark-as-read', {}, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+            'Accept': 'application/json'
+          }
+        });
+        // Update local state immediately
+        this.unreadLeaveCount = 0;
+        this.leaveNotifications.forEach(notification => {
+          notification.is_read = true;
+        });
+      } catch (error) {
+        console.error('Error marking leave notifications as read:', error);
+      }
+    },
+
+    getLeaveTypeClass(type) {
+      const types = {
+        'Full Day Leave': 'badge-primary',
+        'Half Day Leave': 'badge-secondary',
+        'Short Leave': 'badge-info',
+        'Work From Home Full Day': 'badge-success',
+        'Work From Home Half Day': 'badge-warning'
+      };
+      return types[type] || 'badge-light';
+    },
+
+    async handleTabClick(tabId) {
+      this.activeTab = tabId;
+      switch (tabId) {
+        case 'projects':
+          await this.markProjectNotificationsAsRead();
+          this.fetchProjectNotifications();
+          break;
+        case 'devices':
+          await this.markDeviceNotificationsAsRead();
+          this.fetchDeviceNotifications();
+          break;
+        case 'leaves':
+          await this.markLeaveNotificationsAsRead();
+          this.fetchLeaveNotifications();
+          break;
       }
     },
 
@@ -191,41 +472,101 @@ export default {
       this.$router.push("/myaccount");
     },
 
-    async clockOutusers() {
-      if (this.isClockingOut) return;
-      this.isClockingOut = true;
-
-      try {
-        const response = await axios.get("/api/auto-clockout");
-        alert(response.data.message || "Users clocked out successfully.");
-      } catch (error) {
-        console.error("Clock out failed:", error);
-        alert("An error occurred while clocking out users.");
-      } finally {
-        this.isClockingOut = false;
+    handleEscapeKey(e) {
+      if (e.key === 'Escape' && this.showNotificationModal) {
+        this.closeModal();
       }
     },
   },
   mounted() {
     this.fetchUserDetails();
-    // Optionally fetch notifications on mount
-    // this.fetchNotifications();
+    this.fetchProjectNotifications();
+    this.fetchDeviceNotifications();
+    this.fetchLeaveNotifications();
+    document.addEventListener('keydown', this.handleEscapeKey);
+  },
+  beforeUnmount() {
+    // Clean up event listener when component unmounts
+    document.removeEventListener('keydown', this.handleEscapeKey);
   },
 };
 </script>
 
 <style scoped>
-/* Notification Bell */
-.notification-container {
-  position: relative;
-  margin-right: 20px;
-  cursor: pointer;
+.notification-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-name-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.device-name {
+  color: #000;
+}
+
+.device-code {
+  color: #000;
+  font-size: 14px;
+  margin-left: 2px;
+}
+
+.device-status {
+  font-weight: bold;
+}
+
+.device-status.assigned {
+  color: #28a745;
+}
+
+.device-status.unassigned {
+  color: #dc3545;
 }
 
 .notification-badge {
   position: absolute;
   top: -5px;
   right: -5px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-badge {
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  padding: 1px 8px;
+  font-size: 0.75rem;
+  margin-left: 5px;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 5px;
+  right: 74px;
   background-color: #f44336;
   color: white;
   border-radius: 50%;
@@ -233,18 +574,46 @@ export default {
   font-size: 0.7rem;
 }
 
-/* Notification Modal */
-.notification-modal {
+/* Notification Modal Overlay */
+.modal-backdrop {
   position: fixed;
-  top: 60px;
-  right: 20px;
-  width: 400px;
-  max-height: 80vh;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
   z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Modal Panel */
+.notification-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 420px;
+  max-height: 80vh;
   overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.3s ease;
+  margin-top: 40px;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -253,9 +622,36 @@ export default {
   height: 100%;
 }
 
+.scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb #f9fafb;
+  padding: 0;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: #f9fafb;
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
 .modal-header {
-  padding: 5px 15px;
-  border-bottom: 1px solid #eee;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -263,8 +659,9 @@ export default {
 
 .modal-header h5 {
   margin: 0;
-  font-size: 1.1rem;
-  color: black;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .close-btn {
@@ -272,86 +669,164 @@ export default {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: black;
-  padding: 2px 15px;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #111827;
 }
 
 .modal-tabs {
   display: flex;
-  border-bottom: 1px solid #eee;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .modal-tabs button {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   background: none;
   border: none;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.modal-tabs button:hover {
+  background: #e2e8f0;
 }
 
 .modal-tabs button.active {
-  border-bottom: 2px solid #4a89dc;
-  color: #4a89dc;
+  border-bottom: 3px solid #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
 }
 
 .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
+  padding: 0;
 }
 
-.tab-content {
-  display: none;
+.loading-notifications,
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #6b7280;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.tab-content.active {
-  display: block;
+.spinner {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid #3b82f6;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .notification-item {
-  padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s ease;
+  font-weight: bolder;
+  color: #111827;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.notification-time {
-  display: block;
-  font-size: 0.8rem;
-  color: #777;
-  margin-top: 5px;
+.notification-item h5 {
+  margin: 0 0 4px 0;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.notification-item.read {
+  background-color: white;
+  font-weight: 400;
+}
+
+.project-info,
+.device-info {
+  margin-top: 4px;
+}
+
+.device-number {
+  margin-left: 4px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.device-status {
+  margin-left: 4px;
+  font-weight: 600;
+  color: black;
 }
 
 .empty-notifications {
   text-align: center;
-  padding: 20px;
-  color: #777;
+  padding: 40px 20px;
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.95rem;
 }
 
 .modal-footer {
-  padding: 15px;
-  border-top: 1px solid #eee;
-  text-align: right;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
 }
 
-.mark-read-btn {
-  background: none;
+.read-all-btn {
+  background: #3b82f6;
+  color: #ffffff;
   border: none;
-  color: #4a89dc;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
 }
 
-.mark-read-btn:hover {
-  text-decoration: underline;
+.read-all-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .notification-container {
   display: flex;
   color: #223344;
-  padding: 15px 30px;
+  padding: 15px 0;
   font-size: 25px;
   cursor: pointer;
+  vertical-align: middle;
 }
+
 
 body {
   margin: 0;
@@ -410,6 +885,7 @@ body {
 .header-right {
   position: relative;
   display: flex;
+  gap: 35px;
 }
 
 .profile-container {

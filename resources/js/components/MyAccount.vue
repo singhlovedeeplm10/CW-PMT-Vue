@@ -10,10 +10,10 @@
           <h1>{{ user.name }}</h1>
           <p class="designation">{{ user.designation }}</p>
           <p class="employee-code">{{ user.employee_code }}</p>
-          <div class="status-badge"
+          <!-- <div class="status-badge"
             :class="user.status === '1' ? 'active' : user.status === '2' ? 'relieved' : 'inactive'">
             {{ user.status === '1' ? 'Active' : user.status === '2' ? 'Relieved' : 'Inactive' }}
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -28,7 +28,7 @@
             </div>
             <div class="section-info">
               <h3>Personal Information</h3>
-              <p>Personal information</p>
+              <!-- <p>Personal information</p> -->
             </div>
           </div>
 
@@ -39,7 +39,7 @@
             </div>
             <div class="section-info">
               <h3>Devices</h3>
-              <p>Assigned devices</p>
+              <!-- <p>Assigned devices</p> -->
             </div>
           </div>
 
@@ -50,7 +50,7 @@
             </div>
             <div class="section-info">
               <h3>Credentials</h3>
-              <p>Account credentials</p>
+              <!-- <p>Account credentials</p> -->
             </div>
           </div>
 
@@ -233,7 +233,9 @@
                     <div class="device-info">
                       <p><strong>Device Number:</strong> {{ device.device_number }}</p>
                       <p><strong>Assigned On:</strong> {{ formatDate(device.date_of_assign) || 'N/A' }}</p>
-                      <p v-if="device.note"><strong>Note:</strong> {{ device.note }}</p>
+                      <p
+                        v-html="device.note ? '<strong>Note:</strong> ' + device.note.replace(/\n/g, '<br>') : '<strong>Note:</strong> N/A'">
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1042,6 +1044,11 @@ export default {
 
 .profile-sections {
   flex: 0 0 300px;
+}
+
+.profile-sections h3 {
+  color: #293e60;
+  font-weight: bolder;
 }
 
 .section-card {

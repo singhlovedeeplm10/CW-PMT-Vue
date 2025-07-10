@@ -19,6 +19,51 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
+ public function cleanUpIncompleteAttendance(Request $request)
+{
+    try {
+        $user = Auth::user();
+
+        // Find incomplete attendance entries
+        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+            ->whereNotNull('clockin_time')
+            ->whereNull('clockout_time')
+            ->whereNull('productive_hours')
+            ->get();
+
+        if ($attendances->isEmpty()) {
+            return response()->json([
+                'message' => 'No incomplete attendance entries found.',
+            ]);
+        }
+
+        // Check if ClockinToken exists for this user
+        $hasClockinToken = \DB::table('personal_access_tokens')
+            ->where('tokenable_id', $user->id)
+            ->where('name', 'ClockinToken')
+            ->exists();
+
+        if ($hasClockinToken) {
+            return response()->json([
+                'message' => 'ClockinToken exists. No entries deleted.',
+            ]);
+        }
+
+        // Delete all incomplete attendances
+        foreach ($attendances as $attendance) {
+            $attendance->delete();
+        }
+
+        return response()->json([
+            'message' => 'Incomplete attendance entries deleted successfully.',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
     public function autoClockOut()
 {
     // Get current time in Indian Standard Time (IST)
@@ -75,59 +120,76 @@ class AttendanceController extends Controller
 }
 
     
-    public function clockIn(Request $request)
+  public function clockIn(Request $request)
 {
-    $user = Auth::user();
+    try {
+        $user = Auth::user();
 
-    // Create attendance record with IST timezone
-    $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
-    $attendance = Attendance::create([
-        'user_id' => $user->id,
-        'clockin_time' => $clockinTime,
-    ]);
+        // Check if user has already clocked in today and not clocked out
+        $today = Carbon::now('Asia/Kolkata')->toDateString();
 
-    // Check for approved leave on the same day
-    $today = Carbon::now()->setTimezone('Asia/Kolkata')->toDateString();
-    $leave = Leave::where('user_id', $user->id)
-        ->where('status', 'approved')
-        ->where('start_date', $today)
-        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave']) // Only consider these two types
-        ->first();
+        $existingAttendance = Attendance::where('user_id', $user->id)
+            ->whereDate('clockin_time', $today)
+            ->whereNull('clockout_time')
+            ->first();
 
-    if ($leave) {
-        // Check if a daily task for the leave already exists
-        $existingTask = DailyTask::where('user_id', $user->id)
-            ->where('leave_id', $leave->id)
-            ->whereDate('created_at', $today)
-            ->exists();
-
-        if (!$existingTask) {
-            // Assign hours based on leave type
-            $hours = ($leave->type_of_leave == 'Half Day Leave') ? 4 : 2;
-
-            // Create a task for the leave
-            DailyTask::create([
-                'user_id' => $leave->user_id,
-                'attendance_id' => $attendance->id,
-                'project_id' => null,
-                'project_name' => $leave->type_of_leave, // Leave type
-                'leave_id' => $leave->id,
-                'task_description' => $leave->reason, // Reason as description
-                'hours' => $hours,
-                'task_status' => 'pending', // Default status
-            ]);
+        if ($existingAttendance) {
+            return response()->json([
+                'message' => 'You are already clocked in. Please refresh the page.'
+            ], 409);
         }
+
+        // Create attendance record with IST timezone
+        $clockinTime = Carbon::now()->setTimezone('Asia/Kolkata');
+
+        $attendance = Attendance::create([
+            'user_id' => $user->id,
+            'clockin_time' => $clockinTime,
+        ]);
+
+        // Check for approved leave on the same day
+        $leave = Leave::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->where('start_date', $today)
+            ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Work From Home Half Day'])
+            ->first();
+
+        if ($leave) {
+            $existingTask = DailyTask::where('user_id', $user->id)
+                ->where('leave_id', $leave->id)
+                ->whereDate('created_at', $today)
+                ->exists();
+
+            if (!$existingTask) {
+                $hours = ($leave->type_of_leave == 'Half Day Leave' || $leave->type_of_leave == 'Work From Home Half Day') ? 4 : 2;
+
+
+                DailyTask::create([
+                    'user_id' => $leave->user_id,
+                    'attendance_id' => $attendance->id,
+                    'project_id' => null,
+                    'project_name' => $leave->type_of_leave,
+                    'leave_id' => $leave->id,
+                    'task_description' => $leave->reason,
+                    'hours' => $hours,
+                    'task_status' => 'pending',
+                ]);
+            }
+        }
+
+        // Generate ClockinToken
+        $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
+
+        return response()->json([
+            'status' => 'Clocked in successfully',
+            'attendance' => $attendance,
+            'token' => $clockinToken,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
-
-    // Generate ClockinToken
-    $clockinToken = $user->createToken('ClockinToken')->plainTextToken;
-
-    return response()->json([
-        'status' => 'Clocked in successfully',
-        'attendance' => $attendance,
-        'token' => $clockinToken,
-    ]);
 }
+
 
     
     
@@ -142,7 +204,7 @@ class AttendanceController extends Controller
                 ->first();
     
             if (!$attendance) {
-                return response()->json(['message' => 'No active clock-in record found.'], 400);
+                return response()->json(['message' => 'No active clock-in record found. Please refresh the page'], 400);
             }
     
             // Calculate total task hours for the day

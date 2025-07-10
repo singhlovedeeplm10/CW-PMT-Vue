@@ -68,7 +68,9 @@
                             </td>
                             <td class="align-middle">{{ device.device }} <br> {{ device.device_number }}</td>
                             <td class="align-middle">{{ formatDate(device.date_of_assign) }}</td>
-                            <td class="align-middle-note">{{ device.note }}</td>
+                            <td class="align-middle-note"
+                                v-html="device.note ? device.note.replace(/\n/g, '<br>') : 'N/A'">
+                            </td>
                             <td class="align-middle">
                                 <button :class="device.status === '1' ? 'btn-active' : 'btn-inacive'"
                                     @click="toggleDeviceStatus(device)" :disabled="isToggling">

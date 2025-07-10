@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\PolicyController;
 use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\SalarySlipController;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\NotificationController;
 
 
 
@@ -102,7 +103,7 @@ Route::middleware(['auth:sanctum'])->get('/check-clock-in-status', [AttendanceCo
 Route::middleware('auth:sanctum')->get('/daily-hours', [AttendanceController::class, 'getDailyHours']);
 Route::middleware('auth:sanctum')->get('/get-clockin-token', [AttendanceController::class, 'getClockinToken']);
 Route::get('/auto-clockout', [AttendanceController::class, 'autoClockOut']);
-
+Route::middleware('auth:sanctum')->delete('/attendances/cleanup', [AttendanceController::class, 'cleanUpIncompleteAttendance']); 
 
 // BREAKS API ROUTE
 Route::middleware('auth:sanctum')->post('/break', [BreakController::class, 'storeBreak']);
@@ -167,3 +168,11 @@ Route::middleware('auth:sanctum')->get('/user/projects', [TaskController::class,
 Route::middleware('auth:sanctum')->get('/user/credentials', [UserController::class, 'getUserCredentials']);
 Route::middleware('auth:sanctum')->get('/user-assigned-devices', [DeviceController::class, 'getUserAssignedDevices']);
 Route::middleware('auth:sanctum')->get('/user-account-details', [UserController::class, 'userAccountDetails']);
+
+// NOTIFICATION ROUTES
+Route::middleware('auth:sanctum')->get('/project-notifications', [NotificationController::class, 'getProjectNotifications']);
+Route::middleware('auth:sanctum')->post('/project-notifications/mark-as-read', [NotificationController::class, 'markProjectNotificationsAsRead']);
+Route::middleware('auth:sanctum')->get('/devices-notifications', [NotificationController::class, 'getDeviceNotifications']);
+Route::middleware('auth:sanctum')->post('/device-notifications/mark-as-read', [NotificationController::class, 'markDeviceNotificationsAsRead']);
+Route::middleware('auth:sanctum')->get('/leaves-notifications', [NotificationController::class, 'getLeaveNotifications']);
+Route::middleware('auth:sanctum')->post('/leave-notifications/mark-as-read', [NotificationController::class, 'markLeaveNotificationsAsRead']);
