@@ -33,9 +33,31 @@ export default {
         },
         async setPassword() {
             if (!this.password || !this.password_confirmation) {
-                toast.error("Please fill both fields.");
+                toast.error("Please fill both fields.", {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
                 return;
             }
+
+            // ✅ Client-side: check password match
+            if (this.password !== this.password_confirmation) {
+                toast.error("Passwords do not match.", {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
+                return;
+            }
+
+            // ✅ Client-side: check minimum length
+            if (this.password.length < 8) {
+                toast.error("Password must be at least 8 characters.", {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
+                return;
+            }
+
             try {
                 await axios.post(
                     "/api/set-profile-password",
@@ -50,14 +72,32 @@ export default {
                     }
                 );
 
-                toast.success("Profile password set successfully.");
+                toast.success("Profile password set successfully.", {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
 
                 // Set 15-min cookie
                 setCookie("profile_verified", "true", 15);
 
                 this.$emit("close");
             } catch (error) {
-                toast.error("Failed to set password.");
+                // ✅ Server-side validation error handler
+                const messages = error.response?.data?.errors;
+                if (messages) {
+                    const allErrors = Object.values(messages).flat();
+                    allErrors.forEach(msg => {
+                        toast.error(msg, {
+                            autoClose: 1500,
+                            position: "top-right",
+                        });
+                    });
+                } else {
+                    toast.error("Failed to set password.", {
+                        autoClose: 1000,
+                        position: "top-right",
+                    });
+                }
                 console.error(error);
             }
         },

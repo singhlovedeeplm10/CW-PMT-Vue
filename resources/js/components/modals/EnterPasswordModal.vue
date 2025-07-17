@@ -30,7 +30,10 @@ export default {
         },
         async verifyPassword() {
             if (!this.password) {
-                toast.error("Please enter your password.");
+                toast.error("Please enter your password.", {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
                 return;
             }
 
@@ -46,17 +49,31 @@ export default {
                 );
 
                 if (response.data.success) {
-                    toast.success("Password verified.");
+                    toast.success("Password verified.", {
+                        autoClose: 1000,
+                        position: "top-right",
+                    });
 
                     // Set 15-min cookie
                     setCookie("profile_verified", "true", 15);
 
                     this.$emit("close");
                 } else {
-                    toast.error(response.data.message);
+                    // 👇 Show incorrect password toast here
+                    toast.error(response.data.message || "Incorrect password", {
+                        autoClose: 1000,
+                        position: "top-right",
+                    });
                 }
             } catch (error) {
-                toast.error("Failed to verify password.");
+                const msg =
+                    error.response?.data?.message ||
+                    error.response?.data?.error ||
+                    "Failed to verify password.";
+                toast.error(msg, {
+                    autoClose: 1000,
+                    position: "top-right",
+                });
                 console.error(error);
             }
         },

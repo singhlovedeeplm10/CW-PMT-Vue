@@ -25,6 +25,9 @@
         </button>
       </div>
 
+
+
+
       <!-- Loader Spinner -->
       <div v-if="loading" class="loader-container">
         <div class="spinner-border text-primary" role="status">
@@ -37,35 +40,47 @@
         {{ noDataMessage }}
       </div>
 
-      <!-- Display employee details after search -->
       <div v-if="employeeDetails" class="employee-details">
         <div class="employee-info">
           <img :src="employeeDetails.image" alt="Employee Image" class="employee-image" />
           <h3>{{ employeeDetails.name }}</h3>
         </div>
+
         <div class="day-counts-container">
+          <!-- Individual Color Summary -->
           <div class="day-counts">
             <div class="count-group">
               <div class="count-header count-green">Total Days: {{ dayCounts.green.total }}
-                <div class="count-sub">WFH: {{ dayCounts.green.wfh }}</div>
                 <div class="count-sub">WFO: {{ dayCounts.green.wfo }}</div>
+                <div class="count-sub">WFH: {{ dayCounts.green.wfh }}</div>
               </div>
             </div>
             <div class="count-group">
               <div class="count-header count-red">Total Days: {{ dayCounts.red.total }}
-                <div class="count-sub">WFH: {{ dayCounts.red.wfh }}</div>
                 <div class="count-sub">WFO: {{ dayCounts.red.wfo }}</div>
+                <div class="count-sub">WFH: {{ dayCounts.red.wfh }}</div>
               </div>
             </div>
             <div class="count-group">
               <div class="count-header count-orange">Total Days: {{ dayCounts.orange.total }}
-                <div class="count-sub">WFH: {{ dayCounts.orange.wfh }}</div>
                 <div class="count-sub">WFO: {{ dayCounts.orange.wfo }}</div>
+                <div class="count-sub">WFH: {{ dayCounts.orange.wfh }}</div>
               </div>
+            </div>
+          </div>
+          <div class="top-summary-container">
+            <div class="day-count-summary">
+              <div class="count-summary">TOTAL WFO: {{ dayCounts.green.wfo + dayCounts.red.wfo + dayCounts.orange.wfo }}
+              </div>
+              <div class="count-summary">TOTAL WFH: {{ dayCounts.green.wfh + dayCounts.red.wfh + dayCounts.orange.wfh }}
+              </div>
+              <div class="count-sub total-heading">TOTAL WORKING DAYS: {{ dayCounts.green.total + dayCounts.red.total +
+                dayCounts.orange.total }}</div>
             </div>
           </div>
         </div>
       </div>
+
 
       <!-- Table -->
       <table v-if="!loading && timeLogs.length > 0" class="time-logs-table">
@@ -157,13 +172,14 @@ export default {
       );
     },
     dayCounts() {
-      let counts = {
+      const counts = {
         green: { total: 0, wfh: 0, wfo: 0 },
         red: { total: 0, wfh: 0, wfo: 0 },
         orange: { total: 0, wfh: 0, wfo: 0 }
       };
 
-      this.timeLogs.forEach(log => {
+      // 🔁 Use filteredTimeLogs here instead of timeLogs
+      this.filteredTimeLogs.forEach(log => {
         let category;
         if (log.total_productive_hours === '00:00:00') {
           category = 'orange';
@@ -183,7 +199,6 @@ export default {
         }
       });
 
-      // No decimals needed!
       return counts;
     }
   },
@@ -343,6 +358,44 @@ export default {
 </script>
 
 <style scoped>
+.top-summary-container {
+  position: absolute;
+  top: 124px;
+  right: 41px;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  min-width: 200px;
+  text-align: right;
+}
+
+.day-count-summary {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.count-sub {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.count-summary {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.total-heading {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
 .date-with-icon {
   display: flex;
   align-items: center;
