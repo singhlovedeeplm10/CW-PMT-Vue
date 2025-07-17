@@ -26,8 +26,12 @@
 
                     <!-- Note -->
                     <div class="mb-3">
-                        <TextArea label="Note" v-model="device.note" placeholder="Enter device notes" rows="4"
-                            textareaClass="custom-input" />
+                        <label for="note-editor">Note</label>
+                        <div id="note-editor"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description-editor">Description</label>
+                        <div id="description-editor"></div>
                     </div>
 
                     <!-- Date of Assign -->
@@ -100,6 +104,9 @@ import TextArea from "@/components/inputs/TextArea.vue";
 import SelectInput from "@/components/inputs/SelectInput.vue";
 import InputField from "@/components/inputs/InputField.vue";
 import DateInput from "@/components/inputs/DateInput.vue";
+import $ from "jquery";
+import "summernote/dist/summernote-lite.css";
+import "summernote/dist/summernote-lite.js";
 
 export default {
     name: "AddDeviceModal",
@@ -116,6 +123,7 @@ export default {
                 device: "",
                 device_number: "",
                 note: "",
+                description: "",
                 developer_assign_list: [],
                 date_of_assign: "",
                 status: "1"
@@ -138,6 +146,29 @@ export default {
         };
     },
     mounted() {
+        $("#description-editor").summernote({
+            placeholder: "Enter a detailed description",
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            callbacks: {
+                onInit: function () {
+                    $(".note-modal").appendTo("body");
+                },
+            },
+        });
+        $("#note-editor").summernote({
+            placeholder: "Enter a detailed note",
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            callbacks: {
+                onInit: function () {
+                    $(".note-modal").appendTo("body");
+                },
+            },
+        });
+
         document.addEventListener("keydown", this.handleEscKey);
     },
     beforeUnmount() {
@@ -164,12 +195,14 @@ export default {
                 hasErrors = true;
             }
 
-            // If there are errors, stop here
             if (hasErrors) return;
 
             this.isLoading = true;
 
-            // Prepare the data to send
+            // ✨ Get content from Summernote editors
+            this.device.note = $("#note-editor").summernote("code");
+            this.device.description = $("#description-editor").summernote("code");
+
             const deviceData = {
                 ...this.device,
                 developer_assign_list: this.selectedUsers.map(user => user.id)
@@ -185,7 +218,10 @@ export default {
                         position: "top-right",
                         autoClose: 1000,
                     });
+
                     this.$emit("device-added");
+                    $("#note-editor").summernote("reset");
+                    $("#description-editor").summernote("reset");
                     this.closeModal();
                 })
                 .catch(error => {
@@ -245,6 +281,11 @@ export default {
 </script>
 
 <style scoped>
+label {
+    font-weight: 500;
+    font-size: 18px;
+}
+
 .custom-btn-submit {
     background-color: #4e73df;
 }

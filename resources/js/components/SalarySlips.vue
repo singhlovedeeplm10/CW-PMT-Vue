@@ -1,6 +1,6 @@
 <template>
   <master-component>
-    <div class="salary-container">
+    <div class="salary-container" :class="{ 'blur-background': isAnyModalOpen }">
       <div class="header">
         <div class="header-title">
           <h2 class="title_heading">Salary Slips</h2>
@@ -88,21 +88,35 @@
 
     <SalarySlipModal @salaryupdated="filterSalarySlips" :isVisible="showModal" :selectedSalarySlip="selectedSalarySlip"
       @close="showModal = false" />
+    <SetPasswordModal :visible="showSetPasswordModal" @close="() => {
+      showSetPasswordModal = false;
+      handleModalClose();
+    }" />
+    <EnterPasswordModal :visible="showEnterPasswordModal" @close="() => {
+      showEnterPasswordModal = false;
+      handleModalClose();
+    }" />
+
   </master-component>
 </template>
 
 <script>
 import MasterComponent from './layouts/Master.vue';
 import SalarySlipModal from './modals/SalarySlipModal.vue';
+import EnterPasswordModal from "@/components/modals/EnterPasswordModal.vue";
+import SetPasswordModal from "@/components/modals/SetPasswordModal.vue";
 import axios from 'axios';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import { setCookie, getCookie, deleteCookie } from "@/utils/cookie";
 
 export default {
   name: "SalarySlips",
   components: {
     SalarySlipModal,
     MasterComponent,
+    SetPasswordModal,
+    EnterPasswordModal
   },
   data() {
     const currentYear = new Date().getFullYear();
@@ -135,9 +149,27 @@ export default {
         { name: "December", value: 12 },
       ],
       years: Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i),
+      showSetPasswordModal: false,
+      showEnterPasswordModal: false,
     };
   },
+  watch: {
+    isAnyModalOpen(newVal) {
+      if (newVal) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+    }
+  },
+  beforeUnmount() {
+    // Clean up when component is destroyed
+    document.body.classList.remove('modal-open');
+  },
   computed: {
+    isAnyModalOpen() {
+      return this.showModal || this.showSetPasswordModal || this.showEnterPasswordModal;
+    },
     filteredSalarySlips() {
       return this.salarySlips.filter(slip =>
         slip.employee_name.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -240,15 +272,53 @@ export default {
         console.error("Error fetching user role:", error);
       }
     },
+    async handleModalClose() {
+      // This will be called when either password modal closes
+      await this.fetchUserRole();
+      await this.fetchSalarySlips();
+    },
   },
-  mounted() {
-    this.fetchSalarySlips();
-    this.fetchUserRole();
+  async mounted() {
+    const verified = getCookie("profile_verified");
+
+    if (verified) {
+      // If already verified, fetch data immediately
+      await this.fetchUserRole();
+      await this.fetchSalarySlips();
+    } else {
+      try {
+        const res = await axios.get("/api/check-profile-password", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+          }
+        });
+
+        if (res.data.has_password) {
+          this.showEnterPasswordModal = true;
+        } else {
+          this.showSetPasswordModal = true;
+        }
+
+        // Data will be fetched after modal closes (handled in template)
+      } catch (e) {
+        console.error("Error checking profile password", e);
+        // Even if there's an error, still try to fetch data
+        await this.fetchUserRole();
+        await this.fetchSalarySlips();
+      }
+    }
   },
 };
 </script>
 
 <style scoped>
+/* Blurred state when any modal is open */
+.salary-container.blur-background {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+}
+
 .loader-container {
   text-align: center;
   font-size: 18px;

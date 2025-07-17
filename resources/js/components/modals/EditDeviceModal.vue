@@ -22,8 +22,15 @@
                     </div>
 
                     <div class="form-group">
-                        <TextArea label="Note" v-model="formData.note" :rows="3" />
+                        <label for="note-editor">Note</label>
+                        <div id="note-editor"></div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="description-editor">Description</label>
+                        <div id="description-editor"></div>
+                    </div>
+
 
                     <div class="form-group">
                         <label for="statusSelect">Status</label>
@@ -76,6 +83,9 @@ import DateInput from "@/components/inputs/DateInput.vue";
 import TextArea from "@/components/inputs/TextArea.vue";
 import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import InputField from "@/components/inputs/InputField.vue";
+import $ from "jquery";
+import "summernote/dist/summernote-lite.css";
+import "summernote/dist/summernote-lite.js";
 
 export default {
     name: 'EditDeviceModal',
@@ -98,6 +108,7 @@ export default {
                 device_number: '',
                 date_of_assign: '',
                 note: '',
+                description: '',
                 developers: [],
                 status: '1'
             },
@@ -112,6 +123,35 @@ export default {
     created() {
         this.initializeForm();
     },
+    mounted() {
+        $("#note-editor").summernote({
+            placeholder: "Enter a detailed note",
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            callbacks: {
+                onInit: () => {
+                    $(".note-modal").appendTo("body");
+                    // Populate with initial value
+                    $("#note-editor").summernote("code", this.formData.note || "");
+                }
+            },
+        });
+
+        $("#description-editor").summernote({
+            placeholder: "Enter a detailed description",
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            callbacks: {
+                onInit: () => {
+                    $(".note-modal").appendTo("body");
+                    $("#description-editor").summernote("code", this.formData.description || "");
+                }
+            },
+        });
+    },
+
     methods: {
         initializeForm() {
             // Deep clone the original data
@@ -122,6 +162,7 @@ export default {
                 device_number: this.deviceData.device_number || '',
                 date_of_assign: this.formatDateForInput(this.deviceData.date_of_assign),
                 note: this.deviceData.note || '',
+                description: this.deviceData.description || '',
                 developers: [...this.deviceData.developers] || [],
                 status: this.deviceData.status || '1'
             };
@@ -176,7 +217,10 @@ export default {
             this.isSubmitting = true;
 
             try {
-                // Update the formData.developers with the working copy
+                // Get HTML from Summernote editors
+                this.formData.note = $("#note-editor").summernote("code");
+                this.formData.description = $("#description-editor").summernote("code");
+
                 this.formData.developers = [...this.workingSelectedUsers];
 
                 const submitData = {
@@ -184,6 +228,7 @@ export default {
                     device_number: this.formData.device_number,
                     date_of_assign: this.formData.date_of_assign,
                     note: this.formData.note,
+                    description: this.formData.description,
                     status: this.formData.status,
                     developer_assign_list: this.formData.developers.map(dev => dev.id)
                 };
@@ -212,8 +257,10 @@ export default {
         },
 
         closeModal() {
+            $("#note-editor").summernote("reset");
+            $("#description-editor").summernote("reset");
             this.$emit('close');
-        }
+        },
     }
 };
 </script>
@@ -221,6 +268,8 @@ export default {
 <style scoped>
 label {
     margin: 4px;
+    font-weight: 500;
+    font-size: 18px;
 }
 
 .autocomplete-suggestions {

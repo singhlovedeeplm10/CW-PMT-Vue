@@ -4,7 +4,12 @@
     <div class="task-card flex-fill shadow-sm position-relative" id="card2">
       <div class="task-card-header d-flex justify-content-between align-items-center">
         <h4 class="card_heading">Members on WFH</h4>
-        <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
+        <div class="d-flex align-items-center">
+          <button class="btn btn-sm btn-outline-primary me-2" @click="openUpcomingWFHModal" style="margin-top: 0px;">
+            <i class="fa-solid fa-calendar-days cursor-pointer"></i>
+          </button>
+          <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
+        </div>
       </div>
       <div class="task-card-body">
         <!-- Loader Spinner -->
@@ -30,17 +35,98 @@
                 <span>{{ member.user_name }}</span>
               </td>
               <td style="padding: 18px 15px;">
-                {{ formatDate(member.date_range.start_date) }}
-                to
-                {{ formatDate(member.date_range.end_date) }}
+                <template v-if="member.type_of_leave === 'Work From Home Half Day'">
+                  {{ member.half }} on {{ formatDate(member.date_range.start_date) }}
+                </template>
+                <template v-else>
+                  {{ formatDate(member.date_range.start_date) }}
+                  to
+                  {{ formatDate(member.date_range.end_date) }}
+                </template>
               </td>
-
             </tr>
           </tbody>
+
         </table>
         <p v-if="!loading && members.length === 0" class="text-muted" style="
-    text-align: center;
-    margin: auto;">No members on WFH for the selected date.</p>
+            text-align: center;
+         margin: auto;">No members on WFH for the selected date.</p>
+      </div>
+
+      <div v-if="showUpcomingWFH" class="upcoming-wfh-modal" @click.self="closeUpcomingWFHModal">
+        <div class="upcoming-wfh-modal__content">
+          <div class="upcoming-wfh-modal__header">
+            <h5 class="upcoming-wfh-modal__title">Upcoming WFH Members</h5>
+            <button type="button" class="close-modal" @click="closeUpcomingWFHModal" aria-label="Close">&times;</button>
+          </div>
+          <div class="upcoming-wfh-filter">
+            <select id="wfhMonthFilter" class="upcoming-wfh-filter__select" v-model="wfhMonthFilter"
+              @change="fetchUpcomingWFH">
+              <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+            </select>
+          </div>
+          <div class="upcoming-wfh-modal__body">
+            <div v-if="loadingUpcomingWFH" class="upcoming-wfh-loading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div v-else>
+              <div v-if="upcomingWFH.length === 0" class="upcoming-wfh-empty">
+                No upcoming WFH records found for the selected period.
+              </div>
+              <div v-else class="upcoming-wfh-table-container">
+                <table class="upcoming-wfh-table">
+                  <thead class="upcoming-wfh-table__head">
+                    <tr>
+                      <th class="upcoming-wfh-table__header">Name</th>
+                      <th class="upcoming-wfh-table__header">Type</th>
+                      <th class="upcoming-wfh-table__header">Duration</th>
+                      <th class="upcoming-wfh-table__header">Created Date</th>
+                    </tr>
+                  </thead>
+                  <tbody class="upcoming-wfh-table__body">
+                    <tr v-for="leave in upcomingWFH" :key="leave.id" class="upcoming-wfh-table__row">
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name">
+                        <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
+                          class="upcoming-wfh-table__user-image">
+                        <span class="upcoming-wfh-table__user-name">{{ leave.user.name }}</span>
+                      </td>
+
+                      <td class="upcoming-wfh-table__cell">
+                        <span class="upcoming-wfh-table__leave-type">{{ leave.type_of_leave }}</span>
+                      </td>
+
+                      <td class="upcoming-wfh-table__cell">
+                        <!-- Half Day WFH -->
+                        <div v-if="leave.type_of_leave === 'Work From Home Half Day'">
+                          <span class="upcoming-wfh-table__half-day-type">{{ leave.half }}</span>
+                          <span class="upcoming-wfh-table__half-day-date">
+                            ({{ formatDate(leave.start_date, true) }})
+                          </span>
+                        </div>
+
+                        <!-- Full Day or Multi-Day WFH -->
+                        <div v-else>
+                          <span class="upcoming-wfh-table__days">
+                            {{ calculateDays(leave.start_date, leave.end_date) }} day(s)
+                          </span>
+                          <span class="upcoming-wfh-table__date-range">
+                            ({{ formatDate(leave.start_date, true) }} - {{ formatDate(leave.end_date, true) }})
+                          </span>
+                        </div>
+                      </td>
+
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--date">
+                        {{ formatDate(leave.created_at, true) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,9 +146,51 @@ export default {
       members: [],
       selectedDate: new Date(),
       loading: true,
+      showUpcomingWFH: false,
+      upcomingWFH: [],
+      loadingUpcomingWFH: false,
+      wfhMonthFilter: 2,
     };
   },
   methods: {
+    openUpcomingWFHModal() {
+      this.showUpcomingWFH = true;
+      this.fetchUpcomingWFH();
+    },
+    closeUpcomingWFHModal() {
+      this.showUpcomingWFH = false;
+    },
+    async fetchUpcomingWFH() {
+      this.loadingUpcomingWFH = true;
+      try {
+        const response = await axios.get("/api/upcoming-wfh-leaves", {
+          params: { months: this.wfhMonthFilter },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        if (response.data.success) {
+          this.upcomingWFH = response.data.data;
+        }
+      } catch (error) {
+        console.error("Error fetching upcoming WFH:", error);
+      } finally {
+        this.loadingUpcomingWFH = false;
+      }
+    },
+    formatDate(dateStr, showWeekDay = false) {
+      const date = new Date(dateStr);
+      const options = showWeekDay
+        ? { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }
+        : { year: 'numeric', month: 'short', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    },
+    calculateDays(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      return diff;
+    },
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
@@ -96,8 +224,189 @@ export default {
 };
 </script>
 
-
 <style scoped>
+/* Modal Container */
+.upcoming-wfh-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  padding: 20px;
+}
+
+.upcoming-wfh-modal__content {
+  background-color: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Header */
+.upcoming-wfh-modal__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upcoming-wfh-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-modal {
+  background: none;
+  color: #333;
+  border: none;
+  font-size: 22px;
+  font-family: math;
+}
+
+/* Filter Section */
+.upcoming-wfh-filter {
+  text-align: right;
+  padding-top: 18px;
+  padding-right: 23px;
+}
+
+.upcoming-wfh-modal__body {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.upcoming-wfh-filter__select {
+  width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Loading State */
+.upcoming-wfh-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+/* Empty State */
+.upcoming-wfh-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Table Styles */
+.upcoming-wfh-table-container {
+  overflow-x: auto;
+}
+
+.upcoming-wfh-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.upcoming-wfh-table__head {
+  background-color: #f8f9fa;
+}
+
+.upcoming-wfh-table__header {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+  border-bottom: 2px solid #e9e0e0;
+  background-color: #3498db;
+}
+
+.upcoming-wfh-table__body {
+  font-size: 14px;
+}
+
+.upcoming-wfh-table__row {
+  border-bottom: 1px solid #e9e0e0;
+  transition: background-color 0.2s;
+}
+
+.upcoming-wfh-table__row:hover {
+  background-color: #f8f9fa;
+}
+
+.upcoming-wfh-table__cell {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.upcoming-wfh-table__cell--name {
+  display: flex;
+  align-items: center;
+}
+
+.upcoming-wfh-table__cell--date {
+  white-space: nowrap;
+}
+
+.upcoming-wfh-table__user-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+.upcoming-wfh-table__user-name {
+  font-weight: 500;
+}
+
+.upcoming-wfh-table__leave-type {
+  display: block;
+}
+
+.upcoming-wfh-table__days {
+  font-weight: 500;
+}
+
+.upcoming-wfh-table__date-range,
+.upcoming-wfh-table__half-day-date {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .upcoming-wfh-modal__content {
+    max-height: 90vh;
+  }
+
+  .upcoming-wfh-table__header,
+  .upcoming-wfh-table__cell {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .upcoming-wfh-table__user-image {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+  }
+}
+
 .table>:not(:first-child) {
   border-top: none !important;
 }

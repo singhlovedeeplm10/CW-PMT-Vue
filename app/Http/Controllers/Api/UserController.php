@@ -379,42 +379,65 @@ public function updateUser(Request $request, $id)
     $employeeCode = "CW" . $formattedId;
 
     // Process appraisal data if exists
-    $appraisals = [];
-    if ($profile && !empty($profile->appraisals)) {
-        $rawAppraisals = $profile->appraisals;
-        
-        // Handle both string (JSON) and array formats
-        if (is_string($rawAppraisals)) {
-            $rawAppraisals = json_decode($rawAppraisals, true) ?? [];
-        } elseif (!is_array($rawAppraisals)) {
-            $rawAppraisals = [];
-        }
-
-        // Filter appraisals to only include those marked to show to employee
-        $filteredAppraisals = array_filter($rawAppraisals, function($item) {
-            return isset($item['show_to_employee']) && $item['show_to_employee'] == 1;
-        });
-
-        // Only process and include appraisals if there are any to show
-        if (!empty($filteredAppraisals)) {
-            $appraisals = array_map(function($item) {
-                return [
-                    'date' => $item['date'] ?? null,
-                    'appraisal_amount' => $item['amount'] ?? null,
-                    'revised_amount' => $item['final_amount'] ?? null,
-                    'note' => $item['note'] ?? null,
-                    // Include show_to_employee flag in response if needed
-                    'show_to_employee' => $item['show_to_employee'] ?? 0,
-                ];
-            }, $filteredAppraisals);
-        }
+$appraisals = [];
+if ($profile && !empty($profile->appraisals)) {
+    $rawAppraisals = $profile->appraisals;
+    
+    // Debug: Log the raw data
+    // error_log('Raw appraisals: ' . print_r($rawAppraisals, true));
+    
+    // Handle both string (JSON) and array formats
+    if (is_string($rawAppraisals)) {
+        $rawAppraisals = json_decode($rawAppraisals, true) ?? [];
+    } elseif (!is_array($rawAppraisals)) {
+        $rawAppraisals = [];
     }
+
+    // Debug: Log after JSON decode
+    // error_log('Decoded appraisals: ' . print_r($rawAppraisals, true));
+    
+    // Ensure we have an array of appraisals (not an associative array)
+    if (isset($rawAppraisals[0]) && is_array($rawAppraisals[0])) {
+        // Proper array of appraisals
+        $appraisalsCollection = $rawAppraisals;
+    } else {
+        // Might be an associative array with numeric keys
+        $appraisalsCollection = array_values($rawAppraisals);
+    }
+
+    // Filter appraisals to only include those marked to show to employee
+    $filteredAppraisals = array_filter($appraisalsCollection, function($item) {
+        // Debug: Check each item
+        // error_log('Checking item: ' . print_r($item, true));
+        
+        return isset($item['show_to_employee']) && $item['show_to_employee'] == 1;
+    });
+
+    // Debug: Log filtered results
+    // error_log('Filtered appraisals: ' . print_r($filteredAppraisals, true));
+    
+    // Only process and include appraisals if there are any to show
+    if (!empty($filteredAppraisals)) {
+        $appraisals = array_values(array_map(function($item) {
+            return [
+                'date' => $item['date'] ?? null,
+                'appraisal_amount' => $item['amount'] ?? null,
+                'revised_amount' => $item['final_amount'] ?? null,
+                'note' => $item['note'] ?? null,
+                'show_to_employee' => $item['show_to_employee'] ?? 0,
+            ];
+        }, $filteredAppraisals));
+    }
+}
+
+// Debug: Final output
+// error_log('Final appraisals: ' . print_r($appraisals, true));
 
     return response()->json([
         'name' => $user->name,
         'email' => $user->email,
         'status' => $user->status,
-        'role' => $user->roles->first()->name ?? 'N/A',
+        'role' => $user->roles->first()->name ?? 'NA',
         'employee_code' => $employeeCode,
 
         // Profile fields
@@ -566,13 +589,13 @@ public function updateUser(Request $request, $id)
 public function employeeAttendances(Request $request)
 {
     // Set default previous month range if no date is provided
-    $startDate = Carbon::now()->subMonth()->startOfMonth()->toDateString();
-    $endDate = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+    $startDate = Carbon::now()->subMonth()->startOfMonth();
+    $endDate = Carbon::now()->subMonth()->endOfMonth();
 
     // Apply date filters if provided
     if ($request->has('month') && $request->has('year')) {
-        $startDate = Carbon::createFromDate($request->year, $request->month, 1)->startOfMonth()->toDateString();
-        $endDate = Carbon::createFromDate($request->year, $request->month, 1)->endOfMonth()->toDateString();
+        $startDate = Carbon::createFromDate($request->year, $request->month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($request->year, $request->month, 1)->endOfMonth();
     }
 
     $query = User::with([
@@ -582,8 +605,7 @@ public function employeeAttendances(Request $request)
         },
         'profile:user_id,user_image'
     ])
-        ->where('id', '!=', 1) // Exclude user with ID 1
-        ->orderBy('name', 'asc');
+    ->orderBy('name', 'asc');
 
     // Apply search filters
     if ($request->has('name')) {
@@ -595,8 +617,11 @@ public function employeeAttendances(Request $request)
     $query->where('status', $status);
 
     $employees = $query->get()->map(function ($user) use ($startDate, $endDate) {
-        // Fetch attendance records for the given month
-        $attendances = $user->attendances->whereBetween('clockin_time', [$startDate, $endDate]);
+        // Fetch attendance records for the given month range (including time component)
+        $attendances = $user->attendances->filter(function ($attendance) use ($startDate, $endDate) {
+            $clockIn = Carbon::parse($attendance->clockin_time);
+            return $clockIn->between($startDate, $endDate);
+        });
 
         // Group attendance records by date
         $uniqueAttendances = $attendances->groupBy(function ($attendance) {
@@ -605,64 +630,95 @@ public function employeeAttendances(Request $request)
 
         // Fetch all approved leaves for the period
         $approvedLeaves = $user->leaves->filter(function ($leave) use ($startDate, $endDate) {
-            return ($leave->start_date <= $endDate && (!$leave->end_date || $leave->end_date >= $startDate));
+            $leaveStart = Carbon::parse($leave->start_date);
+            $leaveEnd = $leave->end_date ? Carbon::parse($leave->end_date) : $leaveStart;
+            
+            return $leaveStart->lte($endDate) && $leaveEnd->gte($startDate);
         });
 
-        // Separate WFH full-day leaves
-        $wfhLeaves = $approvedLeaves->where('type_of_leave', 'Work From Home Full Day');
+        // Separate WFH full-day and half-day leaves
+        $wfhFullDayLeaves = $approvedLeaves->where('type_of_leave', 'Work From Home Full Day');
+        $wfhHalfDayLeaves = $approvedLeaves->where('type_of_leave', 'Work From Home Half Day');
 
         // Count WFH full-day days with attendance
-        $totalWFH = $wfhLeaves->reduce(function ($count, $leave) use ($uniqueAttendances) {
-            $daysInLeaveRange = Carbon::parse($leave->start_date)->diffInDays(Carbon::parse($leave->end_date ?: $leave->start_date)) + 1;
-            $daysWithAttendance = $uniqueAttendances->filter(function ($attendance, $date) use ($leave) {
-                return Carbon::parse($date)->between($leave->start_date, $leave->end_date ?: $leave->start_date);
+        $totalWFHFullDay = $wfhFullDayLeaves->reduce(function ($count, $leave) use ($uniqueAttendances, $startDate, $endDate) {
+            $leaveStart = Carbon::parse($leave->start_date)->max($startDate);
+            $leaveEnd = $leave->end_date 
+                ? Carbon::parse($leave->end_date)->min($endDate)
+                : $leaveStart->min($endDate);
+
+            $daysInLeaveRange = $leaveStart->diffInDays($leaveEnd) + 1;
+            
+            $daysWithAttendance = $uniqueAttendances->filter(function ($attendance, $date) use ($leaveStart, $leaveEnd) {
+                $currentDate = Carbon::parse($date);
+                return $currentDate->between($leaveStart, $leaveEnd);
             })->count();
+
             return $count + min($daysInLeaveRange, $daysWithAttendance);
         }, 0);
 
-        // Calculate initial WFO days before adjusting for leaves
-        $totalWFO = $uniqueAttendances->count() - $totalWFH;
+        // Count WFH half-day days with attendance (add 0.5 for each day)
+        $totalWFHHalfDay = $wfhHalfDayLeaves->reduce(function ($count, $leave) use ($uniqueAttendances, $startDate, $endDate) {
+            $leaveStart = Carbon::parse($leave->start_date)->max($startDate);
+            $leaveEnd = $leave->end_date 
+                ? Carbon::parse($leave->end_date)->min($endDate)
+                : $leaveStart->min($endDate);
 
-        // Process all other leaves (excluding WFH Full Day)
+            $daysInLeaveRange = $leaveStart->diffInDays($leaveEnd) + 1;
+            
+            $daysWithAttendance = $uniqueAttendances->filter(function ($attendance, $date) use ($leaveStart, $leaveEnd) {
+                $currentDate = Carbon::parse($date);
+                return $currentDate->between($leaveStart, $leaveEnd);
+            })->count();
+
+            return $count + (min($daysInLeaveRange, $daysWithAttendance) * 0.5);
+        }, 0);
+
+        // Combine both WFH types
+        $totalWFH = $totalWFHFullDay + $totalWFHHalfDay;
+
+        // Calculate initial WFO days before adjusting for other leaves
+        $totalWFO = $uniqueAttendances->count() - $totalWFHFullDay - ($totalWFHHalfDay * 2); // Half days count as 0.5 WFH but reduce WFO by 1
+
+        // Process other leaves (excluding both WFH types)
         $otherLeaves = $approvedLeaves->reject(function ($leave) {
-            return $leave->type_of_leave === 'Work From Home Full Day';
+            return in_array($leave->type_of_leave, ['Work From Home Full Day', 'Work From Home Half Day']);
         });
 
-        // Adjust WFO and WFH based on leave types
+        // Adjust WFO based on other leave types
         foreach ($otherLeaves as $leave) {
-            $leaveStart = Carbon::parse($leave->start_date);
-            $leaveEnd = Carbon::parse($leave->end_date ?: $leave->start_date);
+            $leaveStart = Carbon::parse($leave->start_date)->max($startDate);
+            $leaveEnd = $leave->end_date 
+                ? Carbon::parse($leave->end_date)->min($endDate)
+                : $leaveStart;
 
             for ($date = $leaveStart->copy(); $date->lte($leaveEnd); $date->addDay()) {
                 $dateStr = $date->toDateString();
 
-                if ($date->between($startDate, $endDate) && $uniqueAttendances->has($dateStr)) {
+                if ($uniqueAttendances->has($dateStr)) {
                     if ($leave->type_of_leave === 'Half Day Leave') {
                         $totalWFO -= 0.5;
                     } elseif ($leave->type_of_leave === 'Full Day Leave') {
                         $totalWFO -= 1;
-                    } elseif ($leave->type_of_leave === 'Work From Home Half Day') {
-                        $totalWFO -= 1;
-                        $totalWFH += 0.5;
                     }
                 }
             }
         }
 
-        // Count total leave days (including Work From Home Half Day as 0.5 leave)
+        // Count total leave days (excluding WFH types)
         $totalLeaves = $otherLeaves->reduce(function ($sum, $leave) use ($startDate, $endDate) {
-            $leaveStart = Carbon::parse($leave->start_date);
-            $leaveEnd = Carbon::parse($leave->end_date ?: $leave->start_date);
+            $leaveStart = Carbon::parse($leave->start_date)->max($startDate);
+            $leaveEnd = $leave->end_date 
+                ? Carbon::parse($leave->end_date)->min($endDate)
+                : $leaveStart;
 
             $count = 0;
 
             for ($date = $leaveStart->copy(); $date->lte($leaveEnd); $date->addDay()) {
-                if ($date->between($startDate, $endDate)) {
-                    if (in_array($leave->type_of_leave, ['Half Day Leave', 'Work From Home Half Day'])) {
-                        $count += 0.5;
-                    } else {
-                        $count += 1;
-                    }
+                if ($leave->type_of_leave === 'Half Day Leave') {
+                    $count += 0.5;
+                } else {
+                    $count += 1;
                 }
             }
 
@@ -692,88 +748,134 @@ public function employeeAttendances(Request $request)
 }
 
 
-    public function getEmployeeTimeLogsById(Request $request)
-    {
-        $user = Auth::user(); // Get the logged-in user
+   public function getEmployeeTimeLogsById(Request $request)
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401); // Handle unauthorized access
-        }
-
-        $selectedMonth = $request->input('month', date('Y-m'));
-        $searchQuery = $request->input('search', '');
-        $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
-        $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
-
-        // Join the user_profiles table to fetch the user_image
-        $query = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
-                ->with('breaks');
-        }])->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-            ->select('users.*', 'user_profiles.user_image'); // Select the user_image from user_profiles
-
-        // Always include the logged-in user's data
-        $query->where('users.id', $user->id);
-
-        // If the user is an admin and a search query is provided, search for other users
-        if ($user->hasRole('Admin') && $searchQuery) {
-            $query->orWhere('users.name', 'like', '%' . $searchQuery . '%');
-        }
-
-        $users = $query->get();  // Get the users with their time logs and breaks
-
-        $timeLogs = [];
-
-        foreach ($users as $user) {
-            $groupedAttendances = [];
-
-            foreach ($user->attendances as $attendance) {
-                $date = Carbon::parse($attendance->clockin_time)->format('Y-m-d');
-
-                if (!isset($groupedAttendances[$date])) {
-                    $groupedAttendances[$date] = [
-                        'clockin_time' => $attendance->clockin_time,
-                        'clockout_time' => $attendance->clockout_time,
-                        'total_hours' => $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0,
-                        'total_break_time' => 0,
-                    ];
-                } else {
-                    $groupedAttendances[$date]['clockin_time'] = min($groupedAttendances[$date]['clockin_time'], $attendance->clockin_time);
-                    $groupedAttendances[$date]['clockout_time'] = max($groupedAttendances[$date]['clockout_time'], $attendance->clockout_time);
-                    $groupedAttendances[$date]['total_hours'] += $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0;
-                }
-
-                $groupedAttendances[$date]['total_break_time'] += $attendance->breaks->sum(function ($break) {
-                    return Carbon::parse($break->break_time)->secondsSinceMidnight();
-                });
-            }
-
-            foreach ($groupedAttendances as $date => $data) {
-                // Format clockin_time and clockout_time in 12-hour format with AM/PM
-                $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('h:i:s A') : 'N/A';
-                $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('h:i:s A') : 'N/A';
-                $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
-                $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
-                $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
-                $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-                $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
-
-                $timeLogs[] = [
-                    'id' => $user->id,
-                    'image' => $imagePath,
-                    'name' => $user->name,
-                    'status' => $user->status,
-                    'date' => $date,
-                    'clock_in_out' => $clockInTime . ' / ' . $clockOutTime,
-                    'total_break' => $totalBreakFormatted,
-                    'total_hours' => $totalHoursFormatted,
-                    'total_productive_hours' => $totalProductiveHoursFormatted,
-                ];
-            }
-        }
-
-        return response()->json($timeLogs);
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
+
+    $selectedMonth = $request->input('month', date('Y-m'));
+    $searchQuery = $request->input('search', '');
+    $startOfMonth = Carbon::parse($selectedMonth)->startOfMonth();
+    $endOfMonth = Carbon::parse($selectedMonth)->endOfMonth();
+
+    // Get all leaves for the month (WFH Full Day and Half Day)
+    $leavesQuery = Leave::whereIn('type_of_leave', ['Work From Home Full Day', 'Work From Home Half Day'])
+        ->where('status', 'Approved')
+        ->where(function($query) use ($startOfMonth, $endOfMonth) {
+            $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                  ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth])
+                  ->orWhere(function($query) use ($startOfMonth, $endOfMonth) {
+                      $query->where('start_date', '<=', $startOfMonth)
+                            ->where('end_date', '>=', $endOfMonth);
+                  });
+        });
+
+    $query = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+            $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
+                ->with('breaks')
+                ->orderBy('clockin_time', 'desc');
+        }])
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->select('users.*', 'user_profiles.user_image');
+
+    $query->where('users.id', $user->id);
+
+    if ($user->hasRole('Admin') && $searchQuery) {
+        $query->orWhere('users.name', 'like', '%' . $searchQuery . '%');
+    }
+
+    $users = $query->get();
+    $timeLogs = [];
+
+    foreach ($users as $user) {
+        // Get all WFH days for this user
+        $userLeaves = (clone $leavesQuery)->where('user_id', $user->id)->get();
+        $wfhDays = [];
+
+        foreach ($userLeaves as $leave) {
+            $start = Carbon::parse($leave->start_date);
+            $end = Carbon::parse($leave->end_date);
+            
+            for ($date = $start; $date->lte($end); $date->addDay()) {
+                if ($date->between($startOfMonth, $endOfMonth)) {
+                    $dayKey = $date->format('Y-m-d');
+                    if ($leave->type_of_leave === 'Work From Home Full Day') {
+                        $wfhDays[$dayKey] = 1.0;
+                    } elseif ($leave->type_of_leave === 'Work From Home Half Day') {
+                        $wfhDays[$dayKey] = 0.5;
+                    }
+                }
+            }
+        }
+
+        $groupedAttendances = [];
+
+        foreach ($user->attendances as $attendance) {
+            $date = Carbon::parse($attendance->clockin_time)->format('Y-m-d');
+            
+            if (!isset($groupedAttendances[$date])) {
+                $groupedAttendances[$date] = [
+                    'clockin_time' => $attendance->clockin_time,
+                    'clockout_time' => $attendance->clockout_time,
+                    'total_hours' => $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0,
+                    'total_break_time' => 0,
+                    'is_wfh' => $wfhDays[$date] ?? 0,
+                ];
+            } else {
+                $groupedAttendances[$date]['clockin_time'] = min($groupedAttendances[$date]['clockin_time'], $attendance->clockin_time);
+                $groupedAttendances[$date]['clockout_time'] = max($groupedAttendances[$date]['clockout_time'], $attendance->clockout_time);
+                $groupedAttendances[$date]['total_hours'] += $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0;
+            }
+
+            $groupedAttendances[$date]['total_break_time'] += $attendance->breaks->sum(function ($break) {
+                return Carbon::parse($break->break_time)->secondsSinceMidnight();
+            });
+        }
+
+      foreach ($groupedAttendances as $date => $data) {
+        $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('h:i:s A') : 'NA';
+        $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('h:i:s A') : 'NA';
+        $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
+        $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
+        $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
+        $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
+        $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
+
+        // Determine WFH status
+        $wfhStatus = '';
+        if ($data['is_wfh'] == 1.0) {
+            $wfhStatus = 'full';
+        } elseif ($data['is_wfh'] == 0.5) {
+            $wfhStatus = 'half';
+        } else {
+            // Check if it's a regular WFH day (not through leave)
+            $isRegularWFH = $user->attendances->where('date', $date)->first()->is_wfh ?? false;
+            if ($isRegularWFH) {
+                $wfhStatus = 'full';
+            }
+        }
+
+        $timeLogs[] = [
+            'id' => $user->id,
+            'image' => $imagePath,
+            'name' => $user->name,
+            'status' => $user->status,
+            'date' => $date,
+            'clock_in_out' => $clockInTime . ' / ' . $clockOutTime,
+            'total_break' => $totalBreakFormatted,
+            'total_hours' => $totalHoursFormatted,
+            'total_productive_hours' => $totalProductiveHoursFormatted,
+            'is_wfh' => $data['is_wfh'],
+            'wfh_status' => $wfhStatus, // 'full', 'half', or empty string
+        ];
+    }
+    }
+
+    return response()->json($timeLogs);
+}
 
 
     public function getEmployeeAttendanceTimelogs(Request $request)
@@ -868,8 +970,8 @@ public function employeeAttendances(Request $request)
                     'name' => $user->name,
                     'status' => $user->status,
                     'date' => $date,
-                    'clock_in_out' => ($firstClockIn ? Carbon::parse($firstClockIn)->format('h:i:s A') : 'N/A') . ' / ' .
-                        ($lastClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'N/A'),
+                    'clock_in_out' => ($firstClockIn ? Carbon::parse($firstClockIn)->format('h:i:s A') : 'NA') . ' / ' .
+                        ($lastClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'NA'),
                     'total_break' => gmdate('H:i:s', $totalBreakSeconds),
                     'total_hours' => gmdate('H:i:s', $totalHoursSeconds),
                     'total_productive_hours' => gmdate('H:i:s', $productiveSeconds),
@@ -879,4 +981,99 @@ public function employeeAttendances(Request $request)
 
         return response()->json($timeLogs);
     }
+
+       public function checkProfilePassword(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $profile = UserProfile::where('user_id', $user->id)->first();
+
+        if (!$profile) {
+            return response()->json(['error' => 'Profile not found'], 404);
+        }
+
+        $hasPassword = !empty($profile->profile_password);
+
+        return response()->json([
+            'has_password' => $hasPassword
+        ]);
+    }
+
+    public function setProfilePassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed'
+        ]);
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $profile = UserProfile::firstOrCreate(
+            ['user_id' => $user->id],
+            []
+        );
+
+        $profile->profile_password = Hash::make($request->password);
+        $profile->save();
+
+        return response()->json(['message' => 'Profile password set successfully']);
+    }
+
+    public function verifyProfilePassword(Request $request)
+{
+    $request->validate([
+        'password' => 'required|string'
+    ]);
+
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    $profile = UserProfile::where('user_id', $user->id)->first();
+
+    if (!$profile || !$profile->profile_password) {
+        return response()->json(['error' => 'Profile password not set'], 404);
+    }
+
+    if (!Hash::check($request->password, $profile->profile_password)) {
+        return response()->json(['success' => false, 'message' => 'Incorrect password']);
+    }
+
+    return response()->json(['success' => true, 'message' => 'Password verified']);
+}
+public function resetProfilePassword($id)
+{
+    try {
+        // Find the user profile record
+        $profile = UserProfile::where('user_id', $id)->first();
+
+        if (!$profile) {
+            return response()->json([
+                'message' => 'User profile not found.'
+            ], 404);
+        }
+
+        // Reset profile_password field
+        $profile->profile_password = null;
+        $profile->save();
+
+        return response()->json([
+            'message' => 'Profile password reset successfully.'
+        ], 200);
+    } catch (\Exception $e) {
+        \Log::error('Reset profile password error: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Failed to reset profile password.'
+        ], 500);
+    }
+}
+
 }

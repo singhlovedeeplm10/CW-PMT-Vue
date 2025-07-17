@@ -54,7 +54,6 @@
 
             <div v-else class="modal-body">
               <!-- Projects Tab Content -->
-              <!-- Projects Tab Content -->
               <div v-if="activeTab === 'projects'">
                 <div v-if="isLoadingProjectNotifications" class="loader-container">
                   <div class="spinner-border text-primary" role="status">
@@ -65,7 +64,28 @@
                   <div v-for="notification in recentProjectNotifications" :key="notification.id"
                     class="notification-item" :class="{ 'read': notification.isRead }">
                     <div v-if="notification.project" class="project-info">
-                      <span class="project-name">{{ notification.message }}</span>
+                      <template v-if="notification.message.includes('Assigned')">
+                        <div class="project-name-line">
+                          <span class="project-name">
+                            {{ extractProjectName(notification.message, 'Assigned') }}
+                          </span>
+                          <span class="project-status assigned"> (Assigned)</span>
+                        </div>
+                      </template>
+                      <template v-else-if="notification.message.includes('Unassigned')">
+                        <div class="project-name-line">
+                          <span class="project-name">
+                            {{ extractProjectName(notification.message, 'Unassigned') }}
+                          </span>
+                          <span class="project-status unassigned"> (Unassigned)</span>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <span class="project-name">{{ notification.message }}</span>
+                      </template>
+                      <div class="notification-time text-muted small">
+                        {{ formatDateTime(notification.created_at) }}
+                      </div>
                     </div>
                   </div>
                   <div v-if="projectNotifications.length === 0" class="empty-notifications">
@@ -114,10 +134,16 @@
                       <template v-else>
                         <span class="device-name">{{ notification.notification_message }}</span>
                       </template>
+                      <div class="notification-time text-muted small">
+                        {{ formatDateTime(notification.created_at) }}
+                      </div>
                     </div>
 
                     <div v-if="!notification.device" class="device-info">
                       <span class="text-muted">Device no longer exists</span>
+                      <div class="notification-time text-muted small">
+                        {{ formatDateTime(notification.created_at) }}
+                      </div>
                     </div>
                   </div>
                   <div v-if="deviceNotifications.length === 0" class="empty-notifications">
@@ -155,6 +181,9 @@
                     </div>
                     <div class="notification-body">
                       <h5 v-html="notification.notification_message"></h5>
+                      <div class="notification-time">
+                        <small class="text-muted">{{ formatDateTime(notification.created_at) }}</small>
+                      </div>
                     </div>
                   </div>
 
@@ -239,6 +268,22 @@ export default {
     },
   },
   methods: {
+    formatDateTime(dateString) {
+      const date = new Date(dateString);
+      // Format as "MMM DD, YYYY hh:mm A" (e.g. "Jul 14, 2023 02:30 PM")
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    extractProjectName(message, keyword) {
+      // Example: '"Spotify" Assigned'
+      // Extract project name before keyword
+      return message.replace(keyword, '').trim();
+    },
     getUnreadCount(tabId) {
       // Your existing logic to get unread count for a specific tab
       // Example:
@@ -314,7 +359,8 @@ export default {
           time: new Date(notification.created_at).toLocaleString(),
           project: notification.project,
           fromUser: notification.from_user,
-          isRead: notification.is_read
+          isRead: notification.is_read,
+          created_at: notification.created_at
         }));
 
       } catch (error) {
@@ -425,19 +471,35 @@ export default {
     },
 
     async handleTabClick(tabId) {
+      // Reset data and set loading state immediately
       this.activeTab = tabId;
+
+      // Reset all notifications arrays
+      this.projectNotifications = [];
+      this.deviceNotifications = [];
+      this.leaveNotifications = [];
+
+      // Set all loading states to false first
+      this.isLoadingProjectNotifications = false;
+      this.isLoadingDeviceNotifications = false;
+      this.isLoadingLeaveNotifications = false;
+
+      // Then set the current tab's loading state to true
       switch (tabId) {
         case 'projects':
+          this.isLoadingProjectNotifications = true;
           await this.markProjectNotificationsAsRead();
-          this.fetchProjectNotifications();
+          await this.fetchProjectNotifications();
           break;
         case 'devices':
+          this.isLoadingDeviceNotifications = true;
           await this.markDeviceNotificationsAsRead();
-          this.fetchDeviceNotifications();
+          await this.fetchDeviceNotifications();
           break;
         case 'leaves':
+          this.isLoadingLeaveNotifications = true;
           await this.markLeaveNotificationsAsRead();
-          this.fetchLeaveNotifications();
+          await this.fetchLeaveNotifications();
           break;
       }
     },
@@ -493,6 +555,14 @@ export default {
 </script>
 
 <style scoped>
+.project-status.assigned {
+  color: green;
+}
+
+.project-status.unassigned {
+  color: red;
+}
+
 .notification-icon {
   font-size: 1.2rem;
   width: 24px;

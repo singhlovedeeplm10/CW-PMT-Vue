@@ -35,7 +35,7 @@ export default {
   },
   methods: {
     formatDate(datetime) {
-      if (!datetime) return 'N/A';
+      if (!datetime) return 'NA';
       return new Date(datetime).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',

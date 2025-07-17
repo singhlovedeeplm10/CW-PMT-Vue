@@ -17,7 +17,7 @@
           </ul>
         </div>
 
-        <input type="month" class="filter-input" v-model="selectedMonth" />
+        <CalendarMonthYear :selectedMonth="selectedMonth" @monthSelected="onMonthSelected" />
 
         <button class="search-btn" @click="fetchTimeLogs">
           <span v-if="loading">Searching...</span>
@@ -43,6 +43,28 @@
           <img :src="employeeDetails.image" alt="Employee Image" class="employee-image" />
           <h3>{{ employeeDetails.name }}</h3>
         </div>
+        <div class="day-counts-container">
+          <div class="day-counts">
+            <div class="count-group">
+              <div class="count-header count-green">Total Days: {{ dayCounts.green.total }}
+                <div class="count-sub">WFH: {{ dayCounts.green.wfh }}</div>
+                <div class="count-sub">WFO: {{ dayCounts.green.wfo }}</div>
+              </div>
+            </div>
+            <div class="count-group">
+              <div class="count-header count-red">Total Days: {{ dayCounts.red.total }}
+                <div class="count-sub">WFH: {{ dayCounts.red.wfh }}</div>
+                <div class="count-sub">WFO: {{ dayCounts.red.wfo }}</div>
+              </div>
+            </div>
+            <div class="count-group">
+              <div class="count-header count-orange">Total Days: {{ dayCounts.orange.total }}
+                <div class="count-sub">WFH: {{ dayCounts.orange.wfh }}</div>
+                <div class="count-sub">WFO: {{ dayCounts.orange.wfo }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Table -->
@@ -59,7 +81,20 @@
         <tbody>
           <tr v-for="log in filteredTimeLogs" :key="log.employee_code + log.date"
             :class="getRowClass(log.total_productive_hours)">
-            <td>{{ formatDate(log.date) }}</td>
+            <td>
+              <div class="date-with-icon">
+                <span v-if="log.is_wfh === 1" class="work-type-icon" title="Work From Home Full Day">
+                  <i class="fas fa-home"></i>
+                </span>
+                <span v-else-if="log.is_wfh === 0.5" class="work-type-icon" title="Work From Home Half Day">
+                  <i class="fas fa-home"></i>
+                </span>
+                <span v-else class="work-type-icon" title="Work From Office">
+                  <i class="fas fa-building"></i>
+                </span>
+                {{ formatDate(log.date) }}
+              </div>
+            </td>
             <td @click="openAttendancesModal(log.id, log.date)" class="clickable-time">
               {{ log.clock_in_out }}
             </td>
@@ -85,6 +120,7 @@
 import MasterComponent from './layouts/Master.vue';
 import AttendancesTimelogsModal from "@/components/modals/AttendancesTimelogsModal.vue";
 import BreaksTimelogsModal from "@/components/modals/BreaksTimelogsModal.vue";
+import CalendarMonthYear from "@/components/forms/CalendarMonthYear.vue";
 import axios from 'axios';
 
 export default {
@@ -92,7 +128,8 @@ export default {
   components: {
     MasterComponent,
     AttendancesTimelogsModal,
-    BreaksTimelogsModal
+    BreaksTimelogsModal,
+    CalendarMonthYear
   },
   data() {
     return {
@@ -105,12 +142,8 @@ export default {
       loading: false,
       employeeDetails: null,
       noDataMessage: "",
-
-      // Attendances modal data
       showAttendancesModal: false,
       attendancesLogs: [],
-
-      // Breaks modal data
       showBreaksModal: false,
       breaksLogs: [],
       noBreakDataMessage: ""
@@ -122,9 +155,42 @@ export default {
       return this.timeLogs.filter(log =>
         log.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
+    },
+    dayCounts() {
+      let counts = {
+        green: { total: 0, wfh: 0, wfo: 0 },
+        red: { total: 0, wfh: 0, wfo: 0 },
+        orange: { total: 0, wfh: 0, wfo: 0 }
+      };
+
+      this.timeLogs.forEach(log => {
+        let category;
+        if (log.total_productive_hours === '00:00:00') {
+          category = 'orange';
+        } else {
+          const [hours, minutes, seconds] = log.total_productive_hours.split(':').map(Number);
+          const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          category = totalSeconds >= 28800 ? 'green' : 'red';
+        }
+
+        counts[category].total += 1;
+
+        if (log.is_wfh > 0) {
+          counts[category].wfh += log.is_wfh;
+          counts[category].wfo += (1 - log.is_wfh);
+        } else {
+          counts[category].wfo += 1;
+        }
+      });
+
+      // No decimals needed!
+      return counts;
     }
   },
   methods: {
+    onMonthSelected(month) {
+      this.selectedMonth = month;
+    },
     async fetchUserSuggestions() {
       if (this.searchQuery.length < 2) {
         this.searchResults = [];
@@ -162,7 +228,7 @@ export default {
     },
 
     formatDate(dateString) {
-      if (!dateString) return 'N/A';
+      if (!dateString) return 'NA';
       const date = new Date(dateString);
       return new Intl.DateTimeFormat('en-US', {
         month: 'short',
@@ -172,7 +238,7 @@ export default {
     },
 
     formatTime(datetime) {
-      if (!datetime) return 'N/A';
+      if (!datetime) return 'NA';
       return new Date(datetime).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -277,6 +343,41 @@ export default {
 </script>
 
 <style scoped>
+.date-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.work-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+}
+
+.work-type-icon i {
+  font-size: 0.9rem;
+}
+
+.work-type-icon[title="Work From Home Full Day"] {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.work-type-icon[title="Work From Home Half Day"] {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.work-type-icon[title="Work From Office"] {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
 .suggestions-list {
   position: absolute;
   background: white;
@@ -327,11 +428,10 @@ export default {
   padding: 10px;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+  border-radius: 5px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .employee-info {
@@ -351,6 +451,60 @@ export default {
   margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
+}
+
+.day-counts-container {
+  display: flex;
+  align-items: center;
+}
+
+.day-counts {
+  display: flex;
+  gap: 15px;
+}
+
+.count-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+}
+
+.count-header {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.count-sub {
+  font-size: 0.85rem;
+  color: #555;
+  text-align: center;
+}
+
+.count-green,
+.count-red,
+.count-orange {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.count-green {
+  background-color: rgba(0, 128, 0, 0.1);
+  color: green;
+}
+
+.count-red {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: red;
+}
+
+.count-orange {
+  background-color: rgba(255, 165, 0, 0.1);
+  color: orange;
 }
 
 .clickable-time {

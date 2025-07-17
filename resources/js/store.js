@@ -7,12 +7,14 @@ const store = createStore({
       userName: "Guest",
       userRole: null,
       userImage: null,
+      userDesignation: null,
     };
   },
   mutations: {
-    setUserDetails(state, { name, image }) {
+    setUserDetails(state, { name, image, designation }) {
       state.userName = name;
       state.userImage = image;
+      state.userDesignation = designation;
     },
     setUserRole(state, role) {
       state.userRole = role;
@@ -30,6 +32,7 @@ const store = createStore({
         commit("setUserDetails", {
           name: response.data.user_name, // Correctly mapped from API response
           image: response.data.user_image, // Correctly mapped from API response
+          designation: response.data.user_designation, // Correctly mapped from API response
         });
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -53,6 +56,7 @@ const store = createStore({
       return {
         name: state.userName,
         image: state.userImage,
+        designation: state.userDesignation,
       };
     },
     getUserRole(state) {

@@ -3,7 +3,7 @@
     <div class="task-card-header">
       <h4 class="card_heading">Tasks List</h4>
       <ButtonComponent :label="'Tasks'" :isLoading="buttonLoading" :isDisabled="loading" buttonClass="btn-primary"
-        :clickEvent="checkClockInStatus" />
+        :clickEvent="handleButtonClick" />
     </div>
     <table class="task-table">
       <thead>
@@ -25,7 +25,7 @@
           <td colspan="3" class="text-center">No Task added</td>
         </tr>
         <tr v-else v-for="task in tasks" :key="task.id">
-          <td>{{ task.project_name || 'N/A' }}</td>
+          <td>{{ task.project_name || 'NA' }}</td>
           <td>{{ task.hours }}</td>
           <td v-html="formattedDescription(task.task_description)"></td>
 
@@ -66,6 +66,11 @@ export default {
       return description ? description.replace(/\n/g, "<br>") : "";
     },
 
+    async handleButtonClick() {
+      this.checkClockInStatus();
+      this.fetchProjects();
+    },
+
     async fetchTasks() {
       this.loading = true;
       try {
@@ -76,7 +81,7 @@ export default {
         });
         this.tasks = response.data.map(task => ({
           ...task,
-          project_name: task.project_name || 'N/A' // Ensure project_name is always present
+          project_name: task.project_name || 'NA' // Ensure project_name is always present
         }));
       } catch (error) {
         console.error("Error fetching tasks:", error);

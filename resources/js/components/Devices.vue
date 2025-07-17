@@ -44,7 +44,7 @@
                     <thead>
                         <tr>
                             <th>Developer</th>
-                            <th>Devices Name/Number</th>
+                            <th style="width: 27%;">Devices Name/Number</th>
                             <th>Date of Assign</th>
                             <th>Note</th>
                             <th>Status</th>
@@ -66,10 +66,15 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="align-middle">{{ device.device }} <br> {{ device.device_number }}</td>
+                            <td class="align-middle">
+                                {{ device.device }} <br>
+                                {{ device.device_number }} <br>
+                                <span class="text-muted" style="font-size: 13px;"
+                                    v-html="device.description ? device.description.replace(/\n/g, '<br>') : ''"></span>
+                            </td>
                             <td class="align-middle">{{ formatDate(device.date_of_assign) }}</td>
                             <td class="align-middle-note"
-                                v-html="device.note ? device.note.replace(/\n/g, '<br>') : 'N/A'">
+                                v-html="device.note ? device.note.replace(/\n/g, '<br>') : ''">
                             </td>
                             <td class="align-middle">
                                 <button :class="device.status === '1' ? 'btn-active' : 'btn-inacive'"

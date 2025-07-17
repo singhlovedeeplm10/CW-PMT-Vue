@@ -1,6 +1,6 @@
 <template>
   <master-component>
-    <div class="account-profile-container">
+    <div class="account-profile-container" :class="{ 'blur-background': isAnyModalOpen }">
       <!-- Header -->
       <div class="profile-header" v-if="user">
         <div class="profile-image">
@@ -91,20 +91,20 @@
                     <div class="info-card-body grid-body">
                       <div class="info-row">
                         <span class="info-label">Date of Birth</span>
-                        <span class="info-value">{{ formatDate(user.dob) || 'N/A' }}</span>
+                        <span class="info-value">{{ formatDate(user.dob) || 'NA' }}</span>
                       </div>
                       <div class="info-row">
                         <span class="info-label">Gender</span>
                         <span class="info-value">{{ user.gender ? user.gender.charAt(0).toUpperCase() +
-                          user.gender.slice(1) : 'N/A' }}</span>
+                          user.gender.slice(1) : 'NA' }}</span>
                       </div>
                       <div class="info-row">
                         <span class="info-label">Blood Group</span>
-                        <span class="info-value">{{ user.blood_group || 'N/A' }}</span>
+                        <span class="info-value">{{ user.blood_group || 'NA' }}</span>
                       </div>
                       <div class="info-row">
                         <span class="info-label">Qualifications</span>
-                        <span class="info-value">{{ user.qualifications || 'N/A' }}</span>
+                        <span class="info-value">{{ user.qualifications || 'NA' }}</span>
                       </div>
                     </div>
                   </div>
@@ -120,9 +120,9 @@
                         <span class="info-label">Email</span>
                         <span class="info-value">{{ user.email }}</span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.employee_personal_email" class="info-row">
                         <span class="info-label">Personal Email</span>
-                        <span class="info-value">{{ user.employee_personal_email || 'N/A' }}</span>
+                        <span class="info-value">{{ user.employee_personal_email || 'NA' }}</span>
                       </div>
                       <div class="info-row">
                         <span class="info-label">Contact Number</span>
@@ -131,15 +131,15 @@
                             user.alternate_contact_number }}</span>
                         </span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.permanent_address" class="info-row">
                         <span class="info-label">Permanent Address</span>
                         <span class="info-value"
-                          v-html="user.permanent_address ? user.permanent_address.replace(/\n/g, '<br>') : 'N/A'"></span>
+                          v-html="user.permanent_address ? user.permanent_address.replace(/\n/g, '<br>') : 'NA'"></span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.temporary_address" class="info-row">
                         <span class="info-label">Current Address</span>
                         <span class="info-value"
-                          v-html="user.temporary_address ? user.temporary_address.replace(/\n/g, '<br>') : 'N/A'"></span>
+                          v-html="user.temporary_address ? user.temporary_address.replace(/\n/g, '<br>') : 'NA'"></span>
                       </div>
 
                     </div>
@@ -152,38 +152,37 @@
                       <h3>Employment Details</h3>
                     </div>
                     <div class="info-card-body grid-body">
-                      <div class="info-row">
+                      <div v-if="user.designation" class="info-row">
                         <span class="info-label">Designation</span>
-                        <span class="info-value">{{ user.designation || 'N/A' }}</span>
+                        <span class="info-value">{{ user.designation }}</span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.date_of_joining" class="info-row">
                         <span class="info-label">Date of Joining</span>
-                        <span class="info-value">{{ formatDate(user.date_of_joining) || 'N/A' }}</span>
+                        <span class="info-value">{{ formatDate(user.date_of_joining) }}</span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.current_salary" class="info-row">
                         <span class="info-label">Current Salary</span>
                         <span class="info-value"><i class="fa-solid fa-indian-rupee-sign me-1"></i>{{
                           Number(user.current_salary).toLocaleString('en-IN') }}</span>
                       </div>
-                      <div class="info-row">
+                      <div v-if="user.next_appraisal_month" class="info-row">
                         <span class="info-label">Next Appraisal</span>
-                        <span class="info-value">{{ formatMonthYear(user.next_appraisal_month) || 'N/A' }}</span>
+                        <span class="info-value">{{ formatMonthYear(user.next_appraisal_month) }}</span>
                       </div>
                       <div class="info-row" v-if="user.date_of_releaving">
                         <span class="info-label">Date of Relieving</span>
-                        <span class="info-value">{{ user.date_of_releaving || 'N/A'
-                          }}</span>
+                        <span class="info-value">{{ user.date_of_releaving }}</span>
                       </div>
                       <div class="info-row" v-if="user.releaving_note">
                         <span class="info-label">Relieving Note</span>
-                        <span class="info-value">{{ user.releaving_note || 'N/A' }}</span>
+                        <span class="info-value">{{ user.releaving_note }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <!-- Appraisals Section -->
-                <div class="appraisals-card">
-                  <div class="info-card wide-card" v-if="user.appraisals">
+                <div class="appraisals-card" v-if="user.appraisals && user.appraisals.length > 0">
+                  <div class="info-card wide-card">
                     <div class="info-card-header">
                       <i class="fas fa-chart-line"></i>
                       <h3>Appraisal History</h3>
@@ -232,9 +231,9 @@
                     </div>
                     <div class="device-info">
                       <p><strong>Device Number:</strong> {{ device.device_number }}</p>
-                      <p><strong>Assigned On:</strong> {{ formatDate(device.date_of_assign) || 'N/A' }}</p>
-                      <p
-                        v-html="device.note ? '<strong>Note:</strong> ' + device.note.replace(/\n/g, '<br>') : '<strong>Note:</strong> N/A'">
+                      <p><strong>Assigned On:</strong> {{ formatDate(device.date_of_assign) || 'NA' }}</p>
+                      <p v-if="device.description"
+                        v-html="device.description ? '<strong>Description:</strong> ' + device.description.replace(/\n/g, '<br>') : '<strong>Description:</strong>'">
                       </p>
                     </div>
                   </div>
@@ -302,7 +301,7 @@
                 <div v-if="credentials.length > 0" class="credentials-grid">
                   <div class="credential-card" v-for="(credential, index) in credentials" :key="index">
                     <div class="credential-icon">
-                      <h4>{{ credential.label || 'Untitled Credential' }}</h4>
+                      <h4>{{ credential.label }}</h4>
                     </div>
                     <div class="credential-info">
                       <strong>Username:</strong>
@@ -346,6 +345,14 @@
         </div>
       </div>
     </div>
+    <SetPasswordModal :visible="showSetPasswordModal" @close="() => {
+      showSetPasswordModal = false;
+      handleModalClose();
+    }" />
+    <EnterPasswordModal :visible="showEnterPasswordModal" @close="() => {
+      showEnterPasswordModal = false;
+      handleModalClose();
+    }" />
   </master-component>
 </template>
 
@@ -356,12 +363,20 @@ import "aos/dist/aos.css";
 import axios from 'axios';
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import { setCookie, getCookie, deleteCookie } from "@/utils/cookie";
+import EnterPasswordModal from "@/components/modals/EnterPasswordModal.vue";
+import SetPasswordModal from "@/components/modals/SetPasswordModal.vue";
 
 export default {
   name: "MyAccount",
-  components: { MasterComponent },
+  components: {
+    MasterComponent,
+    SetPasswordModal,
+    EnterPasswordModal
+  },
   data() {
     return {
+      showModal: false,
       currentSection: "Personal Information",
       sections: [
         { title: "Personal Information", icon: "fas fa-user", description: "Personal information" },
@@ -416,7 +431,9 @@ export default {
         note: ''
       },
       assignedProjects: [],
-      isLoadingProjects: true
+      isLoadingProjects: true,
+      showSetPasswordModal: false,
+      showEnterPasswordModal: false,
     };
   },
   watch: {
@@ -424,13 +441,59 @@ export default {
       if (newSection === 'Personal Information') {
         this.fetchUserData();
       }
-    }
+    },
+    isAnyModalOpen(newVal) {
+      if (newVal) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+    },
   },
-  mounted() {
-    this.fetchUserData();
+  beforeUnmount() {
+    // Clean up when component is destroyed
+    document.body.classList.remove('modal-open');
+  },
+  computed: {
+    isAnyModalOpen() {
+      return this.showModal || this.showSetPasswordModal || this.showEnterPasswordModal;
+    },
+  },
+  async mounted() {
+    // Check if session cookie exists
+    const verified = getCookie("profile_verified");
+
+    if (verified) {
+      // already verified in last 15 minutes
+      console.log("Profile password already verified. Skipping modal.");
+      await this.fetchUserData(); // Fetch data immediately if already verified
+    } else {
+      try {
+        const res = await axios.get("/api/check-profile-password", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+          }
+        });
+
+        if (res.data.has_password) {
+          this.showEnterPasswordModal = true;
+        } else {
+          this.showSetPasswordModal = true;
+        }
+        // Don't fetch data yet - wait for modal to close
+      } catch (e) {
+        console.error("Error checking profile password", e);
+        // If error occurs, still try to fetch data
+        await this.fetchUserData();
+      }
+    }
     AOS.init({ duration: 700 });
   },
   methods: {
+    async handleModalClose() {
+      // This will be called when either password modal closes
+      await this.fetchUserData();
+    },
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
@@ -555,7 +618,7 @@ export default {
         this.user = {
           ...this.user,
           ...response.data,
-          role: response.data.role || 'N/A' // Fallback if role not provided
+          role: response.data.role || 'NA' // Fallback if role not provided
         };
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -585,6 +648,12 @@ export default {
 </script>
 
 <style scoped>
+.account-profile-container.blur-background {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+}
+
 .table>:not(:first-child) {
   border-top: none !important;
 }
@@ -754,10 +823,10 @@ export default {
 .credential-card {
   background: #ffffff;
   border-radius: 10px;
-  border-left: 4px solid #293e60;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .credential-card:hover {
@@ -766,9 +835,13 @@ export default {
 }
 
 .credential-icon h4 {
-  margin: 0 0 16px 0;
-  color: #0d6efd;
-  font-size: 17.6px;
+  font-size: 20px;
+  color: white;
+  font-weight: 600;
+  margin: auto;
+  text-align: center;
+  background-color: #293e60;
+  padding: 8px;
 }
 
 .credential-field {
@@ -789,6 +862,10 @@ export default {
   margin-bottom: 4.8px;
   color: #6c757d;
   font-size: 15px;
+}
+
+.credential-info {
+  padding: 15px 17px;
 }
 
 .credential-info strong {
@@ -981,10 +1058,10 @@ export default {
 }
 
 .account-profile-container {
-  font-family: "Roboto", sans-serif;
   background: #f8f9fa;
   min-height: 100vh;
   padding-bottom: 48px;
+  transition: filter 0.3s ease;
 }
 
 .profile-header {

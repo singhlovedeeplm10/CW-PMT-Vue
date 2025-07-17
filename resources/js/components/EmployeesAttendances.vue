@@ -9,7 +9,7 @@
           <option value="1">Active</option>
           <option value="0">Inactive</option>
         </select>
-        <input type="month" v-model="filters.monthYear" class="filter-input" />
+        <CalendarMonthYear :selectedMonth="filters.monthYear" @monthSelected="onMonthSelected" />
         <button @click="fetchData" class="search-btn" :disabled="loading">
           <span v-if="loading">Searching...</span>
           <span v-else>Search</span>
@@ -78,11 +78,13 @@
 <script>
 import MasterComponent from './layouts/Master.vue';
 import axios from 'axios';
+import CalendarMonthYear from "@/components/forms/CalendarMonthYear.vue";
 
 export default {
   name: "EmployeesAttendances",
   components: {
     MasterComponent,
+    CalendarMonthYear
   },
   data() {
     return {
@@ -96,6 +98,9 @@ export default {
     };
   },
   methods: {
+    onMonthSelected(month) {
+      this.filters.monthYear = month;
+    },
     fetchData() {
       this.loading = true;
       let year, month;

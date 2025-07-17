@@ -275,6 +275,9 @@ public function updateProject(Request $request, $id)
         return response()->json(['error' => 'Project not found'], 404);
     }
 
+    // Capture previous assigned developer IDs
+    $oldDeveloperList = json_decode($project->developer_assign_list, true) ?? [];
+
     // Update project fields
     $project->name = $validatedData['name'];
     $project->description = $validatedData['description'] ?? $project->description;
@@ -289,19 +292,13 @@ public function updateProject(Request $request, $id)
     // Save project
     $project->save();
 
-    if (!empty($developerList)) {
-        // Fetch already notified user IDs for this project
-        $alreadyNotifiedUserIds = \App\Models\Notification::where('type', 'projects')
-            ->where('type_id', $project->id)
-            ->where('from_user_id', auth()->id())
-            ->pluck('to_user_id')
-            ->toArray();
+    // Determine added and removed users
+    $addedUsers = array_diff($developerList, $oldDeveloperList);
+    $removedUsers = array_diff($oldDeveloperList, $developerList);
 
-        // Determine new users who haven't been notified
-        $newUsersToNotify = array_diff($developerList, $alreadyNotifiedUserIds);
-
-        // Create notifications only for new users
-        foreach ($newUsersToNotify as $developerId) {
+    // Handle added users
+    if (!empty($addedUsers)) {
+        foreach ($addedUsers as $developerId) {
             \App\Models\Notification::create([
                 'from_user_id' => auth()->id(),
                 'to_user_id' => $developerId,
@@ -313,11 +310,26 @@ public function updateProject(Request $request, $id)
         }
     }
 
+    // Handle removed users
+    if (!empty($removedUsers)) {
+        foreach ($removedUsers as $developerId) {
+            \App\Models\Notification::create([
+                'from_user_id' => auth()->id(),
+                'to_user_id' => $developerId,
+                'type' => 'projects',
+                'type_id' => $project->id,
+                'notification_message' => "\"{$project->name}\" Unassigned",
+                'is_read' => false,
+            ]);
+        }
+    }
+
     return response()->json([
         'message' => 'Project updated successfully',
         'project' => $project,
     ], 200);
 }
+
 
 
 // public function updateProject(Request $request, $id)

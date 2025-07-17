@@ -12,8 +12,8 @@
         </thead>
         <tbody>
           <tr v-for="(entry, index) in logs" :key="index">
-            <td>{{ formatDate(entry.clockin_time) }}</td>
-            <td>{{ formatDate(entry.clockout_time) }}</td>
+            <td>{{ formatTime(entry.clockin_time) }}</td>
+            <td>{{ formatTime(entry.clockout_time) }}</td>
             <td>{{ entry.productive_hours }}</td>
           </tr>
         </tbody>
@@ -32,8 +32,8 @@ export default {
     logs: Array
   },
   methods: {
-    formatDate(datetime) {
-      if (!datetime) return 'N/A';
+    formatTime(datetime) {
+      if (!datetime) return 'NA';
       return new Date(datetime).toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',

@@ -19,6 +19,7 @@ class DeviceController extends Controller
         'device' => 'required|string|max:255',
         'device_number' => 'required|string|max:255',
         'note' => 'nullable|string',
+        'description' => 'nullable|string',
         'developer_assign_list' => 'nullable|array',
         'developer_assign_list.*' => 'integer|exists:users,id',
         'date_of_assign' => 'nullable|date',
@@ -39,6 +40,7 @@ class DeviceController extends Controller
             'device' => $request->device,
             'device_number' => $request->device_number,
             'note' => $request->note,
+            'description' => $request->description,
             'developer_assign_list' => json_encode($request->developer_assign_list ?? []),
             'date_of_assign' => $request->date_of_assign,
             'status' => $request->status ?? '1',
@@ -172,6 +174,7 @@ public function updateDevice(Request $request, $id)
         'device' => 'required|string|max:255',
         'device_number' => 'required|string|max:255',
         'note' => 'nullable|string',
+        'description' => 'nullable|string',
         'developer_assign_list' => 'nullable|array',
         'developer_assign_list.*' => 'integer|exists:users,id',
         'date_of_assign' => 'nullable|date',
@@ -190,26 +193,24 @@ public function updateDevice(Request $request, $id)
         // Find device
         $device = Device::findOrFail($id);
 
-        // Get current and new developer lists - ensure they are arrays
-        $currentDeveloperList = is_array($device->developer_assign_list) 
-            ? $device->developer_assign_list 
+        // Get current developer list from DB (ensure it's an array)
+        $currentDeveloperList = is_array($device->developer_assign_list)
+            ? $device->developer_assign_list
             : (array) json_decode($device->developer_assign_list ?? '[]', true);
-        
+
         $newDeveloperList = $request->developer_assign_list ?? [];
 
-        // Track changes (for history)
+        // Track changes for history
         $changes = [];
         foreach (['device', 'device_number', 'note', 'developer_assign_list', 'date_of_assign', 'status'] as $field) {
             $oldValue = $device->{$field};
             $newValue = $request->{$field};
 
-            // Special handling for developer_assign_list to ensure array comparison
             if ($field === 'developer_assign_list') {
                 $oldValue = is_array($oldValue) ? $oldValue : (array) json_decode($oldValue ?? '[]', true);
                 $newValue = is_array($newValue) ? $newValue : (array) json_decode($newValue ?? '[]', true);
             }
 
-            // Serialize to JSON to compare arrays like developer_assign_list
             if (is_array($oldValue) || is_array($newValue)) {
                 if (json_encode($oldValue) !== json_encode($newValue)) {
                     $changes[$field] = ['from' => $oldValue, 'to' => $newValue];
@@ -219,17 +220,18 @@ public function updateDevice(Request $request, $id)
             }
         }
 
-        // Update fields
+        // Update device
         $device->update([
             'device' => $request->device,
             'device_number' => $request->device_number,
             'note' => $request->note,
+            'description' => $request->description,
             'developer_assign_list' => $newDeveloperList,
             'date_of_assign' => $request->date_of_assign,
             'status' => $request->status ?? '1'
         ]);
 
-        // Append change log to history
+        // Save change history if any
         if (!empty($changes)) {
             $history = $device->history ?? [];
             $history[] = [
@@ -241,66 +243,38 @@ public function updateDevice(Request $request, $id)
             $device->save();
         }
 
-        // Handle notifications only if developer assignments changed
+        // Handle notifications if developer_assign_list has changed
         if (isset($changes['developer_assign_list'])) {
             $deviceName = $device->device;
             $deviceNumber = $device->device_number;
             $notificationBaseMessage = "{$deviceName} ({$deviceNumber})";
 
-            // Get all existing notifications for this device assignment
-            $existingNotifications = \App\Models\Notification::where('type', 'devices')
-                ->where('type_id', $device->id)
-                ->where('from_user_id', auth()->id())
-                ->whereIn('notification_message', [
-                    "{$notificationBaseMessage} Assigned",
-                    "{$notificationBaseMessage} Unassigned"
-                ])
-                ->get();
-
-            // Ensure both lists are arrays before diffing
-            $newDeveloperList = is_array($newDeveloperList) ? $newDeveloperList : [];
-            $currentDeveloperList = is_array($currentDeveloperList) ? $currentDeveloperList : [];
-
-            // Process newly assigned developers
+            // Determine differences purely based on developer lists:
             $newlyAssigned = array_diff($newDeveloperList, $currentDeveloperList);
-            foreach ($newlyAssigned as $developerId) {
-                // Check if this user already has an assignment notification
-                $alreadyNotified = $existingNotifications->contains(function ($notification) use ($developerId) {
-                    return $notification->to_user_id == $developerId && 
-                           str_contains($notification->notification_message, 'Assigned');
-                });
+            $newlyUnassigned = array_diff($currentDeveloperList, $newDeveloperList);
 
-                if (!$alreadyNotified) {
-                    \App\Models\Notification::create([
-                        'from_user_id' => auth()->id(),
-                        'to_user_id' => $developerId,
-                        'type' => 'devices',
-                        'type_id' => $device->id,
-                        'notification_message' => "{$notificationBaseMessage} Assigned",
-                        'is_read' => false,
-                    ]);
-                }
+            // Send notifications for newly assigned developers
+            foreach ($newlyAssigned as $developerId) {
+                \App\Models\Notification::create([
+                    'from_user_id' => auth()->id(),
+                    'to_user_id' => $developerId,
+                    'type' => 'devices',
+                    'type_id' => $device->id,
+                    'notification_message' => "{$notificationBaseMessage} Assigned",
+                    'is_read' => false,
+                ]);
             }
 
-            // Process unassigned developers
-            $newlyUnassigned = array_diff($currentDeveloperList, $newDeveloperList);
+            // Send notifications for newly unassigned developers
             foreach ($newlyUnassigned as $developerId) {
-                // Check if this user already has an unassignment notification
-                $alreadyNotified = $existingNotifications->contains(function ($notification) use ($developerId) {
-                    return $notification->to_user_id == $developerId && 
-                           str_contains($notification->notification_message, 'Unassigned');
-                });
-
-                if (!$alreadyNotified) {
-                    \App\Models\Notification::create([
-                        'from_user_id' => auth()->id(),
-                        'to_user_id' => $developerId,
-                        'type' => 'devices',
-                        'type_id' => $device->id,
-                        'notification_message' => "{$notificationBaseMessage} Unassigned",
-                        'is_read' => false,
-                    ]);
-                }
+                \App\Models\Notification::create([
+                    'from_user_id' => auth()->id(),
+                    'to_user_id' => $developerId,
+                    'type' => 'devices',
+                    'type_id' => $device->id,
+                    'notification_message' => "{$notificationBaseMessage} Unassigned",
+                    'is_read' => false,
+                ]);
             }
         }
 
@@ -317,6 +291,7 @@ public function updateDevice(Request $request, $id)
         ], 500);
     }
 }
+
 
     // public function updateDevice(Request $request, $id)
     // {
