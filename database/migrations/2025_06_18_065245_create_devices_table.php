@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            $table->string('device'); 
-            $table->string('device_number'); 
-            $table->text('note')->nullable(); 
-            $table->json('developer_assign_list')->nullable(); 
-            $table->date('date_of_assign')->nullable(); 
-            $table->enum('status', ['0', '1'])->nullable(); 
-            $table->json('history')->nullable(); 
+            $table->string('device');
+            $table->string('device_number');
+            $table->text('note')->nullable();
+            $table->text('description')->nullable();
+            $table->json('developer_assign_list')->nullable();
+            $table->date('date_of_assign')->nullable();
+            $table->enum('status', ['0', '1'])->nullable();
+            $table->json('history')->nullable();
             $table->timestamps();
         });
     }

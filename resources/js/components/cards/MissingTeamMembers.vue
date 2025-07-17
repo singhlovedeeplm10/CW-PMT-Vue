@@ -3,7 +3,7 @@
     <div class="task-card-header d-flex justify-content-between align-items-center flex-wrap">
       <h4 class="card_heading mb-2">Missing Team Member Entry</h4>
       <div class="d-flex flex-wrap gap-2">
-        <span class="badge" style="background-color: #f8d7da; color: #721c24;">Missing Clock-In</span>
+        <span class="badge" style="background-color: #f8d7da; color: #721c24;">Missing Entry</span>
         <span class="badge" style="background-color: #fff3cd; color: #856404;">Task < 8 Hours</span>
             <span class="badge" style="background-color: #cce5ff; color: #004085;">Task > 8 Hours</span>
       </div>
@@ -25,7 +25,7 @@
           </div>
           <div class="employee-details">
             <p class="employee-name" :class="{
-              'not-clocked-in': user.not_clocked_in,
+              'missing-entry': user.no_task_entry,
               'under-hours': user.total_hours > 0 && user.total_hours < 8,
               'over-hours': user.total_hours > 8
             }">
@@ -133,7 +133,7 @@ export default {
   margin: 0;
 }
 
-.not-clocked-in {
+.missing-entry {
   border-radius: 12px;
   background-color: #f8d7da;
   color: #721c24;

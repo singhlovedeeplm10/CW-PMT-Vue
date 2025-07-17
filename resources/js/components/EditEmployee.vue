@@ -10,12 +10,12 @@
                     </div>
                     <div class="col-md-4 mb-2">
                         <strong class="me-1">Releaving Date:</strong>
-                        <span>{{ formatDate(formData.date_of_releaving) || 'N/A' }}</span>
+                        <span>{{ formatDate(formData.date_of_releaving) || 'NA' }}</span>
                     </div>
                     <div class="col-md-12">
                         <strong>Releaving Note:</strong>
                         <p class="mb-0 releaving-note"
-                            v-html="formData.releaving_note ? formData.releaving_note.replace(/\n/g, '<br>') : 'N/A'">
+                            v-html="formData.releaving_note ? formData.releaving_note.replace(/\n/g, '<br>') : 'NA'">
                         </p>
                     </div>
                 </div>
@@ -55,12 +55,6 @@
                                     </div>
                                     <h3 class="mb-1" style="color: black;">{{ formData.name }}</h3>
                                     <p class="text-muted mb-2">{{ formData.employee_code }}</p>
-                                    <!-- <div class="d-flex justify-content-center gap-2 mb-3"
-                                        v-if="!formData.date_of_releaving">
-                                        <span :class="user.status === '1' ? 'badge bg-success' : 'badge bg-danger'">
-                                            {{ user.status === '1' ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </div> -->
                                     <div class="d-flex justify-content-center gap-2 mb-3"
                                         v-if="!formData.date_of_releaving">
                                         <span class="badge bg-success">
@@ -106,16 +100,6 @@
                                         <span class="info-label">Left:</span>
                                         <span class="info-value">{{ formatDate(formData.date_of_releaving) }}</span>
                                     </div>
-                                    <!-- <div class="info-item" v-if="formData.date_of_releaving">
-                                        <span class="info-label">Releaving Note</span>
-                                        <span class="info-value-releaving-note"
-                                            v-html="formData.releaving_note ? formData.releaving_note.replace(/\n/g, '<br>') : 'N/A'"></span>
-                                    </div> -->
-                                    <!-- <div class="info-item">
-                                        <span class="info-label">Appraisal:</span>
-                                        <span class="info-value">{{ formData.next_appraisal_month || 'Not scheduled'
-                                        }}</span>
-                                    </div> -->
                                     <div class="info-item">
                                         <span class="info-label">Blood Group:</span>
                                         <span class="info-value">{{ formData.blood_group || 'Not specified' }}</span>
@@ -201,12 +185,6 @@
                                             <InputField v-model="formData.qualifications" label="Qualifications"
                                                 inputType="text" />
                                         </div>
-
-                                        <!-- <div class="mb-3">
-                                            <label class="form-label">Password</label>
-                                            <input type="password" v-model="formData.password" class="form-control"
-                                                placeholder="Enter new password (optional)">
-                                        </div> -->
                                     </div>
 
                                     <!-- Employment Details Tab -->
@@ -346,44 +324,6 @@
                                                 </button>
                                             </div>
                                         </template>
-                                        <!-- <div v-for="(credential, index) in formData.credentials" :key="index"
-                                            class="credential-item mb-4 p-3 border rounded">
-                                            <div class="row">
-                                                <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Label</label>
-                                                    <input type="text" v-model="credential.label" class="form-control"
-                                                        placeholder="e.g., Zoho, Pmt-tool, Gmail"
-                                                        :disabled="credential.label === 'Pmt-Tool'">
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Username</label>
-                                                    <input type="text" v-model="credential.username"
-                                                        class="form-control"
-                                                        :disabled="credential.label === 'Pmt-Tool'">
-                                                </div>
-                                                <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Password</label>
-                                                    <div class="input-group">
-                                                        <input :type="credential.showPassword ? 'text' : 'password'"
-                                                            v-model="credential.password" class="form-control">
-                                                        <button class="btn btn-outline-secondary" type="button"
-                                                            @click="togglePasswordVisibility(credential)">
-                                                            <i
-                                                                :class="credential.showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <TextArea v-model="credential.note" label="Note" :rows="2" />
-                                            </div>
-
-                                            <button v-if="index > 0" type="button" class="btn btn-sm btn-danger"
-                                                @click="removeCredential(index)">
-                                                <i class="fas fa-trash me-1"></i> Remove
-                                            </button>
-                                        </div> -->
-
                                         <button type="button" class="btn btn-sm btn-primary mt-2"
                                             @click="addCredential">
                                             <i class="fas fa-plus me-1"></i> Add More Credentials
@@ -433,12 +373,23 @@
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end border-top pt-3 mt-4">
-                                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <div class="d-flex justify-content-between border-top pt-3 mt-4">
+                                    <button type="button" class="btn btn-danger" @click="resetProfilePassword"
+                                        :disabled="resetLoading">
+                                        <span v-if="resetLoading" class="spinner-border spinner-border-sm me-2"></span>
+                                        {{
+                                            resetLoading
+                                                ? "Resetting..."
+                                        : "Reset Profile Password"
+                                        }}
+                                    </button>
+
+                                    <button type="submit" class="btn btn-primary me-2" :disabled="loading">
                                         <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                                        {{ loading ? 'Saving Changes...' : 'Save Changes' }}
+                                        {{ loading ? "Saving Changes..." : "Save Changes" }}
                                     </button>
                                 </div>
+
                             </div>
                         </div>
                     </form>
@@ -478,6 +429,7 @@ export default {
             user: null,
             isLoading: false,
             loading: false,
+            resetLoading: false,
             formData: {
                 name: '',
                 email: '',
@@ -540,6 +492,44 @@ export default {
         this.fetchEmployeeData();
     },
     methods: {
+        async resetProfilePassword() {
+            if (!confirm("Are you sure you want to reset the profile password?")) {
+                return;
+            }
+
+            this.resetLoading = true;
+
+            try {
+                await axios.post(
+                    `/api/users/${this.$route.params.id}/reset-profile-password`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                "authToken"
+                            )}`,
+                        },
+                    }
+                );
+
+                toast.success("Profile password reset successfully.", {
+                    position: "top-right",
+                    autoClose: 1500,
+                });
+
+                // optionally refresh employee data
+                await this.fetchEmployeeData();
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to reset profile password.", {
+                    position: "top-right",
+                    autoClose: 3000,
+                });
+            } finally {
+                this.resetLoading = false;
+            }
+        },
+
         addCredential() {
             this.formData.credentials.push({
                 label: '',

@@ -256,16 +256,13 @@ export default {
     }, { deep: true });
 
     onMounted(() => {
-      fetchProjects();
-
-      // Auto-refresh every 30 seconds
-      intervalId = setInterval(fetchProjects, 30000);
+      const modalElement = document.getElementById('addtaskmodal');
+      if (modalElement) {
+        modalElement.addEventListener('show.bs.modal', fetchProjects);
+      }
     });
 
     onBeforeUnmount(() => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
     });
 
     return {

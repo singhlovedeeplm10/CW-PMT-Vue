@@ -132,7 +132,7 @@ export default {
         },
 
         formatDateTime(dateTime) {
-            if (!dateTime) return "N/A";
+            if (!dateTime) return "NA";
 
             // Format the time in 12-hour format with AM/PM
             const formattedTime = new Date(dateTime).toLocaleTimeString("en-IN", {

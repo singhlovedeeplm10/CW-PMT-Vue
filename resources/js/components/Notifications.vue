@@ -38,7 +38,7 @@
                         </div>
                     </div>
 
-                    <div v-if="isLoadingLeaves" class="loader-container">
+                    <div v-if="isLoadingLeaves || !hasLoadedLeaves" class="loader-container">
                         <div class="spinner">
                             <div class="double-bounce1"></div>
                             <div class="double-bounce2"></div>
@@ -67,8 +67,9 @@
                                 </template>
                             </div>
                             <div class="notification-body">
-                                <div class="notification-header">
-                                    <h5 v-html="notification.notification_message"></h5>
+                                <h5 v-html="notification.notification_message"></h5>
+                                <div class="notification-time">
+                                    <small class="text-muted">{{ formatDateTime(notification.created_at) }}</small>
                                 </div>
                             </div>
                         </div>
@@ -83,18 +84,21 @@
                 <!-- Projects Tab Content -->
                 <div v-if="activeTab === 'projects'" class="tab-panel projects-panel">
                     <div class="panel-header">
-                        <h2><i class="fas fa-project-diagram header-icon"></i> Project Notifications</h2>
+                        <h2>
+                            <i class="fas fa-project-diagram header-icon"></i> Project Notifications
+                        </h2>
                         <div class="unread-count" v-if="unreadProjectCount > 0">
                             {{ unreadProjectCount }} unread
                         </div>
                     </div>
 
-                    <div v-if="isLoadingProjects" class="loader-container">
+                    <div v-if="isLoadingProjects || !hasLoadedProjects" class="loader-container">
                         <div class="spinner">
                             <div class="double-bounce1"></div>
                             <div class="double-bounce2"></div>
                         </div>
                     </div>
+
                     <div v-else>
                         <div v-for="notification in projectNotifications" :key="notification.id"
                             class="notification-item-projects"
@@ -104,10 +108,35 @@
                             </div>
                             <div class="notification-body">
                                 <div class="notification-header">
-                                    <h5>{{ notification.notification_message }}</h5>
+                                    <template v-if="notification.notification_message.includes('Assigned')">
+                                        <div class="project-name-line">
+                                            <span class="project-name">
+                                                {{ extractProjectName(notification.notification_message, 'Assigned') }}
+                                            </span>
+                                            <span class="project-status assigned">(Assigned)</span>
+                                        </div>
+                                    </template>
+
+                                    <template v-else-if="notification.notification_message.includes('Unassigned')">
+                                        <div class="project-name-line">
+                                            <span class="project-name">
+                                                {{ extractProjectName(notification.notification_message, 'Unassigned')
+                                                }}
+                                            </span>
+                                            <span class="project-status unassigned">(Unassigned)</span>
+                                        </div>
+                                    </template>
+
+                                    <template v-else>
+                                        <span class="project-name">{{ notification.notification_message }}</span>
+                                    </template>
+                                </div>
+                                <div class="notification-time text-muted small">
+                                    {{ formatDateTime(notification.created_at) }}
                                 </div>
                             </div>
                         </div>
+
                         <div v-if="projectNotifications.length === 0" class="empty-notifications">
                             <i class="fas fa-inbox empty-icon"></i>
                             <p>No project notifications yet</p>
@@ -115,6 +144,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Devices Tab Content -->
                 <div v-if="activeTab === 'devices'" class="tab-panel devices-panel">
@@ -125,7 +155,7 @@
                         </div>
                     </div>
 
-                    <div v-if="isLoadingDevices" class="loader-container">
+                    <div v-if="isLoadingDevices || !hasLoadedDevices" class="loader-container">
                         <div class="spinner">
                             <div class="double-bounce1"></div>
                             <div class="double-bounce2"></div>
@@ -143,18 +173,22 @@
                                     <template v-if="notification.notification_message.includes('Assigned')">
                                         <span class="device-name">{{
                                             notification.notification_message.replace('Assigned', '').trim()
-                                            }}</span>
+                                        }}</span>
                                         <span class="device-status assigned">Assigned</span>
                                     </template>
                                     <template v-else-if="notification.notification_message.includes('Unassigned')">
                                         <span class="device-name">{{
                                             notification.notification_message.replace('Unassigned', '').trim()
-                                            }}</span>
+                                        }}</span>
                                         <span class="device-status unassigned">Unassigned</span>
                                     </template>
                                     <template v-else>
                                         <span class="device-name">{{ notification.notification_message }}</span>
                                     </template>
+
+                                </div>
+                                <div class="notification-time text-muted">
+                                    {{ formatDateTime(notification.created_at) }}
                                 </div>
                             </div>
                         </div>
@@ -190,20 +224,32 @@ export default {
             isLoadingDevices: false,
             unreadLeaveCount: 0,
             unreadProjectCount: 0,
-            unreadDeviceCount: 0
+            unreadDeviceCount: 0,
+            hasLoadedLeaves: false,
+            hasLoadedProjects: false,
+            hasLoadedDevices: false
         };
     },
     watch: {
         '$route.query.tab': {
             immediate: true,
-            handler(newTab) {
+            async handler(newTab) {
                 if (newTab && ['leaves', 'projects', 'devices'].includes(newTab)) {
                     this.activeTab = newTab;
-                    this.fetchNotifications();
+
+                    // Clear the current tab's data immediately
+                    this.clearCurrentTabData();
+
+                    // Show loader immediately
+                    this.setLoadingState(true);
+
+                    await this.markTabNotificationsAsRead(newTab);
+                    await this.fetchNotifications();
                 }
             }
         }
     },
+
     created() {
         // Set initial tab from route query
         if (this.$route.query.tab && ['leaves', 'projects', 'devices'].includes(this.$route.query.tab)) {
@@ -212,6 +258,60 @@ export default {
         this.fetchNotifications();
     },
     methods: {
+        formatDateTime(dateString) {
+            const date = new Date(dateString);
+            // Format as "MMM DD, YYYY hh:mm A" (e.g. "Jul 14, 2023 02:30 PM")
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        },
+        async markTabNotificationsAsRead(tab) {
+            let url = null;
+
+            switch (tab) {
+                case 'leaves':
+                    url = '/api/leave-notifications/mark-as-read';
+                    break;
+                case 'projects':
+                    url = '/api/project-notifications/mark-as-read';
+                    break;
+                case 'devices':
+                    url = '/api/device-notifications/mark-as-read';
+                    break;
+            }
+
+            if (url) {
+                try {
+                    await axios.post(url, {}, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    // reset unread count locally
+                    if (tab === 'leaves') {
+                        this.unreadLeaveCount = 0;
+                    } else if (tab === 'projects') {
+                        this.unreadProjectCount = 0;
+                    } else if (tab === 'devices') {
+                        this.unreadDeviceCount = 0;
+                    }
+
+                } catch (error) {
+                    console.error(`Error marking ${tab} notifications as read:`, error);
+                }
+            }
+        },
+        extractProjectName(message, keyword) {
+            // e.g. "Project ABC Assigned to you"
+            // Remove the keyword to get the project name
+            return message.replace(keyword, '').trim();
+        },
         getLeaveTypeClass(type) {
             // Your existing leave type class logic
             return 'badge-primary'; // Default, adjust as needed
@@ -229,6 +329,38 @@ export default {
                     break;
             }
         },
+        clearCurrentTabData() {
+            switch (this.activeTab) {
+                case 'leaves':
+                    this.leaveNotifications = [];
+                    this.hasLoadedLeaves = false;
+                    break;
+                case 'projects':
+                    this.projectNotifications = [];
+                    this.hasLoadedProjects = false;
+                    break;
+                case 'devices':
+                    this.deviceNotifications = [];
+                    this.hasLoadedDevices = false;
+                    break;
+            }
+        },
+
+        setLoadingState(isLoading) {
+            switch (this.activeTab) {
+                case 'leaves':
+                    this.isLoadingLeaves = isLoading;
+                    break;
+                case 'projects':
+                    this.isLoadingProjects = isLoading;
+                    break;
+                case 'devices':
+                    this.isLoadingDevices = isLoading;
+                    break;
+            }
+        },
+
+        // Update your fetch methods to set the loaded flags
         async fetchLeaveNotifications() {
             this.isLoadingLeaves = true;
             try {
@@ -240,12 +372,15 @@ export default {
                 });
                 this.leaveNotifications = response.data.data;
                 this.unreadLeaveCount = response.data.meta.unread_count;
+                this.hasLoadedLeaves = true;
             } catch (error) {
                 console.error('Error fetching leave notifications:', error);
             } finally {
                 this.isLoadingLeaves = false;
             }
         },
+
+        // Similarly update fetchProjectNotifications and fetchDeviceNotifications
         async fetchProjectNotifications() {
             this.isLoadingProjects = true;
             try {
@@ -257,12 +392,14 @@ export default {
                 });
                 this.projectNotifications = response.data.data;
                 this.unreadProjectCount = response.data.meta.unread_count;
+                this.hasLoadedProjects = true;
             } catch (error) {
                 console.error('Error fetching project notifications:', error);
             } finally {
                 this.isLoadingProjects = false;
             }
         },
+
         async fetchDeviceNotifications() {
             this.isLoadingDevices = true;
             try {
@@ -274,6 +411,7 @@ export default {
                 });
                 this.deviceNotifications = response.data.data;
                 this.unreadDeviceCount = response.data.meta.unread_count;
+                this.hasLoadedDevices = true;
             } catch (error) {
                 console.error('Error fetching device notifications:', error);
             } finally {
@@ -293,7 +431,13 @@ export default {
             };
             return types[type] || 'badge-light';
         }
-    }
+    },
+    mounted() {
+        this.fetchNotifications();
+        this.fetchProjectNotifications();
+        this.fetchDeviceNotifications();
+        this.fetchLeaveNotifications();
+    },
 };
 </script>
 
@@ -301,12 +445,16 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
-.device-name {
-    color: #000;
+.project-status.assigned {
+    color: green;
 }
 
-.device-status {
-    font-weight: bold;
+.project-status.unassigned {
+    color: red;
+}
+
+.device-name {
+    color: #000;
 }
 
 .device-status.assigned {
@@ -685,11 +833,15 @@ export default {
     margin-top: 8px;
 }
 
+.notification-body h5 {
+    font-size: 20px;
+}
+
 .notification-header {
     display: flex;
-    justify-content: space-between;
     margin-bottom: 6px;
     align-items: flex-start;
+    gap: 4px;
 }
 
 .notification-header h5 {
@@ -702,9 +854,10 @@ export default {
 
 .notification-time {
     color: #9ca3af;
-    font-size: 0.75rem;
+    font-size: 15px;
     white-space: nowrap;
     margin-left: 10px;
+    text-align: end;
 }
 
 .notification-details {

@@ -94,8 +94,8 @@
         <p><strong>{{ $leaveDetails['user_name'] }}</strong> has applied for a <strong>{{ $leaveDetails['type_of_leave'] }}</strong>.</p>
         
         <div class="detail">
-            <p><strong>Date of Leave:</strong> {{ $leaveDetails['start_date'] }} to {{ $leaveDetails['end_date'] ?? 'N/A' }}</p>
-            <p><strong>Time of Leave:</strong> {{ $leaveDetails['start_time'] ?? 'N/A' }} to {{ $leaveDetails['end_time'] ?? 'N/A' }}</p>
+            <p><strong>Date of Leave:</strong> {{ $leaveDetails['start_date'] }} to {{ $leaveDetails['end_date'] ?? 'NA' }}</p>
+            <p><strong>Time of Leave:</strong> {{ $leaveDetails['start_time'] ?? 'NA' }} to {{ $leaveDetails['end_time'] ?? 'NA' }}</p>
         </div>
         
         <p><strong>Reason for Leave:</strong> {{ $leaveDetails['reason'] }}</p>

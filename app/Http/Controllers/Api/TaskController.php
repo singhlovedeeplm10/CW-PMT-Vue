@@ -126,67 +126,79 @@ class TaskController extends Controller
 
 
 
-    public function getUsersWithoutTasks()
-    {
-        $today = now()->toDateString();
+   public function getUsersWithoutTasks()
+{
+    $today = now()->toDateString();
 
-        // Subquery: Get one attendance record per user for today
-        $attendanceSubquery = DB::table('attendances')
-            ->select('user_id', DB::raw('MIN(id) as id'))
-            ->whereDate('clockin_time', $today)
-            ->groupBy('user_id');
+    // Subquery: Get one attendance record per user for today
+    $attendanceSubquery = DB::table('attendances')
+        ->select('user_id', DB::raw('MIN(id) as id'))
+        ->whereDate('clockin_time', $today)
+        ->groupBy('user_id');
 
-        // Subquery: Sum task hours per user for today
-        $taskHoursSubquery = DB::table('daily_tasks')
-            ->select('user_id', DB::raw('SUM(hours) as total_hours'))
-            ->whereDate('created_at', $today)
-            ->groupBy('user_id');
+    // Subquery: Sum task hours per user for today
+    $taskHoursSubquery = DB::table('daily_tasks')
+        ->select(
+            'user_id',
+            DB::raw('SUM(hours) as total_hours'),
+            DB::raw('COUNT(*) as task_count')     // ⭐ count how many tasks exist
+        )
+        ->whereDate('created_at', $today)
+        ->groupBy('user_id');
 
-        // Subquery: Get users on full-day leave today
-        $onLeaveSubquery = DB::table('leaves')
-            ->select('user_id')
-            ->where('type_of_leave', 'Full Day Leave')
-            ->where('status', 'approved')
-            ->where(function ($query) use ($today) {
-                $query->whereDate('start_date', '<=', $today)
-                    ->whereDate('end_date', '>=', $today);
-            });
+    // Subquery: Get users on full-day leave today
+    $onLeaveSubquery = DB::table('leaves')
+        ->select('user_id')
+        ->where('type_of_leave', 'Full Day Leave')
+        ->where('status', 'approved')
+        ->where(function ($query) use ($today) {
+            $query->whereDate('start_date', '<=', $today)
+                ->whereDate('end_date', '>=', $today);
+        });
 
-        $usersWithIncompleteOrNoTasks = DB::table('users')
-            ->leftJoin('daily_tasks', function ($join) use ($today) {
-                $join->on('users.id', '=', 'daily_tasks.user_id')
-                    ->whereDate('daily_tasks.created_at', $today);
-            })
-            ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-            ->leftJoinSub($attendanceSubquery, 'attendances', function ($join) {
-                $join->on('users.id', '=', 'attendances.user_id');
-            })
-            ->leftJoinSub($taskHoursSubquery, 'task_hours', function ($join) {
-                $join->on('users.id', '=', 'task_hours.user_id');
-            })
-            ->whereNotIn('users.id', $onLeaveSubquery) // Exclude users on full-day leave
-            ->where(function ($query) {
-                // Either no tasks or total task hours != 8
-                $query->whereNull('task_hours.total_hours')
-                    ->orWhere('task_hours.total_hours', '!=', 8);
-            })
-            ->where(function ($query) {
-                $query->where('users.status', '1')
-                    ->orWhereNull('users.status');
-            })
-            ->where('users.id', '!=', 1)
-            ->select(
-                'users.id',
-                DB::raw('CASE WHEN users.status = 0 THEN NULL ELSE users.name END AS name'),
-                'user_profiles.user_image',
-                DB::raw('CASE WHEN attendances.id IS NULL THEN true ELSE false END as not_clocked_in'),
-                DB::raw('IFNULL(task_hours.total_hours, 0) as total_hours')
-            )
-            ->groupBy('users.id', 'users.status', 'users.name', 'user_profiles.user_image', 'attendances.id', 'task_hours.total_hours')
-            ->get();
+    $usersWithIncompleteOrNoTasks = DB::table('users')
+        ->leftJoin('daily_tasks', function ($join) use ($today) {
+            $join->on('users.id', '=', 'daily_tasks.user_id')
+                ->whereDate('daily_tasks.created_at', $today);
+        })
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->leftJoinSub($attendanceSubquery, 'attendances', function ($join) {
+            $join->on('users.id', '=', 'attendances.user_id');
+        })
+        ->leftJoinSub($taskHoursSubquery, 'task_hours', function ($join) {
+            $join->on('users.id', '=', 'task_hours.user_id');
+        })
+        ->whereNotIn('users.id', $onLeaveSubquery)
+        ->where(function ($query) {
+            $query->whereNull('task_hours.total_hours')
+                  ->orWhere('task_hours.total_hours', '!=', 8);
+        })
+        ->where(function ($query) {
+            $query->where('users.status', '1')
+                ->orWhereNull('users.status');
+        })
+        ->where('users.id', '!=', 1)
+        ->select(
+            'users.id',
+            DB::raw('CASE WHEN users.status = 0 THEN NULL ELSE users.name END AS name'),
+            'user_profiles.user_image',
+            // ⭐ New logic:
+            DB::raw('CASE WHEN task_hours.task_count IS NULL OR task_hours.task_count = 0 THEN true ELSE false END as no_task_entry'),
+            DB::raw('IFNULL(task_hours.total_hours, 0) as total_hours')
+        )
+        ->groupBy(
+            'users.id',
+            'users.status',
+            'users.name',
+            'user_profiles.user_image',
+            'attendances.id',
+            'task_hours.total_hours',
+            'task_hours.task_count'
+        )
+        ->get();
 
-        return response()->json($usersWithIncompleteOrNoTasks);
-    }
+    return response()->json($usersWithIncompleteOrNoTasks);
+}
 
 
     public function getDailyTasks(Request $request)

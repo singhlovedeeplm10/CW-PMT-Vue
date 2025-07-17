@@ -9,33 +9,35 @@ class UserProfile extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'employee_personal_email',
-        'permanent_address',
-        'qualifications',
-        'employee_code',
-        'academic_documents',
-        'identification_documents',
-        'offer_letter',
-        'joining_letter',
-        'contract',
-        'user_image',
-        'user_DOB',
-        'gender',
-        'contact',
-        'date_of_joining',
-        'date_of_releaving',
-        'releaving_note',
-        'next_appraisal_month',
-        'blood_group',
-        'temporary_address',
-        'alternate_contact_number',
-        'designation',
-        'current_salary',
-        'appraisals', // Added for JSON appraisal data
-        'credentials', // Added for JSON credential data
-    ];
+ protected $fillable = [
+    'user_id',
+    'employee_personal_email',
+    'permanent_address',
+    'qualifications',
+    'employee_code',
+    'academic_documents',
+    'identification_documents',
+    'offer_letter',
+    'joining_letter',
+    'contract',
+    'user_image',
+    'user_DOB',
+    'gender',
+    'contact',
+    'date_of_joining',
+    'date_of_releaving',
+    'releaving_note',
+    'next_appraisal_month',
+    'blood_group',
+    'temporary_address',
+    'alternate_contact_number',
+    'designation',
+    'current_salary',
+    'appraisals',
+    'credentials',
+    'profile_password', // ← Add this line
+];
+
 
     protected $casts = [
         'appraisals' => 'array',

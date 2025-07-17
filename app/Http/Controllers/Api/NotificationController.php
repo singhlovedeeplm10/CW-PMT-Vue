@@ -46,7 +46,9 @@ public function getProjectNotifications(Request $request)
             ] : null,
             'notification_message' => $notification->notification_message,
             'is_read' => $notification->is_read,
-            'created_at' => $notification->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $notification->created_at
+                ? $notification->created_at->setTimezone('Asia/Kolkata')->format('Y-m-d H:i:s')
+                : null,
             'updated_at' => $notification->updated_at->format('Y-m-d H:i:s'),
         ];
     });
@@ -105,8 +107,12 @@ public function getDeviceNotifications(Request $request)
             ] : null,
             'notification_message' => $notification->notification_message,
             'is_read' => $notification->is_read,
-            'created_at' => $notification->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $notification->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $notification->created_at
+                ? $notification->created_at->setTimezone('Asia/Kolkata')->format('Y-m-d H:i:s')
+                : null,
+            'updated_at' => $notification->updated_at
+                ? $notification->updated_at->setTimezone('Asia/Kolkata')->format('Y-m-d H:i:s')
+                : null,
         ];
     });
 
@@ -119,6 +125,7 @@ public function getDeviceNotifications(Request $request)
         ]
     ]);
 }
+
 public function markDeviceNotificationsAsRead(Request $request)
 {
     $userId = $request->user()->id;
@@ -157,7 +164,9 @@ public function getLeaveNotifications(Request $request)
             'notification_message' => $message,
             'raw_message' => $notification->notification_message, // Keep original for reference
             'is_read' => $notification->is_read,
-            'created_at' => $notification->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $notification->created_at
+                ? $notification->created_at->setTimezone('Asia/Kolkata')->format('Y-m-d H:i:s')
+                : null,
         ];
     });
 

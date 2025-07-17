@@ -5,6 +5,7 @@
         <img :src="userImage || '/img/CWlogo.jpeg'" alt="Profile Image" class="profile-image" />
       </div>
       <h2 class="sidebar-title">{{ userName.split(' ')[0] }}</h2>
+      <p class="sidebar-designation">{{ userDesignation }}</p>
     </div>
 
     <ul class="sidebar-list">
@@ -137,6 +138,9 @@ export default {
     userName() {
       return this.getUserDetails.name;
     },
+    userDesignation() {
+      return this.getUserDetails.designation;
+    },
     userImage() {
       return this.getUserDetails.image;
     },
@@ -191,6 +195,12 @@ export default {
 </script>
 
 <style scoped>
+.sidebar-designation {
+  font-size: 12px;
+  color: #b6ffe7;
+  margin-bottom: 0;
+}
+
 .sidebar {
   position: fixed;
   width: 190px;

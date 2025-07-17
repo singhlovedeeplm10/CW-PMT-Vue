@@ -23,7 +23,7 @@
                 <tr>
                   <th style="background: none;"></th>
                   <th style="background: none;">
-                    <input type="month" v-model="filterDate" class="form-control" />
+                    <CalendarMonthYear :selectedMonth="filterDate" @monthSelected="onMonthSelected" />
                   </th>
                   <th style="background: none;"></th>
                 </tr>
@@ -53,19 +53,19 @@
 <script>
 import MasterComponent from './layouts/Master.vue';
 import axios from 'axios';
-import Calendar from "@/components/forms/Calendar.vue";
+import CalendarMonthYear from "@/components/forms/CalendarMonthYear.vue";
 
 export default {
   name: 'MyTaskList',
   components: {
     MasterComponent,
-    Calendar, // Import the Calendar component
+    CalendarMonthYear, // Import the Calendar component
   },
   data() {
     return {
       data: [],
       currentPage: 1,
-      rowsPerPage: 10,
+      rowsPerPage: 40,
       filterDate: new Date().toISOString().slice(0, 7), // "YYYY-MM"
       isLoading: false,
     };
@@ -134,8 +134,8 @@ export default {
         });
     },
 
-    onDateSelected(selectedDate) {
-      this.filterDate = selectedDate.toISOString().slice(0, 7); // "YYYY-MM"
+    onMonthSelected(selectedMonth) {
+      this.filterDate = selectedMonth;
     },
 
   },

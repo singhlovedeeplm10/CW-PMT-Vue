@@ -66,7 +66,8 @@ Route::middleware('auth:sanctum')->post('update-team-leaves/{leave}', [LeaveCont
 Route::get('/users/search', [LeaveController::class, 'searchUser']);
 Route::get('/users-on-leave', [LeaveController::class, 'getUsersLeave']);
 Route::get('/work-from-home-members', [LeaveController::class, 'getMembersOnWFH']);
-
+Route::get('/upcoming-approved-leaves', [LeaveController::class, 'upcomingApprovedLeaves']);
+Route::get('/upcoming-wfh-leaves', [LeaveController::class, 'upcomingWFHLeaves']);
 
 // USERS API ROUTE
 Route::post('/users', [UserController::class, 'addUser']);
@@ -176,3 +177,9 @@ Route::middleware('auth:sanctum')->get('/devices-notifications', [NotificationCo
 Route::middleware('auth:sanctum')->post('/device-notifications/mark-as-read', [NotificationController::class, 'markDeviceNotificationsAsRead']);
 Route::middleware('auth:sanctum')->get('/leaves-notifications', [NotificationController::class, 'getLeaveNotifications']);
 Route::middleware('auth:sanctum')->post('/leave-notifications/mark-as-read', [NotificationController::class, 'markLeaveNotificationsAsRead']);
+
+// PROFILE PASSWORD ROUTES
+Route::middleware('auth:sanctum')->get('/check-profile-password', [UserController::class, 'checkProfilePassword']);
+Route::middleware('auth:sanctum')->post('/set-profile-password', [UserController::class, 'setProfilePassword']);
+Route::middleware('auth:sanctum')->post('/verify-profile-password', [UserController::class, 'verifyProfilePassword']);
+Route::post('/users/{id}/reset-profile-password', [UserController::class, 'resetProfilePassword']);

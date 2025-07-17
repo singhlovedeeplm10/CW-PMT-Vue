@@ -36,7 +36,7 @@
             <div v-if="form.type_of_leave === 'Half Day Leave'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="startDateHalfDay" name="start_date"
-                  :minDate="minDate" :error="startDateError" />
+                  :error="startDateError" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
@@ -52,7 +52,7 @@
             <div v-if="form.type_of_leave === 'Short Leave'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="startDateShort" name="start_date"
-                  :minDate="minDate" :error="startDateError" />
+                  :error="startDateError" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>
@@ -72,12 +72,11 @@
             <div v-if="form.type_of_leave === 'Full Day Leave'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="fromDate" name="start_date"
-                  :minDate="minDate" :error="startDateError" />
+                  :error="startDateError" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
-                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date"
-                  :minDate="form.start_date" :error="endDateError" />
+                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date" :error="endDateError" />
                 <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
@@ -86,12 +85,11 @@
             <div v-if="form.type_of_leave === 'Work From Home Full Day'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="fromDate" name="start_date"
-                  :minDate="minDate" :error="startDateError" />
+                  :error="startDateError" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
               <div class="col">
-                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date"
-                  :minDate="form.start_date" :error="endDateError" />
+                <DateInput v-model="form.end_date" label="End Date" id="toDate" name="end_date" :error="endDateError" />
                 <!-- <span v-if="endDateError" class="text-danger">{{ endDateError }}</span> -->
               </div>
             </div>
@@ -100,7 +98,7 @@
             <div v-if="form.type_of_leave === 'Work From Home Half Day'" class="row mb-3">
               <div class="col">
                 <DateInput v-model="form.start_date" label="Start Date" id="startDateHalfDay" name="start_date"
-                  :minDate="minDate" :error="startDateError" />
+                  :error="startDateError" />
                 <!-- <span v-if="startDateError" class="text-danger">{{ startDateError }}</span> -->
               </div>
             </div>

@@ -52,7 +52,7 @@
             <td :class="getStatusClass(project.status)">
               {{ project.status }}
             </td>
-            <td>{{ project.comment || "N/A" }}</td>
+            <td>{{ project.comment || "NA" }}</td>
             <td>{{ getDeveloperNames(project.assigned_developers) }}</td>
             <td>
               <button class="btn btn-secondary" @click="openEditProjectModal(project)">
@@ -147,7 +147,7 @@ export default {
       this.selectedProject = null;
     },
     getDeveloperNames(developers) {
-      return developers.map(dev => dev.name).join(', ') || "N/A";
+      return developers.map(dev => dev.name).join(', ') || "NA";
     },
     getStatusClass(status) {
       switch (status) {

@@ -25,8 +25,8 @@
               <th>Name</th>
               <th>Clock In/Out</th>
               <th>Breaks</th>
-              <th>Total Hours</th>
-              <th>Productive Hours</th>
+              <th>T Hours</th>
+              <th>P Hours</th>
             </tr>
           </thead>
           <tbody>

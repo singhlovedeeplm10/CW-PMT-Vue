@@ -40,8 +40,8 @@
                 <option value="canceled">Canceled</option>
               </select>
             </th>
-            <th style="background: none;">
-              <input type="date" class="form-control" v-model="search.created_date" @change="fetchLeaves" />
+            <th style="background: none;padding-top: 1px;padding-left: 0;">
+              <Calendar :selectedDate="createdDateObj" @dateSelected="onCreatedDateSelected" />
             </th>
           </tr>
         </thead>
@@ -95,6 +95,7 @@ import MasterComponent from './layouts/Master.vue';
 import ApplyLeaveModal from "@/components/modals/ApplyLeaveModal.vue";
 import UpdateLeaveModal from "@/components/modals/UpdateLeaveModal.vue";
 import ButtonComponent from "@/components/forms/ButtonComponent.vue";
+import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
 import * as bootstrap from "bootstrap";
 
@@ -104,7 +105,8 @@ export default {
     MasterComponent,
     ApplyLeaveModal,
     UpdateLeaveModal,
-    ButtonComponent // Register ButtonComponent
+    ButtonComponent,
+    Calendar
   },
   data() {
     return {
@@ -120,7 +122,18 @@ export default {
       selectedLeave: null,
     };
   },
+  computed: {
+    createdDateObj() {
+      return this.search.created_date
+        ? new Date(this.search.created_date)
+        : new Date();
+    },
+  },
   methods: {
+    onCreatedDateSelected(newDate) {
+      this.search.created_date = newDate.toISOString().slice(0, 10);
+      this.fetchLeaves();
+    },
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);

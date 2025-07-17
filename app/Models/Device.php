@@ -11,6 +11,7 @@ class Device extends Model
         'device',
         'device_number',
         'note',
+        'description',
         'developer_assign_list',
         'date_of_assign',
         'status',

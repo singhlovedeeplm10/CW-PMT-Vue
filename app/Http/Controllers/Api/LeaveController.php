@@ -1579,7 +1579,7 @@ public function getUsersLeave(Request $request)
     $selectedDate = $request->input('date'); // Get the selected date from the request
 
     $usersOnLeave = Leave::where('status', 'approved') // Only approved leaves
-        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave','Work From Home Half Day']) // Filter specific leave types
+        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave']) // Filter specific leave types
         ->whereHas('user', function ($query) {
             $query->where('status', '1'); // Fetch only users with status '1'
         })
@@ -1657,44 +1657,171 @@ public function getUsersLeave(Request $request)
 
 public function getMembersOnWFH(Request $request)
 {
-    $selectedDate = $request->query('date'); // Get the selected date from the query parameters
-    $date = \Carbon\Carbon::parse($selectedDate); // Parse the date
+    $selectedDate = $request->query('date'); 
+    $date = \Carbon\Carbon::parse($selectedDate);
 
-    // Fetch approved WFH leaves with active users and profile images
-    $leaves = Leave::where('leaves.type_of_leave', 'Work From Home Full Day')
+    // Fetch WFH Full Day
+    $fullDayLeaves = Leave::where('leaves.type_of_leave', 'Work From Home Full Day')
         ->where('leaves.status', 'approved')
         ->whereDate('leaves.start_date', '<=', $date)
         ->whereDate('leaves.end_date', '>=', $date)
         ->join('users', 'leaves.user_id', '=', 'users.id')
-        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id') // Join with user_profiles
-        ->where('users.status', '1') // Only fetch active users (status = '1')
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->where('users.status', '1')
         ->select(
             'users.name as user_name',
             'leaves.start_date',
             'leaves.end_date',
-            'user_profiles.user_image' // Include the user image
+            'leaves.type_of_leave',
+            'user_profiles.user_image'
         )
         ->orderBy('leaves.start_date', 'asc')
         ->get();
 
-    // Format the data for the response
-    $formattedLeaves = $leaves->map(function ($leave) {
-        return [
+    // Fetch WFH Half Day only for the selected date
+    $halfDayLeaves = Leave::where('leaves.type_of_leave', 'Work From Home Half Day')
+        ->where('leaves.status', 'approved')
+        ->whereDate('leaves.start_date', '=', $date)
+        ->join('users', 'leaves.user_id', '=', 'users.id')
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->where('users.status', '1')
+        ->select(
+            'users.name as user_name',
+            'leaves.start_date',
+            'leaves.end_date',
+            'leaves.type_of_leave',
+            'leaves.half',
+            'user_profiles.user_image'
+        )
+        ->orderBy('leaves.start_date', 'asc')
+        ->get();
+
+    // Merge and format results
+    $mergedLeaves = collect();
+
+    foreach ($fullDayLeaves as $leave) {
+        $mergedLeaves->push([
             'user_name' => $leave->user_name,
-            'user_image' => $leave->user_image ? asset('uploads/' . $leave->user_image) : asset('img/CWlogo.jpeg'),
- // Generate full URL for the image
+            'user_image' => $leave->user_image 
+                ? asset('uploads/' . $leave->user_image)
+                : asset('img/CWlogo.jpeg'),
+            'type_of_leave' => $leave->type_of_leave,
+            'half' => null,
             'date_range' => [
-                             'start_date' => $leave->start_date,
-                             'end_date'   => $leave->end_date,
-                            ],
-        ];
-    });
+                'start_date' => $leave->start_date,
+                'end_date' => $leave->end_date,
+            ],
+        ]);
+    }
+
+    foreach ($halfDayLeaves as $leave) {
+        $mergedLeaves->push([
+            'user_name' => $leave->user_name,
+            'user_image' => $leave->user_image
+                ? asset('uploads/' . $leave->user_image)
+                : asset('img/CWlogo.jpeg'),
+            'type_of_leave' => $leave->type_of_leave,
+            'half' => $leave->half,
+            'date_range' => [
+                'start_date' => $leave->start_date,
+                'end_date' => $leave->end_date,
+            ],
+        ]);
+    }
 
     return response()->json([
         'success' => true,
-        'data' => $formattedLeaves,
+        'data' => $mergedLeaves,
     ]);
 }
 
+public function upcomingApprovedLeaves(Request $request)
+{
+    $months = (int)$request->input('months', 2);
+
+    $startDate = now()->startOfMonth(); 
+    $endDate = now()
+        ->addMonths($months)    // move ahead by `months` 
+        ->endOfMonth();         // ensure we get the full last month
+
+    $leaves = Leave::with('user')
+        ->where('status', 'approved')
+        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave'])
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate]);
+        })
+        ->orderBy('start_date')
+        ->get()
+        ->map(function ($leave) {
+            $startTime12hr = null;
+            $endTime12hr = null;
+            $hours = null;
+
+            if ($leave->type_of_leave === 'Short Leave' && $leave->start_time && $leave->end_time) {
+                $start = Carbon::createFromFormat('H:i:s', $leave->start_time);
+                $end = Carbon::createFromFormat('H:i:s', $leave->end_time);
+
+                $startTime12hr = $start->format('g:i A');
+                $endTime12hr = $end->format('g:i A');
+                $hours = $start->diffInHours($end);
+            }
+
+            return [
+                'id' => $leave->id,
+                'type_of_leave' => $leave->type_of_leave,
+                'half' => $leave->half,
+                'start_date' => $leave->start_date,
+                'end_date' => $leave->end_date,
+                'created_at' => $leave->created_at,
+                'start_time' => $startTime12hr,
+                'end_time' => $endTime12hr,
+                'hours' => $hours,
+                'user' => [
+                    'id' => $leave->user->id,
+                    'name' => $leave->user->name,
+                    'image' => $leave->user->image
+                ]
+            ];
+        });
+
+    return response()->json($leaves);
+}
+public function upcomingWFHLeaves(Request $request)
+{
+    $months = (int)$request->input('months', 2);
+    $startDate = now()->startOfMonth();
+    $endDate = now()->addMonths($months)->endOfMonth();
+
+    $leaves = Leave::with('user')
+        ->where('status', 'approved')
+        ->whereIn('type_of_leave', ['Work From Home Full Day', 'Work From Home Half Day'])
+        ->where(function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('start_date', [$startDate, $endDate])
+                  ->orWhereBetween('end_date', [$startDate, $endDate]);
+        })
+        ->orderBy('start_date')
+        ->get()
+        ->map(function ($leave) {
+            return [
+                'id' => $leave->id,
+                'type_of_leave' => $leave->type_of_leave,
+                'half' => $leave->half,
+                'start_date' => $leave->start_date,
+                'end_date' => $leave->end_date,
+                'created_at' => $leave->created_at,
+                'user' => [
+                    'id' => $leave->user->id,
+                    'name' => $leave->user->name,
+                    'image' => $leave->user->image
+                ]
+            ];
+        });
+
+    return response()->json([
+        'success' => true,
+        'data' => $leaves
+    ]);
+}
 
 }
