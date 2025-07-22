@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\NoticeController;
 use App\Http\Controllers\Api\SalarySlipController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\TraineeController;
 
 
 
@@ -183,3 +184,5 @@ Route::middleware('auth:sanctum')->get('/check-profile-password', [UserControlle
 Route::middleware('auth:sanctum')->post('/set-profile-password', [UserController::class, 'setProfilePassword']);
 Route::middleware('auth:sanctum')->post('/verify-profile-password', [UserController::class, 'verifyProfilePassword']);
 Route::post('/users/{id}/reset-profile-password', [UserController::class, 'resetProfilePassword']);
+
+Route::middleware('auth:sanctum')->post('/add-trainee', [TraineeController::class, 'addTrainee']);

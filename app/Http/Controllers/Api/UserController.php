@@ -835,43 +835,52 @@ public function employeeAttendances(Request $request)
             });
         }
 
-      foreach ($groupedAttendances as $date => $data) {
-        $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('h:i:s A') : 'NA';
-        $clockOutTime = $data['clockout_time'] ? Carbon::parse($data['clockout_time'])->format('h:i:s A') : 'NA';
-        $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
-        $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
-        $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
-        $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
-        $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
+foreach ($groupedAttendances as $date => $data) {
+    $clockInTime = $data['clockin_time'] ? Carbon::parse($data['clockin_time'])->format('h:i:s A') : 'NA';
 
-        // Determine WFH status
-        $wfhStatus = '';
-        if ($data['is_wfh'] == 1.0) {
+    $attendancesForDate = $user->attendances->filter(function ($attendance) use ($date) {
+        return Carbon::parse($attendance->clockin_time)->format('Y-m-d') === $date;
+    });
+
+    $allHaveClockout = $attendancesForDate->every(function ($attendance) {
+        return $attendance->clockout_time !== null;
+    });
+
+    $clockOutTime = ($allHaveClockout && $data['clockout_time']) ? Carbon::parse($data['clockout_time'])->format('h:i:s A') : 'NA';
+
+    $totalBreakFormatted = gmdate('H:i:s', $data['total_break_time']);
+    $totalHoursFormatted = gmdate('H:i:s', $data['total_hours']);
+    $totalProductiveHoursInSeconds = max(0, $data['total_hours'] - $data['total_break_time']);
+    $totalProductiveHoursFormatted = gmdate('H:i:s', $totalProductiveHoursInSeconds);
+    $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
+
+    $wfhStatus = '';
+    if ($data['is_wfh'] == 1.0) {
+        $wfhStatus = 'full';
+    } elseif ($data['is_wfh'] == 0.5) {
+        $wfhStatus = 'half';
+    } else {
+        $isRegularWFH = $user->attendances->where('date', $date)->first()->is_wfh ?? false;
+        if ($isRegularWFH) {
             $wfhStatus = 'full';
-        } elseif ($data['is_wfh'] == 0.5) {
-            $wfhStatus = 'half';
-        } else {
-            // Check if it's a regular WFH day (not through leave)
-            $isRegularWFH = $user->attendances->where('date', $date)->first()->is_wfh ?? false;
-            if ($isRegularWFH) {
-                $wfhStatus = 'full';
-            }
         }
-
-        $timeLogs[] = [
-            'id' => $user->id,
-            'image' => $imagePath,
-            'name' => $user->name,
-            'status' => $user->status,
-            'date' => $date,
-            'clock_in_out' => $clockInTime . ' / ' . $clockOutTime,
-            'total_break' => $totalBreakFormatted,
-            'total_hours' => $totalHoursFormatted,
-            'total_productive_hours' => $totalProductiveHoursFormatted,
-            'is_wfh' => $data['is_wfh'],
-            'wfh_status' => $wfhStatus, // 'full', 'half', or empty string
-        ];
     }
+
+    $timeLogs[] = [
+        'id' => $user->id,
+        'image' => $imagePath,
+        'name' => $user->name,
+        'status' => $user->status,
+        'date' => $date,
+        'clock_in_out' => $clockInTime . ($clockOutTime ? ' / ' . $clockOutTime : ''),
+        'total_break' => $totalBreakFormatted,
+        'total_hours' => $totalHoursFormatted,
+        'total_productive_hours' => $totalProductiveHoursFormatted,
+        'is_wfh' => $data['is_wfh'],
+        'wfh_status' => $wfhStatus,
+    ];
+}
+
     }
 
     return response()->json($timeLogs);
@@ -945,15 +954,18 @@ public function getAllEmployeeTimeLogs()
         });
 
         foreach ($groupedByDate as $date => $attendances) {
-            $firstClockIn = $attendances->min('clockin_time');
+         $firstClockIn = $attendances->min('clockin_time');
 
-            // Check if any clockout_time is available
-            $hasClockOut = $attendances->pluck('clockout_time')->filter()->isNotEmpty();
+$hasIncompleteClockout = $attendances->contains(function ($attendance) {
+    return is_null($attendance->clockout_time);
+});
 
-            // If clockout_time is missing, use current IST time
-            $lastClockOut = $hasClockOut
-                ? $attendances->max('clockout_time')
-                : now()->setTimezone('Asia/Kolkata')->toDateTimeString();
+$hasClockOut = !$hasIncompleteClockout && $attendances->pluck('clockout_time')->filter()->isNotEmpty();
+
+$lastClockOut = $hasClockOut
+    ? $attendances->max('clockout_time')
+    : now()->setTimezone('Asia/Kolkata')->toDateTimeString();
+
 
             $totalBreakSeconds = $attendances->sum(function ($attendance) {
                 return $attendance->breaks->sum(function ($break) {
@@ -988,7 +1000,7 @@ public function getAllEmployeeTimeLogs()
                 'status' => $user->status,
                 'date' => $date,
                 'clock_in_out' => ($firstClockIn ? Carbon::parse($firstClockIn)->format('h:i:s A') : 'NA') . ' / ' .
-                    ($lastClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'NA'),
+    ($hasClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'NA'),
                 'total_break' => gmdate('H:i:s', $totalBreakSeconds),
                 'total_hours' => gmdate('H:i:s', $totalHoursSeconds),
                 'total_productive_hours' => gmdate('H:i:s', $productiveSeconds),
