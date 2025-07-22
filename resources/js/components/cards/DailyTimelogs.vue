@@ -212,7 +212,6 @@ export default {
   overflow-x: auto;
   overflow-y: auto;
   white-space: nowrap;
-  max-height: 300px;
   padding-right: 4px;
   box-sizing: border-box;
 }

@@ -517,7 +517,6 @@ export default {
 
 .task-card-body {
   overflow-y: auto;
-  max-height: 300px;
   padding-right: 10px;
   box-sizing: border-box;
 }
