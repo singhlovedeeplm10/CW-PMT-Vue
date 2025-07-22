@@ -922,65 +922,89 @@ public function employeeAttendances(Request $request)
         return response()->json($breakLogs);
     }
 
-    public function getAllEmployeeTimeLogs()
-    {
-        $currentMonth = now()->format('Y-m');
-        $startOfMonth = Carbon::parse($currentMonth)->startOfMonth();
-        $endOfMonth = Carbon::parse($currentMonth)->endOfMonth();
+public function getAllEmployeeTimeLogs()
+{
+    $currentMonth = now()->format('Y-m');
+    $startOfMonth = Carbon::parse($currentMonth)->startOfMonth();
+    $endOfMonth = Carbon::parse($currentMonth)->endOfMonth();
 
-        $users = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
-                ->with('breaks');
-        }])->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
-            ->select('users.*', 'user_profiles.user_image')
-            ->get();
+    $users = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
+        $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
+              ->orderBy('clockin_time', 'DESC')
+              ->with('breaks');
+    }])
+    ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+    ->select('users.*', 'user_profiles.user_image')
+    ->get();
 
-        $timeLogs = [];
+    $timeLogs = [];
 
-        foreach ($users as $user) {
-            // Group attendances by date
-            $groupedByDate = $user->attendances->groupBy(function ($attendance) {
-                return Carbon::parse($attendance->clockin_time)->format('Y-m-d');
+    foreach ($users as $user) {
+        $groupedByDate = $user->attendances->groupBy(function ($attendance) {
+            return Carbon::parse($attendance->clockin_time)->format('Y-m-d');
+        });
+
+        foreach ($groupedByDate as $date => $attendances) {
+            $firstClockIn = $attendances->min('clockin_time');
+
+            // Check if any clockout_time is available
+            $hasClockOut = $attendances->pluck('clockout_time')->filter()->isNotEmpty();
+
+            // If clockout_time is missing, use current IST time
+            $lastClockOut = $hasClockOut
+                ? $attendances->max('clockout_time')
+                : now()->setTimezone('Asia/Kolkata')->toDateTimeString();
+
+            $totalBreakSeconds = $attendances->sum(function ($attendance) {
+                return $attendance->breaks->sum(function ($break) {
+                    return Carbon::parse($break->break_time)->secondsSinceMidnight();
+                });
             });
 
-            foreach ($groupedByDate as $date => $attendances) {
-                // Get the first clock-in and last clock-out
-                $firstClockIn = $attendances->min('clockin_time');
-                $lastClockOut = $attendances->max('clockout_time');
-
-                // Sum breaks from all records for the day
-                $totalBreakSeconds = $attendances->sum(function ($attendance) {
-                    return $attendance->breaks->sum(function ($break) {
-                        return Carbon::parse($break->break_time)->secondsSinceMidnight();
-                    });
-                });
-
-                // Total hours = sum of productive_hours
-                $totalHoursSeconds = $attendances->sum(function ($attendance) {
-                    return $attendance->productive_hours ? Carbon::parse($attendance->productive_hours)->secondsSinceMidnight() : 0;
-                });
-
-                $productiveSeconds = max(0, $totalHoursSeconds - $totalBreakSeconds);
-
-                $imagePath = $user->user_image ? asset('uploads/' . $user->user_image) : asset('img/CWlogo.jpeg');
-
-                $timeLogs[] = [
-                    'id' => $user->id,
-                    'image' => $imagePath,
-                    'name' => $user->name,
-                    'status' => $user->status,
-                    'date' => $date,
-                    'clock_in_out' => ($firstClockIn ? Carbon::parse($firstClockIn)->format('h:i:s A') : 'NA') . ' / ' .
-                        ($lastClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'NA'),
-                    'total_break' => gmdate('H:i:s', $totalBreakSeconds),
-                    'total_hours' => gmdate('H:i:s', $totalHoursSeconds),
-                    'total_productive_hours' => gmdate('H:i:s', $productiveSeconds),
-                ];
-            }
-        }
-
-        return response()->json($timeLogs);
+            $totalHoursSeconds = $attendances->sum(function ($attendance) use ($lastClockOut) {
+    if ($attendance->productive_hours) {
+        return Carbon::parse($attendance->productive_hours)->secondsSinceMidnight();
     }
+
+    $clockIn = $attendance->clockin_time ? Carbon::parse($attendance->clockin_time) : null;
+    $clockOut = $attendance->clockout_time
+        ? Carbon::parse($attendance->clockout_time)
+        : Carbon::parse($lastClockOut);
+
+    return $clockIn && $clockOut ? $clockIn->diffInSeconds($clockOut) : 0;
+});
+
+
+            $productiveSeconds = max(0, $totalHoursSeconds - $totalBreakSeconds);
+
+            $imagePath = $user->user_image
+                ? asset('uploads/' . $user->user_image)
+                : asset('img/CWlogo.jpeg');
+
+            $timeLogs[] = [
+                'id' => $user->id,
+                'image' => $imagePath,
+                'name' => $user->name,
+                'status' => $user->status,
+                'date' => $date,
+                'clock_in_out' => ($firstClockIn ? Carbon::parse($firstClockIn)->format('h:i:s A') : 'NA') . ' / ' .
+                    ($lastClockOut ? Carbon::parse($lastClockOut)->format('h:i:s A') : 'NA'),
+                'total_break' => gmdate('H:i:s', $totalBreakSeconds),
+                'total_hours' => gmdate('H:i:s', $totalHoursSeconds),
+                'total_productive_hours' => gmdate('H:i:s', $productiveSeconds),
+                'clockin_time' => $firstClockIn,
+            ];
+        }
+    }
+
+    // Sort by clockin_time descending
+    usort($timeLogs, function ($a, $b) {
+        return strtotime($b['clockin_time']) <=> strtotime($a['clockin_time']);
+    });
+
+    return response()->json($timeLogs);
+}
+
 
        public function checkProfilePassword(Request $request)
     {

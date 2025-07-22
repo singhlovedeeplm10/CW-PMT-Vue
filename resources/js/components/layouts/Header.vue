@@ -161,7 +161,10 @@
                 </div>
                 <div v-else>
                   <div v-for="notification in recentLeaveNotifications" :key="notification.id" class="notification-item"
-                    :class="{ 'read': notification.is_read }">
+                    :class="{
+                      'read': notification.is_read,
+                      'clickable-row': userRole === 'Admin'
+                    }" @click="userRole === 'Admin' ? openLeaveInNewTab(notification) : null" style="cursor: pointer;">
                     <div class="notification-icon">
                       <template v-if="notification.leave_type === 'Full Day Leave'">
                         <i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>
@@ -216,6 +219,7 @@ export default {
   name: "HeaderComponent",
   data() {
     return {
+      userRole: null,
       isLoadingProjectNotifications: false,
       isLoadingDeviceNotifications: false,
       isLoadingLeaveNotifications: false,
@@ -268,6 +272,29 @@ export default {
     },
   },
   methods: {
+    async fetchUserRole() {
+      try {
+        const response = await axios.get("/api/user-role", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        });
+        this.userRole = response.data.role;
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    },
+    openLeaveInNewTab(notification) {
+      // Only proceed if user is admin
+      if (this.userRole !== 'Admin') return;
+
+      // Assuming the notification has a leave_id property
+      if (notification.leave_id) {
+        const route = `/teamleaves?leave_id=${notification.leave_id}`;
+        window.open(route, '_blank');
+      }
+    },
+
     formatDateTime(dateString) {
       const date = new Date(dateString);
       // Format as "MMM DD, YYYY hh:mm A" (e.g. "Jul 14, 2023 02:30 PM")
@@ -541,6 +568,7 @@ export default {
     },
   },
   mounted() {
+    this.fetchUserRole();
     this.fetchUserDetails();
     this.fetchProjectNotifications();
     this.fetchDeviceNotifications();

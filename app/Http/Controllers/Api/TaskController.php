@@ -123,16 +123,13 @@ class TaskController extends Controller
         return response()->json(['projects' => $projects]);
     }
 
-
-
-
-   public function getUsersWithoutTasks()
+public function getUsersWithoutTasks()
 {
     $today = now()->toDateString();
 
     // Subquery: Get one attendance record per user for today
     $attendanceSubquery = DB::table('attendances')
-        ->select('user_id', DB::raw('MIN(id) as id'))
+        ->select('user_id', DB::raw('MIN(id) as id'), DB::raw('MIN(clockin_time) as clockin_time'))
         ->whereDate('clockin_time', $today)
         ->groupBy('user_id');
 
@@ -141,7 +138,7 @@ class TaskController extends Controller
         ->select(
             'user_id',
             DB::raw('SUM(hours) as total_hours'),
-            DB::raw('COUNT(*) as task_count')     // ⭐ count how many tasks exist
+            DB::raw('COUNT(*) as task_count')
         )
         ->whereDate('created_at', $today)
         ->groupBy('user_id');
@@ -157,21 +154,23 @@ class TaskController extends Controller
         });
 
     $usersWithIncompleteOrNoTasks = DB::table('users')
-        ->leftJoin('daily_tasks', function ($join) use ($today) {
-            $join->on('users.id', '=', 'daily_tasks.user_id')
-                ->whereDate('daily_tasks.created_at', $today);
-        })
-        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
         ->leftJoinSub($attendanceSubquery, 'attendances', function ($join) {
             $join->on('users.id', '=', 'attendances.user_id');
         })
         ->leftJoinSub($taskHoursSubquery, 'task_hours', function ($join) {
             $join->on('users.id', '=', 'task_hours.user_id');
         })
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
         ->whereNotIn('users.id', $onLeaveSubquery)
         ->where(function ($query) {
-            $query->whereNull('task_hours.total_hours')
-                  ->orWhere('task_hours.total_hours', '!=', 8);
+            $query->whereNull('attendances.clockin_time') // Not clocked in
+                  ->orWhere(function($q) {
+                      $q->whereNotNull('attendances.clockin_time') // Clocked in but...
+                        ->where(function($q2) {
+                            $q2->whereNull('task_hours.total_hours') // No tasks
+                               ->orWhere('task_hours.total_hours', '!=', 8); // Or incomplete tasks
+                        });
+                  });
         })
         ->where(function ($query) {
             $query->where('users.status', '1')
@@ -182,7 +181,7 @@ class TaskController extends Controller
             'users.id',
             DB::raw('CASE WHEN users.status = 0 THEN NULL ELSE users.name END AS name'),
             'user_profiles.user_image',
-            // ⭐ New logic:
+            'attendances.clockin_time',
             DB::raw('CASE WHEN task_hours.task_count IS NULL OR task_hours.task_count = 0 THEN true ELSE false END as no_task_entry'),
             DB::raw('IFNULL(task_hours.total_hours, 0) as total_hours')
         )
@@ -191,7 +190,7 @@ class TaskController extends Controller
             'users.status',
             'users.name',
             'user_profiles.user_image',
-            'attendances.id',
+            'attendances.clockin_time',
             'task_hours.total_hours',
             'task_hours.task_count'
         )

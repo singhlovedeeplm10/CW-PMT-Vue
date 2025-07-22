@@ -3,9 +3,15 @@
         <!-- Task List Card -->
         <div class="task-card flex-fill shadow-sm position-relative" id="card2">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4 class="card_heading" @click="fetchNext30DaysBirthdays" style="cursor: pointer;">Upcoming Birthdays
-                </h4>
-                <Calendar :selectedDate="tomorrowDate" @dateSelected="fetchBirthdays" />
+                <h4 class="card_heading" @click="fetchBirthdays(tomorrowDate.toISOString().split('T')[0])"
+                    style="cursor: pointer;">Upcoming Birthdays</h4>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-primary" @click="fetchNext30DaysBirthdays"
+                        style="margin-top: 11px;margin-right: 8px;">
+                        <i class="fa-solid fa-cake-candles"></i>
+                    </button>
+                    <Calendar :selectedDate="tomorrowDate" @dateSelected="fetchBirthdays" />
+                </div>
             </div>
 
             <div class="birthday-card-body d-flex justify-content-center align-items-center">
@@ -35,7 +41,7 @@
                                     <td>{{ formatDate(user.user_DOB) }}</td>
                                 </tr>
                                 <tr v-else>
-                                    <td colspan="2" class="text-center py-4">No Members Exist</td>
+                                    <td colspan="2" class="text-center text-muted py-4">No Members Exist</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -146,6 +152,7 @@ export default {
     box-sizing: border-box;
     overflow: hidden;
     max-height: 100%;
+    margin-right: 18px;
 }
 
 .task-card-header {

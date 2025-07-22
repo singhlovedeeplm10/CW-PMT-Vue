@@ -77,8 +77,9 @@ public function endBreak(Request $request)
     // Retrieve the latest break for the user
     $break = $user->breaks()->latest()->first();
 
-    if (!$break) {
-        return response()->json(['error' => 'No active break found.'], 404);
+    // Check if break exists and has no end_time (is active)
+    if (!$break || $break->end_time !== null) {
+        return response()->json(['message' => 'Your break is ended. Please refresh the page'], 400);
     }
 
     // Convert break_time from seconds to HH:MM:SS format
@@ -174,6 +175,7 @@ public function getBreakEntries(Request $request)
             ->select('users.id', 'users.name', 'user_profiles.user_image');
     }])
     ->whereDate('created_at', $date)
+    ->orderBy('created_at', 'DESC') // Add this line to sort by created_at in descending order
     ->selectRaw('user_id, COUNT(id) as total_breaks, SEC_TO_TIME(SUM(TIME_TO_SEC(break_time))) as total_break_time')
     ->groupBy('user_id')
     ->get();

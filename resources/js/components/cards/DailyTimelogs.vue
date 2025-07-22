@@ -1,12 +1,10 @@
 <template>
   <div class="d-flex justify-content-between task-card-container" style="width: 621px; height: 430px;">
     <!-- Calendar Selector -->
-
-
     <!-- Task List Card -->
     <div class="task-card flex-fill shadow-sm position-relative" id="card2">
       <div class="task-card-header">
-        <h4 class="card_heading">Daily Timelogs</h4>
+        <h4 class="card_heading" @click="fetchTimeLogs" style="cursor: pointer;">Daily Timelogs</h4>
         <Calendar :selectedDate="selectedDate" @dateSelected="onDateChange" :showHeader="false" />
       </div>
       <div class="task-card-body">
@@ -82,7 +80,9 @@ export default {
   computed: {
     filteredLogs() {
       const selected = this.selectedDate.toISOString().split("T")[0];
-      return this.timeLogs.filter((log) => log.date === selected);
+      return this.timeLogs
+        .filter((log) => log.date === selected)
+        .sort((a, b) => new Date(b.clockin_time) - new Date(a.clockin_time));
     },
   },
   methods: {
@@ -276,6 +276,8 @@ td img {
 #card2 {
   border: 1px solid #ccc;
   border-radius: 8px;
+  margin-top: 0;
+  margin-left: 12px;
 }
 
 /* Loader Styling */

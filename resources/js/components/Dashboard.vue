@@ -5,21 +5,18 @@
       <h1 class="dashboard-heading">Welcome to Contriwhiz</h1>
       <view-notices />
       <clockin :openModal="openModal" @breakEnded="handleBreakEnded" @clockedIn="handleClockinTask" />
-
       <task-list ref="userDailyTask" />
       <add-task-modal :attendance-id="attendanceId" />
       <AddBreakModal />
       <user-break-list ref="userBreakList" />
-      <!-- <missing-member v-if="userRole === 'Admin'" /> -->
 
-      <!-- Flexbox wrapper for the cards -->
       <div class="members-container">
-        <team-members-on-leave v-if="userRole === 'Admin'" />
+        <daily-timelogs v-if="userRole === 'Admin'" />
         <missing-team-members v-if="userRole === 'Admin'" />
       </div>
-      <!-- Flexbox wrapper for the cards -->
+
       <div class="card-container">
-        <break-entries v-if="userRole === 'Admin'" />
+        <team-members-on-leave v-if="userRole === 'Admin'" />
         <members-work-from-home v-if="userRole === 'Admin'" />
       </div>
 
@@ -27,9 +24,10 @@
       <apply-team-leave-modal />
       <update-leave-modal />
       <update-team-leave-modal />
+
       <div class="birthday-container">
         <upcoming-birthdays v-if="userRole === 'Admin'" />
-        <daily-timelogs v-if="userRole === 'Admin'" />
+        <break-entries v-if="userRole === 'Admin'" />
       </div>
 
     </div>
@@ -154,42 +152,52 @@ export default {
   text-align: center;
 }
 
-.members-container {
+.birthday-container {
   display: flex;
-  gap: 7px;
   flex-wrap: wrap;
-  width: 101%;
-  margin-top: 20px;
+  justify-content: space-between;
+  gap: 20px;
+  margin-right: 4px;
 }
 
-.members-container>* {
-  flex: 1 1 calc(50% - 16px);
-  min-width: 300px;
+.members-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 20px -12px;
+  margin-right: 1px;
 }
 
 .card-container {
   display: flex;
-  gap: 20px;
   flex-wrap: wrap;
-  width: 100%;
-  margin-bottom: -21px;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 20px 7px;
+  margin-left: -12px;
+  margin-bottom: 0;
 }
 
-.card-container>* {
-  flex: 1 1 calc(50% - 16px);
-  min-width: 300px;
-}
-
-.birthday-container {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  width: 100%;
-  margin-bottom: -21px;
-}
-
+.members-container>*,
+.card-container>*,
 .birthday-container>* {
-  flex: 1 1 calc(50% - 16px);
+  flex: 1 1 48%;
   min-width: 300px;
+  height: 300px;
+  /* Set a fixed equal height */
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+
+  .members-container>*,
+  .card-container>*,
+  .birthday-container>* {
+    flex: 1 1 100%;
+    height: auto;
+    /* Allow cards to auto-adjust height on smaller screens */
+  }
 }
 </style>
