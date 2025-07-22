@@ -112,6 +112,8 @@ import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
 import * as bootstrap from "bootstrap";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 
 export default {
   name: "TeamLeaves",
@@ -120,12 +122,12 @@ export default {
     ApplyTeamLeaveModal,
     UpdateTeamLeaveModal,
     ButtonComponent,
-    Calendar
+    Calendar,
   },
   data() {
     return {
       leaves: [],
-      loading: false, // New state for loading
+      loading: false,
       search: {
         type: "",
         duration: "",
@@ -133,7 +135,7 @@ export default {
         created_date: "",
         employee_name: "",
       },
-      showModal: false, // Modal visibility
+      showModal: false,
       selectedLeave: null,
     };
   },
@@ -152,10 +154,14 @@ export default {
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
     },
     async fetchLeaves() {
-      this.loading = true; // Show loader before fetching data
+      this.loading = true;
       try {
         const params = {
           type: this.search.type || "",
@@ -173,21 +179,22 @@ export default {
         });
 
         if (response.data.success) {
-          this.leaves = response.data.data.filter(leave =>
-            leave.employee_name.toLowerCase().includes(this.search.employee_name.toLowerCase())
+          this.leaves = response.data.data.filter((leave) =>
+            leave.employee_name
+              .toLowerCase()
+              .includes(this.search.employee_name.toLowerCase())
           );
         } else {
           this.leaves = [];
           alert("Failed to fetch leaves.");
         }
       } catch (error) {
-        console.error("Error fetching leaves:", error.response?.data || error.message);
+        console.error("Error fetching leaves:", error);
         alert(error.response?.data?.error || "An error occurred while fetching leaves.");
       } finally {
-        this.loading = false; // Hide loader after fetching data
+        this.loading = false;
       }
     },
-
     async fetchLeaveDetails(id) {
       try {
         const response = await axios.get(`/api/leaves/${id}`, {
@@ -200,34 +207,30 @@ export default {
           this.selectedLeave = response.data.data;
           this.selectedLeave.isEditable = true;
           this.showModal = true;
+
+          this.$nextTick(() => {
+            const modalElement = document.getElementById("updateTeamLeavemodal");
+            if (modalElement) {
+              const modal = new bootstrap.Modal(modalElement);
+              modal.show();
+            }
+          });
         } else {
           alert("Failed to fetch leave details.");
         }
       } catch (error) {
-        console.error(
-          "Error fetching leave details:",
-          error.response?.data || error.message
-        );
+        console.error("Error fetching leave details:", error);
         alert("An error occurred while fetching leave details.");
       }
     },
     viewLeaveDetails(leave) {
       this.fetchLeaveDetails(leave.id);
-      this.selectedLeave = leave;
-      this.showModal = true;
-      this.$nextTick(() => {
-        const modalElement = document.getElementById("updateTeamLeavemodal");
-        if (modalElement) {
-          const modal = new bootstrap.Modal(modalElement);
-          modal.show();
-        }
-      });
     },
     closeModal() {
       this.showModal = false;
       const modalElement = document.getElementById("updateTeamLeavemodal");
-      const modal = new bootstrap.Modal(modalElement);
-      modal.hide();
+      const modal = bootstrap.Modal.getInstance(modalElement);
+      if (modal) modal.hide();
     },
     openApplyTeamLeaveModal() {
       const modalElement = document.getElementById("applyteamleavemodal");
@@ -237,11 +240,19 @@ export default {
       }
     },
   },
-  mounted() {
-    this.fetchLeaves();
+  async mounted() {
+    const route = useRoute();
+    await this.fetchLeaves();
+
+    // If URL has leave_id query param, open the modal for that leave
+    const leaveId = route.query.leave_id;
+    if (leaveId) {
+      this.fetchLeaveDetails(leaveId);
+    }
   },
 };
 </script>
+
 
 <style scoped>
 h2 {

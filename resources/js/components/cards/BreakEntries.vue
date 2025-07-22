@@ -3,7 +3,9 @@
         <!-- Task List Card -->
         <div class="task-card flex-fill shadow-sm">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4 class="card_heading">Break Entries</h4>
+                <h4 class="card_heading" @click="fetchBreakEntries" style="cursor: pointer;">
+                    Break Entries
+                </h4>
                 <Calendar :selectedDate="selectedDate" @dateSelected="onDateSelected" />
             </div>
             <div class="task-card-body mt-3">
@@ -25,7 +27,8 @@
                     </thead>
                     <tbody>
                         <tr v-if="breakEntries.length === 0">
-                            <td colspan="3" class="text-center">No break entries available for the selected date.</td>
+                            <td colspan="3" class="text-center text-muted">No break entries available for the selected
+                                date.</td>
                         </tr>
                         <tr v-for="breakEntry in breakEntries" :key="breakEntry.user_id"
                             style="border-bottom: 1px solid #e9e0e0;">
@@ -270,12 +273,14 @@ tbody td {
     max-height: 91%;
     border: 1px solid #ccc;
     border-radius: 8px;
+    margin-left: -16px;
 }
 
 .task-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: -15px;
 }
 
 .task-card-body {

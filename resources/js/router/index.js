@@ -5,6 +5,7 @@ import Login from '../components/Login.vue';
 import Project from '../components/Project.vue';
 import Listings from '../components/Listings.vue';
 import Users from '../components/Users.vue';
+import Trainees from '../components/Trainees.vue';
 import Dashboard from '../components/Dashboard.vue';
 import Tasks from '../components/Tasks.vue';
 import Leaves from '../components/Leaves.vue';
@@ -47,6 +48,7 @@ const routes = [
   { path: '/devices', name: 'Devices', component: Devices, meta: { requiresAuth: true } },
   { path: '/view-all-otifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
   { path: '/employees/:id/edit', name: 'EditEmployee', component: EditEmployee, meta: { requiresAuth: true } },
+  { path: '/trainees', name: 'Trainees', component: Trainees, meta: { requiresAuth: true } },
 ];
 
 

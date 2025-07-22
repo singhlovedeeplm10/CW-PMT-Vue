@@ -114,6 +114,9 @@
       <li v-if="userRole === 'Admin'" class="sidebar-item">
         <router-link to="/devices" class="sidebar-link" active-class="active-link">Devices</router-link>
       </li>
+      <li v-if="userRole === 'Admin'" class="sidebar-item">
+        <router-link to="/trainees" class="sidebar-link" active-class="active-link">Trainees</router-link>
+      </li>
     </ul>
   </aside>
 </template>

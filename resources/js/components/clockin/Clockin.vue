@@ -335,7 +335,7 @@ export default {
 
       } catch (error) {
         console.error("Failed to end break:", error.response?.data || error.message);
-        toast.error("Failed to end break. Please try again.", {
+        toast.error("Your break is ended. Please refresh the page.", {
           position: "top-right",
           autoClose: 1000
         });

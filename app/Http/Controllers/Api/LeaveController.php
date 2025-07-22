@@ -1739,17 +1739,19 @@ public function upcomingApprovedLeaves(Request $request)
 {
     $months = (int)$request->input('months', 2);
 
-    $startDate = now()->startOfMonth(); 
-    $endDate = now()
-        ->addMonths($months)    // move ahead by `months` 
-        ->endOfMonth();         // ensure we get the full last month
+    $today = now()->startOfDay(); // today's date
+    $endDate = now()->addMonths($months)->endOfMonth(); // end of range
 
-    $leaves = Leave::with('user')
-        ->where('status', 'approved')
-        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave'])
-        ->where(function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('start_date', [$startDate, $endDate])
-                  ->orWhereBetween('end_date', [$startDate, $endDate]);
+    $leaves = Leave::with(['user.profile'])
+        ->whereIn('status', ['pending', 'approved', 'hold'])
+        ->whereIn('type_of_leave', ['Short Leave', 'Half Day Leave', 'Full Day Leave',])
+        ->where(function ($query) use ($today, $endDate) {
+            $query->whereBetween('start_date', [$today, $endDate])
+                  ->orWhereBetween('end_date', [$today, $endDate])
+                  ->orWhere(function ($q) use ($today) {
+                      $q->where('start_date', '<=', $today)
+                        ->where('end_date', '>=', $today);
+                  });
         })
         ->orderBy('start_date')
         ->get()
@@ -1767,6 +1769,10 @@ public function upcomingApprovedLeaves(Request $request)
                 $hours = $start->diffInHours($end);
             }
 
+            $user = $leave->user;
+            $userImage = $user->profile->user_image ?? null;
+            $userImageUrl = $userImage ? asset('uploads/' . $userImage) : null;
+
             return [
                 'id' => $leave->id,
                 'type_of_leave' => $leave->type_of_leave,
@@ -1777,32 +1783,46 @@ public function upcomingApprovedLeaves(Request $request)
                 'start_time' => $startTime12hr,
                 'end_time' => $endTime12hr,
                 'hours' => $hours,
+                'status' => $leave->status,
                 'user' => [
-                    'id' => $leave->user->id,
-                    'name' => $leave->user->name,
-                    'image' => $leave->user->image
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'image' => $userImageUrl,
                 ]
             ];
         });
 
     return response()->json($leaves);
 }
+
+
 public function upcomingWFHLeaves(Request $request)
 {
     $months = (int)$request->input('months', 2);
-    $startDate = now()->startOfMonth();
-    $endDate = now()->addMonths($months)->endOfMonth();
 
-    $leaves = Leave::with('user')
-        ->where('status', 'approved')
+    // Start from today instead of start of month
+    $startDate = now()->startOfDay();
+    $endDate = now()->addMonths($months)->endOfDay();
+    
+
+    $leaves = Leave::with(['user.profile'])
+        ->whereIn('status', ['pending', 'approved', 'hold'])
         ->whereIn('type_of_leave', ['Work From Home Full Day', 'Work From Home Half Day'])
         ->where(function ($query) use ($startDate, $endDate) {
             $query->whereBetween('start_date', [$startDate, $endDate])
-                  ->orWhereBetween('end_date', [$startDate, $endDate]);
+                  ->orWhereBetween('end_date', [$startDate, $endDate])
+                  ->orWhere(function ($q) use ($startDate, $endDate) {
+                      $q->where('start_date', '<', $startDate)
+                        ->where('end_date', '>', $endDate);
+                  });
         })
         ->orderBy('start_date')
         ->get()
         ->map(function ($leave) {
+            $user = $leave->user;
+            $userImage = $user->profile->user_image ?? null;
+            $userImageUrl = $userImage ? asset('uploads/' . $userImage) : null;
+
             return [
                 'id' => $leave->id,
                 'type_of_leave' => $leave->type_of_leave,
@@ -1810,10 +1830,11 @@ public function upcomingWFHLeaves(Request $request)
                 'start_date' => $leave->start_date,
                 'end_date' => $leave->end_date,
                 'created_at' => $leave->created_at,
+                'status' => $leave->status,
                 'user' => [
-                    'id' => $leave->user->id,
-                    'name' => $leave->user->name,
-                    'image' => $leave->user->image
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'image' => $userImageUrl,
                 ]
             ];
         });
@@ -1823,5 +1844,6 @@ public function upcomingWFHLeaves(Request $request)
         'data' => $leaves
     ]);
 }
+
 
 }

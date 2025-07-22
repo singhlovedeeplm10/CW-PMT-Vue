@@ -47,7 +47,9 @@
                     <div v-else>
                         <div v-for="notification in leaveNotifications" :key="notification.id"
                             class="notification-item-leaves"
-                            :class="{ 'read': notification.is_read, 'unread': !notification.is_read }">
+                            :class="{ 'read': notification.is_read, 'unread': !notification.is_read, 'clickable-row': userRole === 'Admin' }"
+                            @click="userRole === 'Admin' ? openLeaveInNewTab(notification) : null"
+                            style="cursor: pointer;">
                             <div class="notification-icon">
                                 <template v-if="notification.leave_type === 'Full Day Leave'">
                                     <i class="fas fa-umbrella-beach" style="color: #f39c12;"></i>
@@ -173,13 +175,13 @@
                                     <template v-if="notification.notification_message.includes('Assigned')">
                                         <span class="device-name">{{
                                             notification.notification_message.replace('Assigned', '').trim()
-                                        }}</span>
+                                            }}</span>
                                         <span class="device-status assigned">Assigned</span>
                                     </template>
                                     <template v-else-if="notification.notification_message.includes('Unassigned')">
                                         <span class="device-name">{{
                                             notification.notification_message.replace('Unassigned', '').trim()
-                                        }}</span>
+                                            }}</span>
                                         <span class="device-status unassigned">Unassigned</span>
                                     </template>
                                     <template v-else>
@@ -215,6 +217,7 @@ export default {
     },
     data() {
         return {
+            userRole: null,
             activeTab: 'leaves',
             leaveNotifications: [],
             projectNotifications: [],
@@ -258,6 +261,29 @@ export default {
         this.fetchNotifications();
     },
     methods: {
+        async fetchUserRole() {
+            try {
+                const response = await axios.get("/api/user-role", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                    },
+                });
+                this.userRole = response.data.role;
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+            }
+        },
+        openLeaveInNewTab(notification) {
+            // Only proceed if user is admin
+            if (this.userRole !== 'Admin') return;
+
+            // Assuming the notification has a leave_id property
+            if (notification.leave_id) {
+                const route = `/teamleaves?leave_id=${notification.leave_id}`;
+                window.open(route, '_blank');
+            }
+        },
+
         formatDateTime(dateString) {
             const date = new Date(dateString);
             // Format as "MMM DD, YYYY hh:mm A" (e.g. "Jul 14, 2023 02:30 PM")
@@ -433,6 +459,7 @@ export default {
         }
     },
     mounted() {
+        this.fetchUserRole();
         this.fetchNotifications();
         this.fetchProjectNotifications();
         this.fetchDeviceNotifications();

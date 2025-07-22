@@ -3,10 +3,12 @@
     <!-- Task List Card -->
     <div class="task-card flex-fill shadow-sm position-relative" id="card2">
       <div class="task-card-header d-flex justify-content-between align-items-center">
-        <h4 class="card_heading">Members on WFH</h4>
+        <h4 class="card_heading" @click="fetchWFHMembers(selectedDate)" style="cursor: pointer;">
+          Members on WFH
+        </h4>
         <div class="d-flex align-items-center">
           <button class="btn btn-sm btn-outline-primary me-2" @click="openUpcomingWFHModal" style="margin-top: 0px;">
-            <i class="fa-solid fa-calendar-days cursor-pointer"></i>
+            <i class="fa-solid fa-house"></i>
           </button>
           <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
         </div>
@@ -56,7 +58,7 @@
       <div v-if="showUpcomingWFH" class="upcoming-wfh-modal" @click.self="closeUpcomingWFHModal">
         <div class="upcoming-wfh-modal__content">
           <div class="upcoming-wfh-modal__header">
-            <h5 class="upcoming-wfh-modal__title">Upcoming WFH Members</h5>
+            <h5 class="upcoming-wfh-modal__title">All WFH (Full Day and Half Day)</h5>
             <button type="button" class="close-modal" @click="closeUpcomingWFHModal" aria-label="Close">&times;</button>
           </div>
           <div class="upcoming-wfh-filter">
@@ -76,17 +78,18 @@
                 No upcoming WFH records found for the selected period.
               </div>
               <div v-else class="upcoming-wfh-table-container">
-                <table class="upcoming-wfh-table">
+                <table class=" upcoming-wfh-table">
                   <thead class="upcoming-wfh-table__head">
                     <tr>
                       <th class="upcoming-wfh-table__header">Name</th>
-                      <th class="upcoming-wfh-table__header">Type</th>
-                      <th class="upcoming-wfh-table__header">Duration</th>
+                      <th class="upcoming-wfh-table__header">Type & Duration</th>
+                      <th class="upcoming-wfh-table__header">Status</th>
                       <th class="upcoming-wfh-table__header">Created Date</th>
                     </tr>
                   </thead>
                   <tbody class="upcoming-wfh-table__body">
-                    <tr v-for="leave in upcomingWFH" :key="leave.id" class="upcoming-wfh-table__row">
+                    <tr v-for="leave in upcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
+                      @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name">
                         <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
                           class="upcoming-wfh-table__user-image">
@@ -94,27 +97,37 @@
                       </td>
 
                       <td class="upcoming-wfh-table__cell">
-                        <span class="upcoming-wfh-table__leave-type">{{ leave.type_of_leave }}</span>
-                      </td>
-
-                      <td class="upcoming-wfh-table__cell">
                         <!-- Half Day WFH -->
-                        <div v-if="leave.type_of_leave === 'Work From Home Half Day'">
-                          <span class="upcoming-wfh-table__half-day-type">{{ leave.half }}</span>
-                          <span class="upcoming-wfh-table__half-day-date">
-                            ({{ formatDate(leave.start_date, true) }})
+                        <div v-if="leave.type_of_leave === 'Work From Home Half Day'" style="text-align: left;">
+                          <span class="upcoming-wfh-table__leave-type">{{ leave.type_of_leave }}</span>
+                          <div class="upcoming-wfh-table__duration">
+                            {{ leave.half }}
+                          </div>
+                          <span class="upcoming-wfh-table__date-range">
+                            {{ formatDate(leave.start_date, true) }}
                           </span>
                         </div>
 
                         <!-- Full Day or Multi-Day WFH -->
-                        <div v-else>
-                          <span class="upcoming-wfh-table__days">
+                        <div v-else style="text-align: left;">
+                          <span class="upcoming-wfh-table__leave-type">{{ leave.type_of_leave }}</span>
+                          <div class="upcoming-wfh-table__duration">
                             {{ calculateDays(leave.start_date, leave.end_date) }} day(s)
-                          </span>
+                          </div>
                           <span class="upcoming-wfh-table__date-range">
-                            ({{ formatDate(leave.start_date, true) }} - {{ formatDate(leave.end_date, true) }})
+                            {{ formatDate(leave.start_date, true) }} - {{ formatDate(leave.end_date, true) }}
                           </span>
                         </div>
+                      </td>
+
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--status">
+                        <span class="status-badge" :class="{
+                          'status-approved': leave.status === 'approved',
+                          'status-pending': leave.status === 'pending',
+                          'status-hold': leave.status === 'hold'
+                        }">
+                          {{ leave.status }}
+                        </span>
                       </td>
 
                       <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--date">
@@ -153,6 +166,11 @@ export default {
     };
   },
   methods: {
+    openLeaveInNewTab(leave) {
+      const leaveId = leave.id;
+      const route = `/teamleaves?leave_id=${leaveId}`;
+      window.open(route, '_blank');
+    },
     openUpcomingWFHModal() {
       this.showUpcomingWFH = true;
       this.fetchUpcomingWFH();
@@ -164,20 +182,21 @@ export default {
       this.loadingUpcomingWFH = true;
       try {
         const response = await axios.get("/api/upcoming-wfh-leaves", {
-          params: { months: this.wfhMonthFilter },
+          params: {
+            months: parseInt(this.wfhMonthFilter) // Ensure it's sent as integer
+          },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         });
-        if (response.data.success) {
-          this.upcomingWFH = response.data.data;
-        }
+        this.upcomingWFH = response.data.data;
       } catch (error) {
         console.error("Error fetching upcoming WFH:", error);
       } finally {
         this.loadingUpcomingWFH = false;
       }
     },
+
     formatDate(dateStr, showWeekDay = false) {
       const date = new Date(dateStr);
       const options = showWeekDay
@@ -190,11 +209,6 @@ export default {
       const end = new Date(endDate);
       const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
       return diff;
-    },
-    formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     },
     async fetchWFHMembers(selectedDate) {
       this.loading = true;
@@ -294,6 +308,7 @@ export default {
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 14px;
+  background-color: white;
 }
 
 /* Loading State */
@@ -315,6 +330,8 @@ export default {
 /* Table Styles */
 .upcoming-wfh-table-container {
   overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .upcoming-wfh-table {
@@ -324,6 +341,8 @@ export default {
 
 .upcoming-wfh-table__head {
   background-color: #f8f9fa;
+  position: sticky;
+  top: 0;
 }
 
 .upcoming-wfh-table__header {
@@ -362,6 +381,10 @@ export default {
   white-space: nowrap;
 }
 
+.upcoming-wfh-table__cell--status {
+  white-space: nowrap;
+}
+
 .upcoming-wfh-table__user-image {
   width: 32px;
   height: 32px;
@@ -375,23 +398,59 @@ export default {
 }
 
 .upcoming-wfh-table__leave-type {
+  font-weight: 600;
   display: block;
+  margin-bottom: 4px;
+  text-align: left;
 }
 
-.upcoming-wfh-table__days {
-  font-weight: 500;
+.upcoming-wfh-table__duration {
+  margin-bottom: 4px;
+  text-align: left;
 }
 
-.upcoming-wfh-table__date-range,
-.upcoming-wfh-table__half-day-date {
+.upcoming-wfh-table__date-range {
   font-size: 0.9em;
   color: #6c757d;
+  text-align: left;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  min-width: 70px;
+  text-align: center;
+}
+
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-hold {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .upcoming-wfh-modal__content {
     max-height: 90vh;
+    width: 95%;
+  }
+
+  .upcoming-wfh-filter__select {
+    width: 100%;
   }
 
   .upcoming-wfh-table__header,
@@ -404,6 +463,12 @@ export default {
     width: 28px;
     height: 28px;
     margin-right: 8px;
+  }
+
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    min-width: 60px;
   }
 }
 
@@ -447,6 +512,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: -12px;
 }
 
 .task-card-body {
@@ -513,6 +579,7 @@ tbody td {
 #card2 {
   border: 1px solid #ccc;
   border-radius: 8px;
+  margin-top: 0;
 }
 
 .task-card-header h4 {

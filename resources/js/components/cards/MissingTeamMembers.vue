@@ -1,7 +1,9 @@
 <template>
   <div class="card flex-fill me-3 shadow-sm" id="card1">
     <div class="task-card-header d-flex justify-content-between align-items-center flex-wrap">
-      <h4 class="card_heading mb-2">Missing Team Member Entry</h4>
+      <h4 class="card_heading mb-2" @click="fetchUsersWithoutTasks" style="cursor: pointer;">
+        Missing Team Member Entry
+      </h4>
       <div class="d-flex flex-wrap gap-2">
         <span class="badge" style="background-color: #f8d7da; color: #721c24;">Missing Entry</span>
         <span class="badge" style="background-color: #fff3cd; color: #856404;">Task < 8 Hours</span>
@@ -16,18 +18,17 @@
         </div>
       </div>
       <div v-else class="employee-row">
-
         <div v-for="user in usersWithoutTasks" :key="user.id" class="employee-card">
-
           <div class="employee-avatar">
             <img :src="user.user_image ? `/uploads/${user.user_image}` : 'img/CWlogo.jpeg'" alt="Team Member"
               class="user-image">
           </div>
           <div class="employee-details">
             <p class="employee-name" :class="{
-              'missing-entry': user.no_task_entry,
-              'under-hours': user.total_hours > 0 && user.total_hours < 8,
-              'over-hours': user.total_hours > 8
+              'not-clocked-in': !user.clockin_time,
+              'missing-entry': user.clockin_time && user.no_task_entry,
+              'under-hours': user.clockin_time && user.total_hours > 0 && user.total_hours < 8,
+              'over-hours': user.clockin_time && user.total_hours > 8
             }">
               {{ user.name }}
             </p>
@@ -49,15 +50,17 @@ export default {
     const loadingUsersWithoutTasks = ref(true);
 
     const fetchUsersWithoutTasks = async () => {
+      loadingUsersWithoutTasks.value = true; // Show loader before fetching
       try {
         const response = await axios.get("/api/users-without-tasks");
         usersWithoutTasks.value = response.data;
       } catch (error) {
         console.error("Error fetching users without tasks:", error);
       } finally {
-        loadingUsersWithoutTasks.value = false;
+        loadingUsersWithoutTasks.value = false; // Hide loader after response
       }
     };
+
 
     onMounted(() => {
       fetchUsersWithoutTasks();
@@ -66,6 +69,7 @@ export default {
     return {
       usersWithoutTasks,
       loadingUsersWithoutTasks,
+      fetchUsersWithoutTasks
     };
   },
 };
@@ -73,7 +77,8 @@ export default {
 
 <style scoped>
 #card1 {
-  height: 350px;
+  width: 49%;
+  height: 429px;
   padding: 20px;
   background: #ffffff;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);

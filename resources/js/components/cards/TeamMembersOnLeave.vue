@@ -1,10 +1,12 @@
 <template>
   <div class="card flex-fill me-3 shadow-sm" id="card2">
     <div class="task-card-header d-flex justify-content-between align-items-center">
-      <h4 class="card_heading">Team Members on Leave</h4>
+      <h4 class="card_heading" @click="fetchUsersOnLeave(date)" style="cursor: pointer;">
+        Team Members on Leave
+      </h4>
       <div class="d-flex align-items-center">
         <button class="btn btn-sm btn-outline-primary me-2" @click="showUpcomingLeaves" style="margin-top: 11px;">
-          <i class="fa-solid fa-umbrella-beach"></i>
+          <i class="fa-solid fa-house"></i>
         </button>
         <Calendar :selectedDate="date" @dateSelected="onDateSelected" :showHeader="true" :highlightToday="true" />
       </div>
@@ -26,15 +28,19 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in usersOnLeave" :key="user.id" style="border-bottom: 1px solid #e9e0e0;">
+            <tr v-if="usersOnLeave.length === 0">
+              <td colspan="2" class="text-center text-muted py-3">No leaves found</td>
+            </tr>
+            <tr v-else v-for="user in usersOnLeave" :key="user.id" style="border-bottom: 1px solid #e9e0e0;">
               <td class="d-flex align-items-center">
-                <img :src="user.user_image || 'img/CWlogo.jpeg'" alt="Team Member" class="user-image me-2">
+                <img :src="user.user_image || 'img/CWlogo.jpeg'" alt="Team Member" class="user-image me-2" />
                 {{ user.name }}
               </td>
               <td style="padding: 16px 50px;">{{ user.type_of_leave }}</td>
             </tr>
           </tbody>
         </table>
+
       </div>
     </div>
 
@@ -42,11 +48,10 @@
     <div v-if="showUpcomingModal" class="upcoming-leaves-modal" @click.self="closeModal">
       <div class="upcoming-leaves-modal__content">
         <div class="upcoming-leaves-modal__header">
-          <h5 class="upcoming-leaves-modal__title">Upcoming Approved Leaves</h5>
+          <h5 class="upcoming-leaves-modal__title">All Leaves</h5>
           <button type="button" class="close-modal" @click="closeModal" aria-label="Close">&times;</button>
         </div>
         <div class="upcoming-leaves-filter">
-          <!-- <label for="monthFilter" class="upcoming-leaves-filter__label">Show leaves for next:</label> -->
           <select id="monthFilter" class="upcoming-leaves-filter__select" v-model="monthsFilter"
             @change="fetchUpcomingLeaves">
             <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
@@ -67,13 +72,14 @@
                 <thead class="upcoming-leaves-table__head">
                   <tr>
                     <th class="upcoming-leaves-table__header">Name</th>
-                    <th class="upcoming-leaves-table__header">Type</th>
-                    <th class="upcoming-leaves-table__header">Duration</th>
+                    <th class="upcoming-leaves-table__header">Type & Duration</th>
+                    <th class="upcoming-leaves-table__header">Status</th>
                     <th class="upcoming-leaves-table__header">Created Date</th>
                   </tr>
                 </thead>
                 <tbody class="upcoming-leaves-table__body">
-                  <tr v-for="leave in upcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row">
+                  <tr v-for="leave in upcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
+                    @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                     <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--name">
                       <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
                         class="upcoming-leaves-table__user-image">
@@ -81,26 +87,23 @@
                     </td>
 
                     <td class="upcoming-leaves-table__cell">
-                      <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
-                      <!-- <span v-if="leave.half" class="upcoming-leaves-table__leave-half">({{ leave.half }})</span> -->
-                    </td>
-
-                    <td class="upcoming-leaves-table__cell">
                       <!-- Short Leave -->
                       <div v-if="leave.type_of_leave === 'Short Leave' && leave.start_time && leave.end_time">
-                        <span class="upcoming-leaves-table__duration">
+                        <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
+                        <div class="upcoming-leaves-table__duration">
                           {{ leave.hours }} hour(s) (from {{ leave.start_time }} to {{ leave.end_time }})
-                        </span>
+                        </div>
                         <span class="upcoming-leaves-table__date-range">
-                          ({{ formatDate(leave.start_date) }})
+                          {{ formatDate(leave.start_date) }}
                         </span>
                       </div>
 
                       <!-- Full Day or Multi-Day Leave -->
                       <div v-else-if="leave.start_date && leave.end_date && leave.start_date !== leave.end_date">
-                        <span class="upcoming-leaves-table__days">
+                        <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
+                        <div class="upcoming-leaves-table__duration">
                           {{ calculateDays(leave.start_date, leave.end_date) }} day(s)
-                        </span>
+                        </div>
                         <span class="upcoming-leaves-table__date-range">
                           ({{ formatDate(leave.start_date) }} - {{ formatDate(leave.end_date) }})
                         </span>
@@ -108,11 +111,24 @@
 
                       <!-- Half Day or Single Day -->
                       <div v-else-if="leave.start_date">
-                        <span class="upcoming-leaves-table__half-day-type">{{ leave.half || 'Full Day' }}</span>
-                        <span class="upcoming-leaves-table__half-day-date">
-                          ({{ formatDate(leave.start_date) }})
+                        <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
+                        <div class="upcoming-leaves-table__duration">
+                          {{ leave.half || 'Half Day' }}
+                        </div>
+                        <span class="upcoming-leaves-table__date-range">
+                          {{ formatDate(leave.start_date) }}
                         </span>
                       </div>
+                    </td>
+
+                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--status">
+                      <span class="status-badge" :class="{
+                        'status-approved': leave.status === 'approved',
+                        'status-pending': leave.status === 'pending',
+                        'status-hold': leave.status === 'hold'
+                      }">
+                        {{ leave.status }}
+                      </span>
                     </td>
 
                     <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--date">
@@ -120,7 +136,6 @@
                     </td>
                   </tr>
                 </tbody>
-
               </table>
             </div>
           </div>
@@ -148,6 +163,7 @@ export default {
     const monthsFilter = ref(2);
 
     const fetchUsersOnLeave = async (selectedDate) => {
+      loadingUsersOnLeave.value = true;
       try {
         const formattedDate = selectedDate.toISOString().split('T')[0];
         const response = await axios.get("/api/users-on-leave", {
@@ -211,6 +227,12 @@ export default {
 
       return `${dayName} ${monthName} ${day}, ${year}`;
     };
+    const openLeaveInNewTab = (leave) => {
+      const leaveId = leave.id;
+      const route = `/teamleaves?leave_id=${leaveId}`;
+      window.open(route, '_blank');
+    };
+
 
     onMounted(() => {
       fetchUsersOnLeave(date.value);
@@ -229,13 +251,53 @@ export default {
       closeModal,
       fetchUpcomingLeaves,
       calculateDays,
-      formatDate
+      formatDate,
+      fetchUsersOnLeave,
+      openLeaveInNewTab
     };
   },
 };
 </script>
 
 <style scoped>
+.upcoming-leaves-table__leave-type {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.upcoming-leaves-table__duration {
+  margin-bottom: 4px;
+}
+
+.upcoming-leaves-table__date-range {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-hold {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
 /* Modal Container */
 .upcoming-leaves-modal {
   position: fixed;
@@ -506,13 +568,15 @@ export default {
 }
 
 #card2 {
-  max-height: 350px;
+  height: 429px;
+  width: 46%;
   overflow-y: auto;
   padding: 20px;
   background: #ffffff;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   border: 1px solid #ccc;
   border-radius: 8px;
+  margin-left: 13px;
 }
 
 .table th:nth-child(1),
