@@ -24,6 +24,8 @@ import EmployeesTimelogs from '../components/EmployeesTimelogs.vue';
 import EditEmployee from '../components/EditEmployee.vue';
 import Devices from '../components/Devices.vue';
 import Notifications from '../components/Notifications.vue';
+import AddTrainee from '../components/AddTrainee.vue';
+import EditTrainee from '../components/EditTrainee.vue';
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
@@ -49,6 +51,8 @@ const routes = [
   { path: '/view-all-otifications', name: 'Notifications', component: Notifications, meta: { requiresAuth: true } },
   { path: '/employees/:id/edit', name: 'EditEmployee', component: EditEmployee, meta: { requiresAuth: true } },
   { path: '/trainees', name: 'Trainees', component: Trainees, meta: { requiresAuth: true } },
+  { path: '/add-trainees-page', name: 'AddTrainee', component: AddTrainee, meta: { requiresAuth: true } },
+  { path: '/edit-trainee/:id', name: 'EditTrainee', component: EditTrainee, meta: { requiresAuth: true } },
 ];
 
 

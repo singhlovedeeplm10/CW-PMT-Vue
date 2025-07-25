@@ -1,11 +1,15 @@
 <template>
-    <div class="modal-overlay" v-if="visible">
+    <div class="modal-overlay" v-if="visible" @keydown.enter="handleEnterKey">
         <div class="modal-content">
             <button class="close-btn" @click="goBack">×</button>
             <h3>Enter Profile Password</h3>
-            <input type="password" v-model="password" placeholder="Enter your profile password" class="modal-input" />
-            <button @click="verifyPassword" class="btn-primary">
-                Submit
+
+            <PasswordInput v-model="password" id="profile-password" :label="''"
+                placeholder="Enter your profile password" @input-blur="clearError" />
+
+            <button @click="verifyPassword" class="btn-primary" :disabled="loading" ref="submitButton">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ loading ? "Verifying..." : "Submit" }}
             </button>
         </div>
     </div>
@@ -14,19 +18,34 @@
 <script>
 import axios from "axios";
 import { toast } from "vue3-toastify";
-import { setCookie, getCookie, deleteCookie } from "@/utils/cookie";
+import { setCookie } from "@/utils/cookie";
+import PasswordInput from "@/components/inputs/PasswordInput.vue";
 
 export default {
     name: "EnterPasswordModal",
+    components: {
+        PasswordInput,
+    },
     props: ["visible"],
     data() {
         return {
             password: "",
+            loading: false,
         };
     },
     methods: {
         goBack() {
-            this.$router.go(-1); // Navigates to the previous page
+            this.$router.go(-1);
+        },
+        clearError() {
+            // Placeholder for blur error handling
+        },
+        handleEnterKey(e) {
+            // Prevent default form submission behavior
+            e.preventDefault();
+            if (!this.loading) {
+                this.verifyPassword();
+            }
         },
         async verifyPassword() {
             if (!this.password) {
@@ -36,6 +55,8 @@ export default {
                 });
                 return;
             }
+
+            this.loading = true;
 
             try {
                 const response = await axios.post(
@@ -54,12 +75,9 @@ export default {
                         position: "top-right",
                     });
 
-                    // Set 15-min cookie
                     setCookie("profile_verified", "true", 15);
-
                     this.$emit("close");
                 } else {
-                    // 👇 Show incorrect password toast here
                     toast.error(response.data.message || "Incorrect password", {
                         autoClose: 1000,
                         position: "top-right",
@@ -75,9 +93,30 @@ export default {
                     position: "top-right",
                 });
                 console.error(error);
+            } finally {
+                this.loading = false;
             }
         },
     },
+    mounted() {
+        // Focus on the password input when modal appears
+        if (this.visible) {
+            this.$nextTick(() => {
+                const input = document.getElementById('profile-password');
+                if (input) input.focus();
+            });
+        }
+    },
+    watch: {
+        visible(newVal) {
+            if (newVal) {
+                this.$nextTick(() => {
+                    const input = document.getElementById('profile-password');
+                    if (input) input.focus();
+                });
+            }
+        }
+    }
 };
 </script>
 
@@ -126,7 +165,6 @@ export default {
 }
 
 .modal-content h3 {
-    margin-bottom: 20px;
     font-size: 22px;
     color: #333;
     font-weight: 600;

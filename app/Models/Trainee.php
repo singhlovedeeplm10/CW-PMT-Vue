@@ -13,10 +13,15 @@ class Trainee extends Model
     protected $fillable = [
         'trainee_name',
         'trainee_email',
+        'trainee_DOB',
+        'trainee_qualifications',
+        'gender',
+        'trainee_contact',
         'training_start_date',
         'training_end_date',
         'training_note',
         'status',
+        'trainee_image',
     ];
 
     // Casts

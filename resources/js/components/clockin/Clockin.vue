@@ -290,9 +290,9 @@ export default {
       breakStartTime.value = startTime;
       totalBreakTime.value = 0;
       startBreakTimer();
-      localStorage.setItem("isOnBreak", "true");
-      localStorage.setItem("breakStartTime", startTime);
-      localStorage.setItem("totalBreakTime", totalBreakTime.value);
+      // localStorage.setItem("isOnBreak", "true");
+      // localStorage.setItem("breakStartTime", startTime);
+      // localStorage.setItem("totalBreakTime", totalBreakTime.value);
     };
 
 
@@ -322,9 +322,9 @@ export default {
         dailyHours.value = Math.max(dailyHours.value - breakDuration, 0);
 
         isOnBreak.value = false;
-        localStorage.removeItem("isOnBreak");
-        localStorage.removeItem("breakStartTime");
-        localStorage.removeItem("totalBreakTime");
+        // localStorage.removeItem("isOnBreak");
+        // localStorage.removeItem("breakStartTime");
+        // localStorage.removeItem("totalBreakTime");
 
         toast.success(response.data.message || "Break ended successfully.", {
           position: "top-right",

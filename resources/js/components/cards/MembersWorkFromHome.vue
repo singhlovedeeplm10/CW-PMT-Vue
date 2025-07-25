@@ -7,7 +7,8 @@
           Members on WFH
         </h4>
         <div class="d-flex align-items-center">
-          <button class="btn btn-sm btn-outline-primary me-2" @click="openUpcomingWFHModal" style="margin-top: 0px;">
+          <button v-tooltip="'Upcoming members on WFH'" class="btn btn-sm btn-outline-primary me-2"
+            @click="openUpcomingWFHModal" style="margin-top: 0px;">
             <i class="fa-solid fa-house"></i>
           </button>
           <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
@@ -58,7 +59,7 @@
       <div v-if="showUpcomingWFH" class="upcoming-wfh-modal" @click.self="closeUpcomingWFHModal">
         <div class="upcoming-wfh-modal__content">
           <div class="upcoming-wfh-modal__header">
-            <h5 class="upcoming-wfh-modal__title">All WFH (Full Day and Half Day)</h5>
+            <h5 class="upcoming-wfh-modal__title">Upcoming WFHs</h5>
             <button type="button" class="close-modal" @click="closeUpcomingWFHModal" aria-label="Close">&times;</button>
           </div>
           <div class="upcoming-wfh-filter">
@@ -239,6 +240,30 @@ export default {
 </script>
 
 <style scoped>
+.v-tooltip {
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s;
+}
+
+.v-tooltip::before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-style: solid;
+  border-width: 5px;
+  border-color: transparent transparent #333 transparent;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 /* Modal Container */
 .upcoming-wfh-modal {
   position: fixed;
@@ -523,16 +548,20 @@ export default {
 
 .task-card-body::-webkit-scrollbar {
   width: 6px;
-  background-color: #f1f1f1;
+}
+
+.task-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
+  background: #888;
   border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb:hover {
-  background-color: #a1a1a1;
+  background: #555;
 }
 
 table {

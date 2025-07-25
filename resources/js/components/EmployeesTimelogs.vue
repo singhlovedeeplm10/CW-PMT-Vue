@@ -4,18 +4,32 @@
       <h2 class="title_heading">Time Logs</h2>
 
       <div class="filters">
-        <div class="filter-container" v-if="userRole === 'Admin'">
+        <div class="filter-container" v-if="userRole === 'Admin'" style="position: relative;">
           <input type="text" placeholder="Search by Name" class="filter-input" v-model="searchQuery"
             @input="fetchUserSuggestions" />
+
+          <!-- Clear (X) icon -->
+          <span v-if="searchQuery" class="clear-icon" @click="clearSearch" style="
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 16px;
+      color: #999;
+    " title="Clear">
+            ✖
+          </span>
 
           <!-- Suggestions Dropdown -->
           <ul v-if="searchResults.length > 0" class="suggestions-list">
             <li v-for="user in searchResults" :key="user.id" @click="selectUser(user)">
-              <img :src="user.user_image" class="user-avatar" alt="User Image">
+              <img :src="user.user_image" class="user-avatar" alt="User Image" />
               {{ user.name }}
             </li>
           </ul>
         </div>
+
 
         <CalendarMonthYear :selectedMonth="selectedMonth" @monthSelected="onMonthSelected" />
 
@@ -226,6 +240,11 @@ export default {
 
     selectUser(user) {
       this.searchQuery = user.name;
+      this.searchResults = [];
+    },
+
+    clearSearch() {
+      this.searchQuery = "";
       this.searchResults = [];
     },
 

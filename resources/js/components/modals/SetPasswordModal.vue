@@ -1,12 +1,19 @@
 <template>
-    <div class="modal-overlay" v-if="visible">
+    <div class="modal-overlay" v-if="visible" @keydown.enter="handleEnterKey">
         <div class="modal-content">
             <button class="close-btn" @click="goBack">×</button>
             <h3>Set Profile Password</h3>
-            <input type="password" v-model="password" placeholder="Enter new password" class="modal-input" />
-            <input type="password" v-model="password_confirmation" placeholder="Confirm password" class="modal-input" />
-            <button @click="setPassword" class="btn-primary">
-                Set Password
+
+            <PasswordInput v-model="password" id="new-password" :label="''" placeholder="Enter new password"
+                @input-blur="clearError('password')" style="margin-top: -20px;" ref="firstInput" />
+
+            <PasswordInput v-model="password_confirmation" id="confirm-password" :label="''"
+                placeholder="Confirm password" @input-blur="clearError('password_confirmation')"
+                style="margin-top: -20px;" />
+
+            <button @click="setPassword" class="btn-primary" :disabled="loading">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ loading ? "Setting..." : "Set Password" }}
             </button>
         </div>
     </div>
@@ -16,20 +23,34 @@
 import axios from "axios";
 import { toast } from "vue3-toastify";
 import { setCookie, getCookie, deleteCookie } from "@/utils/cookie";
-
+import PasswordInput from "@/components/inputs/PasswordInput.vue";
 
 export default {
     name: "SetPasswordModal",
+    components: {
+        PasswordInput,
+    },
     props: ["visible"],
     data() {
         return {
             password: "",
             password_confirmation: "",
+            loading: false,
         };
     },
     methods: {
         goBack() {
-            this.$router.go(-1); // Navigates to the previous page
+            this.$router.go(-1);
+        },
+        clearError(field) {
+            // Optional: placeholder for blur validation
+        },
+        handleEnterKey(e) {
+            // Prevent default form submission behavior
+            e.preventDefault();
+            if (!this.loading) {
+                this.setPassword();
+            }
         },
         async setPassword() {
             if (!this.password || !this.password_confirmation) {
@@ -40,7 +61,6 @@ export default {
                 return;
             }
 
-            // ✅ Client-side: check password match
             if (this.password !== this.password_confirmation) {
                 toast.error("Passwords do not match.", {
                     autoClose: 1000,
@@ -49,7 +69,6 @@ export default {
                 return;
             }
 
-            // ✅ Client-side: check minimum length
             if (this.password.length < 8) {
                 toast.error("Password must be at least 8 characters.", {
                     autoClose: 1000,
@@ -57,6 +76,8 @@ export default {
                 });
                 return;
             }
+
+            this.loading = true;
 
             try {
                 await axios.post(
@@ -77,16 +98,13 @@ export default {
                     position: "top-right",
                 });
 
-                // Set 15-min cookie
                 setCookie("profile_verified", "true", 15);
-
                 this.$emit("close");
             } catch (error) {
-                // ✅ Server-side validation error handler
                 const messages = error.response?.data?.errors;
                 if (messages) {
                     const allErrors = Object.values(messages).flat();
-                    allErrors.forEach(msg => {
+                    allErrors.forEach((msg) => {
                         toast.error(msg, {
                             autoClose: 1500,
                             position: "top-right",
@@ -99,9 +117,28 @@ export default {
                     });
                 }
                 console.error(error);
+            } finally {
+                this.loading = false;
             }
         },
     },
+    mounted() {
+        // Focus on the first input when modal appears
+        if (this.visible && this.$refs.firstInput) {
+            this.$refs.firstInput.focus();
+        }
+    },
+    watch: {
+        visible(newVal) {
+            if (newVal) {
+                this.$nextTick(() => {
+                    if (this.$refs.firstInput) {
+                        this.$refs.firstInput.focus();
+                    }
+                });
+            }
+        }
+    }
 };
 </script>
 
@@ -150,7 +187,6 @@ export default {
 }
 
 .modal-content h3 {
-    margin-bottom: 20px;
     font-size: 22px;
     color: #333;
     font-weight: 600;

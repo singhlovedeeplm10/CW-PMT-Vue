@@ -605,6 +605,7 @@ public function employeeAttendances(Request $request)
         },
         'profile:user_id,user_image'
     ])
+    ->where('id', '!=', 1) // Exclude user with ID 1
     ->orderBy('name', 'asc');
 
     // Apply search filters
@@ -831,8 +832,9 @@ public function employeeAttendances(Request $request)
             }
 
             $groupedAttendances[$date]['total_break_time'] += $attendance->breaks->sum(function ($break) {
-                return Carbon::parse($break->break_time)->secondsSinceMidnight();
-            });
+    return $break->break_time ? Carbon::parse($break->break_time)->secondsSinceMidnight() : 0;
+});
+
         }
 
 foreach ($groupedAttendances as $date => $data) {
@@ -906,30 +908,46 @@ foreach ($groupedAttendances as $date => $data) {
         return response()->json($detailedLogs);
     }
 
-    public function getEmployeeBreaksTimelogs(Request $request)
-    {
-        $userId = $request->query('user_id');
-        $date = $request->query('date');
+public function getEmployeeBreaksTimelogs(Request $request)
+{
+    $userId = $request->query('user_id');
+    $date = $request->query('date');
 
-        // Fetch user from users table
-        $user = User::find($userId);
-        if (!$user) {
-            return response()->json([]);
-        }
-
-        // Fetch break details
-        $breakLogs = Breaks::where('user_id', $userId)
-            ->whereDate('end_time', $date)
-            ->get(['end_time', 'break_time', 'reason'])
-            ->map(function ($break) {
-                $break->start_time = $break->end_time
-                    ? \Carbon\Carbon::parse($break->end_time)->subSeconds(\Carbon\Carbon::parse($break->break_time)->secondsSinceMidnight())->toDateTimeString()
-                    : null;
-                return $break;
-            });
-
-        return response()->json($breakLogs);
+    $user = User::find($userId);
+    if (!$user) {
+        return response()->json([]);
     }
+
+    $breakLogs = Breaks::where('user_id', $userId)
+        ->whereDate('created_at', $date) // use created_at instead of end_time for reliability
+        ->orderBy('end_time', 'asc')
+        ->get()
+        ->map(function ($break) {
+            // Break Time — default to "00:00:00" if null
+            $breakTimeStr = $break->break_time ?? '00:00:00';
+            $breakSeconds = Carbon::parse($breakTimeStr)->secondsSinceMidnight();
+
+            // Calculate start_time if end_time exists
+            if ($break->end_time) {
+                $startTime = Carbon::parse($break->end_time)->subSeconds($breakSeconds)->toDateTimeString();
+                $endTime = Carbon::parse($break->end_time)->toDateTimeString();
+            } else {
+                // fallback start_time or null
+                $startTime = $break->start_time ? Carbon::parse($break->start_time)->toDateTimeString() : null;
+                $endTime = null; // will be formatted as "NA"
+            }
+
+            return [
+                'start_time' => $startTime ?? 'NA',
+                'end_time' => $endTime,
+                'break_time' => $breakTimeStr,
+                'reason' => $break->reason ?? '',
+            ];
+        });
+
+    return response()->json($breakLogs);
+}
+
 
 public function getAllEmployeeTimeLogs()
 {
@@ -968,10 +986,13 @@ $lastClockOut = $hasClockOut
 
 
             $totalBreakSeconds = $attendances->sum(function ($attendance) {
-                return $attendance->breaks->sum(function ($break) {
-                    return Carbon::parse($break->break_time)->secondsSinceMidnight();
-                });
-            });
+    return $attendance->breaks->sum(function ($break) {
+        return $break->break_time
+            ? Carbon::parse($break->break_time)->secondsSinceMidnight()
+            : 0;
+    });
+});
+
 
             $totalHoursSeconds = $attendances->sum(function ($attendance) use ($lastClockOut) {
     if ($attendance->productive_hours) {

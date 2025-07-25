@@ -19,6 +19,12 @@
 
           <button type="button" class="close-modal" data-bs-dismiss="modal" aria-label="Close">&times;</button>
         </div>
+        <!-- Employee Info -->
+        <div class="d-flex align-items-center m-2">
+          <img :src="leave.employee_image ? leave.employee_image : 'img/CWlogo.jpeg'" alt="Employee Image"
+            class="rounded-circle me-2" style="width: 50px; height: 50px;">
+          <span>{{ leave.employee_name }}</span>
+        </div>
         <div class="modal-body">
           <form @submit.prevent="submitLeaveUpdate">
             <div class="mb-3">

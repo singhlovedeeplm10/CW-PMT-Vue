@@ -25,19 +25,17 @@
 
                     <!-- Training Start Date -->
                     <div class="mb-3">
-                        <InputField label="Training Start Date" id="training_start_date"
-                            v-model="trainee.training_start_date" placeholder="YYYY-MM-DD" type="date"
-                            :error="fieldErrors.training_start_date"
-                            :class="{ 'input-error': fieldErrors.training_start_date }"
-                            @input="clearTrainingStartDateError" />
-                        <p v-if="fieldErrors.training_start_date" class="error-message">{{
-                            fieldErrors.training_start_date }}</p>
+                        <!-- Training Start Date -->
+                        <DateInput label="Training Start Date" id="training_start_date"
+                            v-model="trainee.training_start_date" :error="fieldErrors.training_start_date"
+                            @update:modelValue="clearTrainingStartDateError" />
+
                     </div>
 
                     <!-- Training Note -->
                     <div class="mb-3">
-                        <label for="training-note-editor">Description</label>
-                        <div id="training-note-editor"></div>
+                        <label for="training_note">Training Note</label>
+                        <div id="training_note"></div>
                     </div>
                 </div>
 
@@ -66,6 +64,7 @@ import "vue3-toastify/dist/index.css";
 import ButtonComponent from "@/components/forms/ButtonComponent.vue";
 import InputField from "@/components/inputs/InputField.vue";
 import EmailInput from "@/components/inputs/EmailInput.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
 import $ from "jquery";
 import "summernote/dist/summernote-lite.css";
 import "summernote/dist/summernote-lite.js";
@@ -77,9 +76,10 @@ export default {
         ButtonComponent,
         InputField,
         EmailInput,
+        DateInput
     },
     mounted() {
-        $("#training-note-editor").summernote({
+        $("#training_note").summernote({
             placeholder: "Enter a detailed description",
             tabsize: 2,
             height: 200,
@@ -181,13 +181,14 @@ export default {
         };
 
         const addTrainee = async () => {
+            trainee.value.training_note = $("#training_note").summernote("code");
             if (!validateFields()) {
                 return;
             }
 
             isLoading.value = true;
             try {
-                const response = await axios.post("/api/trainees", trainee.value);
+                const response = await axios.post("/api/add-trainee", trainee.value);
                 toast.success("Trainee added successfully.", {
                     position: "top-right",
                     autoClose: 1000,

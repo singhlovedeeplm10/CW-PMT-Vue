@@ -99,13 +99,22 @@ export default {
   min-height: 0;
 }
 
-.employee-row {
+/* .employee-row {
   display: flex;
   flex-wrap: wrap;
   overflow-y: auto;
   gap: 20px;
   padding-bottom: 10px;
   align-items: flex-start;
+} */
+
+.employee-row {
+  overflow-y: auto;
+  padding-bottom: 10px;
+  align-items: flex-start;
+  display: grid;
+  gap: 30px;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .employee-card {
@@ -126,7 +135,7 @@ export default {
   margin-bottom: 8px;
 }
 
-.employee-name {
+/* .employee-name {
   font-size: 14px;
   font-weight: 600;
   color: #333;
@@ -136,7 +145,20 @@ export default {
   max-width: 100%;
   padding: 4px 10px;
   margin: 0;
+} */
+
+.employee-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  padding: 4px 10px;
+  margin: 0;
+  word-wrap: break-word;
+  max-width: 100%;
+  line-height: 1.2;
 }
+
 
 .missing-entry {
   border-radius: 12px;

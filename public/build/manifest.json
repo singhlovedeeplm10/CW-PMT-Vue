@@ -1,6 +1,6 @@
 {
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-EzFTVLRE.js",
+    "file": "assets/index.es-gXKjG_KT.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -31,12 +31,12 @@
     "src": "node_modules/summernote/dist/font/summernote.woff2"
   },
   "resources/css/home.css": {
-    "file": "assets/home-BOjmzvvl.css",
+    "file": "assets/home-H57r1b9k.css",
     "src": "resources/css/home.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-BO7NXSKT.js",
+    "file": "assets/app-DzpL35sw.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -45,7 +45,7 @@
       "node_modules/canvg/lib/index.es.js"
     ],
     "css": [
-      "assets/app-B_o4_7zf.css"
+      "assets/app-Cdp5_1Qh.css"
     ],
     "assets": [
       "assets/summernote-jt9apK1s.eot",

@@ -218,18 +218,21 @@ export default {
 
 /* Scrollbar styling */
 .task-card-body::-webkit-scrollbar {
-  height: 6px;
   width: 6px;
-  background-color: #f1f1f1;
+}
+
+.task-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
+  background: #888;
   border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb:hover {
-  background-color: #a1a1a1;
+  background: #555;
 }
 
 table {
