@@ -52,12 +52,33 @@
           <h5 class="upcoming-leaves-modal__title">Upcoming Leaves</h5>
           <button type="button" class="close-modal" @click="closeModal" aria-label="Close">&times;</button>
         </div>
-        <div class="upcoming-leaves-filter">
-          <select id="monthFilter" class="upcoming-leaves-filter__select" v-model="monthsFilter"
-            @change="fetchUpcomingLeaves">
-            <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
-          </select>
-        </div>
+        <!-- Header -->
+        <div class="upcoming-leaves-header d-flex flex-column gap-2 px-3 pt-3">
+  <!-- Filter Row -->
+  <div class="upcoming-leaves-filter d-flex justify-content-between gap-2">
+    <!-- Left-aligned filters -->
+    <div class="d-flex gap-2">
+      <!-- Name Search -->
+      <input type="text" class="form-control upcoming-leaves-filter__input" placeholder="Search by name"
+        v-model="searchName" style="width: 180px;" />
+
+      <!-- Status Filter -->
+      <select class="form-select upcoming-leaves-filter__select" v-model="statusFilter" style="width: 150px;">
+        <option value="">All Statuses</option>
+        <option value="approved">Approved</option>
+        <option value="pending">Pending</option>
+        <option value="hold">Hold</option>
+      </select>
+    </div>
+
+    <!-- Right-aligned Month Filter -->
+    <select id="monthFilter" class="form-select upcoming-leaves-filter__select" v-model="monthsFilter"
+      @change="fetchUpcomingLeaves" style="width: 150px;">
+      <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+    </select>
+  </div>
+</div>
+
         <div class="upcoming-leaves-modal__body">
           <div v-if="loadingUpcomingLeaves" class="upcoming-leaves-loading">
             <div class="spinner-border text-primary" role="status">
@@ -65,9 +86,10 @@
             </div>
           </div>
           <div v-else>
-            <div v-if="upcomingLeaves.length === 0" class="upcoming-leaves-empty">
-              No upcoming approved leaves found for the selected period.
+            <div v-if="filteredUpcomingLeaves.length === 0" class="upcoming-leaves-empty">
+              No upcoming approved leaves found for the selected filters.
             </div>
+
             <div v-else class="upcoming-leaves-table-container">
               <table class="upcoming-leaves-table">
                 <thead class="upcoming-leaves-table__head">
@@ -79,7 +101,7 @@
                   </tr>
                 </thead>
                 <tbody class="upcoming-leaves-table__body">
-                  <tr v-for="leave in upcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
+                  <tr v-for="leave in filteredUpcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
                     @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                     <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--name">
                       <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
@@ -149,7 +171,7 @@
 <script>
 import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 
 export default {
   name: "TeamMembersOnLeave",
@@ -162,6 +184,16 @@ export default {
     const upcomingLeaves = ref([]);
     const loadingUpcomingLeaves = ref(false);
     const monthsFilter = ref(2);
+    const searchName = ref("");
+    const statusFilter = ref("");
+
+    const filteredUpcomingLeaves = computed(() => {
+      return upcomingLeaves.value.filter((leave) => {
+        const nameMatch = leave.user.name.toLowerCase().includes(searchName.value.toLowerCase());
+        const statusMatch = statusFilter.value ? leave.status === statusFilter.value : true;
+        return nameMatch && statusMatch;
+      });
+    });
 
     const fetchUsersOnLeave = async (selectedDate) => {
       loadingUsersOnLeave.value = true;
@@ -254,7 +286,10 @@ export default {
       calculateDays,
       formatDate,
       fetchUsersOnLeave,
-      openLeaveInNewTab
+      openLeaveInNewTab,
+      searchName,
+      statusFilter,
+      filteredUpcomingLeaves
     };
   },
 };
@@ -397,7 +432,6 @@ export default {
 /* Filter Section */
 .upcoming-leaves-filter {
   text-align: right;
-  padding-top: 18px;
   padding-right: 23px;
 }
 

@@ -62,12 +62,33 @@
             <h5 class="upcoming-wfh-modal__title">Upcoming WFHs</h5>
             <button type="button" class="close-modal" @click="closeUpcomingWFHModal" aria-label="Close">&times;</button>
           </div>
-          <div class="upcoming-wfh-filter">
-            <select id="wfhMonthFilter" class="upcoming-wfh-filter__select" v-model="wfhMonthFilter"
-              @change="fetchUpcomingWFH">
-              <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
-            </select>
+          <!-- Upcoming WFHs Header -->
+          <div class="upcoming-wfh-header d-flex flex-column gap-2 px-3 pt-3">
+            <!-- Filters -->
+            <div class="upcoming-wfh-filter d-flex justify-content-between gap-2">
+              <!-- Left-aligned filters -->
+              <div class="d-flex gap-2">
+                <!-- Search Input -->
+                <input type="text" class="form-control upcoming-wfh-filter__input" placeholder="Search by name"
+                  v-model="wfhSearchName" style="width: 200px;" />
+
+                <!-- Status Filter -->
+                <select class="form-select upcoming-wfh-filter__select" v-model="wfhStatusFilter" style="width: 150px;">
+                  <option value="">All Statuses</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="hold">Hold</option>
+                </select>
+              </div>
+
+              <!-- Right-aligned Month Filter -->
+              <select id="wfhMonthFilter" class="form-select upcoming-wfh-filter__select" v-model="wfhMonthFilter"
+                @change="fetchUpcomingWFH" style="width: 150px;">
+                <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+              </select>
+            </div>
           </div>
+
           <div class="upcoming-wfh-modal__body">
             <div v-if="loadingUpcomingWFH" class="upcoming-wfh-loading">
               <div class="spinner-border text-primary" role="status">
@@ -75,9 +96,10 @@
               </div>
             </div>
             <div v-else>
-              <div v-if="upcomingWFH.length === 0" class="upcoming-wfh-empty">
-                No upcoming WFH records found for the selected period.
+              <div v-if="filteredUpcomingWFH.length === 0" class="upcoming-wfh-empty">
+                No upcoming WFH records found for the selected filters.
               </div>
+
               <div v-else class="upcoming-wfh-table-container">
                 <table class=" upcoming-wfh-table">
                   <thead class="upcoming-wfh-table__head">
@@ -89,7 +111,7 @@
                     </tr>
                   </thead>
                   <tbody class="upcoming-wfh-table__body">
-                    <tr v-for="leave in upcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
+                    <tr v-for="leave in filteredUpcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
                       @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name">
                         <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
@@ -164,8 +186,27 @@ export default {
       upcomingWFH: [],
       loadingUpcomingWFH: false,
       wfhMonthFilter: 2,
+      wfhSearchName: "",
+      wfhStatusFilter: "",
+
     };
   },
+  computed: {
+    filteredUpcomingWFH() {
+      return this.upcomingWFH.filter((leave) => {
+        const nameMatch = leave.user.name
+          .toLowerCase()
+          .includes(this.wfhSearchName.toLowerCase());
+
+        const statusMatch = this.wfhStatusFilter
+          ? leave.status === this.wfhStatusFilter
+          : true;
+
+        return nameMatch && statusMatch;
+      });
+    },
+  },
+
   methods: {
     openLeaveInNewTab(leave) {
       const leaveId = leave.id;
@@ -317,7 +358,6 @@ export default {
 /* Filter Section */
 .upcoming-wfh-filter {
   text-align: right;
-  padding-top: 18px;
   padding-right: 23px;
 }
 
