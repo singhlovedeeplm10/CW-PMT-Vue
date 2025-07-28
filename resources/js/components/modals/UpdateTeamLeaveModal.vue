@@ -35,17 +35,9 @@
             <!-- Conditionally show start date and end date based on leave type -->
             <div v-if="leave.type_of_leave === 'Full Day Leave' || leave.type_of_leave === 'Work From Home Full Day'"
               class="date-fields">
-              <div class="mb-3">
-                <label for="startDate" class="form-label">Start Date</label>
-                <input type="date" v-model="leave.start_date" id="startDate" class="form-control" required />
-              </div>
-
-              <div class="mb-3">
-                <label for="endDate" class="form-label">End Date</label>
-                <input type="date" v-model="leave.end_date" id="endDate" class="form-control" required />
-              </div>
+              <DateInput v-model="leave.start_date" id="startDate" name="start_date" label="Start Date" />
+              <DateInput v-model="leave.end_date" id="endDate" name="end_date" label="End Date" />
             </div>
-
 
             <!-- Conditionally show "Half Day" specific field -->
             <div v-if="leave.type_of_leave === 'Half Day Leave'" class="mb-3">
@@ -61,25 +53,24 @@
             <!-- Conditionally show "Short Leave" specific fields -->
             <div v-if="leave.type_of_leave === 'Short Leave'" class="time-fields">
               <div class="mb-3">
-                <label for="startTime" class="form-label">Start Time</label>
-                <input type="time" v-model="leave.start_time" id="startTime" class="form-control" required
-                  pattern="[0-9]{2}:[0-9]{2}" />
+                <TimeInput v-model="leave.start_time" label="Start Time" id="startTime" name="startTime"
+                  :disabled="!leave.isEditable" :minTime="'09:00'" :maxTime="'18:00'"
+                  @update:modelValue="validateShortLeaveTime" />
               </div>
 
               <div class="mb-3">
-                <label for="endTime" class="form-label">End Time</label>
-                <input type="time" v-model="leave.end_time" id="endTime" class="form-control" required
-                  @change="validateShortLeaveTime" />
-                <div v-if="timeError" class="text-danger mt-1">{{ timeError }}</div>
+                <TimeInput v-model="leave.end_time" label="End Time" id="endTime" name="endTime"
+                  :disabled="!leave.isEditable" :minTime="'09:00'" :maxTime="'18:00'" :error="timeError"
+                  @update:modelValue="validateShortLeaveTime" />
               </div>
             </div>
 
             <div
               v-if="leave.type_of_leave === 'Half Day Leave' || leave.type_of_leave === 'Work From Home Half Day' || leave.type_of_leave === 'Short Leave'"
               class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" v-model="leave.start_date" id="startDate" class="form-control" required />
+              <DateInput v-model="leave.start_date" id="startDate" name="start_date" label="Start Date" />
             </div>
+
             <!-- Reason and Contact fields -->
             <div class="mb-3">
               <label for="reason" class="form-label">Reason</label>
@@ -121,11 +112,15 @@ import axios from "axios";
 import * as bootstrap from "bootstrap";
 import { toast } from "vue3-toastify";
 import SelectInput from "@/components/inputs/SelectInput.vue";
+import TimeInput from "@/components/inputs/TimeInput.vue";
+import DateInput from "@/components/inputs/DateInput.vue";
 
 export default {
   name: "UpdateTeamLeaveModal",
   components: {
     SelectInput,
+    TimeInput,
+    DateInput
   },
   props: {
     leave: {

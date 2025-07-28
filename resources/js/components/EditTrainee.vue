@@ -1,9 +1,11 @@
 <template>
     <master-component>
         <div class="edit-employee-page">
-            <div class="header d-flex justify-content-between align-items-center mb-4">
+            <div
+                class="header d-flex justify-content-between align-items-center mb-4"
+            >
                 <h2 class="title_heading">Edit Trainee</h2>
-                <router-link to="/trainees" style="text-decoration: none;">
+                <router-link to="/trainees" style="text-decoration: none">
                     <i class="fas fa-arrow-left me-2"></i>Go Back
                 </router-link>
             </div>
@@ -20,27 +22,67 @@
                         <div class="row">
                             <!-- Left Column -->
                             <div class="col-md-4">
-                                <div class="user-profile-card text-center p-4 mb-4">
-                                    <div class="position-relative d-inline-block">
-                                        <img :src="formData.trainee_image_url || '/img/CWlogo.jpeg'" alt="Trainee Image"
+                                <div
+                                    class="user-profile-card text-center p-4 mb-4"
+                                >
+                                    <div
+                                        class="position-relative d-inline-block"
+                                    >
+                                        <img
+                                            :src="
+                                                formData.trainee_image_url ||
+                                                '/img/CWlogo.jpeg'
+                                            "
+                                            alt="Trainee Image"
                                             class="img-thumbnail circular-image mb-3"
-                                            style="width: 200px; height: 200px;">
-                                        <label for="trainee_image"
+                                            style="width: 200px; height: 200px"
+                                        />
+                                        <label
+                                            for="trainee_image"
                                             class="badge bg-primary position-absolute top-0 end-0 rounded-circle p-2"
-                                            style="cursor: pointer;">
+                                            style="cursor: pointer"
+                                        >
                                             <i class="fas fa-camera"></i>
                                         </label>
-                                        <input id="trainee_image" type="file"
+                                        <input
+                                            id="trainee_image"
+                                            type="file"
                                             accept="image/png, image/jpeg, image/jpg, image/webp"
-                                            @change="handleImageUpload" class="d-none">
+                                            @change="handleImageUpload"
+                                            class="d-none"
+                                        />
                                     </div>
-                                    <h3 class="mb-1" style="color: black; margin-top: 10px;">{{ formData.trainee_name ||
-                                        'Trainee Name' }}
+                                    <h3
+                                        class="mb-1"
+                                        style="color: black; margin-top: 10px"
+                                    >
+                                        {{
+                                            formData.trainee_name ||
+                                            "Trainee Name"
+                                        }}
                                     </h3>
-                                    <div class="d-flex justify-content-center gap-2 mb-3" style="margin-top: 15px;">
-                                        <span class="badge"
-                                            :class="'status-' + (formData.status ? formData.status.toLowerCase().replace(' ', '-') : 'active')">
-                                            {{ formData.status ? capitalizeFirstLetter(formData.status) : 'Active' }}
+                                    <div
+                                        class="d-flex justify-content-center gap-2 mb-3"
+                                        style="margin-top: 15px"
+                                    >
+                                        <span
+                                            class="badge"
+                                            :class="
+                                                'status-' +
+                                                (formData.status
+                                                    ? formData.status
+                                                          .toLowerCase()
+                                                          .replace(' ', '-')
+                                                    : 'active')
+                                            "
+                                        >
+                                            {{
+                                                formData.status
+                                                    ? capitalizeFirstLetter(
+                                                          formData.status
+                                                      )
+                                                    : "Active"
+                                            }}
                                         </span>
                                     </div>
                                 </div>
@@ -48,88 +90,186 @@
 
                             <!-- Right Column -->
                             <div class="col-md-8">
-                                <ul class="nav nav-tabs mb-4" id="traineeTabs" role="tablist">
+                                <ul
+                                    class="nav nav-tabs mb-4"
+                                    id="traineeTabs"
+                                    role="tablist"
+                                >
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="personal-tab" data-bs-toggle="tab"
-                                            data-bs-target="#personal" type="button" role="tab">
-                                            <i class="fas fa-user-circle me-2"></i> Personal Information
+                                        <button
+                                            class="nav-link active"
+                                            id="personal-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#personal"
+                                            type="button"
+                                            role="tab"
+                                        >
+                                            <i
+                                                class="fas fa-user-circle me-2"
+                                            ></i>
+                                            Personal Information
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="training-tab" data-bs-toggle="tab"
-                                            data-bs-target="#training" type="button" role="tab">
-                                            <i class="fas fa-briefcase me-2"></i> Training Information
+                                        <button
+                                            class="nav-link"
+                                            id="training-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#training"
+                                            type="button"
+                                            role="tab"
+                                        >
+                                            <i
+                                                class="fas fa-briefcase me-2"
+                                            ></i>
+                                            Training Information
                                         </button>
                                     </li>
                                 </ul>
 
-                                <div class="tab-content" id="traineeTabsContent">
+                                <div
+                                    class="tab-content"
+                                    id="traineeTabsContent"
+                                >
                                     <!-- Personal Information Tab -->
-                                    <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                                    <div
+                                        class="tab-pane fade show active"
+                                        id="personal"
+                                        role="tabpanel"
+                                    >
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <InputField v-model="formData.trainee_name" label="Full Name"
-                                                    inputType="text" placeholder="Enter Full Name" required />
+                                                <InputField
+                                                    v-model="
+                                                        formData.trainee_name
+                                                    "
+                                                    label="Full Name"
+                                                    inputType="text"
+                                                    placeholder="Enter Full Name"
+                                                    required
+                                                />
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <EmailInput label="Personal Email" id="trainee_email"
-                                                    v-model="formData.trainee_email" placeholder="Enter personal email"
-                                                    required />
+                                                <EmailInput
+                                                    label="Personal Email"
+                                                    id="trainee_email"
+                                                    v-model="
+                                                        formData.trainee_email
+                                                    "
+                                                    placeholder="Enter personal email"
+                                                    required
+                                                />
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <DateInput v-model="formData.trainee_DOB" label="Date of Birth" />
+                                                <DateInput
+                                                    v-model="
+                                                        formData.trainee_DOB
+                                                    "
+                                                    label="Date of Birth"
+                                                />
                                             </div>
                                             <div class="col-md-6">
-                                                <SelectInput v-model="formData.gender" :options="genderOptions"
-                                                    label="Gender" name="gender" id="gender"
-                                                    placeholder="Select Gender" />
+                                                <SelectInput
+                                                    v-model="formData.gender"
+                                                    :options="genderOptions"
+                                                    label="Gender"
+                                                    name="gender"
+                                                    id="gender"
+                                                    placeholder="Select Gender"
+                                                />
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <TextArea v-model="formData.trainee_qualifications" label="Qualifications"
-                                                inputType="text" placeholder="Enter qualifications" />
+                                            <TextArea
+                                                v-model="
+                                                    formData.trainee_qualifications
+                                                "
+                                                label="Qualifications"
+                                                inputType="text"
+                                                placeholder="Enter qualifications"
+                                            />
                                         </div>
 
                                         <div class="mb-3">
-                                            <NumberInput v-model="formData.trainee_contact" label="Contact Number"
-                                                id="trainee_contact" placeholder="Enter contact number"
-                                                :hasError="!!contactError" :errorMessage="contactError"
-                                                @input-blur="validateContact" maxlength="10" />
+                                            <NumberInput
+                                                v-model="
+                                                    formData.trainee_contact
+                                                "
+                                                label="Contact Number"
+                                                id="trainee_contact"
+                                                placeholder="Enter contact number"
+                                                :hasError="!!contactError"
+                                                :errorMessage="contactError"
+                                                @input-blur="validateContact"
+                                                maxlength="10"
+                                            />
                                         </div>
                                     </div>
 
                                     <!-- Training Information Tab -->
-                                    <div class="tab-pane fade" id="training" role="tabpanel">
+                                    <div
+                                        class="tab-pane fade"
+                                        id="training"
+                                        role="tabpanel"
+                                    >
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
-                                                <DateInput v-model="formData.training_start_date"
-                                                    label="Training Start Date" />
+                                                <DateInput
+                                                    v-model="
+                                                        formData.training_start_date
+                                                    "
+                                                    label="Training Start Date"
+                                                />
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <DateInput v-model="formData.training_end_date"
-                                                    label="Training End Date" />
+                                                <DateInput
+                                                    v-model="
+                                                        formData.training_end_date
+                                                    "
+                                                    label="Training End Date"
+                                                />
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <SelectInput v-model="formData.status" :options="statusOptions"
-                                                label="Status" name="status" id="status" placeholder="Select Status" />
+                                            <SelectInput
+                                                v-model="formData.status"
+                                                :options="statusOptions"
+                                                label="Status"
+                                                name="status"
+                                                id="status"
+                                                placeholder="Select Status"
+                                            />
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="training_note">Training Note</label>
-                                            <div id="training_note" class="summernote-editor"></div>
+                                            <label for="training_note"
+                                                >Training Note</label
+                                            >
+                                            <div
+                                                id="training_note"
+                                                class="summernote-editor"
+                                            ></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end border-top pt-3 mt-4">
-                                    <button type="submit" class="btn btn-primary me-2" :disabled="loading">
-                                        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                                <div
+                                    class="d-flex justify-content-end border-top pt-3 mt-4"
+                                >
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary me-2"
+                                        :disabled="loading"
+                                    >
+                                        <span
+                                            v-if="loading"
+                                            class="spinner-border spinner-border-sm me-2"
+                                        ></span>
                                         {{ loading ? "Updating..." : "Update" }}
                                     </button>
                                 </div>
@@ -158,7 +298,7 @@ import "summernote/dist/summernote-lite.css";
 import "summernote/dist/summernote-lite.js";
 
 export default {
-    name: 'EditTrainee',
+    name: "EditTrainee",
     components: {
         MasterComponent,
         TextArea,
@@ -166,43 +306,43 @@ export default {
         NumberInput,
         InputField,
         DateInput,
-        SelectInput
+        SelectInput,
     },
     filters: {
         capitalize: function (value) {
-            if (!value) return '';
+            if (!value) return "";
             value = value.toString();
             return value.charAt(0).toUpperCase() + value.slice(1);
-        }
+        },
     },
     data() {
         return {
             isLoading: false,
             loading: false,
             formData: {
-                trainee_name: '',
-                trainee_email: '',
+                trainee_name: "",
+                trainee_email: "",
                 trainee_DOB: null,
                 gender: null,
-                trainee_qualifications: '',
-                trainee_contact: '',
+                trainee_qualifications: "",
+                trainee_contact: "",
                 training_start_date: null,
                 training_end_date: null,
-                training_note: '',
-                status: 'active',
+                training_note: "",
+                status: "active",
                 trainee_image: null,
-                trainee_image_url: '',
+                trainee_image_url: "",
             },
             genderOptions: [
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' }
+                { value: "male", label: "Male" },
+                { value: "female", label: "Female" },
             ],
             statusOptions: [
-                { value: 'active', label: 'Active' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'not completed', label: 'Not Completed' }
+                { value: "active", label: "Active" },
+                { value: "completed", label: "Completed" },
+                { value: "not completed", label: "Not Completed" },
             ],
-            contactError: ""
+            contactError: "",
         };
     },
     mounted() {
@@ -212,37 +352,68 @@ export default {
         });
     },
     watch: {
-        'formData.training_note'(newVal) {
-            if (newVal && $('#training_note').summernote('code') !== newVal) {
-                $('#training_note').summernote('code', newVal);
+        "formData.training_note"(newVal) {
+            if (newVal && $("#training_note").summernote("code") !== newVal) {
+                $("#training_note").summernote("code", newVal);
             }
         },
-        'formData.training_end_date'(newVal) {
+        "formData.training_end_date"(newVal) {
             if (newVal) {
-                this.formData.status = 'completed';
+                this.formData.status = "completed";
             }
-        }
+        },
     },
     methods: {
         capitalizeFirstLetter(string) {
-            if (!string) return '';
+            if (!string) return "";
             // Capitalize first letter of each word
-            return string.split(' ').map(word =>
-                word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
+            return string
+                .split(" ")
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(" ");
         },
         initSummernote() {
-            $('#training_note').summernote({
+            $("#training_note").summernote({
                 placeholder: "Enter a detailed description",
                 tabsize: 2,
                 height: 200,
                 dialogsInBody: true,
+                toolbar: [
+                    ["style", ["style"]],
+                    ["font", ["bold", "italic", "underline", "clear"]],
+                    ["fontname", ["fontname"]],
+                    ["fontsize", ["fontsize"]], // This adds the font size dropdown
+                    ["color", ["color"]],
+                    ["para", ["ul", "ol", "paragraph"]],
+                    ["height", ["height"]],
+                    ["table", ["table"]],
+                    ["insert", ["link", "picture", "hr"]],
+                    ["view", ["fullscreen", "codeview"]],
+                    ["help", ["help"]],
+                ],
+                fontSizes: [
+                    "8",
+                    "9",
+                    "10",
+                    "11",
+                    "12",
+                    "14",
+                    "16",
+                    "18",
+                    "20",
+                    "22",
+                    "24",
+                    "36",
+                ], // Custom font sizes
                 callbacks: {
                     onInit: () => {
                         $(".note-modal").appendTo("body");
                         // Set content after initialization
                         if (this.formData.training_note) {
-                            $('#training_note').summernote('code', this.formData.training_note);
+                            $("#training_note").summernote(
+                                "code",
+                                this.formData.training_note
+                            );
                         }
                     },
                 },
@@ -257,17 +428,21 @@ export default {
                 // Format dates properly
                 const formatDate = (dateString) => {
                     if (!dateString) return null;
-                    return new Date(dateString).toISOString().split('T')[0];
+                    return new Date(dateString).toISOString().split("T")[0];
                 };
 
                 this.formData = {
                     ...response.data,
                     trainee_DOB: formatDate(response.data.trainee_DOB),
-                    training_start_date: formatDate(response.data.training_start_date),
-                    training_end_date: formatDate(response.data.training_end_date),
+                    training_start_date: formatDate(
+                        response.data.training_start_date
+                    ),
+                    training_end_date: formatDate(
+                        response.data.training_end_date
+                    ),
                     trainee_image_url: response.data.trainee_image
                         ? `/uploads/${response.data.trainee_image}`
-                        : '/img/CWlogo.jpeg'
+                        : "/img/CWlogo.jpeg",
                 };
 
                 // Initialize Summernote after data is loaded
@@ -277,18 +452,47 @@ export default {
                         tabsize: 2,
                         height: 200,
                         dialogsInBody: true,
+                        toolbar: [
+                            ["style", ["style"]],
+                            ["font", ["bold", "italic", "underline", "clear"]],
+                            ["fontname", ["fontname"]],
+                            ["fontsize", ["fontsize"]], // This adds the font size dropdown
+                            ["color", ["color"]],
+                            ["para", ["ul", "ol", "paragraph"]],
+                            ["height", ["height"]],
+                            ["table", ["table"]],
+                            ["insert", ["link", "picture", "hr"]],
+                            ["view", ["fullscreen", "codeview"]],
+                            ["help", ["help"]],
+                        ],
+                        fontSizes: [
+                            "8",
+                            "9",
+                            "10",
+                            "11",
+                            "12",
+                            "14",
+                            "16",
+                            "18",
+                            "20",
+                            "22",
+                            "24",
+                            "36",
+                        ], // Custom font sizes
                     });
                     // Set the content after initialization
-                    $("#training_note").summernote('code', this.formData.training_note || '');
+                    $("#training_note").summernote(
+                        "code",
+                        this.formData.training_note || ""
+                    );
                 });
-
             } catch (error) {
                 console.error("Error fetching trainee data:", error);
                 toast.error("Failed to load trainee data", {
                     position: "top-right",
                     autoClose: 3000,
                 });
-                this.$router.push('/trainees');
+                this.$router.push("/trainees");
             } finally {
                 this.isLoading = false;
             }
@@ -297,7 +501,8 @@ export default {
         validateContact() {
             const contact = this.formData.trainee_contact;
             if (contact && !/^\d*$/.test(contact)) {
-                this.contactError = "Contact number should contain only digits.";
+                this.contactError =
+                    "Contact number should contain only digits.";
             } else if (contact && contact.length !== 10) {
                 this.contactError = "Contact number must be exactly 10 digits.";
             } else {
@@ -309,9 +514,16 @@ export default {
             const file = event.target.files[0];
             if (file) {
                 // Validate file type
-                const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+                const validTypes = [
+                    "image/png",
+                    "image/jpeg",
+                    "image/jpg",
+                    "image/webp",
+                ];
                 if (!validTypes.includes(file.type)) {
-                    toast.error("Only image files (PNG, JPG, JPEG, WEBP) are allowed.");
+                    toast.error(
+                        "Only image files (PNG, JPG, JPEG, WEBP) are allowed."
+                    );
                     event.target.value = "";
                     return;
                 }
@@ -348,42 +560,70 @@ export default {
 
             this.loading = true;
             try {
-                this.formData.training_note = $("#training_note").summernote("code");
+                this.formData.training_note =
+                    $("#training_note").summernote("code");
 
                 const formData = new FormData();
                 const traineeId = this.$route.params.id;
 
                 // Append ALL fields (including empty ones) to FormData
-                formData.append('trainee_name', this.formData.trainee_name || '');
-                formData.append('trainee_email', this.formData.trainee_email || '');
-                formData.append('status', this.formData.status || '');
+                formData.append(
+                    "trainee_name",
+                    this.formData.trainee_name || ""
+                );
+                formData.append(
+                    "trainee_email",
+                    this.formData.trainee_email || ""
+                );
+                formData.append("status", this.formData.status || "");
 
                 // Append other fields (including empty values)
-                formData.append('trainee_DOB', this.formData.trainee_DOB || '');
-                formData.append('gender', this.formData.gender || '');
-                formData.append('trainee_qualifications', this.formData.trainee_qualifications || '');
-                formData.append('trainee_contact', this.formData.trainee_contact || '');
-                formData.append('training_start_date', this.formData.training_start_date || '');
-                formData.append('training_end_date', this.formData.training_end_date || '');
-                formData.append('training_note', this.formData.training_note || '');
+                formData.append("trainee_DOB", this.formData.trainee_DOB || "");
+                formData.append("gender", this.formData.gender || "");
+                formData.append(
+                    "trainee_qualifications",
+                    this.formData.trainee_qualifications || ""
+                );
+                formData.append(
+                    "trainee_contact",
+                    this.formData.trainee_contact || ""
+                );
+                formData.append(
+                    "training_start_date",
+                    this.formData.training_start_date || ""
+                );
+                formData.append(
+                    "training_end_date",
+                    this.formData.training_end_date || ""
+                );
+                formData.append(
+                    "training_note",
+                    this.formData.training_note || ""
+                );
 
                 if (this.formData.trainee_image instanceof File) {
-                    formData.append('trainee_image', this.formData.trainee_image);
+                    formData.append(
+                        "trainee_image",
+                        this.formData.trainee_image
+                    );
                 }
 
-                const response = await axios.post(`/api/trainees/${traineeId}`, formData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
+                const response = await axios.post(
+                    `/api/trainees/${traineeId}`,
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
 
                 toast.success("Trainee updated successfully!", {
                     position: "top-right",
                     autoClose: 1000,
                 });
 
-                this.$router.push('/trainees');
-
+                this.$router.push("/trainees");
             } catch (error) {
                 console.error("Error updating trainee:", error);
                 let errorMessage = "Error updating trainee";
@@ -392,7 +632,7 @@ export default {
                     if (error.response.data.errors) {
                         errorMessage = Object.values(error.response.data.errors)
                             .flat()
-                            .join(', ');
+                            .join(", ");
                     } else if (error.response.data.message) {
                         errorMessage = error.response.data.message;
                     }
@@ -405,8 +645,8 @@ export default {
             } finally {
                 this.loading = false;
             }
-        }
-    }
+        },
+    },
 };
 </script>
 
@@ -437,7 +677,7 @@ export default {
 
 label {
     font-weight: 500;
-    font-size: 18px
+    font-size: 18px;
 }
 
 .releaved-card {
@@ -452,8 +692,8 @@ label {
     word-wrap: break-word;
     background-color: #fff;
     background-clip: border-box;
-    border: 1px solid rgba(0, 0, 0, .125);
-    border-radius: .25rem;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
 }
 
 .user-details-page {
