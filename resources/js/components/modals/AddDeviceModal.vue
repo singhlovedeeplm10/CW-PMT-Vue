@@ -151,6 +151,33 @@ export default {
             tabsize: 2,
             height: 200,
             dialogsInBody: true,
+             toolbar: [
+                ["style", ["style"]],
+                ["font", ["bold", "italic", "underline", "clear"]],
+                ["fontname", ["fontname"]],
+                ["fontsize", ["fontsize"]], // This adds the font size dropdown
+                ["color", ["color"]],
+                ["para", ["ul", "ol", "paragraph"]],
+                ["height", ["height"]],
+                ["table", ["table"]],
+                ["insert", ["link", "picture", "hr"]],
+                ["view", ["fullscreen", "codeview"]],
+                ["help", ["help"]],
+            ],
+            fontSizes: [
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "14",
+                "16",
+                "18",
+                "20",
+                "22",
+                "24",
+                "36",
+            ], // Custom font sizes
             callbacks: {
                 onInit: function () {
                     $(".note-modal").appendTo("body");
@@ -162,6 +189,33 @@ export default {
             tabsize: 2,
             height: 200,
             dialogsInBody: true,
+             toolbar: [
+                ["style", ["style"]],
+                ["font", ["bold", "italic", "underline", "clear"]],
+                ["fontname", ["fontname"]],
+                ["fontsize", ["fontsize"]], // This adds the font size dropdown
+                ["color", ["color"]],
+                ["para", ["ul", "ol", "paragraph"]],
+                ["height", ["height"]],
+                ["table", ["table"]],
+                ["insert", ["link", "picture", "hr"]],
+                ["view", ["fullscreen", "codeview"]],
+                ["help", ["help"]],
+            ],
+            fontSizes: [
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "14",
+                "16",
+                "18",
+                "20",
+                "22",
+                "24",
+                "36",
+            ], // Custom font sizes
             callbacks: {
                 onInit: function () {
                     $(".note-modal").appendTo("body");

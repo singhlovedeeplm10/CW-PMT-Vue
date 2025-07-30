@@ -1469,23 +1469,40 @@ public function searchUser(Request $request)
 // }
     
     
-    public function show($id)
-    {
-        // Fetch leave by ID
-        $leave = Leave::find($id);
-    
-        if (!$leave) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Leave not found.',
-            ], 404);
-        }
-    
+public function show($id)
+{
+    // Fetch leave with user name and profile image
+    $leave = Leave::join('users', 'leaves.user_id', '=', 'users.id')
+        ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
+        ->where('leaves.id', $id)
+        ->select(
+            'leaves.*',
+            'users.name as employee_name',
+            'user_profiles.user_image'
+        )
+        ->first();
+
+    if (!$leave) {
         return response()->json([
-            'success' => true,
-            'data' => $leave,
-        ]);
+            'success' => false,
+            'message' => 'Leave not found.',
+        ], 404);
     }
+
+    // Construct employee image URL
+    $userImageUrl = $leave->user_image ? asset('uploads/' . $leave->user_image) : null;
+
+    // Return enriched leave data
+    return response()->json([
+        'success' => true,
+        'data' => [
+            ...$leave->toArray(),
+            'employee_name' => $leave->employee_name,
+            'employee_image' => $userImageUrl,
+        ],
+    ]);
+}
+
 
     public function showteamLeaves(Request $request)
 {
@@ -1586,7 +1603,7 @@ public function getUsersLeave(Request $request)
         ->where(function ($query) use ($selectedDate) {
             // For Full Day Leave, check if the selected date is between start_date and end_date
             $query->where(function ($q) use ($selectedDate) {
-                $q->where('type_of_leave', 'Full Day Leave', 'Work From Home Full Day')
+                $q->whereIn('type_of_leave', ['Full Day Leave', 'Work From Home Full Day'])
                   ->whereDate('start_date', '<=', $selectedDate)
                   ->whereDate('end_date', '>=', $selectedDate);
             })
@@ -1611,7 +1628,14 @@ public function getUsersLeave(Request $request)
 
             // Determine the leave description
             $leaveDescription = $leave->type_of_leave;
-            if ($leave->type_of_leave === 'Half Day Leave' && $leave->half || $leave->type_of_leave === 'Work From Home Half Day' && $leave->half) {
+            
+            if ($leave->type_of_leave === 'Short Leave') {
+                // Format time for Short Leave
+                $startTime = date('h:i A', strtotime($leave->start_time));
+                $endTime = date('h:i A', strtotime($leave->end_time));
+                $leaveDescription .= " (from $startTime to $endTime)";
+            } 
+            elseif ($leave->type_of_leave === 'Half Day Leave' && $leave->half || $leave->type_of_leave === 'Work From Home Half Day' && $leave->half) {
                 $leaveDescription .= " ({$leave->half})";
             }
 

@@ -5,7 +5,8 @@
         Team Members on Leave
       </h4>
       <div class="d-flex align-items-center">
-        <button class="btn btn-sm btn-outline-primary me-2" @click="showUpcomingLeaves" style="margin-top: 11px;">
+        <button v-tooltip="'Upcoming members on leave'" class="btn btn-sm btn-outline-primary me-2"
+          @click="showUpcomingLeaves" style="margin-top: 11px;">
           <i class="fa-solid fa-house"></i>
         </button>
         <Calendar :selectedDate="date" @dateSelected="onDateSelected" :showHeader="true" :highlightToday="true" />
@@ -48,15 +49,36 @@
     <div v-if="showUpcomingModal" class="upcoming-leaves-modal" @click.self="closeModal">
       <div class="upcoming-leaves-modal__content">
         <div class="upcoming-leaves-modal__header">
-          <h5 class="upcoming-leaves-modal__title">All Leaves</h5>
+          <h5 class="upcoming-leaves-modal__title">Upcoming Leaves</h5>
           <button type="button" class="close-modal" @click="closeModal" aria-label="Close">&times;</button>
         </div>
-        <div class="upcoming-leaves-filter">
-          <select id="monthFilter" class="upcoming-leaves-filter__select" v-model="monthsFilter"
-            @change="fetchUpcomingLeaves">
-            <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
-          </select>
-        </div>
+        <!-- Header -->
+        <div class="upcoming-leaves-header d-flex flex-column gap-2 px-3 pt-3">
+  <!-- Filter Row -->
+  <div class="upcoming-leaves-filter d-flex justify-content-between gap-2">
+    <!-- Left-aligned filters -->
+    <div class="d-flex gap-2">
+      <!-- Name Search -->
+      <input type="text" class="form-control upcoming-leaves-filter__input" placeholder="Search by name"
+        v-model="searchName" style="width: 180px;" />
+
+      <!-- Status Filter -->
+      <select class="form-select upcoming-leaves-filter__select" v-model="statusFilter" style="width: 150px;">
+        <option value="">All Statuses</option>
+        <option value="approved">Approved</option>
+        <option value="pending">Pending</option>
+        <option value="hold">Hold</option>
+      </select>
+    </div>
+
+    <!-- Right-aligned Month Filter -->
+    <select id="monthFilter" class="form-select upcoming-leaves-filter__select" v-model="monthsFilter"
+      @change="fetchUpcomingLeaves" style="width: 150px;">
+      <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+    </select>
+  </div>
+</div>
+
         <div class="upcoming-leaves-modal__body">
           <div v-if="loadingUpcomingLeaves" class="upcoming-leaves-loading">
             <div class="spinner-border text-primary" role="status">
@@ -64,9 +86,10 @@
             </div>
           </div>
           <div v-else>
-            <div v-if="upcomingLeaves.length === 0" class="upcoming-leaves-empty">
-              No upcoming approved leaves found for the selected period.
+            <div v-if="filteredUpcomingLeaves.length === 0" class="upcoming-leaves-empty">
+              No upcoming approved leaves found for the selected filters.
             </div>
+
             <div v-else class="upcoming-leaves-table-container">
               <table class="upcoming-leaves-table">
                 <thead class="upcoming-leaves-table__head">
@@ -78,7 +101,7 @@
                   </tr>
                 </thead>
                 <tbody class="upcoming-leaves-table__body">
-                  <tr v-for="leave in upcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
+                  <tr v-for="leave in filteredUpcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
                     @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                     <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--name">
                       <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
@@ -99,7 +122,7 @@
                       </div>
 
                       <!-- Full Day or Multi-Day Leave -->
-                      <div v-else-if="leave.start_date && leave.end_date && leave.start_date !== leave.end_date">
+                      <div v-else-if="leave.start_date && leave.end_date">
                         <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
                         <div class="upcoming-leaves-table__duration">
                           {{ calculateDays(leave.start_date, leave.end_date) }} day(s)
@@ -148,7 +171,7 @@
 <script>
 import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 
 export default {
   name: "TeamMembersOnLeave",
@@ -161,6 +184,16 @@ export default {
     const upcomingLeaves = ref([]);
     const loadingUpcomingLeaves = ref(false);
     const monthsFilter = ref(2);
+    const searchName = ref("");
+    const statusFilter = ref("");
+
+    const filteredUpcomingLeaves = computed(() => {
+      return upcomingLeaves.value.filter((leave) => {
+        const nameMatch = leave.user.name.toLowerCase().includes(searchName.value.toLowerCase());
+        const statusMatch = statusFilter.value ? leave.status === statusFilter.value : true;
+        return nameMatch && statusMatch;
+      });
+    });
 
     const fetchUsersOnLeave = async (selectedDate) => {
       loadingUsersOnLeave.value = true;
@@ -253,13 +286,40 @@ export default {
       calculateDays,
       formatDate,
       fetchUsersOnLeave,
-      openLeaveInNewTab
+      openLeaveInNewTab,
+      searchName,
+      statusFilter,
+      filteredUpcomingLeaves
     };
   },
 };
 </script>
 
 <style scoped>
+.v-tooltip {
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s;
+}
+
+.v-tooltip::before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-style: solid;
+  border-width: 5px;
+  border-color: transparent transparent #333 transparent;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .upcoming-leaves-table__leave-type {
   font-weight: 600;
   display: block;
@@ -372,7 +432,6 @@ export default {
 /* Filter Section */
 .upcoming-leaves-filter {
   text-align: right;
-  padding-top: 18px;
   padding-right: 23px;
 }
 
@@ -591,5 +650,29 @@ export default {
   width: 66%;
   margin: auto;
   text-align: center;
+}
+
+.task-card-body {
+  overflow-y: auto;
+  padding-right: 10px;
+  box-sizing: border-box;
+}
+
+.task-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.task-card-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.task-card-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>

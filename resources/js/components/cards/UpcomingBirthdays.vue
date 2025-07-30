@@ -6,8 +6,8 @@
                 <h4 class="card_heading" @click="fetchBirthdays(tomorrowDate.toISOString().split('T')[0])"
                     style="cursor: pointer;">Upcoming Birthdays</h4>
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-sm btn-outline-primary" @click="fetchNext30DaysBirthdays"
-                        style="margin-top: 11px;margin-right: 8px;">
+                    <button v-tooltip="'Upcoming Birthdays in next 30 days'" class="btn btn-sm btn-outline-primary"
+                        @click="fetchNext30DaysBirthdays" style="margin-top: 11px;margin-right: 8px;">
                         <i class="fa-solid fa-cake-candles"></i>
                     </button>
                     <Calendar :selectedDate="tomorrowDate" @dateSelected="fetchBirthdays" />
@@ -115,6 +115,30 @@ export default {
 </script>
 
 <style scoped>
+.v-tooltip {
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.3s;
+}
+
+.v-tooltip::before {
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    border-style: solid;
+    border-width: 5px;
+    border-color: transparent transparent #333 transparent;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .birthday-profile {
     display: flex;
     justify-content: center;
@@ -164,20 +188,27 @@ export default {
 .birthday-card-body {
     box-sizing: border-box;
     width: 100%;
+    overflow-y: auto;
+    padding-right: 10px;
+    box-sizing: border-box;
 }
 
 .birthday-card-body::-webkit-scrollbar {
     width: 6px;
-    background-color: #f1f1f1;
+}
+
+.birthday-card-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
 }
 
 .birthday-card-body::-webkit-scrollbar-thumb {
-    background-color: #c1c1c1;
+    background: #888;
     border-radius: 10px;
 }
 
 .birthday-card-body::-webkit-scrollbar-thumb:hover {
-    background-color: #a1a1a1;
+    background: #555;
 }
 
 .table-container {
@@ -212,7 +243,6 @@ thead th {
 .scrollable-tbody {
     display: block;
     max-height: 300px;
-    overflow-y: auto;
     width: 100%;
 }
 

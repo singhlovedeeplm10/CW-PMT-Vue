@@ -359,7 +359,6 @@ export default {
 </style>
 `;
 
-
       doc.write(styles);
       doc.write(printStyles);
       doc.write("</head><body>");
@@ -539,18 +538,6 @@ export default {
   width: 100%;
 }
 
-.modal-content {
-  position: relative;
-  top: 3rem;
-  margin: auto;
-  padding: 2rem;
-  border: 1px solid #ddd;
-  width: 80%;
-  max-width: 70rem;
-  background: white;
-  border-radius: 0.75rem;
-}
-
 .logo-heading {
   text-align: center;
   margin-bottom: 1rem;
@@ -577,6 +564,18 @@ export default {
   font-size: 0.9rem;
 }
 
+.modal-content {
+  position: relative;
+  top: 3rem;
+  margin: auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  width: 80%;
+  max-width: 70rem;
+  background: white;
+  border-radius: 0.75rem;
+}
+
 .table-row {
   display: flex;
   justify-content: space-between;
@@ -584,14 +583,6 @@ export default {
   margin-top: 1.5rem;
 }
 
-.table-box-1 {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background: white;
-}
 
 .table-box-2 {
   flex: 1;
@@ -621,6 +612,15 @@ export default {
   justify-content: space-between;
   gap: 1rem;
   height: 100%;
+}
+
+.table-box-1 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: white;
 }
 
 .dual-tables-wrapper table {

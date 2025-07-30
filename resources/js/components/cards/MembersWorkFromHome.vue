@@ -7,7 +7,8 @@
           Members on WFH
         </h4>
         <div class="d-flex align-items-center">
-          <button class="btn btn-sm btn-outline-primary me-2" @click="openUpcomingWFHModal" style="margin-top: 0px;">
+          <button v-tooltip="'Upcoming members on WFH'" class="btn btn-sm btn-outline-primary me-2"
+            @click="openUpcomingWFHModal" style="margin-top: 0px;">
             <i class="fa-solid fa-house"></i>
           </button>
           <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
@@ -58,15 +59,36 @@
       <div v-if="showUpcomingWFH" class="upcoming-wfh-modal" @click.self="closeUpcomingWFHModal">
         <div class="upcoming-wfh-modal__content">
           <div class="upcoming-wfh-modal__header">
-            <h5 class="upcoming-wfh-modal__title">All WFH (Full Day and Half Day)</h5>
+            <h5 class="upcoming-wfh-modal__title">Upcoming WFHs</h5>
             <button type="button" class="close-modal" @click="closeUpcomingWFHModal" aria-label="Close">&times;</button>
           </div>
-          <div class="upcoming-wfh-filter">
-            <select id="wfhMonthFilter" class="upcoming-wfh-filter__select" v-model="wfhMonthFilter"
-              @change="fetchUpcomingWFH">
-              <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
-            </select>
+          <!-- Upcoming WFHs Header -->
+          <div class="upcoming-wfh-header d-flex flex-column gap-2 px-3 pt-3">
+            <!-- Filters -->
+            <div class="upcoming-wfh-filter d-flex justify-content-between gap-2">
+              <!-- Left-aligned filters -->
+              <div class="d-flex gap-2">
+                <!-- Search Input -->
+                <input type="text" class="form-control upcoming-wfh-filter__input" placeholder="Search by name"
+                  v-model="wfhSearchName" style="width: 200px;" />
+
+                <!-- Status Filter -->
+                <select class="form-select upcoming-wfh-filter__select" v-model="wfhStatusFilter" style="width: 150px;">
+                  <option value="">All Statuses</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="hold">Hold</option>
+                </select>
+              </div>
+
+              <!-- Right-aligned Month Filter -->
+              <select id="wfhMonthFilter" class="form-select upcoming-wfh-filter__select" v-model="wfhMonthFilter"
+                @change="fetchUpcomingWFH" style="width: 150px;">
+                <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+              </select>
+            </div>
           </div>
+
           <div class="upcoming-wfh-modal__body">
             <div v-if="loadingUpcomingWFH" class="upcoming-wfh-loading">
               <div class="spinner-border text-primary" role="status">
@@ -74,9 +96,10 @@
               </div>
             </div>
             <div v-else>
-              <div v-if="upcomingWFH.length === 0" class="upcoming-wfh-empty">
-                No upcoming WFH records found for the selected period.
+              <div v-if="filteredUpcomingWFH.length === 0" class="upcoming-wfh-empty">
+                No upcoming WFH records found for the selected filters.
               </div>
+
               <div v-else class="upcoming-wfh-table-container">
                 <table class=" upcoming-wfh-table">
                   <thead class="upcoming-wfh-table__head">
@@ -88,7 +111,7 @@
                     </tr>
                   </thead>
                   <tbody class="upcoming-wfh-table__body">
-                    <tr v-for="leave in upcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
+                    <tr v-for="leave in filteredUpcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
                       @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name">
                         <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
@@ -163,8 +186,27 @@ export default {
       upcomingWFH: [],
       loadingUpcomingWFH: false,
       wfhMonthFilter: 2,
+      wfhSearchName: "",
+      wfhStatusFilter: "",
+
     };
   },
+  computed: {
+    filteredUpcomingWFH() {
+      return this.upcomingWFH.filter((leave) => {
+        const nameMatch = leave.user.name
+          .toLowerCase()
+          .includes(this.wfhSearchName.toLowerCase());
+
+        const statusMatch = this.wfhStatusFilter
+          ? leave.status === this.wfhStatusFilter
+          : true;
+
+        return nameMatch && statusMatch;
+      });
+    },
+  },
+
   methods: {
     openLeaveInNewTab(leave) {
       const leaveId = leave.id;
@@ -239,6 +281,30 @@ export default {
 </script>
 
 <style scoped>
+.v-tooltip {
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.3s;
+}
+
+.v-tooltip::before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-style: solid;
+  border-width: 5px;
+  border-color: transparent transparent #333 transparent;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 /* Modal Container */
 .upcoming-wfh-modal {
   position: fixed;
@@ -292,7 +358,6 @@ export default {
 /* Filter Section */
 .upcoming-wfh-filter {
   text-align: right;
-  padding-top: 18px;
   padding-right: 23px;
 }
 
@@ -523,16 +588,20 @@ export default {
 
 .task-card-body::-webkit-scrollbar {
   width: 6px;
-  background-color: #f1f1f1;
+}
+
+.task-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
+  background: #888;
   border-radius: 10px;
 }
 
 .task-card-body::-webkit-scrollbar-thumb:hover {
-  background-color: #a1a1a1;
+  background: #555;
 }
 
 table {

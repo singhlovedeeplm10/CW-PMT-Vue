@@ -185,4 +185,7 @@ Route::middleware('auth:sanctum')->post('/set-profile-password', [UserController
 Route::middleware('auth:sanctum')->post('/verify-profile-password', [UserController::class, 'verifyProfilePassword']);
 Route::post('/users/{id}/reset-profile-password', [UserController::class, 'resetProfilePassword']);
 
-Route::middleware('auth:sanctum')->post('/add-trainee', [TraineeController::class, 'addTrainee']);
+Route::post('/add-trainee', [TraineeController::class, 'addTrainee']);
+Route::get('/get-trainees', [TraineeController::class, 'getTrainees']);
+Route::get('/trainees/{id}', [TraineeController::class, 'show']);
+Route::post('/trainees/{trainee}', [TraineeController::class, 'update']);
