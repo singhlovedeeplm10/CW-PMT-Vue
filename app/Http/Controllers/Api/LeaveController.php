@@ -1840,7 +1840,7 @@ public function upcomingWFHLeaves(Request $request)
                         ->where('end_date', '>', $endDate);
                   });
         })
-        ->orderBy('start_date')
+        ->orderBy('created_at', 'asc')
         ->get()
         ->map(function ($leave) {
             $user = $leave->user;

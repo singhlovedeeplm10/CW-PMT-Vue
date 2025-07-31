@@ -97,7 +97,7 @@
             </div>
             <div v-else>
               <div v-if="filteredUpcomingWFH.length === 0" class="upcoming-wfh-empty">
-                No upcoming WFH records found for the selected filters.
+                No upcoming WFH.
               </div>
 
               <div v-else class="upcoming-wfh-table-container">
