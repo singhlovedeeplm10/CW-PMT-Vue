@@ -119,13 +119,13 @@
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="employment-tab" data-bs-toggle="tab"
                                             data-bs-target="#employment" type="button" role="tab">
-                                            <i class="fas fa-briefcase me-2"></i> Employment Details
+                                            <i class="fas fa-briefcase me-2"></i> EMP Details
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" id="contact-tab" data-bs-toggle="tab"
                                             data-bs-target="#contact" type="button" role="tab">
-                                            <i class="fas fa-address-book me-2"></i> Contact Information
+                                            <i class="fas fa-address-book me-2"></i> Contact
                                         </button>
                                     </li>
                                     <li class="nav-item" role="presentation">
@@ -138,6 +138,12 @@
                                         <button class="nav-link" id="appraisal-tab" data-bs-toggle="tab"
                                             data-bs-target="#appraisal" type="button" role="tab">
                                             <i class="fas fa-chart-line me-2"></i> Appraisal
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="documents-tab" data-bs-toggle="tab"
+                                            data-bs-target="#documents" type="button" role="tab">
+                                            <i class="fas fa-file-alt me-2"></i> Documents
                                         </button>
                                     </li>
                                 </ul>
@@ -371,6 +377,115 @@
                                             <i class="fas fa-plus me-1"></i> Add More Appraisal
                                         </button>
                                     </div>
+                                    <!-- Documents Tab -->
+                                    <div class="tab-pane fade" id="documents" role="tabpanel">
+                                        <template v-for="(document, index) in formData.documents" :key="index">
+                                            <div class="document-item mb-4 p-3 border rounded">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <InputField v-model="document.document_label"
+                                                            label="Document Label"
+                                                            placeholder="e.g., Resume, Degree Certificate" />
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Document File</label>
+                                                            <input type="file" class="form-control"
+                                                                @change="handleDocumentUpload(index, $event)"
+                                                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,.xlsx,.xls,.csv">
+                                                            <small class="text-muted">Accepted formats: PDF, JPG, PNG,
+                                                                DOC, TXT, CSV, XLSX</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3"
+                                                    v-if="getDocumentPreviewUrl(document) || document.previewUrl">
+                                                    <label class="form-label">Preview</label>
+                                                    <div class="document-preview p-2 text-center">
+                                                        <!-- Image Preview -->
+                                                        <template v-if="isImage(document)">
+                                                            <img :src="getDocumentPreviewUrl(document)"
+                                                                class="img-fluid mb-2" style="max-height: 200px;">
+                                                        </template>
+
+                                                        <!-- PDF Preview -->
+                                                        <template v-else-if="isPdf(document)">
+                                                            <div class="pdf-preview">
+                                                                <i class="fas fa-file-pdf fa-4x text-danger mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- Word Document Preview -->
+                                                        <template v-else-if="isWordDocument(document)">
+                                                            <div class="word-preview">
+                                                                <i class="fas fa-file-word fa-4x text-primary mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- Excel Preview -->
+                                                        <template v-else-if="isExcelDocument(document)">
+                                                            <div class="excel-preview">
+                                                                <i
+                                                                    class="fas fa-file-excel fa-4x text-success mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- Text File Preview -->
+                                                        <template v-else-if="isTextDocument(document)">
+                                                            <div class="text-preview">
+                                                                <i class="fas fa-file-alt fa-4x text-info mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- CSV File Preview -->
+                                                        <template v-else-if="isCsvDocument(document)">
+                                                            <div class="csv-preview">
+                                                                <i class="fas fa-file-csv fa-4x text-warning mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <!-- Generic File Preview -->
+                                                        <template v-else>
+                                                            <div class="other-file">
+                                                                <i class="fas fa-file fa-4x text-secondary mb-2"></i>
+                                                            </div>
+                                                        </template>
+
+                                                        <a :href="getDocumentPreviewUrl(document)" target="_blank"
+                                                            class="btn btn-sm btn-outline-primary mt-2"
+                                                            v-if="getDocumentPreviewUrl(document)">
+                                                            <i class="fas fa-eye me-1"></i> View Full
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <TextArea v-model="document.document_note" label="Notes"
+                                                        :rows="2" />
+                                                </div>
+
+                                                <div class="form-check mb-3">
+                                                    <input class="form-check-input" type="checkbox" :true-value="'1'"
+                                                        :false-value="'0'" v-model="document.show_to_employee"
+                                                        :id="`showDocumentToEmployee${index}`">
+                                                    <label class="form-check-label"
+                                                        :for="`showDocumentToEmployee${index}`">
+                                                        Show to the employee
+                                                    </label>
+                                                </div>
+
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                    @click="removeDocument(index, document.id)">
+                                                    <i class="fas fa-trash me-1"></i> Remove
+                                                </button>
+                                            </div>
+                                        </template>
+
+                                        <button type="button" class="btn btn-sm btn-primary mt-2" @click="addDocument">
+                                            <i class="fas fa-plus me-1"></i> Add More Documents
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="d-flex justify-content-between border-top pt-3 mt-4">
@@ -380,7 +495,7 @@
                                         {{
                                             resetLoading
                                                 ? "Resetting..."
-                                        : "Reset Profile Password"
+                                                : "Reset Profile Password"
                                         }}
                                     </button>
 
@@ -469,7 +584,18 @@ export default {
                         note: '',
                         show_to_employee: false,
                     }
+                ],
+                documents: [
+                    {
+                        document_label: '',
+                        file: null,
+                        previewUrl: null,
+                        file_type: '',
+                        document_note: '',
+                        show_to_employee: '1' // as string to match DB enum
+                    }
                 ]
+
             },
             genderOptions: [
                 { value: 'male', label: 'Male' },
@@ -492,6 +618,116 @@ export default {
         this.fetchEmployeeData();
     },
     methods: {
+        handleDocumentUpload(index, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Create preview URL for the file
+            const previewUrl = URL.createObjectURL(file);
+
+            // Set file data in formData
+            this.formData.documents[index].file = file;
+            this.formData.documents[index].previewUrl = previewUrl;
+            this.formData.documents[index].file_type = file.type;
+
+            // For existing files, we'll keep the existingFileName but update the preview
+            if (this.formData.documents[index].existingFileName) {
+                this.formData.documents[index].existingFileName = file.name;
+            }
+        },
+
+        // Modified preview check functions to handle both new and existing files
+        getDocumentPreviewUrl(document) {
+            if (document.previewUrl) {
+                return document.previewUrl; // For newly uploaded files
+            }
+            if (document.existing_file_url) {
+                return document.existing_file_url; // For files from database
+            }
+            return null;
+        },
+
+        isImage(document) {
+            const url = this.getDocumentPreviewUrl(document);
+            const file = document.file || {};
+            return url && (
+                url.match(/\.(jpeg|jpg|gif|png)$/) ||
+                url.startsWith('data:image') ||
+                file.type?.includes('image') ||
+                document.existingFileName?.match(/\.(jpeg|jpg|gif|png)$/i)
+            );
+        },
+
+        isPdf(document) {
+            const url = this.getDocumentPreviewUrl(document);
+            const file = document.file || {};
+            return url && (
+                url.match(/\.(pdf)$/) ||
+                url.includes('application/pdf') ||
+                file.type?.includes('pdf') ||
+                document.existingFileName?.match(/\.(pdf)$/i)
+            );
+        },
+
+        // Similarly modify other file type checkers
+        isWordDocument(document) {
+            const file = document.file || {};
+            return (
+                (file.type && file.type.includes('word')) ||
+                (document.existingFileName && document.existingFileName.match(/\.(doc|docx)$/i)) ||
+                (file.name && file.name.match(/\.(doc|docx)$/i))
+            );
+        },
+
+        isExcelDocument(document) {
+            const file = document.file || {};
+            return (
+                (file.type && (file.type.includes('excel') || file.type.includes('spreadsheet'))) ||
+                (document.existingFileName && document.existingFileName.match(/\.(xls|xlsx|csv)$/i)) ||
+                (file.name && file.name.match(/\.(xls|xlsx|csv)$/i))
+            );
+        },
+
+        isTextDocument(document) {
+            const file = document.file || {};
+            return (
+                (file.type && file.type.includes('text')) ||
+                (document.existingFileName && document.existingFileName.match(/\.(txt|text)$/i)) ||
+                (file.name && file.name.match(/\.(txt|text)$/i))
+            );
+        },
+
+        isCsvDocument(document) {
+            const file = document.file || {};
+            return (
+                (file.type && file.type.includes('csv')) ||
+                (document.existingFileName && document.existingFileName.match(/\.(csv)$/i)) ||
+                (file.name && file.name.match(/\.(csv)$/i))
+            );
+        },
+
+        addDocument() {
+            this.formData.documents.push({
+                document_label: '',
+                file: null,
+                previewUrl: null,
+                file_type: '',
+                document_note: '',
+                show_to_employee: '1'
+            });
+        },
+
+        removeDocument(index, documentId) {
+            if (documentId) {
+                // Add to removed documents array if it has an ID (exists in DB)
+                if (!this.removedDocumentIds) {
+                    this.removedDocumentIds = [];
+                }
+                this.removedDocumentIds.push(documentId);
+            }
+            this.formData.documents.splice(index, 1);
+        },
+
         async resetProfilePassword() {
             if (!confirm("Are you sure you want to reset the profile password?")) {
                 return;
@@ -579,22 +815,17 @@ export default {
                     }
                 });
 
-                const { userData, userProfile } = response.data;
+                const { userData, userProfile, userDocuments } = response.data;
                 this.user = { ...userData, ...userProfile };
 
-                // Initialize credentials with default empty object if none exist
                 const credentials = (userProfile?.credentials?.length ? userProfile.credentials : [{
                     label: '',
                     username: '',
                     password: '',
                     note: '',
                     showPassword: false
-                }]).map(cred => ({
-                    ...cred,
-                    showPassword: false // Ensure each credential has visibility toggle
-                }));
+                }]).map(cred => ({ ...cred, showPassword: false }));
 
-                // Initialize appraisals with default empty object if none exist
                 const appraisals = userProfile?.appraisals?.length ?
                     userProfile.appraisals.map(appraisal => ({
                         ...appraisal,
@@ -608,9 +839,21 @@ export default {
                         show_to_employee: false
                     }];
 
-                // Populate form data with proper null checks
+                // Handle documents data
+                const documents = userDocuments.map(doc => ({
+                    id: doc.id, // Add this line
+                    document_label: doc.document_label || '',
+                    file: null,
+                    previewUrl: doc.file_path ? `/uploads/${doc.file_path}` : null,
+                    document_note: doc.document_note || '',
+                    existingFileName: doc.file_path || '',
+                    show_to_employee: doc.show_to_employee == '1' ? '1' : '0',
+                    file_type: doc.file_type || ''
+                }));
+
+
                 this.formData = {
-                    ...this.formData, // Preserve any existing formData properties
+                    ...this.formData,
                     name: userData.name || '',
                     email: userData.email || '',
                     contact: userProfile?.contact || '',
@@ -629,18 +872,17 @@ export default {
                     designation: userProfile?.designation || '',
                     current_salary: userProfile?.current_salary || '',
                     next_appraisal_month: userProfile?.next_appraisal_month || '',
-                    password: '', // Keep password empty for security
-                    user_image: null, // Reset image file object
+                    password: '',
+                    user_image: null,
                     user_image_url: userData.user_image ? `/uploads/${userData.user_image}` : '',
                     credentials,
-                    appraisals
+                    appraisals,
+                    documents
                 };
 
             } catch (error) {
                 console.error('Error fetching employee data:', error);
                 toast.error('Failed to load employee data');
-
-                // Redirect only if it's a 404 or similar error
                 if (error.response?.status === 404) {
                     this.$router.push('/users');
                 }
@@ -695,35 +937,52 @@ export default {
             try {
                 const formData = new FormData();
 
-                // Add regular form data (non-JSON fields)
                 Object.keys(this.formData).forEach((key) => {
-                    // Skip null values, image URL, and JSON fields
-                    if (this.formData[key] !== null &&
+                    if (
+                        this.formData[key] !== null &&
                         key !== 'user_image_url' &&
                         key !== 'appraisals' &&
-                        key !== 'credentials') {
+                        key !== 'credentials' &&
+                        key !== 'documents'
+                    ) {
                         formData.append(key, this.formData[key]);
                     }
                 });
 
-                // Handle JSON data separately
                 if (this.formData.appraisals) {
                     formData.append('appraisals', JSON.stringify(this.formData.appraisals));
                 }
 
                 if (this.formData.credentials) {
-                    // You might want to encrypt passwords before sending
                     const credentials = this.formData.credentials.map(cred => ({
                         ...cred,
-                        password: (cred.password)
+                        password: cred.password
                     }));
                     formData.append('credentials', JSON.stringify(credentials));
                 }
 
-                // Handle file upload if exists
                 if (this.formData.user_image) {
                     formData.append('user_image', this.formData.user_image);
                 }
+
+                // Handle document uploads
+                this.formData.documents.forEach((doc, index) => {
+                    if (doc.file) {
+                        formData.append(`documents[${index}]`, doc.file);
+                    }
+                    if (doc.id) {
+                        formData.append(`documents_id[${index}]`, doc.id);
+                    }
+                    formData.append(`documents_label[${index}]`, doc.document_label || '');
+                    formData.append(`documents_note[${index}]`, doc.document_note || '');
+                    formData.append(`documents_show_to_employee[${index}]`, doc.show_to_employee === '1' ? '1' : '0');
+                });
+
+                // Add removed document IDs to the form data
+                if (this.removedDocumentIds && this.removedDocumentIds.length > 0) {
+                    formData.append('removed_document_ids', JSON.stringify(this.removedDocumentIds));
+                }
+
 
                 const response = await axios.post(`/api/users/${this.$route.params.id}`, formData, {
                     headers: {
@@ -732,15 +991,17 @@ export default {
                     },
                 });
 
+                // Clear removed documents after successful update
+                if (this.removedDocumentIds) {
+                    this.removedDocumentIds = [];
+                }
+
                 toast.success("Employee updated successfully!", {
                     position: "top-right",
                     autoClose: 1000,
                 });
 
-                // Refresh the employee data
                 await this.fetchEmployeeData();
-
-                // Optional: Redirect or show success message
                 return response.data;
 
             } catch (error) {
@@ -748,11 +1009,8 @@ export default {
                 let errorMessage = "Error updating employee";
 
                 if (error.response) {
-                    // Handle validation errors from backend
                     if (error.response.data.errors) {
-                        errorMessage = Object.values(error.response.data.errors)
-                            .flat()
-                            .join(', ');
+                        errorMessage = Object.values(error.response.data.errors).flat().join(', ');
                     } else if (error.response.data.message) {
                         errorMessage = error.response.data.message;
                     }
@@ -763,7 +1021,7 @@ export default {
                     autoClose: 3000,
                 });
 
-                throw error; // Re-throw if you want to handle it in the calling function
+                throw error;
             } finally {
                 this.loading = false;
             }
@@ -777,6 +1035,21 @@ export default {
 </script>
 
 <style scoped>
+.document-preview {
+    border-radius: none;
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-preview,
+.other-file {
+    padding: 20px;
+}
+
 .releaved-card {
     background-color: #d1d1d1;
 }

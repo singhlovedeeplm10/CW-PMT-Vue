@@ -54,30 +54,30 @@
         </div>
         <!-- Header -->
         <div class="upcoming-leaves-header d-flex flex-column gap-2 px-3 pt-3">
-  <!-- Filter Row -->
-  <div class="upcoming-leaves-filter d-flex justify-content-between gap-2">
-    <!-- Left-aligned filters -->
-    <div class="d-flex gap-2">
-      <!-- Name Search -->
-      <input type="text" class="form-control upcoming-leaves-filter__input" placeholder="Search by name"
-        v-model="searchName" style="width: 180px;" />
+          <!-- Filter Row -->
+          <div class="upcoming-leaves-filter d-flex justify-content-between gap-2">
+            <!-- Left-aligned filters -->
+            <div class="d-flex gap-2">
+              <!-- Name Search -->
+              <input type="text" class="form-control upcoming-leaves-filter__input" placeholder="Search by name"
+                v-model="searchName" style="width: 180px;" />
 
-      <!-- Status Filter -->
-      <select class="form-select upcoming-leaves-filter__select" v-model="statusFilter" style="width: 150px;">
-        <option value="">All Statuses</option>
-        <option value="approved">Approved</option>
-        <option value="pending">Pending</option>
-        <option value="hold">Hold</option>
-      </select>
-    </div>
+              <!-- Status Filter -->
+              <select class="form-select upcoming-leaves-filter__select" v-model="statusFilter" style="width: 150px;">
+                <option value="">All Statuses</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="hold">Hold</option>
+              </select>
+            </div>
 
-    <!-- Right-aligned Month Filter -->
-    <select id="monthFilter" class="form-select upcoming-leaves-filter__select" v-model="monthsFilter"
-      @change="fetchUpcomingLeaves" style="width: 150px;">
-      <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
-    </select>
-  </div>
-</div>
+            <!-- Right-aligned Month Filter -->
+            <select id="monthFilter" class="form-select upcoming-leaves-filter__select" v-model="monthsFilter"
+              @change="fetchUpcomingLeaves" style="width: 150px;">
+              <option v-for="n in 6" :value="n" :key="n">{{ n }} month{{ n > 1 ? 's' : '' }}</option>
+            </select>
+          </div>
+        </div>
 
         <div class="upcoming-leaves-modal__body">
           <div v-if="loadingUpcomingLeaves" class="upcoming-leaves-loading">
@@ -87,7 +87,7 @@
           </div>
           <div v-else>
             <div v-if="filteredUpcomingLeaves.length === 0" class="upcoming-leaves-empty">
-              No upcoming approved leaves found for the selected filters.
+              No upcoming leaves.
             </div>
 
             <div v-else class="upcoming-leaves-table-container">

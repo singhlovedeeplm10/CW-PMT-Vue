@@ -181,31 +181,61 @@
                   </div>
                 </div>
                 <!-- Appraisals Section -->
-                <div class="appraisals-card" v-if="user.appraisals && user.appraisals.length > 0">
-                  <div class="info-card wide-card">
-                    <div class="info-card-header">
-                      <i class="fas fa-chart-line"></i>
-                      <h3>Appraisal History</h3>
+                <div class="info-grid-appraisal">
+                  <div class="documents-card" v-if="user.documents && user.documents.length > 0">
+                    <div class="info-card wide-card">
+                      <div class="info-card-header">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Documents</h3>
+                      </div>
+                      <div class="info-card-body table-responsive">
+                        <table class="table">
+                          <thead>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(document, index) in user.documents" :key="'doc-' + index">
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <!-- File icon based on type -->
+                                  <i :class="getFileIcon(document.file_type)" class="me-2 file-icon"></i>
+                                  <a :href="document.file_path" target="_blank" class="document-link"
+                                    style="color: #2563eb; text-decoration: underline; cursor: pointer;">
+                                    {{ document.document_label }}
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div class="info-card-body table-responsive">
-                      <table class="table">
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Appraisal Amount</th>
-                            <th>Revised Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(appraisal, index) in user.appraisals" :key="index">
-                            <td>{{ formatDate(appraisal.date) }}</td>
-                            <td><i class="fa-solid fa-indian-rupee-sign  me-1"></i>{{
-                              Number(appraisal.appraisal_amount).toLocaleString('en-IN') }}</td>
-                            <td><i class="fa-solid fa-indian-rupee-sign  me-1"></i>{{
-                              Number(appraisal.revised_amount).toLocaleString('en-IN') }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                  </div>
+                  <div class="appraisals-card" v-if="user.appraisals && user.appraisals.length > 0">
+                    <div class="info-card wide-card">
+                      <div class="info-card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Appraisal History</h3>
+                      </div>
+                      <div class="info-card-body table-responsive">
+                        <table class="table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Appraisal Amount</th>
+                              <th>Revised Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(appraisal, index) in user.appraisals" :key="index">
+                              <td>{{ formatDate(appraisal.date) }}</td>
+                              <td><i class="fa-solid fa-indian-rupee-sign  me-1"></i>{{
+                                Number(appraisal.appraisal_amount).toLocaleString('en-IN') }}</td>
+                              <td><i class="fa-solid fa-indian-rupee-sign  me-1"></i>{{
+                                Number(appraisal.revised_amount).toLocaleString('en-IN') }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -410,7 +440,8 @@ export default {
         temporary_address: "",
         alternate_contact_number: "",
         designation: "",
-        current_salary: ""
+        current_salary: "",
+        documents: [],
       },
       isLoading: false,
       teamMembers: [
@@ -490,6 +521,32 @@ export default {
     AOS.init({ duration: 700 });
   },
   methods: {
+    getFileIcon(fileType) {
+      if (!fileType) return 'fas fa-file';
+
+      const type = fileType.toLowerCase();
+
+      // PDF files
+      if (type === 'pdf') return 'fas fa-file-pdf text-danger';
+
+      // Images
+      if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'image'].includes(type))
+        return 'fas fa-file-image text-primary';
+
+      // Word documents
+      if (['doc', 'docx'].includes(type))
+        return 'fas fa-file-word text-primary';
+
+      // Excel files
+      if (['xls', 'xlsx', 'csv'].includes(type))
+        return 'fas fa-file-excel text-success';
+
+      // Text files
+      if (type === 'txt') return 'fas fa-file-alt text-info';
+
+      // Default file icon
+      return 'fas fa-file';
+    },
     async handleModalClose() {
       // This will be called when either password modal closes
       await this.fetchUserData();
@@ -648,6 +705,18 @@ export default {
 </script>
 
 <style scoped>
+.document-link {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.document-link:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
 .account-profile-container.blur-background {
   filter: blur(8px);
   pointer-events: none;
@@ -1250,10 +1319,21 @@ export default {
   margin-top: 30px;
 }
 
+.documents-card {
+  margin-top: 30px;
+}
+
 /* Info Grid */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 27px;
+  margin-top: 24px;
+}
+
+.info-grid-appraisal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(409px, 1fr));
   gap: 27px;
   margin-top: 24px;
 }

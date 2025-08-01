@@ -83,5 +83,9 @@ public function breaks()
     {
         return $this->hasOne(UserProfile::class, 'user_id', 'id');
     }
+    public function documents()
+{
+    return $this->hasMany(UserDocument::class);
+}
     
 }

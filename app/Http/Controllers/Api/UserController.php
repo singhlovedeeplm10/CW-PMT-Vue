@@ -11,6 +11,7 @@ use App\Models\UserProfile;
 use App\Models\Leave;
 use Carbon\Carbon;
 use App\Models\Attendance;
+use App\Models\UserDocument;
 use App\Models\Breaks;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -170,10 +171,8 @@ public function addUser(Request $request)
 
 public function updateUser(Request $request, $id)
 {
-    // Define the rule for email validation with the exception for the current user's email
     $emailRule = 'required|email|unique:users,email,' . $id;
 
-    // Validate the request
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'email' => $emailRule,
@@ -198,20 +197,16 @@ public function updateUser(Request $request, $id)
         'appraisals' => 'nullable|json',
         'credentials' => 'nullable|json',
         'employee_personal_email' => 'nullable|email',
+        'documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,txt,xlsx,xls,csv|max:5120',
     ]);
 
-    // Find the user by ID
     $user = User::findOrFail($id);
-
-    // Initialize password variable with existing password
     $password = $user->password;
 
-    // Check if password is provided in the request
     if ($request->filled('password')) {
         $password = Hash::make($validated['password']);
     }
-    
-    // Check if credentials are provided and look for Pmt-Tool password
+
     if ($request->filled('credentials')) {
         $credentials = json_decode($request->input('credentials'), true);
         foreach ($credentials as $credential) {
@@ -222,23 +217,15 @@ public function updateUser(Request $request, $id)
         }
     }
 
-    // Update basic user information
     $user->update([
         'name' => $validated['name'],
         'email' => $validated['email'],
         'password' => $password,
     ]);
 
-    // Rest of your existing code remains the same...
-    // Set status based on presence of date_of_releaving
-    if (!empty($validated['date_of_releaving'])) {
-        $user->status = '2'; // Releaved
-    } else {
-        $user->status = '1'; // Active
-    }
-    $user->save(); // Save the updated status
+    $user->status = !empty($validated['date_of_releaving']) ? '2' : '1';
+    $user->save();
 
-    // Prepare profile data
     $profileData = [
         'permanent_address' => $validated['permanent_address'] ?? null,
         'temporary_address' => $validated['temporary_address'] ?? null,
@@ -258,19 +245,17 @@ public function updateUser(Request $request, $id)
         'employee_personal_email' => $validated['employee_personal_email'] ?? null,
     ];
 
-    // Handle JSON data for appraisals
     if ($request->filled('appraisals')) {
         $appraisals = json_decode($request->input('appraisals'), true);
         $profileData['appraisals'] = $this->sanitizeAppraisals($appraisals);
     }
 
-    // Handle JSON data for credentials
     if ($request->filled('credentials')) {
         $credentials = json_decode($request->input('credentials'), true);
         $profileData['credentials'] = $this->sanitizeCredentials($credentials);
     }
 
-    // Handle image upload
+    // Handle user image
     if ($request->hasFile('user_image')) {
         $uploadPath = public_path('uploads/profile_images');
         if (!file_exists($uploadPath)) {
@@ -281,7 +266,6 @@ public function updateUser(Request $request, $id)
         $request->file('user_image')->move($uploadPath, $imageName);
         $profileData['user_image'] = 'profile_images/' . $imageName;
 
-        // Delete old image if exists
         if ($user->profile && $user->profile->user_image) {
             $oldImagePath = public_path('uploads/' . $user->profile->user_image);
             if (file_exists($oldImagePath)) {
@@ -290,19 +274,84 @@ public function updateUser(Request $request, $id)
         }
     }
 
-    // Update or create the user's profile
     $user->profile()->updateOrCreate(
         ['user_id' => $user->id],
         $profileData
     );
 
-    // Return response
+    // Handle document uploads
+// Handle document updates or new uploads
+if ($request->hasFile('documents') || $request->has('documents_label')) {
+    foreach ($request->input('documents_label', []) as $index => $label) {
+        $note = $request->input("documents_note.$index");
+        $showToEmployee = $request->input("documents_show_to_employee.$index", '1');
+        $documentId = $request->input("documents_id.$index");
+
+        $uploadedFile = $request->file("documents.$index");
+
+        $filePath = null;
+        $fileType = null;
+
+        if ($uploadedFile) {
+            $uploadPath = public_path('uploads/user_documents');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $fileName = time() . '_' . $uploadedFile->getClientOriginalName();
+            $uploadedFile->move($uploadPath, $fileName);
+            $filePath = 'user_documents/' . $fileName;
+            $fileType = strtolower($uploadedFile->getClientOriginalExtension());
+        }
+
+        if ($documentId) {
+            // Update existing document
+            $document = \App\Models\UserDocument::where('user_id', $user->id)->where('id', $documentId)->first();
+            if ($document) {
+                if ($filePath && $document->file_path && file_exists(public_path('uploads/' . $document->file_path))) {
+                    unlink(public_path('uploads/' . $document->file_path));
+                }
+
+                $document->update([
+                    'document_label' => $label,
+                    'document_note' => $note,
+                    'show_to_employee' => $showToEmployee === '1' ? '1' : '0',
+                    'file_path' => $filePath ?? $document->file_path,
+                    'file_type' => $fileType ?? $document->file_type,
+                ]);
+            }
+        } else {
+            // New document
+            if ($filePath) {
+                \App\Models\UserDocument::create([
+                    'user_id' => $user->id,
+                    'document_label' => $label,
+                    'file_path' => $filePath,
+                    'file_type' => $fileType,
+                    'document_note' => $note,
+                    'show_to_employee' => $showToEmployee === '1' ? '1' : '0',
+                ]);
+            }
+        }
+    }
+}
+  // Handle removed documents
+    if ($request->has('removed_document_ids')) {
+        $removedIds = json_decode($request->input('removed_document_ids'));
+        if (is_array($removedIds) && count($removedIds) > 0) {
+            UserDocument::whereIn('id', $removedIds)->delete();
+        }
+    }
+
+
+
     return response()->json([
         'success' => true,
         'message' => 'User updated successfully.',
         'data' => $user->load('profile'),
     ]);
 }
+
 
 
     /**
@@ -369,7 +418,7 @@ public function updateUser(Request $request, $id)
         ]);
     }
 
- public function userAccountDetails()
+public function userAccountDetails()
 {
     $user = auth()->user();
     $profile = $user->profile;
@@ -379,59 +428,65 @@ public function updateUser(Request $request, $id)
     $employeeCode = "CW" . $formattedId;
 
     // Process appraisal data if exists
-$appraisals = [];
-if ($profile && !empty($profile->appraisals)) {
-    $rawAppraisals = $profile->appraisals;
-    
-    // Debug: Log the raw data
-    // error_log('Raw appraisals: ' . print_r($rawAppraisals, true));
-    
-    // Handle both string (JSON) and array formats
-    if (is_string($rawAppraisals)) {
-        $rawAppraisals = json_decode($rawAppraisals, true) ?? [];
-    } elseif (!is_array($rawAppraisals)) {
-        $rawAppraisals = [];
-    }
-
-    // Debug: Log after JSON decode
-    // error_log('Decoded appraisals: ' . print_r($rawAppraisals, true));
-    
-    // Ensure we have an array of appraisals (not an associative array)
-    if (isset($rawAppraisals[0]) && is_array($rawAppraisals[0])) {
-        // Proper array of appraisals
-        $appraisalsCollection = $rawAppraisals;
-    } else {
-        // Might be an associative array with numeric keys
-        $appraisalsCollection = array_values($rawAppraisals);
-    }
-
-    // Filter appraisals to only include those marked to show to employee
-    $filteredAppraisals = array_filter($appraisalsCollection, function($item) {
-        // Debug: Check each item
-        // error_log('Checking item: ' . print_r($item, true));
+    $appraisals = [];
+    if ($profile && !empty($profile->appraisals)) {
+        $rawAppraisals = $profile->appraisals;
         
-        return isset($item['show_to_employee']) && $item['show_to_employee'] == 1;
-    });
+        // Handle both string (JSON) and array formats
+        if (is_string($rawAppraisals)) {
+            $rawAppraisals = json_decode($rawAppraisals, true) ?? [];
+        } elseif (!is_array($rawAppraisals)) {
+            $rawAppraisals = [];
+        }
+        
+        // Ensure we have an array of appraisals (not an associative array)
+        if (isset($rawAppraisals[0]) && is_array($rawAppraisals[0])) {
+            // Proper array of appraisals
+            $appraisalsCollection = $rawAppraisals;
+        } else {
+            // Might be an associative array with numeric keys
+            $appraisalsCollection = array_values($rawAppraisals);
+        }
 
-    // Debug: Log filtered results
-    // error_log('Filtered appraisals: ' . print_r($filteredAppraisals, true));
-    
-    // Only process and include appraisals if there are any to show
-    if (!empty($filteredAppraisals)) {
-        $appraisals = array_values(array_map(function($item) {
-            return [
-                'date' => $item['date'] ?? null,
-                'appraisal_amount' => $item['amount'] ?? null,
-                'revised_amount' => $item['final_amount'] ?? null,
-                'note' => $item['note'] ?? null,
-                'show_to_employee' => $item['show_to_employee'] ?? 0,
-            ];
-        }, $filteredAppraisals));
+        // Filter appraisals to only include those marked to show to employee
+        $filteredAppraisals = array_filter($appraisalsCollection, function($item) {
+            return isset($item['show_to_employee']) && $item['show_to_employee'] == 1;
+        });
+
+        // Only process and include appraisals if there are any to show
+        if (!empty($filteredAppraisals)) {
+            $appraisals = array_values(array_map(function($item) {
+                return [
+                    'date' => $item['date'] ?? null,
+                    'appraisal_amount' => $item['amount'] ?? null,
+                    'revised_amount' => $item['final_amount'] ?? null,
+                    'note' => $item['note'] ?? null,
+                    'show_to_employee' => $item['show_to_employee'] ?? 0,
+                ];
+            }, $filteredAppraisals));
+        }
     }
+
+    // Fetch user documents
+$documents = [];
+$visibleDocuments = $user->documents()->where('show_to_employee', '1')->get();
+
+if ($visibleDocuments->isNotEmpty()) {
+    $documents = $visibleDocuments->map(function($doc) {
+        $fileType = $doc->file_type ?? pathinfo($doc->file_path, PATHINFO_EXTENSION);
+        return [
+            'id' => $doc->id,
+            'document_label' => $doc->document_label,
+            'file_path' => asset('uploads/' . $doc->file_path),
+            'file_type' => strtolower($fileType),
+            'document_note' => $doc->document_note,
+            'show_to_employee' => $doc->show_to_employee,
+            'created_at' => $doc->created_at->toDateTimeString(),
+            'updated_at' => $doc->updated_at->toDateTimeString(),
+        ];
+    })->toArray();
 }
 
-// Debug: Final output
-// error_log('Final appraisals: ' . print_r($appraisals, true));
 
     return response()->json([
         'name' => $user->name,
@@ -463,8 +518,11 @@ if ($profile && !empty($profile->appraisals)) {
         'designation' => $profile?->designation ?? null,
         'current_salary' => $profile?->current_salary ?? null,
         
-        // Appraisal data - will be empty array if no appraisals should be shown
+        // Appraisal data
         'appraisals' => $appraisals,
+        
+        // Documents data
+        'documents' => $documents,
     ]);
 }
 
@@ -483,16 +541,19 @@ if ($profile && !empty($profile->appraisals)) {
     }
 
 
-    public function edit(User $user)
-    {
-        // Ensure eager loading of the user profile
-        $user->load('profile');
+public function edit(User $user)
+{
+    $user->load('profile');
 
-        return response()->json([
-            'userData' => $user,
-            'userProfile' => $user->profile,
-        ]);
-    }
+    // Get all documents for the user
+    $documents = UserDocument::where('user_id', $user->id)->get();
+
+    return response()->json([
+        'userData' => $user,
+        'userProfile' => $user->profile,
+        'userDocuments' => $documents
+    ]);
+}
 
 
 
