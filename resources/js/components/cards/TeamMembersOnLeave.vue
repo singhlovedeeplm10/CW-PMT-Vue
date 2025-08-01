@@ -96,7 +96,7 @@
                   <tr>
                     <th class="upcoming-leaves-table__header">Name</th>
                     <th class="upcoming-leaves-table__header">Type & Duration</th>
-                    <th class="upcoming-leaves-table__header" style="padding-left: 6px;">Status</th>
+                    <th class="upcoming-leaves-table__header" style="padding-left: 16px;">Status</th>
                     <th class="upcoming-leaves-table__header">Created Date</th>
                   </tr>
                 </thead>
