@@ -3,8 +3,8 @@
         <!-- Task List Card -->
         <div class="task-card flex-fill shadow-sm position-relative" id="card2">
             <div class="task-card-header d-flex justify-content-between align-items-center">
-                <h4 class="card_heading" @click="fetchBirthdays(tomorrowDate.toISOString().split('T')[0])"
-                    style="cursor: pointer;">Upcoming Birthdays</h4>
+                <h4 class="card_heading" @click="fetchBirthdays(selectedDate)" style="cursor: pointer;">Upcoming
+                    Birthdays</h4>
                 <div class="d-flex align-items-center">
                     <button v-tooltip="'Upcoming Birthdays in next 30 days'" class="btn btn-sm btn-outline-primary"
                         @click="fetchNext30DaysBirthdays" style="margin-top: 11px;margin-right: 8px;">
@@ -66,6 +66,9 @@ export default {
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
 
+        // Add a ref to track the currently selected date
+        const selectedDate = ref(tomorrowDate);
+
         const formatDate = (dateString) => {
             if (!dateString) return '';
             const date = new Date(dateString);
@@ -73,10 +76,17 @@ export default {
         };
 
         const fetchBirthdays = async (date) => {
+            // Update the selectedDate when a new date is fetched
+            if (date instanceof Date) {
+                selectedDate.value = date;
+            } else if (typeof date === 'string') {
+                selectedDate.value = new Date(date);
+            }
+
             isLoading.value = true;
             try {
                 const response = await axios.get("/api/upcoming-birthdays", {
-                    params: { date },
+                    params: { date: selectedDate.value.toISOString().split('T')[0] },
                 });
                 users.value = response.data;
             } catch (error) {
@@ -105,6 +115,7 @@ export default {
         return {
             users,
             tomorrowDate,
+            selectedDate, // Expose selectedDate to template if needed
             fetchBirthdays,
             fetchNext30DaysBirthdays,
             isLoading,

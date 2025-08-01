@@ -11,7 +11,8 @@
             @click="openUpcomingWFHModal" style="margin-top: 0px;">
             <i class="fa-solid fa-house"></i>
           </button>
-          <calendar :selected-date="selectedDate" @dateSelected="fetchWFHMembers" class="mb-3" />
+          <Calendar :selected-date="selectedDate" @dateSelected="onDateSelected" class="mb-3" />
+
         </div>
       </div>
       <div class="task-card-body">
@@ -111,15 +112,15 @@
                     </tr>
                   </thead>
                   <tbody class="upcoming-wfh-table__body">
-                    <tr v-for="leave in filteredUpcomingWFH" :key="leave.id" class="upcoming-wfh-table__row"
-                      @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
-                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name">
+                    <tr v-for="leave in filteredUpcomingWFH" :key="leave.id" class="upcoming-wfh-table__row">
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--name"
+                        @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                         <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
                           class="upcoming-wfh-table__user-image">
                         <span class="upcoming-wfh-table__user-name">{{ leave.user.name }}</span>
                       </td>
 
-                      <td class="upcoming-wfh-table__cell">
+                      <td class="upcoming-wfh-table__cell" @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                         <!-- Half Day WFH -->
                         <div v-if="leave.type_of_leave === 'Work From Home Half Day'" style="text-align: left;">
                           <span class="upcoming-wfh-table__leave-type">{{ leave.type_of_leave }}</span>
@@ -143,17 +144,36 @@
                         </div>
                       </td>
 
-                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--status">
-                        <span class="status-badge" :class="{
-                          'status-approved': leave.status === 'approved',
-                          'status-pending': leave.status === 'pending',
-                          'status-hold': leave.status === 'hold'
-                        }">
-                          {{ leave.status }}
-                        </span>
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--status position-relative">
+                        <div class="dropdown">
+                          <button class="btn btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                            :class="getStatusClass(leave.status)" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" style="width: 130px;">
+                            <span>{{ capitalizeStatus(leave.status) }}</span>
+                            <i class="fa fa-chevron-down ms-auto"></i>
+                          </button>
+
+                          <ul class="dropdown-menu">
+                            <li v-for="status in statusOptions" :key="status"
+                              @click="handleStatusChange(leave.id, status)">
+                              <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+                                <span :class="getStatusClass(status) + ' badge'">{{ capitalizeStatus(status) }}</span>
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <!-- Loader while updating -->
+                        <div v-if="updatingStatusId === leave.id"
+                          class="position-absolute top-50 start-50 translate-middle">
+                          <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
                       </td>
 
-                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--date">
+                      <td class="upcoming-wfh-table__cell upcoming-wfh-table__cell--date"
+                        @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                         {{ formatDate(leave.created_at, true) }}
                       </td>
                     </tr>
@@ -171,12 +191,12 @@
 <script>
 import axios from "axios";
 import Calendar from "@/components/forms/Calendar.vue";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 export default {
   name: "MembersWorkFromHome",
-  components: {
-    Calendar,
-  },
+  components: { Calendar },
   data() {
     return {
       members: [],
@@ -188,6 +208,8 @@ export default {
       wfhMonthFilter: 2,
       wfhSearchName: "",
       wfhStatusFilter: "",
+      updatingStatusId: null,
+      statusOptions: ["pending", "approved", "disapproved", "hold", "canceled"],
 
     };
   },
@@ -208,6 +230,69 @@ export default {
   },
 
   methods: {
+    onDateSelected(date) {
+      this.selectedDate = date;
+      this.fetchWFHMembers(date);
+    },
+    capitalizeStatus(status) {
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    },
+    getStatusClass(status) {
+      switch (status) {
+        case "approved":
+          return "bg-success text-white";
+        case "pending":
+          return "bg-warning text-dark";
+        case "disapproved":
+          return "bg-danger text-white";
+        case "hold":
+          return "bg-secondary text-white";
+        case "canceled":
+          return "bg-dark text-white";
+        default:
+          return "bg-light text-dark";
+      }
+    },
+    async handleStatusChange(leaveId, newStatus) {
+      this.updatingStatusId = leaveId;
+      try {
+        await this.updateLeaveStatus(leaveId, newStatus);
+
+        // Update status locally
+        const leave = this.upcomingWFH.find((l) => l.id === leaveId);
+        if (leave) leave.status = newStatus;
+      } catch (error) {
+      } finally {
+        this.updatingStatusId = null;
+      }
+    },
+
+    async updateLeaveStatus(leaveId, newStatus) {
+      try {
+        await axios.post(
+          `/api/leaves/${leaveId}/update-status`,
+          { status: newStatus },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
+
+        toast.success("Leave status updated successfully!", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+
+      } catch (error) {
+        console.error("Error updating leave status:", error);
+        toast.error("Failed to update leave status.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+      }
+    },
+
     openLeaveInNewTab(leave) {
       const leaveId = leave.id;
       const route = `/teamleaves?leave_id=${leaveId}`;
@@ -281,6 +366,61 @@ export default {
 </script>
 
 <style scoped>
+/* Hide Bootstrap's default caret from .dropdown-toggle */
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+/* Remove default Bootstrap dropdown paddings */
+.dropdown-menu {
+  min-width: 150px;
+  padding: 4px 0;
+  z-index: 1060;
+  /* Higher than most Bootstrap elements */
+  position: absolute;
+  overflow: visible;
+}
+
+/* Clean up dropdown items */
+.dropdown-item {
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+/* Status badges inside dropdown */
+.dropdown-item .badge {
+  display: inline-block;
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  border-radius: 0.375rem;
+  position: relative;
+  /* Reset any absolute positioning */
+  z-index: auto;
+}
+
+.dropdown-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: auto;
+}
+
+.dropdown-menu .badge {
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.dropdown {
+  position: relative;
+  /* Ensure dropdown menu is positioned relative to this */
+}
+
 .v-tooltip {
   background-color: #333;
   color: #fff;
@@ -408,7 +548,10 @@ export default {
   background-color: #f8f9fa;
   position: sticky;
   top: 0;
+  z-index: 10;
+  /* Add or increase this */
 }
+
 
 .upcoming-wfh-table__header {
   padding: 12px 16px;
@@ -446,10 +589,6 @@ export default {
   white-space: nowrap;
 }
 
-.upcoming-wfh-table__cell--status {
-  white-space: nowrap;
-}
-
 .upcoming-wfh-table__user-image {
   width: 32px;
   height: 32px;
@@ -484,8 +623,6 @@ export default {
 .status-badge {
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
   text-transform: capitalize;
   display: inline-block;
   min-width: 70px;
@@ -493,18 +630,18 @@ export default {
 }
 
 .status-approved {
-  background-color: #d4edda;
-  color: #155724;
+  color: green;
+  font-weight: bold;
 }
 
 .status-pending {
-  background-color: #fff3cd;
-  color: #856404;
+  color: rgb(255 193 7);
+  font-weight: bold;
 }
 
 .status-hold {
-  background-color: #f8d7da;
-  color: #721c24;
+  color: rgb(108 117 125);
+  font-weight: bold;
 }
 
 /* Responsive Adjustments */

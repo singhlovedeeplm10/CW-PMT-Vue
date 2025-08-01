@@ -474,11 +474,12 @@
                                                         Show to the employee
                                                     </label>
                                                 </div>
-
                                                 <button type="button" class="btn btn-sm btn-danger"
+                                                    v-if="formData.documents.length > 1 || document.id"
                                                     @click="removeDocument(index, document.id)">
                                                     <i class="fas fa-trash me-1"></i> Remove
                                                 </button>
+
                                             </div>
                                         </template>
 
@@ -582,7 +583,7 @@ export default {
                         amount: '',
                         final_amount: '',
                         note: '',
-                        show_to_employee: false,
+                        show_to_employee: true,
                     }
                 ],
                 documents: [
@@ -789,7 +790,7 @@ export default {
                 amount: '',
                 final_amount: '',
                 note: '',
-                show_to_employee: false
+                show_to_employee: true
             });
         },
         removeAppraisal(index) {
@@ -826,31 +827,45 @@ export default {
                     showPassword: false
                 }]).map(cred => ({ ...cred, showPassword: false }));
 
-                const appraisals = userProfile?.appraisals?.length ?
-                    userProfile.appraisals.map(appraisal => ({
+                const appraisals = userProfile?.appraisals?.length
+                    ? userProfile.appraisals.map(appraisal => ({
                         ...appraisal,
                         show_to_employee: appraisal.show_to_employee == '1' || appraisal.show_to_employee === 1 || appraisal.show_to_employee === true
-                    })) :
-                    [{
+                    }))
+                    : [{
                         date: '',
                         amount: '',
                         final_amount: '',
                         note: '',
-                        show_to_employee: false
+                        show_to_employee: true // ✅ Ensure checkbox is checked for the first empty row
                     }];
 
-                // Handle documents data
-                const documents = userDocuments.map(doc => ({
-                    id: doc.id, // Add this line
-                    document_label: doc.document_label || '',
-                    file: null,
-                    previewUrl: doc.file_path ? `/uploads/${doc.file_path}` : null,
-                    document_note: doc.document_note || '',
-                    existingFileName: doc.file_path || '',
-                    show_to_employee: doc.show_to_employee == '1' ? '1' : '0',
-                    file_type: doc.file_type || ''
-                }));
 
+                // Handle documents data
+                let documents = [];
+
+                if (userDocuments && userDocuments.length > 0) {
+                    documents = userDocuments.map(doc => ({
+                        id: doc.id,
+                        document_label: doc.document_label || '',
+                        file: null,
+                        previewUrl: doc.file_path ? `/uploads/${doc.file_path}` : null,
+                        document_note: doc.document_note || '',
+                        existingFileName: doc.file_path || '',
+                        show_to_employee: doc.show_to_employee == '1' ? '1' : '0',
+                        file_type: doc.file_type || ''
+                    }));
+                } else {
+                    // Ensure at least one document form is available if no data is fetched
+                    documents = [{
+                        document_label: '',
+                        file: null,
+                        previewUrl: null,
+                        file_type: '',
+                        document_note: '',
+                        show_to_employee: '1'
+                    }];
+                }
 
                 this.formData = {
                     ...this.formData,

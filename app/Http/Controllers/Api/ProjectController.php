@@ -217,7 +217,31 @@ public function getAllProjects()
         return response()->json(['error' => 'Failed to fetch projects'], 500);
     }
 }
-
+public function getProjectForEdit($id)
+{
+    try {
+        $project = Project::findOrFail($id);
+        
+        // Get assigned developers
+        $developerIds = json_decode($project->developer_assign_list, true) ?? [];
+        $developers = User::whereIn('id', $developerIds)
+                         ->get(['id', 'name']); // Include user_image if needed
+        
+        // Add assigned developers to the project object
+        $project->assigned_developers = $developers;
+        
+        return response()->json([
+            'project' => $project,
+            'developers' => $developers
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Failed to fetch project data',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 
     public function removeDeveloper(Request $request, $projectId)
 {

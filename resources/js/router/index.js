@@ -26,6 +26,7 @@ import Devices from '../components/Devices.vue';
 import Notifications from '../components/Notifications.vue';
 import AddTrainee from '../components/AddTrainee.vue';
 import EditTrainee from '../components/EditTrainee.vue';
+import EditProject from '../components/EditProject.vue';
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
@@ -53,6 +54,7 @@ const routes = [
   { path: '/trainees', name: 'Trainees', component: Trainees, meta: { requiresAuth: true } },
   { path: '/add-trainees-page', name: 'AddTrainee', component: AddTrainee, meta: { requiresAuth: true } },
   { path: '/edit-trainee/:id', name: 'EditTrainee', component: EditTrainee, meta: { requiresAuth: true } },
+  { path: '/projects/:id', name: 'EditProject', component: EditProject, meta: { requiresAuth: true } },
 ];
 
 

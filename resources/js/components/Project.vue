@@ -58,6 +58,9 @@
               <button class="btn btn-secondary" @click="openEditProjectModal(project)">
                 <i class="fas fa-edit"></i>
               </button>
+              <!-- <router-link :to="`/projects/${project.id}`" class="btn btn-secondary">
+                <i class="fas fa-edit"></i>
+              </router-link> -->
             </td>
           </tr>
           <tr v-if="filteredProjects.length === 0">

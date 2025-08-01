@@ -1868,6 +1868,19 @@ public function upcomingWFHLeaves(Request $request)
         'data' => $leaves
     ]);
 }
+public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:pending,approved,disapproved,hold,canceled',
+    ]);
+
+    $leave = Leave::findOrFail($id);
+    $leave->status = $request->status;
+    $leave->last_updated_by = auth()->user()->name ?? 'System'; // Adjust as needed
+    $leave->save();
+
+    return response()->json(['message' => 'Status updated successfully.']);
+}
 
 
 }

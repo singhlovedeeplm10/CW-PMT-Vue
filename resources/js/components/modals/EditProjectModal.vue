@@ -102,6 +102,7 @@ import SelectInput from "@/components/inputs/SelectInput.vue"; // Import SelectI
 
 
 export default {
+  name: "EditProjectModal",
   components: {
     ButtonComponent,
     TextArea,

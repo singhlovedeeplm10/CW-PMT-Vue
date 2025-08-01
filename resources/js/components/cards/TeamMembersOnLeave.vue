@@ -96,20 +96,20 @@
                   <tr>
                     <th class="upcoming-leaves-table__header">Name</th>
                     <th class="upcoming-leaves-table__header">Type & Duration</th>
-                    <th class="upcoming-leaves-table__header">Status</th>
+                    <th class="upcoming-leaves-table__header" style="padding-left: 6px;">Status</th>
                     <th class="upcoming-leaves-table__header">Created Date</th>
                   </tr>
                 </thead>
                 <tbody class="upcoming-leaves-table__body">
-                  <tr v-for="leave in filteredUpcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row"
-                    @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
-                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--name">
+                  <tr v-for="leave in filteredUpcomingLeaves" :key="leave.id" class="upcoming-leaves-table__row">
+                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--name"
+                      @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       <img :src="leave.user.image || 'img/CWlogo.jpeg'" alt="Team Member"
                         class="upcoming-leaves-table__user-image">
                       <span class="upcoming-leaves-table__user-name">{{ leave.user.name }}</span>
                     </td>
 
-                    <td class="upcoming-leaves-table__cell">
+                    <td class="upcoming-leaves-table__cell" @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       <!-- Short Leave -->
                       <div v-if="leave.type_of_leave === 'Short Leave' && leave.start_time && leave.end_time">
                         <span class="upcoming-leaves-table__leave-type">{{ leave.type_of_leave }}</span>
@@ -143,18 +143,37 @@
                         </span>
                       </div>
                     </td>
+                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--status position-relative">
+                      <div class="dropdown">
+                        <button class="btn btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                          :class="getStatusClass(leave.status)" type="button" data-bs-toggle="dropdown"
+                          aria-expanded="false" style="width: 130px;">
+                          <span>{{ capitalizeStatus(leave.status) }}</span>
+                          <i class="fa fa-chevron-down ms-auto"></i>
+                        </button>
 
-                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--status">
-                      <span class="status-badge" :class="{
-                        'status-approved': leave.status === 'approved',
-                        'status-pending': leave.status === 'pending',
-                        'status-hold': leave.status === 'hold'
-                      }">
-                        {{ leave.status }}
-                      </span>
+                        <ul class="dropdown-menu">
+                          <li v-for="status in statusOptions" :key="status"
+                            @click="handleStatusChange(leave.id, status)">
+                            <a class="dropdown-item d-flex align-items-center gap-2" href="#">
+                              <span :class="getStatusClass(status) + ' badge'">{{ capitalizeStatus(status) }}</span>
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <!-- Loader while updating -->
+                      <div v-if="updatingStatusId === leave.id"
+                        class="position-absolute top-50 start-50 translate-middle">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
                     </td>
 
-                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--date">
+
+                    <td class="upcoming-leaves-table__cell upcoming-leaves-table__cell--date"
+                      @click="openLeaveInNewTab(leave)" style="cursor: pointer;">
                       {{ formatDate(leave.created_at) }}
                     </td>
                   </tr>
@@ -172,6 +191,8 @@
 import Calendar from "@/components/forms/Calendar.vue";
 import axios from "axios";
 import { ref, onMounted, computed } from "vue";
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 export default {
   name: "TeamMembersOnLeave",
@@ -186,6 +207,71 @@ export default {
     const monthsFilter = ref(2);
     const searchName = ref("");
     const statusFilter = ref("");
+    const updatingStatusId = ref(null);
+    const statusOptions = ["pending", "approved", "disapproved", "hold", "canceled"];
+
+    const capitalizeStatus = (status) => {
+      return status.charAt(0).toUpperCase() + status.slice(1);
+    };
+
+    const getStatusClass = (status) => {
+      switch (status) {
+        case "approved":
+          return "bg-success text-white";
+        case "pending":
+          return "bg-warning text-dark";
+        case "disapproved":
+          return "bg-danger text-white";
+        case "hold":
+          return "bg-secondary text-white";
+        case "canceled":
+          return "bg-dark text-white";
+        default:
+          return "bg-light text-dark";
+      }
+    };
+
+    const handleStatusChange = async (leaveId, newStatus) => {
+      updatingStatusId.value = leaveId;
+      try {
+        await updateLeaveStatus(leaveId, newStatus);
+
+        // Update status locally
+        const leave = upcomingLeaves.value.find((l) => l.id === leaveId);
+        if (leave) leave.status = newStatus;
+      } catch (error) {
+        console.error("Error updating status:", error);
+      } finally {
+        updatingStatusId.value = null;
+      }
+    };
+
+    const updateLeaveStatus = async (leaveId, newStatus) => {
+      try {
+        await axios.post(
+          `/api/leaves/${leaveId}/update-status`,
+          { status: newStatus },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }
+        );
+
+        toast.success("Leave status updated successfully!", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+
+      } catch (error) {
+        console.error("Error updating leave status:", error);
+        toast.error("Failed to update leave status.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+        throw error; // Re-throw the error so it can be caught in handleStatusChange
+      }
+    };
 
     const filteredUpcomingLeaves = computed(() => {
       return upcomingLeaves.value.filter((leave) => {
@@ -289,13 +375,83 @@ export default {
       openLeaveInNewTab,
       searchName,
       statusFilter,
-      filteredUpcomingLeaves
+      filteredUpcomingLeaves,
+      capitalizeStatus,
+      getStatusClass,
+      handleStatusChange,
+      updatingStatusId,
+      statusOptions
     };
   },
 };
 </script>
 
 <style scoped>
+/* Hide Bootstrap's default caret from .dropdown-toggle */
+.dropdown-toggle::after {
+  display: none !important;
+}
+
+/* Remove default Bootstrap dropdown paddings */
+.dropdown-menu {
+  min-width: 150px;
+  padding: 4px 0;
+  z-index: 1060;
+  /* Position at bottom of button */
+  top: 100% !important;
+  left: 0 !important;
+  margin-top: 0.125rem;
+  /* Small gap from button */
+  position: absolute;
+  overflow: visible;
+}
+
+/* Remove any existing transform or positioning that might be affecting it */
+.dropdown-menu.show {
+  transform: none !important;
+  will-change: transform;
+}
+
+/* Clean up dropdown items */
+.dropdown-item {
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+/* Status badges inside dropdown */
+.dropdown-item .badge {
+  display: inline-block;
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  text-align: center;
+  border-radius: 0.375rem;
+  position: relative;
+  /* Reset any absolute positioning */
+  z-index: auto;
+}
+
+.dropdown-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: auto;
+}
+
+.dropdown-menu .badge {
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.dropdown {
+  position: relative;
+  /* Ensure dropdown menu is positioned relative to this */
+}
+
 .v-tooltip {
   background-color: #333;
   color: #fff;
@@ -338,24 +494,22 @@ export default {
 .status-badge {
   padding: 4px 8px;
   border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
   text-transform: capitalize;
 }
 
 .status-approved {
-  background-color: #d4edda;
-  color: #155724;
+  color: green;
+  font-weight: bold;
 }
 
 .status-pending {
-  background-color: #fff3cd;
-  color: #856404;
+  color: rgb(255 193 7);
+  font-weight: bold;
 }
 
 .status-hold {
-  background-color: #f8d7da;
-  color: #721c24;
+  color: rgb(108 117 125);
+  font-weight: bold;
 }
 
 /* Modal Container */

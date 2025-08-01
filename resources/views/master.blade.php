@@ -8,6 +8,8 @@
 
     <!-- Add favicon -->
     <link rel="icon" href="/img/Tablogo.svg" type="image/jpeg">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     @vite(['resources/js/app.js', 'resources/css/home.css'])
 </head>

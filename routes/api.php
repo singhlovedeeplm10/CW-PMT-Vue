@@ -189,3 +189,5 @@ Route::post('/add-trainee', [TraineeController::class, 'addTrainee']);
 Route::get('/get-trainees', [TraineeController::class, 'getTrainees']);
 Route::get('/trainees/{id}', [TraineeController::class, 'show']);
 Route::post('/trainees/{trainee}', [TraineeController::class, 'update']);
+Route::get('/projects/{id}', [ProjectController::class, 'getProjectForEdit']);
+Route::middleware('auth:sanctum')->post('/leaves/{id}/update-status', [LeaveController::class, 'updateStatus']);

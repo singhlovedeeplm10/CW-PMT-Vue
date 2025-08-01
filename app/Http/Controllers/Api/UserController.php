@@ -1016,11 +1016,11 @@ public function getAllEmployeeTimeLogs()
     $startOfMonth = Carbon::parse($currentMonth)->startOfMonth();
     $endOfMonth = Carbon::parse($currentMonth)->endOfMonth();
 
-    $users = User::with(['attendances' => function ($query) use ($startOfMonth, $endOfMonth) {
-        $query->whereBetween('clockin_time', [$startOfMonth, $endOfMonth])
-              ->orderBy('clockin_time', 'DESC')
-              ->with('breaks');
-    }])
+   $users = User::with(['attendances' => function ($query) {
+    $query->orderBy('clockin_time', 'DESC')
+          ->with('breaks');
+}])
+
     ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
     ->select('users.*', 'user_profiles.user_image')
     ->get();
